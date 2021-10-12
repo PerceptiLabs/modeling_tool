@@ -168,8 +168,6 @@ export default {
 
       this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.element.layerId);
       this.closeVariableList();
-      // save output variable to indexDB
-      this.$store.dispatch('mod_webstorage/saveNetwork', this.currentNetwork, {root: true});
     },
     startPreviewArrow(ev) {
       this.$parent.$parent.startArrowPaint(ev);

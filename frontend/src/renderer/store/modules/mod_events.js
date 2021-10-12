@@ -235,7 +235,6 @@ const actions = {
     dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
     dispatch('mod_workspace-changes/clearNetworkChanges', null, {root: true});
-    dispatch('mod_webstorage/cleanup', null, {root: true});
 
     router.replace({name: 'projects'})
       .catch(e => {/*console.error('Error during logout', e)*/});

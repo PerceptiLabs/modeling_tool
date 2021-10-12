@@ -164,8 +164,6 @@
         setStatisticsAvailability:'mod_workspace/setStatisticsAvailability',
         setCheckpointAvailability:'mod_workspace/setCheckpointAvailability',
         clearNetworkChanges:      'mod_workspace-changes/clearNetworkChanges',
-        loadWorkspaces:           'mod_webstorage/loadWorkspaces',
-        deleteAllIds:             'mod_webstorage/deleteAllIds'
         
       }),
       onProjectWrapperClick(e){
@@ -192,12 +190,7 @@
               this.closePageAction();
             },
             ok: () => {
-              this.clearNetworkChanges();
-              
-              this.loadWorkspaces()
-                .then(_ => {
-                  this.goToProject(projectId);
-                }); 
+              this.clearNetworkChanges(); 
             }
           }); 
         } else {
@@ -393,7 +386,6 @@
             localModelsData = localModelsData.filter(model => model);
             const atLeastOneFolderHaveModelsJsonFile = localModelsData.length !== 0;
             if(atLeastOneFolderHaveModelsJsonFile) {
-              this.deleteAllIds();
               this.resetNetwork();
               let modelCreationPromises = [];
               for(let index in localModelsData) {

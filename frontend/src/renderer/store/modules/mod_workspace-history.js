@@ -120,7 +120,6 @@ const actions = {
       dispatch('SET_isEnableHistory', false);
       const currentID = rootGetters['mod_workspace/GET_currentNetworkId'];
       commit('to_prevStepHistory', {currentID, dispatch});
-      dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
 
       // calculating all preview vars here, can potentially refactor here:
       dispatch('mod_workspace/UPDATE_all_previews', null, {root: true});
@@ -131,7 +130,6 @@ const actions = {
       dispatch('SET_isEnableHistory', false);
       const currentID = rootGetters['mod_workspace/GET_currentNetworkId'];
       commit('to_nextStepHistory', {currentID, dispatch});
-      dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
 
       // calculating all preview vars here, can potentially refactor here:
       dispatch('mod_workspace/UPDATE_all_previews', null, {root: true});

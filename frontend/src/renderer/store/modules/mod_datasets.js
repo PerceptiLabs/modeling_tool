@@ -17,9 +17,16 @@ const mutations = {
 };
 
 const actions = {
-  async getDatasets({commit}) {
+  async getDatasets({ commit }) {
     const { data } = await rygg_getDatasets();
-    commit('SET_datasets', data.results);
+    commit('SET_datasets', data.results.map(dataset => {
+      // adjust path  
+      return {
+        ...dataset,
+        name: dataset.name.replace(/\\/g, '/'),
+        location: dataset.location.replace(/\\/g, '/'),
+      };
+    }));
     return data;
   }
 };

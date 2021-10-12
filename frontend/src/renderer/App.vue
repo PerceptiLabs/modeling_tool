@@ -96,14 +96,6 @@
       this.readUserInfo();
       this.checkRyggAvailability();
       
-      // from webstorage
-      this.loadWorkspacesFromWebStorage()
-        .then(_ => {
-          this.$store.commit('mod_workspace/get_lastActiveTabFromLocalStorage');
-          this.setStatisticsAvailability();
-          this.setCheckpointAvailability();
-        });
-
       this.$store.commit('mod_project/setIsDefaultProjectMode');
       await isEnterpriseApp()
         .then(isEnterpriseAppValue => {
@@ -137,7 +129,6 @@
                 this.fetchNetworkMetas(targetProject);
               }
               // this.reset_network();
-              // this.deleteAllIds();
             }
           })
       } else {
@@ -414,18 +405,12 @@
 
         cloud_userGetProfile:   'mod_apiCloud/CloudAPI_userGetProfile',
         
-        loadWorkspacesFromWebStorage:   'mod_webstorage/loadWorkspaces',
-
         reset_network:            'mod_workspace/RESET_network',
         addNetwork:               'mod_workspace/ADD_network',
         chartRequestIfNeeded:     'mod_workspace/SET_chartsRequestsIfNeeded',
         setUnparsedModels:        'mod_workspace/SET_unparsedModels',
         setStatisticsAvailability:'mod_workspace/setStatisticsAvailability',
         setCheckpointAvailability:'mod_workspace/setCheckpointAvailability',
-
-        deleteId:            'mod_webstorage/deleteId',
-        deleteAllIds:        'mod_webstorage/deleteAllIds',        
-        updateWorkspaces:    'mod_webstorage/updateWorkspaces',
 
         getPyPiUpdate:          'mod_workspace-notifications/getPyPiUpdate',
 
@@ -556,8 +541,6 @@
             // The effect is that the same network can appear doubled in the Model Hub
             // Remove from workspace content
             this.deleteNetworkById(model.model_id);
-            // Remove from webstorage
-            this.deleteId(model.model_id);
           }
         });
 
@@ -582,8 +565,6 @@
         }
         
         this.$store.commit('mod_workspace/get_lastActiveTabFromLocalStorage');
-        // Commented out because addNetwork already calls updateWorkspaces
-        // this.updateWorkspaces();
       },
     
       initTutorialView() {

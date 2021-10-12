@@ -332,8 +332,6 @@
         SET_openTest:         'mod_workspace/SET_openTest',
 
         setNetworkNameAction: 'mod_workspace/SET_networkName',
-        updateWorkspaces:     'mod_webstorage/updateWorkspaces',
-        deleteAllIds:         'mod_webstorage/deleteAllIds',        
       }),
       goToNetworkView(networkID) {
         // maybe should receive a id and search index by it
@@ -410,7 +408,6 @@
             await this.delete_networkById(networkId);
           }
           this.selectedListIds = [];
-          this.updateWorkspaces();
         } else {
           this.popupDeleteConfirm({
             ok: async () => {
@@ -424,8 +421,6 @@
               }
               
               this.selectedListIds = [];
-
-              this.updateWorkspaces();
             }
           });
 
@@ -585,7 +580,6 @@
         if (this.renameIndex !== null) {
           this.set_currentNetwork(this.renameIndex);
           this.setNetworkNameAction(this.renameValue);
-          this.updateWorkspaces();
         }
         this.renameIndex = null;
         this.renameValue = null;

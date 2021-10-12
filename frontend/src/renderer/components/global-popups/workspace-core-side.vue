@@ -68,7 +68,6 @@ export default {
       SET_openStatistics:       'mod_workspace/SET_openStatistics',
       SET_openTest:             'mod_workspace/SET_openTest',
       SET_networkSnapshot:      'mod_workspace/SET_networkSnapshot',
-      saveNetwork:              'mod_webstorage/saveNetwork',
       setViewType:              'mod_workspace/setViewType',
       setCurrentView:           'mod_tutorials/setCurrentView',
       setChecklistItemComplete: 'mod_tutorials/setChecklistItemComplete',

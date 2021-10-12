@@ -404,7 +404,6 @@ export default {
     ...mapActions({
       popupConfirm:               'globalView/GP_confirmPopup',
       net_trainingDone:           'globalView/NET_trainingDone',
-      saveNetwork:                'mod_webstorage/saveNetwork',
       delete_network:             'mod_workspace/DELETE_network',
       set_openStatistics:         'mod_workspace/SET_openStatistics',
       set_openTest:               'mod_workspace/SET_openTest',

@@ -439,7 +439,6 @@ const mutations = {
     const modelIndex = state.workspaceContent.findIndex(network => network.networkID === networkID);
     if(modelIndex !== -1) {
       Vue.set(state.workspaceContent[modelIndex].networkMeta, key, value);
-      store.dispatch('mod_webstorage/saveNetwork', state.workspaceContent[modelIndex])
       updateModelMeta(state.workspaceContent[modelIndex]);
     }
   },
@@ -1980,7 +1979,6 @@ const actions = {
       if (focusOnNetwork) {
         commit('set_lastActiveTabInLocalStorage', lastNetworkID);
       }
-      dispatch('mod_webstorage/updateWorkspaces', null, { root: true });
       return resolve();
     });
   },
@@ -1989,8 +1987,6 @@ const actions = {
       const currentNetworkId = getters.GET_currentNetworkId;
       commit('update_network', { networkId: currentNetworkId, newNetwork });
       
-      dispatch('mod_webstorage/saveNetwork', newNetwork, { root: true });
-
       return resolve();
     })
   },
@@ -2028,10 +2024,6 @@ const actions = {
       // deleting in rygg
       dispatch('mod_project/deleteModel', modelApiMeta, {root: true});
 
-      // deleting in webstorage
-      dispatch('mod_webstorage/deleteId', networkId, { root: true });
-      dispatch('mod_webstorage/deleteNetwork', networkId, { root: true });
-      
       commit('delete_networkById', networkId);
       resolve();
     })
@@ -2410,11 +2402,9 @@ const actions = {
   },
   UPDATE_MODE_ACTION(ctx, {index, field, value}){
     ctx.commit('update_model', {index, field, value});
-    ctx.dispatch('mod_webstorage/updateWorkspaces', null, { root: true });
   },
   set_NetworkCoreErrorAction(ctx, {errorMessage, modelId}) {
     ctx.commit('set_NetworkCoreError', {errorMessage, modelId, commit: ctx.commit});
-    ctx.dispatch('mod_webstorage/updateWorkspaces', null, { root: true });
   },
   SET_model_saved_version_location({commit, getters}, saved_version_location) {
     commit('set_model_saved_version_location', { saved_version_location, getters })
@@ -2468,7 +2458,6 @@ const actions = {
   ADD_element({commit, getters, dispatch}, { event, setChangeToWorkspaceHistory = true, triggeredByHotKey }) {
     commit('add_element', {getters, dispatch, event, setChangeToWorkspaceHistory, triggeredByHotKey});
 
-    dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
     dispatch('mod_workspace-changes/updateUnsavedChanges', {
       networkId: getters.GET_currentNetworkId,
       value: true
@@ -2480,7 +2469,6 @@ const actions = {
       // dispatch('mod_api/API_getOutputDim', null, {root: true});
     }
 
-    dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
     dispatch('mod_workspace-changes/updateUnsavedChanges', {
       networkId: getters.GET_currentNetworkId,
       value: true
@@ -2489,7 +2477,6 @@ const actions = {
   ADD_arrow({commit, getters, dispatch}, stopID) {
     commit('add_arrow', {dispatch, stopID})
 
-    dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
     dispatch('mod_workspace-changes/updateUnsavedChanges', {
       networkId: getters.GET_currentNetworkId,
       value: true
@@ -2497,7 +2484,6 @@ const actions = {
   },
   DELETE_arrow({commit, getters, dispatch}, arrow) {
     commit('delete_arrow', {dispatch, arrow})
-    dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
     dispatch('mod_workspace-changes/updateUnsavedChanges', {
       networkId: getters.GET_currentNetworkId,
       value: true
@@ -2525,7 +2511,6 @@ const actions = {
     commit('change_elementPosition', {value, getters})
   },
   afterNetworkElementIsDragged({ dispatch, getters }) {
-    dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
   },
   //---------------
   //  NETWORK CONTAINER
@@ -2674,7 +2659,6 @@ const actions = {
         dispatch('SET_networkSnapshot'); // snapshot for the network in stats/test views
       }) 
       .then(_ => {
-        dispatch('mod_webstorage/saveNetwork', currentNetwork, {root: true}); // webstorage
       });
   },
   saveModelAction({dispatch, state}, modelId) {
@@ -2685,7 +2669,6 @@ const actions = {
 
     return rygg_saveModelJson(streamLinedNetwork)
       .then(_ => {
-        dispatch('mod_webstorage/saveNetwork', network, {root: true}); // webstorage
       });
   }
 };
