@@ -71,9 +71,9 @@ class AppInstance {
 
   private demo() {
     const user = {
-      firstName: "John",
-      lastName: "Doe",
-      email: "a@a.test",
+      firstName: "Demo",
+      lastName: "User",
+      email: "modeler@perceptilabs.test",
       userId: 1,
     };
 

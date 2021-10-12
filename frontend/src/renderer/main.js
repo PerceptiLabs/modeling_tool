@@ -175,8 +175,8 @@ async function login(){
 // Allow running w/o login for a hard-coded user when the frontend is built with NO_KC set to 'true'
 function demo(){
   const user = {
-    given_name: "John",
-    family_name: "Doe",
+    given_name: "Demo",
+    family_name: "User",
     email: "modeler@perceptilabs.test",
     userId: 1,
   }
