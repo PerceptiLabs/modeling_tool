@@ -46,16 +46,14 @@ class bcolors:
 HOST = "127.0.0.1"
 
 PORTS = {
-            "kernel": 5000,
-            "rendering-kernel": 5001,
-            "rygg": 8000,
-            "frontend": 8080,
-        }
+    "rendering-kernel": 5001,
+    "rygg": 8000,
+    "frontend": 8080,
+}
 
 MIGRATION_CMD = [PYTHON, "-m", "django", "migrate", "--settings", "rygg.settings"]
 SERVICE_CMDS = [
     [PYTHON, "-m", "perceptilabs"],
-    [PYTHON, "-m", "perceptilabs", "--mode", "rendering"],
     [PYTHON, "-m", "django", "runserver", f"{HOST}:{PORTS['rygg']}", "--settings", "rygg.settings", "--noreload"],
     [PYTHON, "-m", "django", "runserver", f"{HOST}:{PORTS['frontend']}", "--settings", "static_file_server.settings", "--noreload"],
     [PYTHON, "-c", "from static_file_server import website_launcher; website_launcher.launchAndKeepAlive()"],
