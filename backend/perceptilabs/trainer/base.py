@@ -161,6 +161,7 @@ class Trainer:
                 self._loss_functions,
                 self._get_training_set(),
                 self._set_num_training_batches_completed_this_epoch,
+                self.is_closed,
                 is_training=True,
                 optimizer=self._optimizer
             )
@@ -174,6 +175,7 @@ class Trainer:
                 self._loss_functions,
                 self._get_validation_set(),
                 self._set_num_validation_batches_completed_this_epoch,
+                self.is_closed,
                 is_training=False
             )
 
@@ -242,34 +244,37 @@ class Trainer:
             f"Num training (validation) batches completed : {self.num_training_batches_completed_this_epoch} ({self.num_validation_batches_completed_this_epoch})"
         )
 
-    def _loop_over_dataset(self, model, loss_functions, dataset, set_num_batches_completed_this_epoch, is_training=True, optimizer=None):
+    def _loop_over_dataset(self, model, loss_functions, dataset, set_num_batches_completed_this_epoch, is_closed, is_training=True, optimizer=None):
         """ Loop over all batches of data once """
         for steps_completed, (inputs_batch, targets_batch) in enumerate(dataset):
-            predictions_batch, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer, \
-                total_loss, individual_losses = self._work_on_batch(
-                    model, loss_functions, inputs_batch, targets_batch, is_training, optimizer
-                )
-
-            if self._headless:
-                self._reset_tracked_values()
+            if is_closed:
+                break
             else:
-                self._update_tracked_values(
-                    trainables_by_layer,
-                    gradients_by_layer,
-                    final_and_intermediate_outputs_by_layer,
-                    inputs_batch,
-                    predictions_batch,
-                    targets_batch,
-                    total_loss,
-                    individual_losses,
-                    is_training,
-                    steps_completed
-                )
+                predictions_batch, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer, \
+                    total_loss, individual_losses = self._work_on_batch(
+                        model, loss_functions, inputs_batch, targets_batch, is_training, optimizer
+                    )
 
-            self._num_batches_completed_all_epochs += 1
-            set_num_batches_completed_this_epoch(steps_completed + 1)
+                if self._headless:
+                    self._reset_tracked_values()
+                else:
+                    self._update_tracked_values(
+                        trainables_by_layer,
+                        gradients_by_layer,
+                        final_and_intermediate_outputs_by_layer,
+                        inputs_batch,
+                        predictions_batch,
+                        targets_batch,
+                        total_loss,
+                        individual_losses,
+                        is_training,
+                        steps_completed
+                    )
 
-            yield
+                self._num_batches_completed_all_epochs += 1
+                set_num_batches_completed_this_epoch(steps_completed + 1)
+
+                yield
 
     @tf.function
     def _work_on_batch(self, model, loss_functions, inputs_batch, targets_batch, is_training, optimizer):
