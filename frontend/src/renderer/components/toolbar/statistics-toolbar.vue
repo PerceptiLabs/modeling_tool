@@ -36,7 +36,7 @@
       )
     .toolbar-section.last-section
       view-box-btn-list.statistics-tabs(
-        v-if="statisticsIsOpen && !testIsOpen"
+        v-if="statisticsIsOpen"
         :data-tutorial-target="'tutorial-statistics-tabs'"
         :layerType="'Training'")
       //- used for easily centering the training bar

@@ -1,7 +1,7 @@
 <template lang="pug">
   .statistics-box
     .statistics-box_main.statistics-box_col(v-if="currentTab !== 'Global Loss'")
-      template(v-if="sectionTitle === 'Statistics'")
+      template(v-if="sectionTitle === 'Statistics' && currentTab !== 'Performance'")
         .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('Accuracy')")
           .statistics-box_row
             chart-switch(
@@ -127,7 +127,12 @@
               chart-label="IoU over all epochs"
               :chart-data="chartData.IoUAndLoss.IoUOverEpochs"
               :custom-color="colorListAccuracy"
-            ) 
+            )
+      template(v-else-if="sectionTitle === 'Statistics' && currentTab === 'Performance'")
+        view-box-performance-chart(
+          :chartData="chartData.Precision && chartData.Precision.PrecisionOverEpochs"
+          :colorListAccuracy="colorListAccuracy"
+        )
       template(v-else)
         .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('ViewBox')")
           .statistics-box_row
@@ -166,13 +171,14 @@
 import ChartSwitch from "@/components/charts/chart-switch";
 import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
 import netIOTabs from "@/core/mixins/net-IO-tabs.js";
-import {mapActions} from 'vuex';
-import {coreRequest} from "@/core/apiWeb";
-import Vue from "vue";
+import ViewBoxPerformanceChart from './viewBox-performance-chart.vue';
 
 export default {
   name: "ViewBoxIoOutput",
-  components: {ChartSwitch},
+  components: {
+    ChartSwitch,
+    ViewBoxPerformanceChart,
+  },
   mixins: [viewBoxMixin, netIOTabs],
   props: {
     el: Object,

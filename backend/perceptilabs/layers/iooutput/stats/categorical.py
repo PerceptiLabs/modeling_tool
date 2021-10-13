@@ -78,6 +78,7 @@ class CategoricalOutputStats(OutputStats):
         acc_over_epochs = self._get_dataobj_accuracy()
         loss_over_epochs = self._get_dataobj_loss()
         conf_mtx_latest_epoch = self._get_data_obj_confusion_matrix()
+        precision_over_epochs = self._get_data_obj_precision()
 
         pred_value = self._get_arbitrary_sample(type_='prediction')
         target_value = self._get_arbitrary_sample(type_='target')
@@ -97,6 +98,9 @@ class CategoricalOutputStats(OutputStats):
             },
             'ViewBox': {
                 'Output': create_data_object([target_value])
+            },
+            "Precision": {
+                "PrecisionOverEpochs": precision_over_epochs
             }
         }
 
@@ -145,7 +149,8 @@ class CategoricalOutputStats(OutputStats):
         return dataobj_acc_over_epochs
 
     def _get_data_obj_confusion_matrix(self):
-        summed_matrix = self._multiclass_matrix.get_total_matrix_for_latest_epoch(phase='training')
+        phase = self._multiclass_matrix.get_phase_for_latest_step()
+        summed_matrix = self._multiclass_matrix.get_total_matrix_for_latest_epoch(phase=phase)
         dataobj_cm_in_latest_epoch = create_data_object(
                 [
                     summed_matrix
@@ -155,6 +160,28 @@ class CategoricalOutputStats(OutputStats):
             )
 
         return dataobj_cm_in_latest_epoch
+
+    def _get_data_obj_precision(self):
+        precision_training = self._multiclass_matrix.get_precision_over_epochs('training')
+        precision_validation = self._multiclass_matrix.get_precision_over_epochs('validation')
+        categories = self._categories or list(range(len(precision_training)))
+        num_epochs = len(self.multiclass_matrix.prediction_matrices)
+        precision_objects = {}
+        for i, category in enumerate(categories):
+            if num_epochs > 1:
+                dataobj_precision = create_data_object(
+                [precision_validation[i,], precision_training[i,]],
+                type_list=['line', 'line'],
+                name_list=['Validation', 'Training']
+            )
+            else:
+                dataobj_precision = create_data_object(
+                    [precision_validation[i,], precision_training[i,]],
+                    type_list=['scatter', 'scatter'],
+                    name_list=['Validation', 'Training']
+                )
+            precision_objects[category] = dataobj_precision
+        return precision_objects
 
     def get_summary(self):
         """ Gets the stats summary for this layer
@@ -188,6 +215,7 @@ class CategoricalOutputStats(OutputStats):
         validation_loss_over_epochs = self._loss.get_loss_over_epochs(
             phase='validation')
         return training_loss_over_epochs, validation_loss_over_epochs
+
 
     def get_end_results(self):
         """

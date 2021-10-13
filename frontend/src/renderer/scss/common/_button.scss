@@ -75,7 +75,7 @@
   color: $color-6;
   background: #D9E2FF;
   border: 1px solid #D9E2FF;  
-  &:hover {
+  &:hover:not(:disabled) {
     border: 1px solid $color-6;  
     background: white;
 

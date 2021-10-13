@@ -394,6 +394,8 @@ const getters = {
     let IOComponents = Object.values(net).filter(el => {
       return el.layerType === 'IoInput' || el.layerType === 'IoOutput';
     })
+
+    const elUsedForPerformance = IOComponents.find(el => el.layerType === 'IoOutput');
     
     let componentsTabs = IOComponents.map(el => ({
         btnId: el.layerName,
@@ -407,13 +409,25 @@ const getters = {
       },
     }))
     componentsTabs.push({
+      btnId: 'Performance',
+      name:'Performance' ,
+      layerId: elUsedForPerformance.layerId,
+      type: 'component',  // default | component
+      layerType: elUsedForPerformance.layerType,
+      btnInteractiveInfo: {
+        title: 'Performance',
+        text: 'Performance'
+      },
+    });
+    componentsTabs.push({
       btnId: "Global Loss",
       btnInteractiveInfo: {title: "Global Loss", text: "Global Loss"},
       layerId: null,
       layerType: null,
       name: "Global Loss",
       type: "tab",
-    })
+    });
+  
     return componentsTabs;
   },
   GET_showComponents() {    

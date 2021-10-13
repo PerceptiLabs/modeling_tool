@@ -812,7 +812,7 @@ export default {
 
             this.$nextTick(() => {
               this.setNextStep({currentStep:'tutorial-workspace-start-training'});
-              this.setCurrentView('tutorial-core-side-view');
+              this.$store.dispatch('mod_tutorials/setCurrentView', 'tutorial-core-side-view');
             });
           } else {
             this.trainStartWithoutCheckpoint();
@@ -857,7 +857,7 @@ export default {
 
           this.$nextTick(() => {
             this.setNextStep({currentStep:'tutorial-workspace-start-training'});
-            this.setCurrentView('tutorial-statistics-view');
+            this.$store.dispatch('mod_tutorials/setCurrentView', 'tutorial-statistics-view');
           });
         });
     },

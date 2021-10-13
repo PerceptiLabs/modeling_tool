@@ -19,11 +19,6 @@
                 v-tooltip-interactive:right="interactiveInfo.start"
                 @click="startTraining(true)"
                 ) Yes
-          .popup_body(
-            :class="{'active': tabSelected == 1}"
-          )
-            .settings-layer_section.text-center
-              p.big-text this functionality is in development
 
 </template>
 

@@ -52,7 +52,28 @@ div
 
         .dataset-settings(v-show="onStep === STEP.PARTITION")
           chart-spinner(v-if="showLoadingSpinner")
-          template(v-else)
+          template(v-if="isCreateModelLoading")
+            chart-spinner(text="Building preprocessing pipelines...")
+            error-cta.cta-container(v-if="isShowCTA")
+          template(v-else-if="dataset")
+            .form_row
+              .form_label Name:
+              .form_input(data-tutorial-hover-info)
+                input.normalize-inputs(
+                  type="text",
+                  v-model="modelName",
+                  @keyup="onModelNameKeyup",
+                  :data-tutorial-target="'tutorial-create-model-model-name'"
+                )
+            .form_row.relative.mb-15
+              .form_label Model Path:
+              .form_input.input_group.form_row
+                input.normalize-inputs(
+                  type="text" 
+                  v-model="modelPath" 
+                  :data-tutorial-target="'tutorial-create-model-model-path'"
+                )
+                button.btn.btn--primary.normalize-button(type="button" @click="openFilePicker") Browse
             csv-table(
               v-if="dataset"
               :dataSet="dataset",
@@ -70,6 +91,7 @@ div
               )
             span.default-text.error(v-if="isAllIOTypesFilled() && !hasInputAndTarget()") Make sure to have at least one input and one target to proceed
             span.default-text.error(v-else-if="isAllIOTypesFilled() && !hasOneTarget()") Make sure to have only one target to proceed
+            
             .data-partition-wrapper
               h5.default-text Data partition:
               triple-input(
@@ -92,131 +114,10 @@ div
             div.randome-seed-input-wrapper.form_row
               h5.default-text Seed:
               input.random-seed-input(type="text" v-model="datasetSettings.randomSeed")
-        div.d-flex.justify-content-center(v-show="onStep === STEP.TRAINING")
-          template(v-if="isCreateModelLoading")
-            chart-spinner(:text="buildingPreProcessingStatus")
-            error-cta.cta-container(v-if="isShowCTA")
-          template(v-else)
-            div.setting-form-wrapper.settings-layer_section
-              .form_row
-                .form_label
-                  info-tooltip(
-                    text="Model name"
-                  ) Name:
-                .form_input(data-tutorial-hover-info)
-                  input.normalize-inputs(
-                    type="text",
-                    v-model="modelName",
-                    @keyup="onModelNameKeyup",
-                    :data-tutorial-target="'tutorial-create-model-model-name'"
-                  )
-              .form_row.relative
-                .form_label
-                  info-tooltip(
-                    text="The location where your model directory will be saved."
-                  ) Model Path:
-                .form_input.input_group.form_row
-                  input.normalize-inputs(
-                    type="text" 
-                    v-model="modelPath" 
-                    :data-tutorial-target="'tutorial-create-model-model-path'"
-                  )
-                  button.btn.btn--primary.normalize-button(type="button" @click="openFilePicker") Browse
-              .form_row
-                .form_label
-                  info-tooltip(
-                    text="Number of times you want to run through the entire dataset. The more number of times, the better the model will learn you training data. Just be aware that training too long may overfit your model to your training data."
-                  ) Epochs:
-                #tutorial_epochs.form_input(data-tutorial-hover-info)
-                  input.normalize-inputs(
-                    type="number"
-                    name="Epochs"
-                    v-model="settings.Epochs")
-              .form_row
-                .form_label
-                  info-tooltip(
-                    text="Number of samples you want to train on at the same time. Higher value will cause the training to go quicker and may make your model generalize better. Too high value may cause your model not to learn the data well enough though."
-                  ) Batch size:
-                .form_input
-                  input.normalize-inputs(
-                    type="number"
-                    name="Batch_size"
-                    v-model="settings.Batch_size")
-              .form_row
-                .form_label
-                  info-tooltip(
-                    text="The loss function is how the error between the prediction and the labels is calculated and therefore what the models tries to optimize."
-                  ) Loss:
-                .form_input
-                  base-select(
-                    v-model="settings.Loss"
-                    :select-options="settings.LossOptions"
-                  )
-              .form_row()
-                .form_label
-                  info-tooltip(
-                    text="The higher the value, the quicker your model will learn. If it's too low it can easily get stuck in a poor local minima and it it's too high it can easily skip over good local minimas."
-                  ) Learning rate:
-                #tutorial_learning_rate.form_input
-                  input.normalize-inputs(
-                    type="number"
-                    v-model="settings.Learning_rate")
-              .form_row
-                .form_label
-                .form_input
-                  base-checkbox(v-model="settings.AutoCheckpoint") Save checkpoint every epoch
-              .form_row
-                .form_label
-                  span.d-flex Optimizer:
-                .form_input
-                  base-select(
-                    v-model="settings.Optimizer"
-                    :select-options="settings.OptimizerOptions"
-                  )
-              .form_row(v-if="settings.Optimizer === 'ADAM'")
-                .form_label
-                  info-tooltip(
-                    text="The exponential decay rate for the 1st moment estimates"
-                  ) Beta1:
-                .form_input(data-tutorial-hover-info)
-                  input.normalize-inputs(
-                    type="number"
-                    name="Beta1"
-                    v-model="settings.Beta1")
-              .form_row(v-if="settings.Optimizer === 'ADAM'")
-                .form_label
-                  info-tooltip(
-                    text="The exponential decay rate for the 2nd moment estimates"
-                  ) Beta2:
-                .form_input(data-tutorial-hover-info)
-                  input.normalize-inputs(
-                    type="number"
-                    name="Beta2"
-                    v-model="settings.Beta2")
-              .form_row(v-if="settings.Optimizer === 'SGD'")
-                .form_label
-                  info-tooltip(
-                    text="Accelerates the gradient descent in the relevant direction and dampens oscillations"
-                  ) Momentum:
-                .form_input(data-tutorial-hover-info)
-                  input.normalize-inputs(
-                    type="number"
-                    name="Momentum"
-                    v-model="settings.Momentum")
-              .form_row(v-if="settings.Optimizer === 'RMSprop'")
-                .form_label
-                  info-tooltip(
-                    text="Setting this to True may help with training, but is slightly more expensive in terms of computation and memory")
-                .form_input
-                  base-checkbox(v-model="settings.Centered") Centered
-
-              .form_row
-                .form_label                  
-                .form_input
-                  info-tooltip(
-                    text="Select Yes if you want to re-shuffle the order of your dataset each epoch. Typically helps your model to generalize better."
-                  )
-                    base-checkbox(v-model="settings.Shuffle") Shuffle  
+        //- div.d-flex.justify-content-center(v-show="onStep === STEP.TRAINING")
+        //-   template(v-if="isCreateModelLoading")
+        //-     chart-spinner(text="Building preprocessing pipelines...")
+        //-     error-cta.cta-container(v-if="isShowCTA")
         
         div(v-show="onStep === STEP.PUBLIC_LIST")
           public-datasets-list(
@@ -230,35 +131,18 @@ div
         span Next
         img.icon.rotate-180(src="/static/img/back.svg")
     
-    template(slot="action" v-if="onStep === STEP.PARTITION && !showLoadingSpinner")
+    template(slot="action" v-if="onStep === STEP.PARTITION && !showLoadingSpinner && !isCreateModelLoading")
       button.link.reload-dataset-btn(@click="toPrevStep")
         img(src='/static/img/back-arrow.svg')
         | Reload dataset
       div.d-flex.align-items-center
         div.image-format-message *.jpg .png .jpeg .tiff only
-        button.btn.btn--primary(
-          :class="{ 'btn--disabled': isDisableCreateAction() }",
-          :disabled="isDisableCreateAction()"
-          @click="gotoTrainingSettings"
-        )
-          | Next
-          svg(width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg")
-            path(
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M0.499999 4.00071C0.499999 3.85153 0.559263 3.70845 0.664752 3.60296C0.770241 3.49747 0.913315 3.43821 1.0625 3.43821L7.57962 3.43821L5.16425 1.02396C5.05863 0.918339 4.99929 0.775084 4.99929 0.625712C4.99929 0.476339 5.05863 0.333084 5.16425 0.227461C5.26987 0.121839 5.41313 0.0625009 5.5625 0.0625009C5.71187 0.0625009 5.85513 0.121839 5.96075 0.227462L9.33575 3.60246C9.38813 3.65471 9.42969 3.71679 9.45805 3.78512C9.48641 3.85346 9.501 3.92672 9.501 4.00071C9.501 4.0747 9.48641 4.14796 9.45805 4.2163C9.42969 4.28464 9.38813 4.34671 9.33575 4.39896L5.96075 7.77396C5.85513 7.87958 5.71187 7.93892 5.5625 7.93892C5.41313 7.93892 5.26987 7.87958 5.16425 7.77396C5.05863 7.66834 4.99929 7.52508 4.99929 7.37571C4.99929 7.22634 5.05863 7.08308 5.16425 6.97746L7.57962 4.56321L1.0625 4.56321C0.913315 4.56321 0.770241 4.50395 0.664752 4.39846C0.559263 4.29297 0.499999 4.1499 0.499999 4.00071Z"
-            )       
-    template(slot="action" v-if="onStep === STEP.TRAINING && !isCreateModelLoading")
-      div.btn.btn-back(@click="toPrevStep")
-        img.icon(src="/static/img/back.svg")
-        span Back
-      div.d-flex
-        button.btn.btn--secondary.mr-15(
-          @click="createModelTF2X(true)"
-        ) Run model
-        button.btn.btn--primary(
-          @click="createModelTF2X(false)"
-        ) Customize
+        div.d-flex
+          button.btn.btn--primary(
+            :class="{ 'disabled': isDisableCreateAction() }"
+            :disabled="isDisableCreateAction()"
+            @click="createModelTF2X(false)"
+          ) Create      
     template(slot="action" v-if="onStep === STEP.PUBLIC_LIST")
     template(v-else)
       | Error
@@ -1502,4 +1386,10 @@ span.error {
   bottom: 30px;
   z-index: 3;
 }
+.mt-15 {
+  margin-top: 15px;
+}
+.mb-15 {
+  margin-bottom: 15px;
+};
 </style>

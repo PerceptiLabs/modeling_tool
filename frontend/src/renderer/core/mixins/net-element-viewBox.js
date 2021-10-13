@@ -106,7 +106,7 @@ const viewBoxMixin = {
     },
     chartRequest(layerId, layerType, view) {
       this.startRequest = new Date();
-
+      
       let theData = {
         receiver: this.currentNetworIdForKernelRequests,
         action: this.$store.getters['mod_workspace/GET_testIsOpen']
@@ -144,8 +144,10 @@ const viewBoxMixin = {
           if(view.length && this && this.chartData) {
             this.$set(this.chartData, view, data)
           }
-          else this.chartData = data;
-
+          else {
+            this.chartData = data;
+          }
+          
           let stopRequest = new Date();
           let answerDelay = stopRequest - this.startRequest;
           this.$store.dispatch('mod_workspace/CHECK_requestInterval', answerDelay);

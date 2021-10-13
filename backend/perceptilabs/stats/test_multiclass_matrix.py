@@ -58,7 +58,7 @@ def test_confusion_matrix_size(y_pred, y_true):
     stats = tracker.save()
 
     expected_prediction_matrix = compute_multiclass_matrix(y_pred, y_true)
-    actual_prediction_matrix = stats.get_matrices_for_latest_epoch(phase='training')[-1][0].prediction_matrix
+    actual_prediction_matrix = stats.get_matrices_for_latest_epoch()[-1][0].prediction_matrix
     
     assert actual_prediction_matrix == expected_prediction_matrix
     
@@ -116,3 +116,22 @@ def test_serialized_trackers_are_equal(y_pred, y_true):
     assert tracker1 == tracker2
     
     
+def test_precision_over_epochs():
+    pm1 = MultiClassMatrix([
+        [0, 1],
+        [2, 3]
+    ])
+    pm2 = MultiClassMatrix([
+        [0, 1],
+        [2, 3]
+    ])
+    pm3 = MultiClassMatrix([
+        [0, 1],
+        [7, 3]
+    ])
+    prediction_matrices = [[(pm1, True),(pm2, True),(pm3, False)]]
+    obj = MultiClassMatrixStats(prediction_matrices=prediction_matrices)
+    precision_training = obj.get_precision_over_epochs('training')
+    precision_validation = obj.get_precision_over_epochs('validation')
+    assert np.all(precision_training==np.array([[0.], [0.6]]))
+    assert np.all(precision_validation==np.array([[0. ],[0.3]]))
