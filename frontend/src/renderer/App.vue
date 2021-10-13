@@ -39,7 +39,7 @@
   import TutorialNotification from "@/components/different/tutorial-notification.vue";
   import { 
     getModelJson as rygg_getModelJson,
-    loadDataset as rygg_createDataset,
+    createDataset as rygg_createDataset,
     attachModelsToDataset as rygg_attachModelsToDataset,
   } from '@/core/apiRygg';
   import { ryggAvailability } from '@/core/apiRygg';

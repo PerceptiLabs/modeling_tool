@@ -222,7 +222,7 @@ export const getFile = async (filename) => {
  * @param {string} payload.location
  * @returns {Promise<AxiosResponse<any>>}
  */
-export const loadDataset = async (payload) => {
+export const createDataset = async (payload) => {
   try {
     const fs = await whenHaveFileservingToken();
     return await fs.post('datasets/', payload);

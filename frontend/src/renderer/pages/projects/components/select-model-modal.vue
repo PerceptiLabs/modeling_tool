@@ -190,7 +190,7 @@ import { getFolderContent as rygg_getFolderContent }      from "@/core/apiRygg";
 import { getResolvedDir as rygg_getResolvedDir }          from "@/core/apiRygg";
 import { getRootFolder as rygg_getRootFolder }            from "@/core/apiRygg";
 import { getFileContent as rygg_getFileContent }          from "@/core/apiRygg";
-import { loadDataset  as rygg_createDataset }             from "@/core/apiRygg";
+import { createDataset  as rygg_createDataset }           from "@/core/apiRygg";
 import { getDatasets  as rygg_getDataset }                from "@/core/apiRygg";
 import { uploadFile as rygg_uploadFile }                  from "@/core/apiRygg";
 import { getFile as rygg_getFile }                        from "@/core/apiRygg";
