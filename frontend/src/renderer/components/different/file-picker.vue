@@ -1,5 +1,5 @@
 <template lang="pug">
-  div
+  div.file-picker-wrapper
     .settings-layer_section
       .form_row
         button.btn.btn--link(
@@ -374,7 +374,9 @@ export default {
 
 <style lang="scss" scoped>
 @import "../../scss/common/info-popup";
-
+.file-picker-wrapper {
+  min-width: 720px;
+}
 .filepicker {
 
   display: flex;

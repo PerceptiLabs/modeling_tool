@@ -20,4 +20,5 @@ module.exports = merge(prodEnv, {
   ENABLE_PUBLIC_DATASET: '"true"',
   ENABLE_SERVING: '"true"',
   ENABLE_BILLING_LINK: '"true"',
+  ENABLE_SERVING: '"true"',
 })

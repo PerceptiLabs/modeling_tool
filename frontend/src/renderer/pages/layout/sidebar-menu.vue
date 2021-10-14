@@ -42,7 +42,7 @@
     )
       svg(width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg")
         path(class="test-fill" d="M22 8L18 4V7H9V9H18V12L22 8ZM0 14V2C0 0.89 0.9 0 2 0H14C14.5304 0 15.0391 0.210714 15.4142 0.585786C15.7893 0.960859 16 1.46957 16 2V5H14V2H2V14H14V11H16V14C16 14.5304 15.7893 15.0391 15.4142 15.4142C15.0391 15.7893 14.5304 16 14 16H2C1.46957 16 0.960859 15.7893 0.585786 15.4142C0.210714 15.0391 0 14.5304 0 14Z" fill="none")
-      div Export
+      div Use Model
     
     //- div.nav-link(
     //-   :class="{'is-active': this.$route.name === 'settings'}"

@@ -143,6 +143,7 @@
 		position: relative;
 		z-index: 1;
         min-width: 720px;
+        min-width: min-content;
         max-width: 50vw;
 		box-shadow: $box-shad;
 	}
@@ -245,7 +246,7 @@
 
 .base-global-popup {
 	.popup_tab-body {
-		min-height: 160px;
+		min-height: 100px;
 	}	
 }
 
