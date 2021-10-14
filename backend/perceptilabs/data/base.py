@@ -268,8 +268,10 @@ class DataLoader:
         """ Get pipeline builder """
         if feature_datatype == 'numerical':
             return pipelines.NumericalPipelineBuilder()
-        elif feature_datatype in ['image', 'mask']:
+        elif feature_datatype == 'image':
             return pipelines.ImagePipelineBuilder()
+        elif feature_datatype == 'mask':
+            return pipelines.MaskPipelineBuilder()
         elif feature_datatype == 'binary':
             return pipelines.BinaryPipelineBuilder()
         elif feature_datatype == 'categorical':

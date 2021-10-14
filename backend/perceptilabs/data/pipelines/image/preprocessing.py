@@ -4,32 +4,16 @@ import tensorflow as tf
 from perceptilabs.data.pipelines.base import BasePipeline
 
 
-class Preprocessing(BasePipeline):
+class ImagePreprocessing(BasePipeline):
     def call(self, x):
         x = tf.cast(x, dtype=tf.float32)
         if self.normalization:
             x = self.normalization(x)
-        if self.one_hot_encoding_mask:
-            x = self.one_hot_encoding_mask(x)
         return x
 
     def build(self, input_shape):
         self.image_shape = input_shape
         self.normalization = self._get_normalization()
-        self.one_hot_encoding_mask = self._get_one_hot_encoding_mask()
-
-    def _get_one_hot_encoding_mask(self):
-        ohe = None
-        if self.preprocessing and self.preprocessing.mask:
-            num_classes = int(self.metadata['num_classes'])
-            normalize = self.metadata['normalize']
-            def ohe(image):
-                if normalize:
-                    image = image/255
-                image = tf.cast(image[...,-1], tf.uint8)
-                mask = tf.one_hot(image, num_classes)
-                return mask
-        return ohe
 
     def _get_normalization(self):
         normalization = None
@@ -67,39 +51,6 @@ class Preprocessing(BasePipeline):
 
     @classmethod
     def compute_metadata(cls, preprocessing, dataset):
-        if preprocessing and preprocessing.mask:
-            return cls._compute_mask_metadata(preprocessing, dataset)
-        else:
-            return cls._compute_image_metadata(preprocessing, dataset)
-
-    @classmethod
-    def _compute_mask_metadata(cls, preprocessing, dataset):
-        num_classes = 0
-        max_pixel_value = 0
-        normalize = False
-        for tensor in dataset:
-            raw_image = tensor.numpy().astype(np.float32)
-            max_pixel_value = max(np.amax(raw_image[...,-1]), max_pixel_value)
-        num_classes = max_pixel_value
-        # incase binary segmentation pixel values are (0,255) instead of (0,1)
-        if num_classes == 255:
-            num_classes = 1
-            normalize = True
-
-
-        tensor = next(iter(dataset))
-        image = tensor.numpy().astype(np.float32)
-        metadata = {
-            "image_shape": list(image.shape)[:-1]+[num_classes+1],
-            "num_classes": num_classes+1,
-            "normalize": normalize
-        }
-        return metadata
-
-
-    @classmethod
-    def _compute_image_metadata(cls, preprocessing, dataset):
-
         if preprocessing and preprocessing.normalize:
             max_pixel_value = np.iinfo(np.uint8).min
             min_pixel_value = np.iinfo(np.uint8).max
@@ -134,5 +85,62 @@ class Preprocessing(BasePipeline):
             tensor = next(iter(dataset))
             image = tensor.numpy().astype(np.float32)
             metadata = {"image_shape": list(image.shape)}
+        return metadata
+
+
+
+class MaskPreprocessing(BasePipeline):
+    def call(self, x):
+        x = tf.cast(x, dtype=tf.float32)
+        if self.one_hot_encoding_mask:
+            x = self.one_hot_encoding_mask(x)
+        return x
+
+    def build(self, input_shape):
+        self.image_shape = input_shape
+        self.one_hot_encoding_mask = self._get_one_hot_encoding_mask()
+
+    def _get_one_hot_encoding_mask(self):
+        ohe = None
+        num_classes = int(self.metadata['num_classes'])
+        normalize = self.metadata['normalize']
+        def ohe(image):
+            if normalize:
+                image = image/255
+            image = tf.cast(image[...,-1], tf.uint8)
+            mask = tf.one_hot(image, num_classes)
+            return mask
+        return ohe
+
+    @classmethod
+    def from_data(cls, preprocessing, dataset):
+        metadata = cls.compute_metadata(preprocessing, dataset)
+        return cls(
+            preprocessing=preprocessing,
+            metadata=metadata
+        )
+
+    @classmethod
+    def compute_metadata(cls, preprocessing, dataset):
+        num_classes = 0
+        max_pixel_value = 0
+        normalize = False
+        for tensor in dataset:
+            raw_image = tensor.numpy().astype(np.float32)
+            max_pixel_value = max(np.amax(raw_image[...,-1]), max_pixel_value)
+        num_classes = max_pixel_value
+        # incase binary segmentation pixel values are (0,255) instead of (0,1)
+        if num_classes == 255:
+            num_classes = 1
+            normalize = True
+
+
+        tensor = next(iter(dataset))
+        image = tensor.numpy().astype(np.float32)
+        metadata = {
+            "image_shape": list(image.shape)[:-1]+[num_classes+1],
+            "num_classes": num_classes+1,
+            "normalize": normalize
+        }
         return metadata
 

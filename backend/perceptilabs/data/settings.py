@@ -76,8 +76,7 @@ class NumericalPreprocessingSpec(PreprocessingSpec):
         return cls(**kwargs)
 
 
-class ImagePreprocessingSpec(PreprocessingSpec):
-    mask: bool = False
+class BaseImagePreprocessingSpec(PreprocessingSpec):
 
     resize: bool = False
     resize_mode: str = None
@@ -101,16 +100,9 @@ class ImagePreprocessingSpec(PreprocessingSpec):
     random_crop_height: int = None
     random_crop_width: int = None
 
-    normalize: bool = False
-    normalize_mode: str = None
 
-
-    @classmethod
-    def from_dict(cls, dict_):
+    def _get_base_kwargs(self, dict_):
         kwargs = {}
-        if 'normalize' in dict_:
-            kwargs['normalize'] = True
-            kwargs['normalize_mode'] = dict_['normalize']['type']
 
         if 'resize' in dict_:
             kwargs['resize'] = True
@@ -141,11 +133,34 @@ class ImagePreprocessingSpec(PreprocessingSpec):
             kwargs['random_crop_height'] = dict_['random_crop']['height']
             kwargs['random_crop_width'] = dict_['random_crop']['width']
 
-        if 'mask' in dict_:
-            kwargs['mask'] = dict_['mask']
+        return kwargs
+
+
+class ImagePreprocessingSpec(BaseImagePreprocessingSpec):
+
+    normalize: bool = False
+    normalize_mode: str = None
+
+    @classmethod
+    def from_dict(cls, dict_):
+        kwargs = cls()._get_base_kwargs(dict_)
+        
+        if 'normalize' in dict_:
+            kwargs['normalize'] = True
+            kwargs['normalize_mode'] = dict_['normalize']['type']
 
         return cls(**kwargs)
+      
 
+class MaskPreprocessingSpec(BaseImagePreprocessingSpec):
+
+    @classmethod
+    def from_dict(cls, dict_):
+        kwargs = cls()._get_base_kwargs(dict_)
+        
+        return cls(**kwargs)
+        
+  
 class FeatureSpec(MyPydanticBaseModel):
     datatype: str = None
     iotype: str = None

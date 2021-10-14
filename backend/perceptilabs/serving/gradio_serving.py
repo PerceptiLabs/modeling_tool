@@ -167,7 +167,7 @@ class GradioLauncher:
             return gr.outputs.Textbox(label=feature_name)
         elif datatype == 'text':  
             return gr.outputs.Textbox(label=feature_name)
-        elif datatype == 'image': 
+        elif datatype in ['image', 'mask']: 
             return gr.outputs.Image(type='numpy', label=feature_name)             
         elif datatype == 'categorical':
             return gr.outputs.Textbox(label=feature_name)  

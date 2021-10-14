@@ -7,8 +7,8 @@ import tempfile
 from unittest.mock import MagicMock
 
 
-from perceptilabs.data.pipelines.image.preprocessing import Preprocessing
-from perceptilabs.data.settings import ImagePreprocessingSpec
+from perceptilabs.data.pipelines.image.preprocessing import ImagePreprocessing, MaskPreprocessing
+from perceptilabs.data.settings import ImagePreprocessingSpec, MaskPreprocessingSpec
 
 def test_image_preprocessing():
     image = np.random.randint(0, 255, size=(16, 16, 3)).astype(np.uint8)
@@ -18,7 +18,7 @@ def test_image_preprocessing():
     dataset = tf.data.Dataset.from_tensor_slices([image]*9)
 
     # Create the pipeline
-    pipeline = Preprocessing.from_data(None, dataset)
+    pipeline = ImagePreprocessing.from_data(None, dataset)
     processed_dataset = dataset.map(lambda x: pipeline(x))
 
     # See if the actual concrete value has the same shape as we expect
@@ -37,7 +37,7 @@ def test_featurewise_standardization():
     ]
     dataset = tf.data.Dataset.from_tensor_slices(images)
     preprocessing = ImagePreprocessingSpec(normalize=True, normalize_mode='standardization')
-    pipeline = Preprocessing.from_data(preprocessing, dataset)
+    pipeline = ImagePreprocessing.from_data(preprocessing, dataset)
     processed_dataset = dataset.map(lambda x: pipeline(x))
 
     processed_images = np.array([tensor.numpy() for tensor in processed_dataset])
@@ -66,7 +66,7 @@ def test_normalize_minmax_norm_for_single_sample():
     dataset = tf.data.Dataset.from_tensor_slices(images)
     preprocessing = ImagePreprocessingSpec(normalize=True, normalize_mode='min-max')
 
-    pipeline = Preprocessing.from_data(preprocessing, dataset)
+    pipeline = ImagePreprocessing.from_data(preprocessing, dataset)
 
     for original in dataset:
         expected = normalize(original.numpy()).astype(np.float32)
@@ -80,12 +80,12 @@ def test_normalize_minmax_norm_for_single_sample():
 def test_mask_data_preprocessing():
     mask = np.random.randint(0, 11, size=(16, 16, 3)).astype(np.uint8)
 
-    preprocessing = ImagePreprocessingSpec(mask=True)
+    preprocessing = MaskPreprocessingSpec()
     # Create the dataset
     dataset = tf.data.Dataset.from_tensor_slices([mask]*9)
 
     # Create the pipeline
-    pipeline = Preprocessing.from_data(preprocessing, dataset)
+    pipeline = MaskPreprocessing.from_data(preprocessing, dataset)
     processed_dataset = dataset.map(lambda x: pipeline(x))
 
     # See if the actual concrete value has the same shape as we expect
@@ -100,11 +100,11 @@ def test_mask_data_preprocessing():
 def test_mask_datatype_metadata():
     mask = np.random.randint(0, 2, size=(224, 224, 3)).astype(np.uint8)
     mask = mask*255
-    preprocessing = ImagePreprocessingSpec(mask=True)
+    preprocessing = MaskPreprocessingSpec()
     # Create the dataset
     dataset = tf.data.Dataset.from_tensor_slices([mask]*9)
 
-    metadata = Preprocessing.compute_metadata(preprocessing, dataset)
+    metadata = MaskPreprocessing.compute_metadata(preprocessing, dataset)
     assert metadata['image_shape'] == [224, 224, 2]
     assert metadata['num_classes'] == 2
     assert metadata['normalize'] == True

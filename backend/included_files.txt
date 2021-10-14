@@ -239,6 +239,7 @@ perceptilabs/data/pipelines/image/__init__.py
 perceptilabs/data/pipelines/image/loader.py
 perceptilabs/data/pipelines/image/augmenter.py
 perceptilabs/data/pipelines/image/preprocessing.py
+perceptilabs/data/pipelines/image/postprocessing.py
 
 # backend/perceptilabs/automation/modelrecommender/
 perceptilabs/automation/modelrecommender/__init__.py

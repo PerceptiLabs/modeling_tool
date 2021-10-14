@@ -80,8 +80,6 @@ def test_settings_from_dict(settings_dict):
     assert not settings.feature_specs['x1'].preprocessing.random_rotation
     assert not settings.feature_specs['x1'].preprocessing.random_crop
 
-    assert not settings.feature_specs['x1'].preprocessing.mask
-
     assert settings.feature_specs['y1'].preprocessing.normalize
     assert settings.feature_specs['y1'].preprocessing.normalize_mode == 'min-max'
 
