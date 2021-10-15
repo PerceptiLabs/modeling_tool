@@ -104,7 +104,7 @@ def test_mask_datatype_metadata():
     # Create the dataset
     dataset = tf.data.Dataset.from_tensor_slices([mask]*9)
 
-    metadata = MaskPreprocessing.compute_metadata(preprocessing, dataset)
+    metadata = MaskPreprocessing.compute_metadata(preprocessing, dataset, on_status_updated=None)
     assert metadata['image_shape'] == [224, 224, 2]
     assert metadata['num_classes'] == 2
     assert metadata['normalize'] == True

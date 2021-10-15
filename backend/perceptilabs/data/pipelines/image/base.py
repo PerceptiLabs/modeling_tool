@@ -20,8 +20,8 @@ class ImagePipelineBuilder(PipelineBuilder):
     def _compute_augmenter_metadata(self, preprocessing, indexed_dataset):
         return Augmenter.compute_metadata(indexed_dataset, preprocessing)
 
-    def _compute_processing_metadata(self, preprocessing, dataset):
-        preprocessing_metadata = ImagePreprocessing.compute_metadata(preprocessing, dataset)
+    def _compute_processing_metadata(self, preprocessing, dataset, on_status_updated=None):
+        preprocessing_metadata = ImagePreprocessing.compute_metadata(preprocessing, dataset, on_status_updated=on_status_updated)
         return preprocessing_metadata, {}
 
 
@@ -38,7 +38,7 @@ class MaskPipelineBuilder(PipelineBuilder):
     def _compute_augmenter_metadata(self, preprocessing, indexed_dataset):
         return Augmenter.compute_metadata(indexed_dataset, preprocessing)
 
-    def _compute_processing_metadata(self, preprocessing, dataset):
-        preprocessing_metadata = MaskPreprocessing.compute_metadata(preprocessing, dataset)
+    def _compute_processing_metadata(self, preprocessing, dataset, on_status_updated=None):
+        preprocessing_metadata = MaskPreprocessing.compute_metadata(preprocessing, dataset, on_status_updated=on_status_updated)
         return preprocessing_metadata, {}
 

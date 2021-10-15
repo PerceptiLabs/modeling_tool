@@ -32,9 +32,14 @@ class PutData(View):
         dataset_key = ['pipelines', user_email, dataset_settings.compute_hash()]
         dataset_hash = self._data_metadata_cache.make_key(dataset_key)
 
-        def on_status_updated(status, feature_name, total_steps, steps_completed):
-            build_message =  f"Step {steps_completed}/{total_steps}: building {status} pipeline for feature \'{feature_name}\'"
+        def on_status_updated(status, feature_name, total_steps, steps_completed, index=None, size=None):
+            if index is not None and size:
+                build_message =  f"Step {steps_completed}/{total_steps} for feature \'{feature_name}\': building {status} pipeline' [{index} / {size} samples processed]"
+            else:
+                build_message = f"Step {steps_completed}/{total_steps} for feature \'{feature_name}\': building {status} pipeline"
+                
             _ = self._data_metadata_cache.put(dataset_key, {'metadata': None, 'status': build_message})
+            
         
         
         def on_submit(csv_file, dataset_settings):

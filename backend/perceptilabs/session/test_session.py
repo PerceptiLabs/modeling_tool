@@ -92,7 +92,7 @@ def test_start_session(executor):
     wait_for_session(executor, session_id)
     
     assert DummySession.on_start_called.called
-    assert DummySession.on_start_called.call_args.args == (payload, False)
+    assert DummySession.on_start_called.call_args[0] == (payload, False)
 
     metadata = executor.get_sessions().get(session_id, {})
     assert 'port' in metadata
@@ -115,7 +115,7 @@ def test_send_request(executor):
     actual_response = executor.send_request(session_id, expected_payload)
     
     assert DummySession.on_request_received.called
-    assert DummySession.on_request_received.call_args.args == (expected_payload,)
+    assert DummySession.on_request_received.call_args[0] == (expected_payload,)
     assert actual_response == expected_response
     
 
@@ -130,7 +130,7 @@ def test_cancel_session(executor):
     executor.cancel_session(session_id, expected_payload)
     
     assert DummySession.on_request_received.called
-    assert DummySession.on_request_received.call_args.args == (expected_payload,)
+    assert DummySession.on_request_received.call_args[0] == (expected_payload,)
 
     wait_for_session_not_present(executor, session_id)
 

@@ -43,6 +43,6 @@ class BinaryPipelineBuilder(PipelineBuilder):
     _preprocessing_class = PreprocessingStep
     _postprocessing_class = None
 
-    def _compute_processing_metadata(self, preprocessing, dataset):
+    def _compute_processing_metadata(self, preprocessing, dataset, on_status_updated=None):
         return {'n_categories': 1}, {}
     

@@ -38,17 +38,17 @@ class NumericalPipelineBuilder(PipelineBuilder):
     _augmenter_class = None
     _preprocessing_class = PreprocessingStep
     _postprocessing_class = None
-
-    def _compute_processing_metadata(self, preprocessing, dataset):
+    
+    def _compute_processing_metadata(self, preprocessing, dataset, on_status_updated=None):        
         metadata = {}
         if preprocessing and preprocessing.normalize:
             max_, min_ = 0, 2**32
             running_sum = 0
             running_squared_sum = 0
             count = 0
-            for x in dataset:
+            size = len(dataset)
+            for i,x in enumerate(dataset):
                 value = x[0].numpy()
-
                 if value < min_:
                     min_ = value
                 if value > max_:
@@ -57,6 +57,9 @@ class NumericalPipelineBuilder(PipelineBuilder):
                 running_sum += value
                 running_squared_sum += value**2
                 count += 1
+
+                if on_status_updated:
+                    on_status_updated(index=i, size=size)
 
             mean = running_sum/count  # watch for overflow
             squared_mean = running_squared_sum / count  # watch for overflow

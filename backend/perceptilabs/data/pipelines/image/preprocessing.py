@@ -38,19 +38,24 @@ class ImagePreprocessing(BasePipeline):
                 def normalization(x):
                     y = (x - min_)/(max_ - min_)
                     return y
-
+                    
         return normalization
 
     @classmethod
     def from_data(cls, preprocessing, dataset):
-        metadata = cls.compute_metadata(preprocessing, dataset)
+        metadata = cls.compute_metadata(
+            preprocessing, 
+            dataset, 
+            on_status_updated=None
+        )
+
         return cls(
             preprocessing=preprocessing,
             metadata=metadata
         )
 
     @classmethod
-    def compute_metadata(cls, preprocessing, dataset):
+    def compute_metadata(cls, preprocessing, dataset, on_status_updated=None):
         if preprocessing and preprocessing.normalize:
             max_pixel_value = np.iinfo(np.uint8).min
             min_pixel_value = np.iinfo(np.uint8).max
@@ -58,15 +63,18 @@ class ImagePreprocessing(BasePipeline):
             sum_of_pixels = 0
             sum_of_pixel_squares = 0
             n_pixels = 0
+            size = len(dataset)
 
-            for raw_image in (tensor.numpy().astype(np.float32) for tensor in dataset):
-                max_pixel_value = max(raw_image.max(), max_pixel_value)
-                min_pixel_value = min(raw_image.min(), max_pixel_value)
+            for index,tensor in enumerate(dataset):
+                for raw_image in (tensor.numpy().astype(np.float32)):
+                    max_pixel_value = max(raw_image.max(), max_pixel_value)
+                    min_pixel_value = min(raw_image.min(), min_pixel_value)
+                    sum_of_pixels += np.sum(raw_image)
+                    sum_of_pixel_squares += np.sum(np.square(raw_image))
+                    n_pixels += np.prod(raw_image.shape)
 
-                sum_of_pixels += np.sum(raw_image)
-                sum_of_pixel_squares += np.sum(np.square(raw_image))
-                n_pixels += np.prod(raw_image.shape)
-
+                if on_status_updated:
+                    on_status_updated(index=index, size=size)
                 # Featurewise standardization: see https://www.tensorflow.org/api_docs/python/tf/keras/preprocessing/image/ImageDataGenerator
 
             pixel_mean = sum_of_pixels/n_pixels
@@ -121,13 +129,16 @@ class MaskPreprocessing(BasePipeline):
         )
 
     @classmethod
-    def compute_metadata(cls, preprocessing, dataset):
+    def compute_metadata(cls, preprocessing, dataset, on_status_updated=None):
         num_classes = 0
         max_pixel_value = 0
         normalize = False
-        for tensor in dataset:
+        size = len(dataset)
+        for index, tensor in enumerate(dataset):
             raw_image = tensor.numpy().astype(np.float32)
             max_pixel_value = max(np.amax(raw_image[...,-1]), max_pixel_value)
+            if on_status_updated:
+                on_status_updated(index=index, size=size)
         num_classes = max_pixel_value
         # incase binary segmentation pixel values are (0,255) instead of (0,1)
         if num_classes == 255:

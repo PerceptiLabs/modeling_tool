@@ -66,7 +66,7 @@ class PipelineBuilder(ABC):
         dataset_size = len(dataset)        
         indices = tf.data.Dataset.from_tensor_slices(tf.range(dataset_size))
         indexed_dataset = tf.data.Dataset.zip((indices, dataset))  # This helps us map samples back
-        return self.build_from_indexed_dataset(preprocessing, indexed_dataset, feature_name, on_status_updated)
+        return self.build_from_indexed_dataset(preprocessing, indexed_dataset, feature_name=feature_name, on_status_updated=on_status_updated)
 
     def build_from_indexed_dataset(self, preprocessing, indexed_dataset, feature_name=None, on_status_updated=None):
         def count_processing_steps():
@@ -107,16 +107,22 @@ class PipelineBuilder(ABC):
         
 
         t2 = time.perf_counter()
-        preprocessing_metadata, postprocessing_metadata = self._compute_processing_metadata(preprocessing, augmented_dataset)
         
         if on_status_updated and self._preprocessing_class:
             curr_processing_step += 1
             on_status_updated("preprocessing", feature_name, total_steps, curr_processing_step)
+        
+        def on_status_updated_wrapper(index, size):
+            if on_status_updated:
+                on_status_updated("preprocessing", feature_name, total_steps, curr_processing_step, index, size)
+            
+        preprocessing_metadata, postprocessing_metadata = self._compute_processing_metadata(preprocessing, augmented_dataset, on_status_updated=on_status_updated_wrapper)
         preprocessing_step = self._get_preprocessing_step(preprocessing, preprocessing_metadata)
         
         if on_status_updated and self._postprocessing_class:
             curr_processing_step += 1
             on_status_updated("postprocessing", feature_name, total_steps, curr_processing_step)
+
         postprocessing_step = self._get_postprocessing_step(preprocessing, postprocessing_metadata)
 
 

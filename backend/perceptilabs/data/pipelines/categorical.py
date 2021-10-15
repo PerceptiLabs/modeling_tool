@@ -49,11 +49,12 @@ class CategoricalPipelineBuilder(PipelineBuilder):
     _preprocessing_class = PreprocessingStep
     _postprocessing_class = PostprocessingStep
 
-    def _compute_processing_metadata(self, preprocessing, dataset):
+    def _compute_processing_metadata(self, preprocessing, dataset, on_status_updated=None):
         """ Loops over the dataset and maps values to an index (e.g., cat -> 0) """
         dtypes = set()
         unique_values = set()
-        for tensor in dataset:
+        size = len(dataset)
+        for index,tensor in enumerate(dataset):
             value = tensor.numpy()
 
             if isinstance(value, bytes):
@@ -62,6 +63,9 @@ class CategoricalPipelineBuilder(PipelineBuilder):
                 value = value.item()  # Convert to native python type
             unique_values.add(value)
             dtypes.add(type(value))
+
+            if on_status_updated:
+                on_status_updated(index=index, size=size)
 
         if len(dtypes) > 1:
             raise RuntimeError(f"Dataset has more than one type: {dtypes}")
