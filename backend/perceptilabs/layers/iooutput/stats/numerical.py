@@ -59,7 +59,7 @@ class NumericalOutputStats(OutputStats):
         sample = batch[-1]
         return sample
 
-    def get_data_objects(self):
+    def get_data_objects(self, view=None):
         """
             Gets the data objects for categorical outputs. There are graphs for loss over all epochs, 
             mean absolute error over epochs, a PvG bar graph, and R squared over epochs.
@@ -89,7 +89,10 @@ class NumericalOutputStats(OutputStats):
                 'Output': create_data_object([target_value])
             }
         }
-        return data_objects
+        if view:
+            return data_objects[view]
+        else:
+            return data_objects        
 
     def _get_dataobj_mae(self):
         training_mae_over_epochs, validation_mae_over_epochs = self.get_mae_over_epochs()

@@ -135,6 +135,31 @@ export const renderingKernel = {
       })
   },
 
+  async getTrainingStatus(modelId, trainingSessionId) {
+    return whenRenderingKernelReady
+      .then(rk => rk.get(`/models/${modelId}/training/${trainingSessionId}/status`))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },
+
+  async getTrainingResults(modelId, trainingSessionId, type, layerId, view) {
+    let url = `/models/${modelId}/training/${trainingSessionId}/results?type=${type}`
+    
+    if (layerId !== undefined) {
+      url += `&layerId=${layerId}`
+    }
+    if (view !== undefined) {
+      url += `&view=${view}`
+    }
+    
+    return whenRenderingKernelReady
+      .then(rk => rk.get(url))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },  
+
   async getNetworkData(network, datasetSettings, userEmail) {
     // overlaps with getPreviews, but will eventually get deprecated
     const payload = {

@@ -58,6 +58,7 @@ class CompatibilityCore:
     def _process_results(self, trainer):
         """ Retrieves the resultDict from the Trainer """
         results = trainer.get_results()
+        
         if results is not None:
             self._result_queue.queue.clear()
             self._result_queue.put(results)

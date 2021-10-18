@@ -162,30 +162,11 @@ class Interface():
             return self.close_core(receiver)
 
         elif action == "updateResults":
-            response = self._core.updateResults()
-            return response
-
-        elif action == "isRunning":
-            response = self._core.isRunning()
-            return response
-
-        elif action == "headless":
-            return self._create_response_headless(value)
-
-        elif action == "getTrainingStatistics":
-            response = self._core.getTrainingStatistics(value)
-            return response
-
-        elif action == "getGlobalTrainingStatistics":
-            response = self._core.get_global_training_statistics()
+            response = self._core.updateResults(value)
             return response
 
         elif action == "Start":
             return self._create_response_start_training(value, is_retry, on_finished)
-
-        elif action == "nextStep":
-            response = self._core.nextStep()
-            return response
 
         elif action == "Stop":
             response = self._core.Stop()
@@ -199,25 +180,8 @@ class Interface():
             response = self._core.Unpause()
             return response
 
-        elif action == "SkipToValidation":
-            response = self._core.skipToValidation()
-            return response
-
         elif action == "Export":
             response = self._create_response_export(value, receiver)
-            return response
-
-        elif action == "isTrained":
-            result = self._core.isTrained()
-            response = {'result':result, 'receiver':receiver}
-            return response
-
-        elif action == "getEndResults":
-            response = self._core.getEndResults()
-            return response
-
-        elif action == "getStatus":
-            response = self._core.getStatus()
             return response
 
         elif action == "startTests":
@@ -241,12 +205,6 @@ class Interface():
             return response
         else:
             raise LookupError(f"The requested action '{action}' does not exist")
-
-    def _create_response_headless(self, request_value):
-        """ Toggles headless mode on/off. Returns None if successful """
-        if not self._allow_headless:
-            return None
-        return self._core.set_headless(active=request_value)
 
     def _create_response_export(self, export_settings, receiver):
         response = self._core.export_network(export_settings)

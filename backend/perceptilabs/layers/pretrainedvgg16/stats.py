@@ -13,7 +13,7 @@ class VGG16OutputStats(TrainingStats):
 
     def get_data_objects(self, view):
         data_objects = {}
-        if view=="Weights&Bias":
+        if view=="WeightsBias":
             data_objects.update(self._get_weights_and_bias())
         if view=="Output":
             data_objects.update(self._get_output())

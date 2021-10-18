@@ -72,7 +72,7 @@ class MaskOutputStats(OutputStats):
         sample = batch[-1]
         return sample
 
-    def get_data_objects(self):
+    def get_data_objects(self, view=None):
         # TODO: docs
         _, iou_over_epochs = self._get_dataobj_iou()
         loss_over_epochs = self._get_dataobj_loss()
@@ -111,7 +111,10 @@ class MaskOutputStats(OutputStats):
                 'Output': create_data_object([target_value],['mask'])
             }
         }
-        return data_objects
+        if view:
+            return data_objects[view]
+        else:
+            return data_objects        
 
     def _get_dataobj_loss(self):
         training_loss_over_epochs, validation_loss_over_epochs = self.get_loss_over_epochs()

@@ -508,6 +508,7 @@ export const isBrowserChromeOrFirefox = () => {
   return  (isJS.chrome() || isJS.firefox()) && navigator.userAgent.indexOf('Edg/') === -1;
 }
 
+
 export {
   projectPathModel,
   getDefaultProjectPathForOs,

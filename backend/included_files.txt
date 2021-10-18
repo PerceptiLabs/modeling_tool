@@ -200,8 +200,9 @@ perceptilabs/layers/unet/stats.py
 perceptilabs/layers/unet/__init__.py
 
 # perceptilabs/layers/ioinput
+perceptilabs/layers/ioinput/__init__.py
 perceptilabs/layers/ioinput/spec.py
-
+perceptilabs/layers/ioinput/stats.py
 
 # perceptilabs/lwcore
 perceptilabs/lwcore/__init__.py
@@ -330,6 +331,11 @@ perceptilabs/serving/gradio_serving.py
 perceptilabs/endpoints/serving/__init__.py
 perceptilabs/endpoints/serving/base.py
 
+
+# backend/perceptilabs/endpoints/training/
+perceptilabs/endpoints/training/__init__.py
+perceptilabs/endpoints/training/base.py
+
 # backend/perceptilabs/endpoints/session/
 perceptilabs/endpoints/session/__init__.py
 perceptilabs/endpoints/session/base.py
@@ -377,4 +383,5 @@ perceptilabs/endpoints/set_user/base.py
 perceptilabs/resources/models.py
 perceptilabs/resources/epochs.py
 perceptilabs/resources/files.py
+perceptilabs/resources/training_results.py
 

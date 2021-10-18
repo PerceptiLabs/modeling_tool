@@ -8,6 +8,7 @@ import { getModelJson as rygg_getModelJson, doesDirExist as rygg_doesDirExist } 
 import cloneDeep from 'lodash.clonedeep';
 import { v4 as uuidv4  } from 'uuid';
 import router from '@/router'
+import base64url from "base64url";
 
 
 const namespaced = true;
@@ -236,28 +237,7 @@ const actions = {
   //  CORE
   //---------------
   checkCoreAvailability({commit, dispatch, state}) {
-      const theData = {
-        action: 'isRunning',
-        value: ''
-      };
-      return coreRequest(theData)
-        .then(()=> {
-          // set user when core switch from offline to online
-          if(state.statusLocalCore === 'offline') {
-            dispatch('API_setUserInCore');
-            commit('SET_statusLocalCore', 'online');
-          }
-        })
-        .catch(()=> {
-          if(state.statusLocalCore === 'online') {
-            commit('SET_statusLocalCore', 'offline');
-          }
-        });
-  },
-  coreStatusWatcher({dispatch}) {  
-    setInterval(() => {
-      dispatch('checkCoreAvailability')
-    }, 2000)
+    console.error('checkCoreAvailability is deprecated!')        
   },
   checkCoreVersions({commit, dispatch, state}) {
     const theData = {
@@ -524,12 +504,12 @@ const actions = {
   },
 
   API_getResultInfo({rootGetters}) {
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'getEndResults',
-    };
+    const networkId = rootGetters['mod_workspace/GET_currentNetworkId']; // Shouldn't it be current network for GET_currentNetworIdForKernelRequests?
+    const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](networkId);    
+    const trainingSessionId = base64url(checkpointDirectory);
+    
     //console.log('API_getResultInfo', theData);
-    return coreRequest(theData)
+    return renderingKernel.getTrainingResults(networkId, trainingSessionId, 'end-results')
       .then((data)=> data)
       .catch((err)=> {
         console.error(err);
@@ -634,28 +614,27 @@ const actions = {
   },
 
   API_checkNetworkRunning({rootGetters}, receiver) {
-    const theData = {
-      receiver: receiver,
-      action: "isRunning",
-      value: ""
-    };
-    return coreRequest(theData)
-      .then((data)=> data)
-      .catch((err)=> {
-        console.error('isRunning answer', err);
-      });
+    const modelId = receiver || rootGetters['mod_workspace/GET_currentNetworkId'];
+    const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](modelId);
+    const trainingSessionId = base64url(checkpointDirectory);
+
+    return renderingKernel.getTrainingStatus(modelId, trainingSessionId)
+      .then((data) => {
+	const hasResults = Object.keys(data).length > 0;
+	return {"content": hasResults};
+      });    
   },
 
   API_checkTrainedNetwork({rootGetters}, receiver = null) {
-    const theData = {
-      receiver: receiver || rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: "isTrained"
-    };
-    return coreRequest(theData)
-      .then((data)=> data)
-      .catch((err)=> {
-        console.error('isTrained answer', err);
-      });
+    const modelId = receiver || rootGetters['mod_workspace/GET_currentNetworkId'];
+    const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](modelId);
+    const trainingSessionId = base64url(checkpointDirectory);
+
+    return renderingKernel.getTrainingStatus(modelId, trainingSessionId)
+      .then((data) => {
+	const hasResults = Object.keys(data).length > 0;
+	return {"result": hasResults, "receiver": receiver};  // For some reason, this method needs to return the receiver...	
+      })
   },
 
   API_saveTrainedNetwork({dispatch, getters, rootGetters}, {Location, frontendNetwork, networkName})  {
@@ -802,15 +781,13 @@ const actions = {
   //---------------
   API_getStatus({rootGetters, rootState, dispatch, commit}, payload) {
     const networkId = payload && payload.networkIndex !== undefined 
-                        ? rootState.mod_workspace.workspaceContent[payload.networkIndex].networkID
-                        : rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'];
-    const theData = {
-      receiver: networkId,
-      action: rootGetters['mod_workspace/GET_testIsOpen'] ? 'getTestStatus' :'getStatus',
-      value: ''
-    };
+          ? rootState.mod_workspace.workspaceContent[payload.networkIndex].networkID
+          : rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'];
 
-    coreRequest(theData)
+    const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](networkId);
+    
+    const trainingSessionId = base64url(checkpointDirectory);
+    renderingKernel.getTrainingStatus(networkId, trainingSessionId)
       .then((data)=> {
         if (!data) return;
         
@@ -827,14 +804,10 @@ const actions = {
       });
   },
   API_getModelStatus({rootGetters, dispatch, commit}, modelId) {
-    const theData = {
-      receiver: modelId,
-      // action: rootGetters['mod_workspace/GET_testIsOpen'] ? 'getTestStatus' :'getStatus',
-      // @todo ask about this twho types getTestStatus && getStatus, difference between them.
-      action: 'getStatus',
-      value: ''
-    };
-    coreRequest(theData)
+    const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](modelId);
+    
+    const trainingSessionId = base64url(checkpointDirectory);
+    renderingKernel.getTrainingStatus(networkId, trainingSessionId)
       .then((data)=> {
         dispatch('mod_workspace/SET_statusNetworkCoreDynamically', {
           ...data,
@@ -860,37 +833,22 @@ const actions = {
     // This is because the Kernel can current not handle a request
     // that sets the same state (i.e. true -> true).
 
-    const networkHeadlessState = getters.get_headlessState(rootGetters['mod_workspace/GET_currentNetworkId']);
-    
-    commit('set_headlessState', {
-      id: rootGetters['mod_workspace/GET_currentNetworkId'],
-      value: value
-    });
-
-    // if the value is the same, don't send it
-    if (networkHeadlessState === value) {
-      return Promise.resolve();
-    }
-
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'headless',
-      value: value
-    };
-    return coreRequest(theData)
-      .then((data)=> data)
-      .catch((err)=> {
-        console.error(err);
-      });
+    console.error('API_setHeadless is deprecated!')            
   },
 
   API_updateResults({rootGetters, dispatch, commit, rootState}, payload) {
+    const networkId = payload && payload.networkIndex !== undefined 
+          ? rootState.mod_workspace.workspaceContent[payload.networkIndex].networkID
+          : rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'];
+    
+    const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](networkId);
+    
     const theData = {
-      receiver: payload && payload.networkIndex !== undefined 
-                  ? rootState.mod_workspace.workspaceContent[payload.networkIndex].networkID
-                  : rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'],
+      receiver: networkId,
       action: 'updateResults',
-      value: ''
+      value: {
+	trainingSessionId: base64url(checkpointDirectory)
+      }
     };
     console.log('API_updateResults')
     return coreRequest(theData)

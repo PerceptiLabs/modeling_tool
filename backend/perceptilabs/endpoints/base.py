@@ -11,11 +11,13 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
 from perceptilabs.resources.models import ModelAccess
+from perceptilabs.resources.training_results import TrainingResultsAccess
 from perceptilabs.script import ScriptFactory
 from perceptilabs.caching.utils import NullCache
 from perceptilabs.endpoints.version.base import Version
 from perceptilabs.endpoints.network_data.base import NetworkData, Previews
 from perceptilabs.endpoints.data.base import PutData, IsDataReady
+from perceptilabs.endpoints.training.base import TrainingStatus, TrainingResults
 from perceptilabs.endpoints.model_recommendations.base import ModelRecommendations
 from perceptilabs.endpoints.type_inference.base import TypeInference
 from perceptilabs.endpoints.layer_code.base import LayerCode
@@ -72,6 +74,7 @@ def create_app(
 
     model_access = ModelAccess(ScriptFactory())
     epochs_access = EpochsAccess()
+    training_results_access = TrainingResultsAccess()    
 
     app.add_url_rule(
         '/set_user',
@@ -183,6 +186,19 @@ def create_app(
         '/serving/models', methods=['GET'], view_func=models_view, defaults={'model_id': None})
     app.add_url_rule(
         '/serving/models/<model_id>', methods=['GET'], view_func=models_view)
+
+
+    app.add_url_rule(
+        '/models/<model_id>/training/<training_session_id>/status',
+        methods=['GET'],
+        view_func=TrainingStatus.as_view('training_status', training_results_access)
+    )
+
+    app.add_url_rule(
+        '/models/<model_id>/training/<training_session_id>/results',
+        methods=['GET'],
+        view_func=TrainingResults.as_view('training_results', training_results_access)
+    )    
 
     app.add_url_rule(
         '/export',

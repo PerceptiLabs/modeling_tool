@@ -10,7 +10,7 @@
       chart-switch(
         key="2"
         chart-label="Weights"
-        :chart-data="chartData['Weights&Bias'].Weights"
+        :chart-data="chartData['WeightsBias'].Weights"
       )
 </template>
 
@@ -27,7 +27,7 @@
           Output: {
             Output: null,
           },
-          'Weights&Bias': {
+          'WeightsBias': {
             Weights: null,
             Bias: null,
           },
@@ -43,7 +43,7 @@
             this.chartRequest(this.networkElement.layerId, 'PreTrainedMobileNetV2', 'Output');
             break;
           case 'Weights & Bias':
-            this.chartRequest(this.networkElement.layerId, 'PreTrainedMobileNetV2', 'Weights&Bias');
+            this.chartRequest(this.networkElement.layerId, 'PreTrainedMobileNetV2', 'WeightsBias');
             break;
         }
       }

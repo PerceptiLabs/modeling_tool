@@ -12,16 +12,16 @@
         chart-label="Value"
         :chart-data="chartData.Output.Output"
       )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Bias' && chartData['Weights&Bias'] && isElectron")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Bias' && chartData['WeightsBias'] && isElectron")
       chart-switch(
         key="2"
         chart-label="Weights"
-        :chart-data="chartData['Weights&Bias'].Weights"
+        :chart-data="chartData['WeightsBias'].Weights"
       )
       chart-switch(
         key="3"
         chart-label="Bias"
-        :chart-data="chartData['Weights&Bias'].Bias"
+        :chart-data="chartData['WeightsBias'].Bias"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients' && chartData.Gradients && isElectron")
       chart-switch(
@@ -48,7 +48,7 @@
           Output: {
             Output: null,
           },
-          'Weights&Bias': {
+          'WeightsBias': {
             Weights: null,
             Bias: null,
           },
@@ -68,7 +68,7 @@
             this.chartRequest(this.networkElement.layerId, 'DeepLearningRecurrent', 'Output');
             break;
           case 'Weights & Bias':
-            this.chartRequest(this.networkElement.layerId, 'DeepLearningRecurrent', 'Weights&Bias');
+            this.chartRequest(this.networkElement.layerId, 'DeepLearningRecurrent', 'WeightsBias');
             break;
           case 'Gradients':
             this.chartRequest(this.networkElement.layerId, 'DeepLearningRecurrent', 'Gradients');

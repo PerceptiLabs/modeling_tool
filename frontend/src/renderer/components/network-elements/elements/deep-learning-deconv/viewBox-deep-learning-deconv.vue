@@ -6,13 +6,13 @@
           chart-switch(
             key="1"
             chart-label="Weights"
-            :chart-data="chartData['Weights&Output'].Weights"
+            :chart-data="chartData['WeightsOutput'].Weights"
           )
         .statistics-box_col
           chart-switch(
             key="2"
             chart-label="Output"
-            :chart-data="chartData['Weights&Output'].Output"
+            :chart-data="chartData['WeightsOutput'].Output"
           )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Bias'")
       .statistics-box_row
@@ -40,7 +40,7 @@
     data() {
       return {
         chartData: {
-          'Weights&Output': {
+          'WeightsOutput': {
             Weights: null,
             Output: null,
           },
@@ -58,7 +58,7 @@
       getData() {
         switch (this.currentTab) {
           case 'Weights & Output':
-            this.chartRequest(this.networkElement.layerId, 'DeepLearningDeconv', 'Weights&Output');
+            this.chartRequest(this.networkElement.layerId, 'DeepLearningDeconv', 'WeightsOutput');
             break;
           case 'Bias':
             this.chartRequest(this.networkElement.layerId, 'DeepLearningDeconv', 'Bias');

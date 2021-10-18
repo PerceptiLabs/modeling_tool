@@ -236,30 +236,6 @@ def test_computed_results_do_not_change(data_loader, training_model, training_se
     assert repickled_initial_results == pickled_initial_results  # But the initial results shouldn't change.
 
 
-def test_trainer_target_stats_available(data_loader, training_model, training_settings):
-    trainer = Trainer(data_loader, training_model, training_settings)
-    next(trainer.run_stepwise()) # Take the first training steps
-
-    target_stats = trainer.get_target_stats()
-    assert 'y1' in target_stats.sample_batch
-
-
-def test_trainer_prediction_stats_available(data_loader, training_model, training_settings):
-    trainer = Trainer(data_loader, training_model, training_settings)
-    next(trainer.run_stepwise()) # Take the first training steps
-
-    prediction_stats = trainer.get_prediction_stats()
-    assert 'y1' in prediction_stats.sample_batch
-
-
-def test_trainer_input_stats_available(data_loader, training_model, training_settings):
-    trainer = Trainer(data_loader, training_model, training_settings)
-    next(trainer.run_stepwise()) # Take the first training steps
-
-    input_stats = trainer.get_input_stats()
-    assert 'x1' in input_stats.sample_batch
-
-
 def test_trainer_can_pause_and_unpause(data_loader, training_model, training_settings):
     trainer = Trainer(data_loader, training_model, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
@@ -342,16 +318,6 @@ def test_trainer_custom_loss(data_loader, training_model, training_settings_cust
         pass
 
 
-def test_trainer_output_stats_available(graph_spec, data_loader, training_model, training_settings):
-    trainer = Trainer(data_loader, training_model, training_settings)
-    trainer.run()
-
-    output_stats = trainer.get_output_stats()
-
-    for layer_spec in graph_spec.target_layers:
-        assert layer_spec.id_ in output_stats
-
-
 def test_shuffle_is_called_for_training_but_not_for_validation(csv_path, training_model, training_settings_shuffle_data):
     data_loader = MagicMock()
     data_loader.get_dataset_size.return_value = 10
@@ -405,11 +371,7 @@ def test_trainer_load_from_initial_gives_equal_results(graph_spec, data_loader, 
     results2 = trainer2.get_results()
 
     for key in results1:
-        if key =='inner_layers_stats':
-            for layer in results1['inner_layers_stats'].keys():
-                assert results1['inner_layers_stats'][layer].__eq__(results2['inner_layers_stats'][layer])
-        else:
-            assert results1[key] == results2[key]
+        assert results1[key] == results2[key]
 
 
 

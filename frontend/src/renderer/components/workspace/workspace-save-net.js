@@ -61,33 +61,6 @@ const workspaceSaveNet = {
         networkPath: network.apiMeta.location
       };
       this.doSaveNetwork(settings, network.networkID);
-
-//       this.checkTrainedNetwork()
-//         .then((isTrained)=> {
-// //          if(!projectsList.length || findIndexId(projectsList, network) < 0) {
-//           // if(!network.networkRootFolder) {
-//           //   this.saveNetworkPopup.isSyncName = true;
-//           //   this.eventSaveNetworkAs(network.networkID, true)
-//           //   return
-//           // }
-
-//           if(isTrained) {
-//             this.saveNetworkPopup.isFreezeInfo = true;
-//             this.eventSaveNetworkAs(network.networkID)
-//           }
-//           else {
-//             const settings = {
-//               isSaveTrainedModel: false,
-//               networkName: network.networkName,
-//               networkPath: network.apiMeta.location
-//             };
-//             this.doSaveNetwork(settings, network.networkID)
-//           }
-//         })
-
-//       function findIndexId(list, currentNet) {
-//         return list.findIndex((proj) => proj.id === currentNet.networkID)
-//       }
     },
     eventSaveNetworkAs(netId, isSaveProjectPath) {
       this.$store.dispatch('globalView/SET_saveNetworkPopup', true);

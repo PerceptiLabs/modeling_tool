@@ -1,16 +1,16 @@
 from abc import ABC, abstractmethod
 import pickle
 
-# TODO: docs
 
 class TrainingStats(ABC):
-    def get_data_objects(self):
+    def get_data_objects(self, view=None):
         raise NotImplementedError
 
     @abstractmethod
     def __eq__(self, other):
         raise NotImplementedError
 
+    
 class OutputStats(TrainingStats):
     @abstractmethod
     def get_summary(self):
@@ -21,9 +21,16 @@ class OutputStats(TrainingStats):
         """
         raise NotImplementedError
 
+    @abstractmethod    
+    def get_end_results(self):
+        raise NotImplementedError
+
+    
 class PreviewStats(ABC):
     def get_preview_content(self):
         raise NotImplementedError
+
+    
 class TrainingStatsTracker(ABC):
     @abstractmethod
     def update(self, **kwargs):

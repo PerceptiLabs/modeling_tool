@@ -26,7 +26,7 @@ class ConvOutputStats(TrainingStats):
 
     def get_data_objects(self, view):
         data_objects = {}
-        if view=="Weights&Output":
+        if view=="WeightsOutput":
             data_objects.update(self._get_weights_and_outputs())
         if view=="Bias":
             data_objects.update(self._get_bias())

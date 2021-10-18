@@ -1,7 +1,6 @@
 import queue
 import numpy as np
 import time
-import psutil
 import os
 import pprint
 import logging
@@ -12,6 +11,7 @@ import math
 
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.resources.epochs import EpochsAccess
+from perceptilabs.resources.training_results import TrainingResultsAccess
 from perceptilabs.compatibility import CompatibilityCore
 from perceptilabs.resources.files import FileAccess
 from perceptilabs.script import ScriptFactory
@@ -34,80 +34,33 @@ user_logger = logging.getLogger(USER_LOGGER)
 CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allow_override'])
 
 
+    
 class coreLogic():
     def __init__(self, networkName, issue_handler, session_id=None):
         logger.info(f"Created coreLogic for network '{networkName}'")
-        self._session_id = session_id
+
+        self._results_access = TrainingResultsAccess()
         self._core_mode = 'v2'
 
         self.networkName=networkName
         self.cThread=None
         self.status="Created"
-        self.resultDict=None
 
         self.setupLogic()
-        self.plLicense = LicenseV2()
 
         self.issue_handler = issue_handler
         self._running_mode = None
-        self._save_counter = 0
 
-        self.headless_state = False
         self._data_metadata_cache = get_data_metadata_cache().for_compound_keys()
 
     def setupLogic(self):
         self.commandQ=queue.Queue()
-        self.resultQ=queue.Queue()
+        self.results_queue = queue.Queue()
 
-        self.trainResults=None
-        self.testResults=None
         self.paused=False
 
         self.status="Created"
-        self.headlessFlag=False
         self.core=None
-
-        self.savedResultsDict={}
-
-    def _logAndWarningQueue(self, msg):
-        user_logger.info(msg)
-
-    def gpu_list(self):
-        try:
-            gpus = GPUtil.getGPUs()
-        except:
-            logger.error("No compatible nvidia GPU drivers available. Defaulting to 0 GPUs")
-            gpus = []
-
-        if self.plLicense.is_expired():
-            self._logAndWarningQueue(f"Your license is in demo mode. Limiting to one GPU.")
-            gpus = gpus[:1]
-
-        print(f"GPU limit: {self.plLicense.gpu_limit()}")
-        limit = self.plLicense.gpu_limit()
-        if limit > len(gpus):
-            self._logAndWarningQueue(f"Your license limits training to {limit}.")
-            gpus = gpus[:limit]
-
-        print(f"GPU count: {len(gpus)}")
-        return gpus
-
-    def isDistributable(self, gpus):
-        print(f"Core limit: {self.plLicense.core_limit()}")
-        if len(gpus) <= 1:
-            self._logAndWarningQueue(f"Not enough GPUs to distribute training. Using one core.")
-            return False
-
-        if self.plLicense.core_limit() <= 1:
-            self._logAndWarningQueue(f"Your license limits you to one core.")
-            return False
-
-        if self.plLicense.is_expired():
-            self._logAndWarningQueue(f"Your license is in demo mode. Limiting to one core.")
-            return False
-
-        return True
-
 
     @property
     def running_mode(self):
@@ -118,7 +71,6 @@ class coreLogic():
         logger.info(f"Running mode {mode} set for coreLogic w\ network '{self.networkName}'")
 
     def _get_restored_trainer(self, data_loader, script_factory, graph_spec, training_settings, checkpoint_directory, load_checkpoint, model_id, user_email):
-
         epochs_access = EpochsAccess()        
         epoch_id = epochs_access.get_latest(
             training_session_id=checkpoint_directory,  # TODO: Frontend needs to send ID
@@ -242,7 +194,7 @@ class coreLogic():
 
         core = self.core = CompatibilityCore(
             self.commandQ,
-            self.resultQ,
+            self.results_queue,
             graph_spec,
             trainer,
             threaded=True,
@@ -251,7 +203,6 @@ class coreLogic():
         self._start_training_thread(core, on_finished)
         self.status = "Running"
         self.graph_spec = graph_spec
-
         return {"content":"core started"}
 
     def _start_training_thread(self, core, on_finished):
@@ -307,37 +258,6 @@ class coreLogic():
         self.paused=False
         return {"content":"Unpaused"}
 
-    def set_headless(self, active):
-        """ Enable/disable headless """
-        if active != self.headless_state:
-            self.headless_state = active
-
-            if self._core_mode == 'v1':
-                if active:
-                    self.commandQ.put("headlessOn")
-                else:
-                    self.commandQ.put("headlessOff")
-            else:
-                self.commandQ.put(
-                    CoreCommand(
-                        type='headless',
-                        parameters={'on': active},
-                        allow_override=True
-                    )
-                )
-
-    def headless(self, On):
-        """ Alias for set_headless """
-        self.set_headless(active=On)
-
-    def headlessOn(self):
-        """ Deprecated. Use set_headless """
-        self.set_headless(active=True)
-
-    def headlessOff(self):
-        """ Deprecated. Use set_headless """
-        self.set_headless(active=False)
-
     def Close(self):  # TODO: refactor this
         self.commandQ.put(
             CoreCommand(
@@ -363,18 +283,6 @@ class coreLogic():
         )
         return {"content":"Stopping"}
 
-    def isRunning(self):
-        if self.cThread is not None and self.cThread.isAlive():
-            return { "content": True }
-        else:
-            return { "content": False }
-
-    def isTrained(self):
-        is_trained = (
-            (self._core_mode == 'v2' and self.core is not None and self.resultDict is not None)
-        )
-        return {"content": is_trained}
-
     def export_network(self, settings):
         path = os.path.join(settings["Location"], settings["name"])
         path = os.path.abspath(path)
@@ -392,153 +300,15 @@ class coreLogic():
             )
         )
 
-    def skipValidation(self):
-        self.commandQ.put("skip")
-        logger.warning('skipValidation called... incompatible with core v2')
-        #Check if validation was skipped or not before returning message
-        return {"content":"skipped validation"}
-
-    def get_cpu_and_mem(self):
-        cpu = psutil.cpu_percent()
-        mem = dict(psutil.virtual_memory()._asdict())["percent"]
-        return cpu, mem
-
-    def get_gpu(self):
-        try:
-            gpus = GPUtil.getGPUs()
-            loadList = [gpu.load*100 if not math.isnan(gpu.load) else 0 for gpu in gpus]
-        except:
-            loadList = None
-        if loadList:
-            return np.average(loadList)
-        else:
-            return ""
-
-    def getStatus(self):
-        try:
-            cpu, mem = self.get_cpu_and_mem()
-            gpu = self.get_gpu()
-            if gpu and int(gpu) == 0:
-                gpu = 1
-
-            progress = self.savedResultsDict.get('progress')
-            if progress is None:
-                progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
-
-
-            if self.status=="Running":
-                result = {
-                    "Status":"Paused" if self.paused else self.savedResultsDict["trainingStatus"],
-                    "Iterations": self.savedResultsDict["iter"],
-                    "Epoch": self.savedResultsDict["epoch"],
-                    "Progress": progress,
-                    "CPU": cpu,
-                    "GPU": gpu,
-                    "Memory": mem,
-                    "Training_Duration": self.savedResultsDict["training_duration"]
-                }
-                return result
-            else:
-                return {
-                    "Status":self.status,
-                    "Iterations":self.savedResultsDict["iter"],
-                    "Epoch":self.savedResultsDict["epoch"],
-                    "Progress": progress,
-                    "CPU":cpu,
-                    "GPU": gpu,
-                    "Memory":mem
-                }
-        except KeyError as e:
-            logger.debug(f"Key Error in getStatus: {repr(e)}")
-            return {}
-
-
-    def updateResults(self):
-        #TODO: Look from the back and go forward if we find a test instead of going through all of them
-        tmp=None
-        while not self.resultQ.empty():
-            tmp = self.resultQ.get()
-        if tmp:
-            self.savedResultsDict.update(tmp)
-
+    def updateResults(self, value):
+        training_session_id = value['trainingSessionId']
+        
+        results = None
+        while not self.results_queue.empty():
+            results = self.results_queue.get()
+            
+        if results:
+            self._results_access.store(training_session_id, results)
+            
         return {"content":"Results saved"}
 
-    def get_global_training_statistics(self):
-        """ Returns the global stats """
-        if not self.savedResultsDict:
-            return {}
-
-        stats = self.savedResultsDict['global_stats']
-        output = stats.get_data_objects()
-        return output
-
-    def getTrainingStatistics(self,value):
-        layer_id = value["layerId"]
-        layer_type = value["layerType"]
-        view = value["view"]
-        if not self.savedResultsDict:
-            return {}
-
-        try:
-            self.iter=self.savedResultsDict["iter"]
-            self.epoch=self.savedResultsDict["epoch"]
-            self.maxIter=self.savedResultsDict["maxIter"]
-            self.maxEpochs=self.savedResultsDict["maxEpochs"]
-            self.batch_size=self.savedResultsDict["batch_size"]
-            self.trainingIterations=self.savedResultsDict["trainingIterations"]
-            self.resultDict=self.savedResultsDict["inner_layers_stats"]
-        except KeyError:
-            message = "Error in getTrainingStatistics."
-            if logger.isEnabledFor(logging.DEBUG):
-                message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
-            logger.exception(message)
-            return {}
-        try:
-            layer_statistics = self.getLayerStatistics(layer_id, layer_type, view)
-            return layer_statistics
-        except:
-            message = f"Error in getTrainingStatistics. layer_id = {layer_id}, layer_type = {layer_type}, view = {view}."
-            if logger.isEnabledFor(logging.DEBUG):
-                message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
-            logger.exception(message)
-
-    def getEndResults(self):
-        #TODO: Show in frontend results for each end layer, not just for one.
-        end_results={}
-        #global stats
-        global_stats = self.savedResultsDict['global_stats']
-        end_results['global_stats'] = global_stats.get_end_results()
-        #layer specific stats
-        for layer_spec in self.graph_spec.layers:
-            if layer_spec.is_target_layer:
-                layer_stats = self.savedResultsDict['output_stats'][layer_spec.id_]
-                end_results[layer_spec.name] = layer_stats.get_end_results()
-        return end_results
-
-    def getLayerStatistics(self, layerId, layerType, view):
-        logger.debug("getLayerStatistics for layer '{}' with type '{}' and view: '{}'".format(layerId, layerType, view))
-
-        if layerType == 'IoInput':
-            return self._get_stats_ioinput(layerId)
-        elif layerType == 'IoOutput':
-            return self._get_stats_iooutput(layerId, view)
-        else:
-            stats = self.savedResultsDict['inner_layers_stats'][layerId]
-            output = stats.get_data_objects(view)
-            return output
-
-    def _get_stats_ioinput(self, layer_id):
-        try:
-            stats = self.savedResultsDict['input_stats']
-            output_value = stats.get_sample_by_layer_id(layer_id)
-        except:
-            output_value = 0.0  # Default value
-        data_object = createDataObject([output_value])
-        return {"Data": data_object}
-
-    def _get_stats_iooutput(self, layer_id, view):
-        stats = self.savedResultsDict['output_stats'][layer_id]
-        output = stats.get_data_objects()
-        if view:
-            output = output[view]
-        return output

@@ -90,6 +90,7 @@ def get_data_metadata_cache():
         logger.info("Using 'Dict' cache for pipeline metadata...")
         return DictCache()
 
+    
 def get_preview_cache():
     redis_url = settings.CACHE_REDIS_URL
 
@@ -99,4 +100,5 @@ def get_preview_cache():
     else:
         logger.info("Using 'Lightweight' cache for previews...")
         return LightweightCache(max_size=25)
+
 

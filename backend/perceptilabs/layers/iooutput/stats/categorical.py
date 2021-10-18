@@ -68,7 +68,7 @@ class CategoricalOutputStats(OutputStats):
         sample = batch[-1]
         return sample
 
-    def get_data_objects(self):
+    def get_data_objects(self, view=None):
         """
             Gets the data objects for categorical outputs. There are graphs for loss over all epochs,
             Acc over epochs, and a bar chart representing confusion matrix metrics in their total quantity
@@ -104,7 +104,10 @@ class CategoricalOutputStats(OutputStats):
             }
         }
 
-        return data_objects
+        if view:
+            return data_objects[view]
+        else:
+            return data_objects        
 
     def _get_dataobj_loss(self):
         training_loss_over_epochs, validation_loss_over_epochs = self.get_loss_over_epochs()

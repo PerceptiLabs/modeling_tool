@@ -1,5 +1,8 @@
 import VueNonreactive from 'vue-nonreactive/vue-nonreactive.js';
 import Vue from 'vue'
+import base64url from "base64url";
+import { renderingKernel }  from "@/core/apiRenderingKernel.js";
+
 Vue.use(VueNonreactive);
 import {coreRequest }  from "@/core/apiWeb.js";
 
@@ -38,6 +41,11 @@ const viewBoxMixin = {
     currentNetworIdForKernelRequests() {
       return this.$store.getters['mod_workspace/GET_currentNetworIdForKernelRequests']
     },
+    currentTrainingSessionId() {
+      const networkId = this.currentNetworIdForKernelRequests;
+      const directory = this.$store.getters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](networkId)
+      return base64url(directory)  // URL safe base64
+    },
     serverStatus() {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
@@ -73,21 +81,16 @@ const viewBoxMixin = {
     chartGlobalRequest() {
       this.startRequest = new Date();
 
-      let theData = {
-        receiver: this.currentNetworIdForKernelRequests,
-        action: 'getGlobalTrainingStatistics',
-        value: { }
-      };
-      coreRequest(theData)
+      const modelId = this.currentNetworIdForKernelRequests;
+      const trainingSessionId = this.currentTrainingSessionId
+      
+      renderingKernel.getTrainingResults(modelId, trainingSessionId, 'global-results')      
         .then((data)=> {
           if(data === 'Null' || data === null) {
             return
           }
 
           // This launch an event to stop fetching statistics infinitely
-          if(theData.action === 'getTestingStatistics') {
-            this.$store.commit('mod_events/set_componentEvent_test_receiveData');
-          }
           let prevData =  {};
           Object.keys(this.chartData).map(key => {prevData[key] = this.chartData[key]})
           
@@ -106,29 +109,15 @@ const viewBoxMixin = {
     },
     chartRequest(layerId, layerType, view) {
       this.startRequest = new Date();
+
+      const modelId = this.currentNetworIdForKernelRequests;
+      const trainingSessionId = this.currentTrainingSessionId;
       
-      let theData = {
-        receiver: this.currentNetworIdForKernelRequests,
-        action: this.$store.getters['mod_workspace/GET_testIsOpen']
-          ? 'getTestingStatistics'
-          : 'getTrainingStatistics',
-        value: {
-          layerId: layerId,
-          layerType: layerType,
-          view: view
-        }
-      };
-      coreRequest(theData)
+      renderingKernel.getTrainingResults(modelId, trainingSessionId, 'layer-results', layerId, view)
         .then((data)=> {
           if(data === 'Null' || data === null || data === undefined) {
             return
           }
-
-          // This launch an event to stop fetching statistics infinitely
-          if(theData.action === 'getTestingStatistics') {
-            this.$store.commit('mod_events/set_componentEvent_test_receiveData');
-          }
-
                     
           //  Think that this should be returned by kernel
           

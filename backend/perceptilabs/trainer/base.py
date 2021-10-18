@@ -17,6 +17,7 @@ from perceptilabs.stats import SampleStatsTracker, SampleStats, GradientStatsTra
 from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.layers.iooutput.stats import ImageOutputStatsTracker, NumericalOutputStatsTracker, CategoricalOutputStatsTracker, MaskOutputStatsTracker
 from perceptilabs.layers.inner_layer_stats import InnerLayersStatsTracker
+from perceptilabs.layers.ioinput.stats import InputStatsTracker
 
 
 from perceptilabs.trainer.losses import weighted_crossentropy, dice
@@ -98,6 +99,9 @@ class Trainer:
 
     def save_state(self):
         state = {
+            'cpu_usage': self._cpu_usage,
+            'gpu_usage': self._gpu_usage,
+            'mem_usage': self._mem_usage,            
             'status': self._status,
             'training_time': self._training_time,
             'num_epochs_completed': self._num_epochs_completed,
@@ -111,6 +115,10 @@ class Trainer:
             'output_trackers': {
                 layer_id: tracker
                 for layer_id, tracker in self._output_trackers.items()
+            },
+            'input_trackers': {
+                layer_id: tracker
+                for layer_id, tracker in self._input_trackers.items()
             },
             'inner_layers_stats_tracker': self._inner_layers_stats_tracker
         }
@@ -229,7 +237,7 @@ class Trainer:
 
         epochs_access = EpochsAccess()
         checkpoint_path = epochs_access.get_checkpoint_path(
-            training_session_id=self._checkpoint_directory,
+            training_session_id=self.training_session_id,
             epoch_id=epoch
         )
         self._exporter.export_checkpoint(checkpoint_path)
@@ -327,6 +335,10 @@ class Trainer:
             self._target_stats_tracker = SampleStatsTracker()
             inner_layers = self._get_inner_layer_ids_and_types()
             self._inner_layers_stats_tracker = InnerLayersStatsTracker(inner_layers)
+
+            self._cpu_usage = utils.get_cpu_usage()
+            self._gpu_usage = utils.get_gpu_usage()
+            self._mem_usage = utils.get_mem_usage()            
         else:
             self._global_stats_tracker = initial_state['global_stats_tracker']
             self._input_stats_tracker = initial_state['input_stats_tracker']
@@ -334,6 +346,17 @@ class Trainer:
             self._target_stats_tracker = initial_state['target_stats_tracker']
             self._inner_layers_stats_tracker = initial_state['inner_layers_stats_tracker']
 
+            self._cpu_usage = initial_state['cpu_usage']
+            self._gpu_usage = initial_state['gpu_usage']
+            self._mem_usage = initial_state['mem_usage']
+
+        self._input_trackers = {}
+        for layer_spec in self._graph_spec.input_layers:
+            if initial_state is None:            
+                self._input_trackers[layer_spec.id_] = InputStatsTracker()
+            else:
+                self._input_trackers[layer_spec.id_] = initial_state['input_trackers'][layer_spec.id_]
+            
         self._output_trackers = {}
         for layer_spec in self._graph_spec.target_layers:
             if initial_state is None:
@@ -365,6 +388,10 @@ class Trainer:
             total_loss, individual_losses, is_training, steps_completed
     ):
         """ Take a snapshot of the current tensors (e.g., layer weights) """
+        self._cpu_usage = utils.get_cpu_usage()
+        self._gpu_usage = utils.get_gpu_usage()
+        self._mem_usage = utils.get_mem_usage()            
+        
         self._inner_layers_stats_tracker.update(
             outputs=final_and_intermediate_outputs_by_layer,
             trainables_by_layer=trainables_by_layer,
@@ -386,13 +413,17 @@ class Trainer:
         self._prediction_stats_tracker.update(id_to_feature=id_to_feature, sample_batch=predictions_batch)
         self._target_stats_tracker.update(id_to_feature=id_to_feature, sample_batch=targets_batch)
 
+        for layer_spec in self._graph_spec.input_layers:
+            tracker = self._input_trackers[layer_spec.id_]
+            tracker.update(inputs_batch=inputs_batch[layer_spec.feature_name])
+
         for layer_spec in self._graph_spec.target_layers:
             tracker = self._output_trackers[layer_spec.id_]
             postprocessing = self._data_loader.get_postprocessing_pipeline(
                 layer_spec.feature_name)
 
             tracker.update(
-                inputs_batch=inputs_batch,
+                inputs_batch=inputs_batch,                
                 predictions_batch=predictions_batch[layer_spec.feature_name],
                 targets_batch=targets_batch[layer_spec.feature_name],
                 epochs_completed=self._num_epochs_completed,
@@ -542,22 +573,6 @@ class Trainer:
     def close(self):
         self.stop()
 
-
-    def get_target_stats(self) -> SampleStats:
-        """ Returns a stats object for the current target values """
-        return self._target_stats_tracker.save()
-
-    def get_prediction_stats(self) -> SampleStats:
-        """ Returns a stats object for the current prediction values """
-        return self._prediction_stats_tracker.save()
-
-    def get_input_stats(self) -> SampleStats:
-        """ Returns a stats object for the current input values """
-        return self._input_stats_tracker.save()
-
-    def get_inner_layers_stats(self):
-        return self._inner_layers_stats_tracker.save()
-
     def get_results(self):
         """ Return a dict for the coreInterface to derive plots from """
         t0 = time.perf_counter()
@@ -568,21 +583,34 @@ class Trainer:
             'maxEpochs': self.num_epochs,
             'batch_size': self.batch_size,
             'trainingIterations': self.num_training_batches_completed_this_epoch,
-            'inner_layers_stats': self.get_inner_layers_stats(),
-            'trainingStatus': self.status,
+            'trainingStatus': 'Paused' if self.is_paused else self.status,
             'progress': self.progress,
             'status': 'Paused' if self.is_paused else 'Running',
             'training_duration': self._training_time,
-            'input_stats': self.get_input_stats(),
-            'prediction_stats': self.get_prediction_stats(),
-            'target_stats': self.get_target_stats(),
-            'output_stats': self.get_output_stats(),
-            'global_stats': self.get_global_stats()
+            'global_stats': self.get_global_stats(),
+            'cpu_usage': self._cpu_usage,
+            'gpu_usage': self._gpu_usage,
+            'mem_usage': self._mem_usage,
+            'layer_stats': self.get_layer_stats()
         }
         #dict_ = {}
         t1 = time.perf_counter()
         logger.debug(f"get_results finished. Duration: {t1 - t0}")
         return dict_
+
+    def get_layer_stats(self):
+        all_stats = {}
+        
+        for layer_id, tracker in self._input_trackers.items():
+            all_stats[layer_id] = tracker.save()
+
+        for layer_id, stats in self._inner_layers_stats_tracker.save().items():
+            all_stats[layer_id] = stats
+
+        for layer_id, tracker in self._output_trackers.items():
+            all_stats[layer_id] = tracker.save()
+            
+        return all_stats
 
     def get_global_stats(self):
         """ Returns a stats object for the current global stats """
@@ -613,13 +641,14 @@ class Trainer:
         else:
             logger.warning("Exporter not set, couldn't export checkpoint!")
 
+
     def get_output_stats(self) -> Dict:
         """ Returns a stats object representing the current state of the outputs """
         output_stats = {
             layer_id: tracker.save()
             for layer_id, tracker in self._output_trackers.items()
         }
-        return output_stats
+        return output_stats            
 
     def get_output_stats_summaries(self):
         """ Collect summary dicts from all output layers and add them to a list """
@@ -702,7 +731,6 @@ class Trainer:
                       .batch(self.batch_size)
         return dataset
 
-
     def _dump_dataset_rows(self, partition, indexed_dataset):
         indices = [row.numpy() for row, _, _, in indexed_dataset]
 
@@ -713,4 +741,7 @@ class Trainer:
         df.to_csv(path, index=True)
         logger.info(f"Saved data dump to {path}")
 
-
+    @property
+    def training_session_id(self):
+        return self._checkpoint_directory  # TODO: for now, this is just the ckpt dir...         
+    

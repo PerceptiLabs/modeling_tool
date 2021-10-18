@@ -10,12 +10,12 @@
       chart-switch(
         key="2"
         chart-label="Weights"
-        :chart-data="chartData['Weights&Bias'].Weights"
+        :chart-data="chartData['WeightsBias'].Weights"
       )
       chart-switch(
         key="3"
         chart-label="Bias"
-        :chart-data="chartData['Weights&Bias'].Bias"
+        :chart-data="chartData['WeightsBias'].Bias"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients'")
       chart-switch(
@@ -39,7 +39,7 @@
           Output: {
             Output: null,
           },
-          'Weights&Bias': {
+          'WeightsBias': {
             Weights: null,
             Bias: null,
           },
@@ -58,7 +58,7 @@
             this.chartRequest(this.networkElement.layerId, 'DeepLearningFC', 'Output');
             break;
           case 'Weights & Bias':
-            this.chartRequest(this.networkElement.layerId, 'DeepLearningFC', 'Weights&Bias');
+            this.chartRequest(this.networkElement.layerId, 'DeepLearningFC', 'WeightsBias');
             break;
           case 'Gradients':
             this.chartRequest(this.networkElement.layerId, 'DeepLearningFC', 'Gradients');

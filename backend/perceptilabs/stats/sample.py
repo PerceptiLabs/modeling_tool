@@ -55,9 +55,9 @@ class SampleStats:
         # TODO: create story to remove this method
         batch = next(iter(self.sample_batch.values()), [0.0])
         value = batch[-1]
-        return value        
+        return value
 
-
+    
 class SampleStatsTracker(TrainingStatsTracker):
     def __init__(self):
         self.id_to_feature = {}

@@ -1,3 +1,6 @@
+import math
+import psutil
+import GPUtil
 import os
 import sys
 import json
@@ -10,7 +13,6 @@ import functools
 from concurrent.futures import Future, Executor
 from threading import Lock
 import pkg_resources
-import psutil
 from abc import ABC, abstractmethod
 from contextlib import contextmanager, closing
 
@@ -496,3 +498,26 @@ def find_free_port_in_range(min_port, max_port):
     raise IOError('no free ports')
 
 
+def get_cpu_usage():
+    cpu = psutil.cpu_percent()
+    return cpu
+
+
+def get_mem_usage():
+    mem = dict(psutil.virtual_memory()._asdict())["percent"]    
+    return mem
+
+
+def get_gpu_usage():
+    gpus = GPUtil.getGPUs()
+    per_gpu_load = [gpu.load*100 if not math.isnan(gpu.load) else 0 for gpu in gpus]
+    
+    if not per_gpu_load:
+        return ""
+
+    average_load = sum(per_gpu_load)/len(per_gpu_load)
+    
+    if int(average_load) == 0:
+        average_load = 1
+        
+    return average_load
