@@ -84,6 +84,10 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
     location = dj_models.TextField(blank=True, validators=[validate_file_name, validate_file_exists])
     source_url = dj_models.TextField(blank=True)
 
+    @property
+    def exists_on_disk(self):
+        return os.path.exists(self.location)
+
     def __str__(self):
         return f"{self.name} ({self.dataset_id})"
 

@@ -80,6 +80,7 @@ class DatasetSerializer(serializers.ModelSerializer):
                   "status",
                   "models",
                   "source_url",
+                  "exists_on_disk",
                   ]
 
 class ModelSerializer(serializers.ModelSerializer):

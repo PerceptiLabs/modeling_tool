@@ -224,8 +224,18 @@ def test_create_dataset_from_remote(rest, tmpdir, tmp_project):
 
     assert_task_progresses(rest, task_id)
 
+    # re-fetch the dataset by id
     dataset = rest.get(f"/datasets/{dataset_id}/")
     assert dataset
+
+    # also try fetching the list
+    datasets = rest.get(f"/datasets/")
+    assert datasets['count'] == 1
+    filtered = filter(lambda d: d['dataset_id'] == dataset['dataset_id'], datasets['results'])
+    as_list = list(filtered)
+    assert len(as_list) == 1
+    dataset = as_list[0]
+    assert dataset['exists_on_disk'] == True
 
     # Check that the new dataset points to the remote dataset
     source_url = dataset["source_url"]
@@ -235,5 +245,10 @@ def test_create_dataset_from_remote(rest, tmpdir, tmp_project):
     # check that remote datasets response now points to the new dataset
     mnist_record = get_mnist_record(rest)
     assert mnist_record["localDatasetID"] == dataset_id
+
+    # check that deleting the local copy makes exists_on_disk change to false
+    shutil.rmtree(dataset['location'], ignore_errors=True)
+    dataset = rest.get(f"/datasets/{dataset_id}/")
+    assert dataset['exists_on_disk'] == False
 
     # TODO check the download
