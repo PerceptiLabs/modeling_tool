@@ -15,6 +15,7 @@ perceptilabs/license_checker.py
 perceptilabs/issues.py
 perceptilabs/mixpanel_handler.py
 perceptilabs/testInterface.py
+perceptilabs/hardware.py
 
 # perceptilabs/script
 perceptilabs/script/__init__.py

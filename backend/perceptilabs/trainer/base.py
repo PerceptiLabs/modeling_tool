@@ -23,6 +23,7 @@ from perceptilabs.layers.ioinput.stats import InputStatsTracker
 from perceptilabs.trainer.losses import weighted_crossentropy, dice
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import get_memory_usage, sanitize_path
+from perceptilabs.hardware import HardwareStats
 import perceptilabs.tracking as tracking
 import perceptilabs.utils as utils
 import perceptilabs.settings as settings
@@ -35,6 +36,9 @@ class Trainer:
     def __init__(self, data_loader, training_model, training_settings, checkpoint_directory=None, exporter=None, model_id=None, user_email=None, initial_state=None):
         self._initial_state = initial_state
         self._training_settings = training_settings.copy()
+
+        self._hardware_stats = HardwareStats(
+            refresh_interval=settings.HARDWARE_STATS_REFRESH_INTERVAL)
 
         self._model_id = model_id
         self._user_email = user_email
@@ -336,9 +340,9 @@ class Trainer:
             inner_layers = self._get_inner_layer_ids_and_types()
             self._inner_layers_stats_tracker = InnerLayersStatsTracker(inner_layers)
 
-            self._cpu_usage = utils.get_cpu_usage()
-            self._gpu_usage = utils.get_gpu_usage()
-            self._mem_usage = utils.get_mem_usage()            
+            self._cpu_usage = self._hardware_stats.cpu_usage
+            self._gpu_usage = self._hardware_stats.gpu_usage
+            self._mem_usage = self._hardware_stats.mem_usage
         else:
             self._global_stats_tracker = initial_state['global_stats_tracker']
             self._input_stats_tracker = initial_state['input_stats_tracker']
@@ -388,9 +392,9 @@ class Trainer:
             total_loss, individual_losses, is_training, steps_completed
     ):
         """ Take a snapshot of the current tensors (e.g., layer weights) """
-        self._cpu_usage = utils.get_cpu_usage()
-        self._gpu_usage = utils.get_gpu_usage()
-        self._mem_usage = utils.get_mem_usage()            
+        self._cpu_usage = self._hardware_stats.cpu_usage
+        self._gpu_usage = self._hardware_stats.gpu_usage
+        self._mem_usage = self._hardware_stats.mem_usage
         
         self._inner_layers_stats_tracker.update(
             outputs=final_and_intermediate_outputs_by_layer,
