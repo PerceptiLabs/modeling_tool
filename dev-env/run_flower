@@ -3,4 +3,4 @@
 ROOT_PATH=$(git rev-parse --show-toplevel)
 cd ${ROOT_PATH}/backend
 source ${ROOT_PATH}/backend/.venv/bin/activate
-celery -A perceptilabs.endpoints.session.celery_executor flower --loglevel=debug
+celery -A perceptilabs.session.celery_executor flower --loglevel=debug

@@ -60,17 +60,17 @@ cd build/docker/compose
 1. Rendering kernel
     ```
     cd backend
-    PL_KERNEL_CELERY="1" PL_REDIS_URL="redis://localhost" python main.py --mode=rendering
+    PL_KERNEL_CELERY="1" PL_REDIS_URL="redis://localhost" python main.py
     ```
 1. Training worker
     ```
     cd backend
-    PL_REDIS_URL="redis://localhost" celery -A perceptilabs.endpoints.session.celery_executor worker --loglevel=debug --queues=training
+    PL_REDIS_URL="redis://localhost" celery -A perceptilabs.session.celery_executor worker --loglevel=debug --queues=training
     ```
 1. Flower (optional)
     ```
     cd backend
-    PL_REDIS_URL="redis://localhost" celery -A perceptilabs.endpoints.session.celery_executor flower --loglevel=debug
+    PL_REDIS_URL="redis://localhost" celery -A perceptilabs.session.celery_executor flower --loglevel=debug
     ```
 1. Rygg server
     ```
