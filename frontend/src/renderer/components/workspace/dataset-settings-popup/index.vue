@@ -65,15 +65,7 @@
         :disabled="!isDatasetAvailable"
       )
         | Save
-      file-picker-popup(
-        v-if="showFilePickerPopup",
-        popupTitle="Choose data to load",
-        filePickerType="file",
-        :startupFolder="startupDatasetPath",
-        :confirmCallback="handleDataPathUpdates",
-        :cancelCallback="closePopup"
-        :options="filePickerOptions"
-      )
+      
     
 </template>
 <script>
@@ -81,8 +73,8 @@ import { mapState, mapGetters, mapActions } from "vuex";
 import cloneDeep from "lodash.clonedeep";
 
 import { getFileContent as rygg_getFileContent } from "@/core/apiRygg";
+import { pickFile as rygg_pickFile } from "@/core/apiRygg";
 
-import FilePickerPopup from "@/components/global-popups/file-picker-popup.vue";
 import CsvTable from "@/components/different/csv-table.vue";
 import TripleInput from "@/components/base/triple-input";
 import InfoTooltip from "@/components/different/info-tooltip.vue";
@@ -98,7 +90,6 @@ import { renderingKernel } from "@/core/apiRenderingKernel";
 
 export default {
   components: {
-    FilePickerPopup,
     CsvTable,
     TripleInput,
     InfoTooltip,
@@ -114,7 +105,6 @@ export default {
     csvData: null,
     isLoadingDataset: false,
     isUpdatingDataset: false,
-    showFilePickerPopup: false,
     filePickerOptions: {
       showToTutotialDataFolder: true
     },
@@ -145,6 +135,8 @@ export default {
     loadCurrentDatasetSettings() {
       this.datasetSettings = cloneDeep(this.currentNetworkDatasetSettings);
       this.datasetPath = getDatasetPath(this.datasetSettings);
+
+      console.log('this.datasetPath', this.datasetSettings, this.datasetPath);
 
       this.loadDataset();
     },
@@ -218,14 +210,18 @@ export default {
         partitions: [70, 20, 10]
       };
     },
-    replaceDataset() {
-      this.showFilePickerPopup = true;
-    },
-    closePopup() {
-      this.showFilePickerPopup = false;
+    async replaceDataset() {
+      const selectedDataset = await rygg_pickFile(
+        "Choose data to load",
+        this.startupDatasetPath,
+        [{extensions: ["*.csv"]}]
+      );
+      
+      if (selectedDataset && selectedDataset.path) {
+        await this.handleDataPathUpdates([selectedDataset.path])
+      }
     },
     async handleDataPathUpdates(dataPath) {
-      this.showFilePickerPopup = false;
       if (!dataPath || !dataPath.length || !dataPath[0]) {
         return;
       }

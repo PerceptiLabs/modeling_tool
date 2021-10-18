@@ -15,13 +15,6 @@
     modal-pages-engine
     tutorials-checklist(:style="tutorialChecklistPosition")
     about-app-popup(v-if="showAppAboutPopUp")
-    file-picker-popup(
-      v-if="showFilePickerPopup"
-      :filePickerType="showFilePickerPopup.filePickerType"
-      :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
-      :popupTitle="showFilePickerPopup.popupTitle"
-      :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup"
-      :options="showFilePickerPopup.options")
     add-card-popup(v-if="showAddCardPopup")
     #tutorial-notifications(v-if="showTutorialNotifications")
       tutorial-notification(
@@ -56,7 +49,6 @@
   import DeleteConfirmPopup     from "@/components/global-popups/delete-confirm-popup.vue";
   import ModalPagesEngine       from '@/components/modal-pages-engine.vue';
   import AboutAppPopup          from "@/components/global-popups/about-app-popup.vue";
-  import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
   import AddCardPopup           from "@/components/global-popups/add-card-popup.vue";
   import { MODAL_PAGE_PROJECT, MODAL_PAGE_QUESTIONNAIRE } from '@/core/constants.js';
   import { isUrlReachable, isEnterpriseApp } from '@/core/apiRygg.js';
@@ -69,7 +61,7 @@
       SidebarMenu,
       ModalPagesEngine,
       // HeaderLinux, HeaderWin, HeaderMac,
-      UpdatePopup, TheInfoPopup, ConfirmPopup, DeleteConfirmPopup, CreateIssuePopup, PiPyPopupUpdate, AboutAppPopup, FilePickerPopup, AddCardPopup,
+      UpdatePopup, TheInfoPopup, ConfirmPopup, DeleteConfirmPopup, CreateIssuePopup, PiPyPopupUpdate, AboutAppPopup, AddCardPopup,
       AppHeader,
       TutorialsChecklist, TutorialNotification
     },
@@ -189,7 +181,6 @@
     },
     computed: {
       ...mapState({
-        showFilePickerPopup:        state => state.globalView.globalPopup.showFilePickerPopup,
         theme:                      state => state.globalView.theme
       }),
       ...mapGetters({
@@ -286,7 +277,6 @@
           this.$store.state.globalView.globalPopup.showNetResult ||
           this.$store.state.globalView.globalPopup.showWorkspaceBeforeImport ||
           this.$store.state.globalView.globalPopup.showCoreSideSettings ||
-          this.$store.state.globalView.globalPopup.showFilePickerPopup ||
           this.$store.state.globalView.globalPopup.showLoadSettingPopup ||
           this.$store.state.globalView.globalPopup.showSaveNetworkPopup ||
           this.$store.state.globalView.globalPopup.showExportNetworkToGitHubPopup ||

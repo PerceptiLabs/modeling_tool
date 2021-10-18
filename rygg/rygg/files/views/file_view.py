@@ -9,7 +9,7 @@ from rygg.files.views.util import (
     make_path_response,
     make_file_content_response
 )
-from rygg.files.utils.file_choosing import open_file_dialog
+from rygg.files.utils.file_choosing import open_file_dialog, open_saveas_dialog
 import os
 from rygg.settings import IS_CONTAINERIZED
 
@@ -72,5 +72,19 @@ def pick_file(request):
 
 
     path = open_file_dialog(initial_dir=initial_dir, file_types=file_types, title=title)
+    return Response({"path": path})
+
+
+@api_view(["GET"])
+def saveas_file(request):
+    if IS_CONTAINERIZED:
+        raise HTTPExceptions.NOT_FOUND.with_content("SaveAs file isn't available in server mode")
+
+    initial_dir = get_optional_param(request, "initial_dir", "~")
+    file_types = get_file_types_from_request(request)
+    title = get_optional_param(request, "title", None)
+
+
+    path = open_saveas_dialog(initial_dir=initial_dir, file_types=file_types, title=title)
     return Response({"path": path})
 

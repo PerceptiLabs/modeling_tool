@@ -47,10 +47,6 @@
 </template>
 <script>
 
-import DataData       from '@/components/network-elements/elements/data-data/set-data-data.vue'
-import DataRandom         from '@/components/network-elements/elements/data-random/set-data-random.vue'
-import DataEnvironment    from '@/components/network-elements/elements/data-environment/set-data-environment.vue'
-
 import DeepLearningFC        from '@/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue'
 import DeepLearningConv      from '@/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue'
 import DeepLearningRecurrent from '@/components/network-elements/elements/deep-learning-recurrent/set-deep-learning-recurrent.vue'
@@ -91,7 +87,6 @@ export default {
   name: 'SidebarSettings',
   components: { 
     SidebarSettingPreview,
-    DataData, DataEnvironment, DataRandom,
     DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     MathArgmax, MathMerge,

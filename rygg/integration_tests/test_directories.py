@@ -32,3 +32,9 @@ def test_post_delete_directories(rest, working_dir):
     assert "plabs" not in rest.get("/directories/get_folder_content", path=f"{home_dir}/Documents/Perceptilabs")["dirs"]
 
 
+def test_directory_chooser(rest):
+    if rest.is_enterprise():
+        with pytest.raises(Exception, match="404"):
+            rest.get("/directories/pick_directory", initial_dir="~")
+    else:
+        rest.get("/directories/pick_directory", initial_dir=os.getcwd(), title="testing title")

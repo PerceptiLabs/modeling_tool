@@ -42,6 +42,7 @@
 import { isWeb } from "@/core/helpers";
 import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
 import { doesFileExist as rygg_doesFileExist } from '@/core/apiRygg';
+import { pickDirectory as rygg_pickDirectory } from '@/core/apiRygg.js';
 
 export default {
   name: "ExportNetwork",
@@ -86,8 +87,11 @@ export default {
       }
       this.$store.dispatch('globalView/SET_filePickerPopup', false);
     },
-    saveLoadFile() {
-      this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setExportPath});
+    async saveLoadFile() {
+      const selectedPath = await rygg_pickDirectory('Choose export path');
+      if (selectedPath && selectedPath.path) {
+        this.setExportPath([selectedPath.path])
+      }
     },
     closePopup() {
       this.$store.commit('globalView/set_exportNetworkPopup', false);

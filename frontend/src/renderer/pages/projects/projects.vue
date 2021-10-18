@@ -356,9 +356,6 @@
           });
         }
       },
-      loadFolderPath() {
-        this.$store.commit("globalView/set_filePickerPopup", true);
-      },
       openTemplate(path) {
         rygg_getModelJson(path)
       },

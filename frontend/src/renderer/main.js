@@ -24,7 +24,6 @@ import BaseRange        from '@/components/base/range.vue'
 import BaseToggleButton from '@/components/base/toggle.vue'
 import BaseToggleExpandButton from '@/components/base/toggle-expand.vue'
 import BaseButton       from '@/components/base/base-button.vue'
-import FilePickerPopup  from '@/components/global-popups/file-picker-popup.vue'
 import PerfectScrollBar from 'vue2-perfect-scrollbar';
 
 import 'vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css'
@@ -76,7 +75,6 @@ Vue.component('base-range', BaseRange);
 Vue.component('base-toggle', BaseToggleButton);
 Vue.component('base-toggle-expand', BaseToggleExpandButton);
 Vue.component('base-button', BaseButton)
-Vue.component('file-picker-popup', FilePickerPopup)
       
 // analytics
 Analytics.googleAnalytics.setup();

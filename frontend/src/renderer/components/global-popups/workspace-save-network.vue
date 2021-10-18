@@ -42,6 +42,7 @@
 <script>
 import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
 import { pathSlash }  from "@/core/constants.js";
+import { pickDirectory as rygg_pickDirectory } from '@/core/apiRygg.js';
 
 export default {
   name: "WorkspaceSaveNetwork",
@@ -115,8 +116,11 @@ export default {
         this.settings.networkPath = '';
       }
     },
-    openFilePicker() {
-      this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setPath});
+    async openFilePicker() {
+      const selectedPath = await rygg_pickDirectory('Save workspace');
+      if (selectedPath && selectedPath.path) {
+        this.setPath([selectedPath.path])
+      }
     },
   }
 }

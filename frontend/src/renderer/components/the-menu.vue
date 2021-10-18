@@ -170,12 +170,6 @@ export default {
     openLoadModelPopup() {      
       this.$store.dispatch('globalView/SET_showImportNetworkfromGitHubOrLocalPopup', true);
     },
-    openLoadPbPopup() {      
-      this.$store.dispatch('globalView/SET_filePickerPopup', {
-        filePickerType: 'file',
-        confirmCallback: this.onLoadPbComplete
-      });
-    },
     onLoadPbComplete(path) {
       console.log('onLoadPbComplete', path);
       this.$store.dispatch('mod_api/API_parse', path);

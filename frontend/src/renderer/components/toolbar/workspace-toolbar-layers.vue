@@ -39,9 +39,6 @@
   import { mapActions, mapGetters }       from 'vuex';
   import {generateID, isEnvDataWizardEnabled} from "@/core/helpers.js";
   
-  import DataData             from '@/components/network-elements/elements/data-data/view-data-data.vue'
-  import DataEnvironment      from '@/components/network-elements/elements/data-environment/view-data-environment.vue'
-  import DataRandom           from '@/components/network-elements/elements/data-random/view-data-random.vue'
 
   import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/view-deep-learning-fc.vue'
   import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/view-deep-learning-conv.vue'
@@ -85,7 +82,6 @@
 export default {
   name: 'WorkspaceToolbarLayers',
   components: {
-    DataData, DataEnvironment, DataRandom,
     DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     TrainNormal, TrainRegression, TrainReinforce, TrainDetector, TrainGan,
@@ -120,7 +116,7 @@ export default {
           iconClass: 'icon-data-group',
           childListClass: '',
           showEl: false,
-          networkElements: isEnvDataWizardEnabled() ? ['DataData', 'DataEnvironment', 'DataRandom', 'IoInput'] : ['DataData', 'DataEnvironment', 'DataRandom'],
+          networkElements: isEnvDataWizardEnabled() ? ['IoInput'] : [],
           id:'tutorial_data',
           color: 'rgba(97, 133, 238, 0.7)',
           borderColor: 'rgba(97, 133, 238, 0.2)',

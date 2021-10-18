@@ -1,11 +1,10 @@
 from django_http_exceptions import HTTPExceptions
-from rygg.files.views.util import (
-        get_path_param,
-        get_required_param,
-        get_optional_param,
-        make_path_response,
-        json_response,
-        )
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from shutil import rmtree
+import os
+
 from rygg.files.models.directory import (
         get_folder_content as get_folder_content_model,
         get_tutorial_data as get_tutorial_data_model,
@@ -13,10 +12,15 @@ from rygg.files.models.directory import (
         resolve_dir as resolve_dir_model,
         get_root_path as get_root_path_model,
         )
-from rest_framework.views import APIView
-from rest_framework.decorators import api_view
-from shutil import rmtree
-import os
+from rygg.files.utils.file_choosing import open_directory_dialog
+from rygg.files.views.util import (
+        get_path_param,
+        get_required_param,
+        get_optional_param,
+        make_path_response,
+        json_response,
+        )
+from rygg.settings import IS_CONTAINERIZED
 
 class DirectoryView(APIView):
     def get(self, request):
@@ -77,4 +81,16 @@ def get_root_path(request):
         return make_path_response(ret)
 
     raise HTTPExceptions.NO_CONTENT
+
+@api_view(["GET"])
+def pick_directory(request):
+    if IS_CONTAINERIZED:
+        raise HTTPExceptions.NOT_FOUND.with_content("pick directory isn't available in server mode")
+
+    initial_dir = get_optional_param(request, "initial_dir", "~")
+    title = get_optional_param(request, "title", None)
+
+
+    path = open_directory_dialog(initial_dir=initial_dir, title=title)
+    return Response({"path": path})
 

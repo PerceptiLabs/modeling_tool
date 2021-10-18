@@ -3,6 +3,8 @@ import { getFirstElementFromObject } from "@/core/helpers";
 export const getDatasetPath = (datasetSettings) => {
   if (datasetSettings.csv_path) {
     return datasetSettings.csv_path;
+  } else if (datasetSettings.filePath) {
+    return datasetSettings.filePath;
   } else if (datasetSettings.featureSpecs && Object.keys(datasetSettings).length > 0) {
     return getFirstElementFromObject(datasetSettings.featureSpecs).csv_path;
   } else {

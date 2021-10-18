@@ -31,9 +31,6 @@
   import TrainDetector    from '@/components/network-elements/elements/train-detector/viewBox-train-detector.vue'
 
   /*view box*/
-  import DataData         from '@/components/network-elements/elements/data-data/viewBox-data-data.vue'
-  import DataRandom         from '@/components/network-elements/elements/data-random/viewBox-data-random.vue'
-  import DataEnvironment  from '@/components/network-elements/elements/data-environment/viewBox-data-environment.vue'
   import DeepLearningFC        from '@/components/network-elements/elements/deep-learning-fc/viewBox-deep-learning-fc.vue'
   import DeepLearningConv      from '@/components/network-elements/elements/deep-learning-conv/viewBox-deep-learning-conv.vue'
   import DeepLearningRecurrent from '@/components/network-elements/elements/deep-learning-recurrent/viewBox-deep-learning-recurrent.vue'
@@ -60,7 +57,6 @@
 export default {
   name: "TheViewBox",
   components: {
-    DataData, DataEnvironment, DataRandom,
     DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     TrainNormal, TrainRegression, TrainReinforce, TrainDetector, TrainGan,

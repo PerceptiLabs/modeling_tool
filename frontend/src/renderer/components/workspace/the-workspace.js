@@ -19,7 +19,6 @@ import WorkspaceSaveNetwork   from "@/components/global-popups/workspace-save-ne
 import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-network.vue";
 import ExportNetworkGitHub    from "@/components/global-popups/export-network-git-hub.vue";
 import ImportModel            from "@/components/global-popups/import-model-popup.vue";
-import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
 import GlobalTrainingSettings from "@/components/global-popups/global-training-settings.vue";
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
@@ -46,7 +45,7 @@ export default {
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetworkGitHub, ImportModel,
     TheTesting, TheViewBox, StartTrainingSpinner,
-    TheToaster, TheMiniMap, FilePickerPopup, TheSidebar,
+    TheToaster, TheMiniMap, TheSidebar,
     CodeWindow, InformationPanel,
     ResourceMonitor, SelectModelModal,
     EmptyNavigation,

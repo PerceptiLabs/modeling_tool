@@ -8,6 +8,12 @@ from rygg.settings import IS_CONTAINERIZED
 if IS_CONTAINERIZED:
     def open_file_dialog(*args, **kwargs):
         pass
+
+    def open_saveas_dialog(*args, **kwargs):
+        pass
+
+    def open_directory_dialog(*args, **kwargs):
+        pass
 else:
     # Some systems allow you to install python w/o tk. Check for that and warn the user
     import pkgutil
@@ -46,7 +52,7 @@ else:
         yield root
         root.destroy()
 
-    def _open_file_dialog(initial_dir=os.path.expanduser('~'), title = None, file_types=None):
+    def _open_file_dialog(fn, initial_dir=os.path.expanduser('~'), title = None, file_types=None):
         # If the initial dir isn't a directory, then askopenfilename will default to the cwd, which isn't helpful
         if not os.path.isdir(initial_dir):
             initial_dir = "~"
@@ -55,7 +61,7 @@ else:
         title = title or "Choose a File"
 
         with _toplevel_window() as root:
-            filename = filedialog.askopenfilename(parent=root, initialdir=initial_dir, title=title, filetypes=file_types)
+            filename = fn(parent=root, initialdir=initial_dir, title=title, filetypes=file_types)
             return filename or None
 
     def open_file_dialog(initial_dir="~", title=None, file_types=None):
@@ -63,4 +69,39 @@ else:
         # We're in a server, so we need to spawn a process for that.
         if file_types:
             file_types = list(file_types)
-        return run_on_main_thread(_open_file_dialog, initial_dir=initial_dir, title=title, file_types=file_types)
+        return run_on_main_thread(
+            _open_file_dialog,
+            filedialog.askopenfilename,
+            initial_dir=initial_dir,
+            title=title,
+            file_types=file_types
+        )
+
+    def open_saveas_dialog(initial_dir="~", title=None, file_types=None):
+        # tkinter requires that you open the dialog from the main thread
+        # We're in a server, so we need to spawn a process for that.
+        if file_types:
+            file_types = list(file_types)
+        return run_on_main_thread(
+            _open_file_dialog,
+            filedialog.asksaveasfilename,
+            initial_dir=initial_dir,
+            title=title,
+            file_types=file_types
+        )
+
+    def _open_directory_dialog(initial_dir=os.path.expanduser('~'), title = None, file_types=None):
+        # If the initial dir isn't a directory, then askopenfilename will default to the cwd, which isn't helpful
+        if not os.path.isdir(initial_dir):
+            initial_dir = "~"
+        initial_dir = os.path.expanduser(initial_dir)
+        title = title or "Choose a Directory"
+
+        with _toplevel_window() as root:
+            ret = filedialog.askdirectory(parent=root, initialdir=initial_dir, title=title)
+            return ret or None
+
+    def open_directory_dialog(initial_dir="~", title=None, file_types=None):
+        # tkinter requires that you open the dialog from the main thread
+        # We're in a server, so we need to spawn a process for that.
+        return run_on_main_thread(_open_directory_dialog, initial_dir=initial_dir, title=title)

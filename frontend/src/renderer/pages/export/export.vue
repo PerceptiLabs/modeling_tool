@@ -126,6 +126,7 @@ import { mapGetters } from "vuex";
 import { isModelTrained } from '@/core/modelHelpers';
 import { isServingEnabled } from '@/core/helpers.js';
 import cloneDeep from 'lodash.clonedeep';
+import { pickDirectory as rygg_pickDirectory } from '@/core/apiRygg.js';
 
 export default {
   name: 'ExportPage',
@@ -228,10 +229,12 @@ export default {
         this.settings.Location = value[0];
         this.wasSavePathChoosen = true;
       }
-      this.$store.dispatch('globalView/SET_filePickerPopup', false);
     },
-    saveLoadFile() {
-      this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setExportPath});
+    async saveLoadFile() {
+      const selectedPath = await rygg_pickDirectory('Choose export path');
+      if (selectedPath && selectedPath.path) {
+        this.setExportPath([selectedPath.path])
+      }
     },
     handleModelSelect(isChecked, modelId) {
       let modelIndex = null;

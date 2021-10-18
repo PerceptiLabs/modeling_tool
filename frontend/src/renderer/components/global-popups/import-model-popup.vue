@@ -56,6 +56,7 @@ import BaseAccordion    from "@/components/base/accordion.vue";
 import ViewLoading from '@/components/different/view-loading.vue'
 import { mapActions, mapState, mapGetters } from 'vuex'
 import { importRepositoryFromGithub as rygg_importRepositoryFromGithub } from '@/core/apiRygg.js';
+import { pickFile as rygg_pickFile } from '@/core/apiRygg.js';
 export default {
   name: "ImportModel",
   components: { BaseGlobalPopup, BaseAccordion, ViewLoading },
@@ -100,14 +101,20 @@ export default {
     closePopup() {
       this.$store.commit('globalView/set_showImportNetworkfromGitHubOrLocalPopup', false);
     },
-    openLoadGithubLocation() {
-      this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setGithubModelLocationPath});
+    async openLoadGithubLocation() {
+      const selectedPath = await rygg_pickFile('Load Github');
+      if (selectedPath && selectedPath.path) {
+        this.setGithubModelLocationPath([selectedPath.path])
+      }
     },
     setGithubModelLocationPath(path) {
       this.saveGithubModelLocation = path[0]
     },
-    openLoadModelPopup() {
-       this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setImportModelLocationPath});
+    async openLoadModelPopup() {
+      const selectedPath = await rygg_pickFile('Load Model');
+      if (selectedPath && selectedPath.path) {
+        this.setImportModelLocationPath([selectedPath.path])
+      }
     },
     setImportModelLocationPath(path) {
       this.saveModelLocation = path[0]
@@ -127,8 +134,6 @@ export default {
     onLoadNetworkConfirmed(path) {
       if (!path || path.length === 0) { return; }
 
-      this.$store.dispatch('globalView/SET_filePickerPopup', false);
-    
       this.loadNetwork(path);
       this.$store.dispatch('globalView/SET_showImportNetworkfromGitHubOrLocalPopup', false);
       this.$store.dispatch('mod_empty-navigation/SET_emptyScreenMode', 0);

@@ -13,8 +13,6 @@
             span(:title="file.path").file-item_path.heavy-text {{ file.path }}
             spinner-upload-file.spinner-upload-file(v-if="loadingFlag")
 
-    //- button.btn.btn--link.light-text(type="button" @click="addFile") + Add {{ nameAddItem }}
-
 </template>
 
 <script>
@@ -75,9 +73,6 @@ export default {
     deleteItem(index) {
       this.fileList.splice(index, 1);
     },
-    addFile() {
-      this.$emit('add-file');
-    }
   }
 }
 </script>

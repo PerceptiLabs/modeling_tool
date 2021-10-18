@@ -147,16 +147,6 @@ div
     template(v-else)
       | Error
 
-
-  file-picker-popup(
-    v-if="showFilePickerPopup",
-    :popupTitle="filepickerOptions.popupTitle",
-    :filePickerType="filepickerOptions.filePickerType",
-    :startupFolder="filepickerOptions.startupFolder",
-    :confirmCallback="filepickerOptions.confirmCallback",
-    :cancelCallback="closePopup"
-    :options="filepickerOptions.others"
-  )
 </template>
 <script>
 import { coreRequest }                        from "@/core/apiWeb.js";
@@ -165,7 +155,6 @@ import reinforcementLearning                  from "@/core/basic-template/reinfo
 import linearRegression                       from "@/core/basic-template/linear-regression.js";
 import objectDetection                        from "@/core/basic-template/object-detection.js";
 import ganTemplate                            from "@/core/basic-template/gan-template.js";
-import FilePickerPopup                        from "@/components/global-popups/file-picker-popup.vue";
 import CsvTable                               from "@/components/different/csv-table.vue";
 import TripleInput                            from "@/components/base/triple-input";
 import InfoTooltip                            from "@/components/different/info-tooltip.vue";
@@ -194,6 +183,8 @@ import { createDataset  as rygg_createDataset }           from "@/core/apiRygg";
 import { getDatasets  as rygg_getDataset }                from "@/core/apiRygg";
 import { uploadFile as rygg_uploadFile }                  from "@/core/apiRygg";
 import { getFile as rygg_getFile }                        from "@/core/apiRygg";
+import { pickFile as rygg_pickFile }                      from "@/core/apiRygg";
+import { pickDirectory as rygg_pickDirectory }            from "@/core/apiRygg";
 import { renderingKernel }              from "@/core/apiRenderingKernel";
 import { formatCSVTypesIntoKernelFormat } from "@/core/helpers/model-helper";
 import { ENTERPRISE_DATASET_FOLDER_PREFIX } from '@/core/constants.js';
@@ -227,7 +218,7 @@ const mockClassList = [
 
 export default {
   name: "SelectModelModal",
-  components: { BaseGlobalPopup, FilePickerPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner, DataColumnOptionSidebar, PublicDatasetsList, ErrorCta },
+  components: { BaseGlobalPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner, DataColumnOptionSidebar, PublicDatasetsList, ErrorCta },
   mixins: [mixinFocus],
   async created() {
     const showNewModelPopup = this.showNewModelPopup;
@@ -311,7 +302,6 @@ export default {
       modelName: "",
       description: "",
       modelPath: "",
-      showFilePickerPopup: false,
       hasChangedModelName: false,
       csvData: null, // parsed dataset and meta
       dataset: null,
@@ -321,13 +311,6 @@ export default {
         randomizedPartitions: true,
         partitions: [70, 20, 10],
         randomSeed: '123',
-      },
-      filepickerOptions: {
-        popupTitle: "",
-        filePickerType: "",
-        startupFolder: "",
-        confirmCallback: "",
-        others: {}
       },
       debouncedCreateModelFunction: null,
       onStep: 1,
@@ -375,7 +358,6 @@ export default {
   },
   mounted() {
     this.modelPath = this.projectPath;
-    document.addEventListener("keyup", this.handleKeyup);
 
     this.debouncedCreateModelFunction = debounce(_ => {
       this.createModel();
@@ -388,7 +370,6 @@ export default {
     }
   },
   beforeDestroy() {
-    document.removeEventListener("keyup", this.handleKeyup);
   },
   methods: {
     ...mapActions({
@@ -739,32 +720,32 @@ export default {
           this.closeModal(false);
         });
     },
-    openFilePicker(openFilePickerReason) {
+    async openFilePicker(openFilePickerReason) {
       if (openFilePickerReason === "setDataPath") {
         if (this.isEnterpriseMode) {
           this.loadDataset();
         } else {
-          this.filepickerOptions.popupTitle = "Choose data to load";
-          this.filepickerOptions.filePickerType = "file";
-          this.filepickerOptions.startupFolder = this.startupDatasetPath;
-          this.filepickerOptions.confirmCallback = this.handleDataPathUpdates;
-          this.filepickerOptions.others.showToTutotialDataFolder = true;
-          this.setNextStep({ currentStep: "tutorial-data-wizard-load-csv" });
-          this.showFilePickerPopup = true;
+          const selectedDataset = await rygg_pickFile(
+            "Choose data to load",
+            this.startupDatasetPath,
+            [{extensions: ["*.csv"]}]
+          );
+          
+          if (selectedDataset && selectedDataset.path) {
+            await this.handleDataPathUpdates([selectedDataset.path])
+          }
         }
-        
       } else {
-        this.filepickerOptions.popupTitle = "Choose Model path";
-        this.filepickerOptions.filePickerType = "folder";
-        this.filepickerOptions.startupFolder = this.modelPath;
-        this.filepickerOptions.confirmCallback = this.updateModelPath;
-        this.showFilePickerPopup = true;
-        this.setNextStep({ currentStep: "tutorial-create-model-model-path" });
+        const selectedDirectory = await rygg_pickDirectory(
+          "Choose Model path",
+          this.modelPath
+        );
+
+        if (selectedDirectory && selectedDirectory.path) {
+          this.updateModelPath([selectedDirectory.path]);
+        }
       }
     
-    },
-    closePopup() {
-      this.showFilePickerPopup = false;
     },
     validDirPath(url) {
       if ((url.length > 3 && url.slice(-1) === "/") || url.slice(-1) === "\\") {
@@ -775,7 +756,6 @@ export default {
     updateModelPath(filepath) {
       this.modelPath =
         filepath && filepath[0] ? this.validDirPath(filepath[0]) : "";
-      this.showFilePickerPopup = false;
     },
     convertToAbsolutePath(elementList, rootPath) {
       const suffix = "/";
@@ -797,21 +777,7 @@ export default {
         }
       }
     },
-    handleKeyup(event) {
-      if (event.key === "Escape") {
-        event.stopPropagation();
-        if (this.showFilePickerPopup) {
-          this.showFilePickerPopup = false;
-        } else {
-          this.closeModal(true);
-        }
-      } else if (event.key === "Enter" && !this.isDisableCreateAction()) {
-        // event.stopPropagation();
-        // this.debouncedCreateModelFunction();
-        // this.chosenTemplate = null;
-        // this.modelName = "";
-      }
-    },
+    
     onModelNameKeyup() {
       if (this.modelName === "") {
         this.hasChangedModelName = false;
@@ -823,13 +789,11 @@ export default {
     },
     async handleDataPathUpdates(dataPath) {
       if (!dataPath || !dataPath.length || !dataPath[0]) {
-        this.showFilePickerPopup = false;
         return;
       }
 
       try {
         this.showLoadingSpinner = true;
-        this.showFilePickerPopup = false;
         this.toNextStep();
         if(this.isEnterpriseMode) {
           this.$store.dispatch("mod_datasetSettings/setStartupFolder", ENTERPRISE_DATASET_FOLDER_PREFIX);
@@ -883,7 +847,6 @@ export default {
           this.autoPopulateName();
         }
       } catch (e) {
-        this.showFilePickerPopup = true;
         this.toPrevStep()
       }
       finally {

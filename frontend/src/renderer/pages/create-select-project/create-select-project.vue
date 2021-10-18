@@ -48,19 +48,7 @@
               )
               span(v-show="!(renameData.projectId === project.project_id && renameData.isProjectFieldActive)").main-list-name.fz-16 {{project.name | trimText}}
               span.main-list-date.fz-16 {{project.created.toString().substring(0, 16).replace("T", " ")}}
-    
-    file-picker-popup(
-      v-if="showFilePickerPopup"
-      popupTitle="Choose default directory for project"
-      :confirmCallback="setNewProjectPath"
-      :cancelCallback="closePopup"
-    )
-    file-picker-popup(
-      v-if="isProjecImportModalOpen"
-      popupTitle="Choose project to import"
-      :confirmCallback="handleProjectImportConfirm"
-      :cancelCallback="closeProjectImport"
-    )
+
     .project-box.set-project-name(
       v-if="isProjectNameModalOpen"
     )
@@ -99,6 +87,8 @@
   import { getFolderContent as rygg_getFolderContent } from '@/core/apiRygg';
   import { getModelJson as rygg_getModelJson } from '@/core/apiRygg';
   import { createFolder as rygg_createFolder } from '@/core/apiRygg';
+  import { pickFile as rygg_pickFile } from '@/core/apiRygg';
+  import { pickDirectory as rygg_pickDirectory } from '@/core/apiRygg';
 
   export default {
     name: 'CreateSelectProject',
@@ -117,8 +107,6 @@
           projectFieldValue: '',
           projectId: null,
         },
-        showFilePickerPopup: false,
-        isProjecImportModalOpen: false,
       }
     },
     created() {
@@ -224,12 +212,16 @@
         this.isProjectNameModalOpen = false;
         this.newProjectName = '';
       },
-      openProjectPathFilePicker() {
-        this.showFilePickerPopup = true;
+      async openProjectPathFilePicker() {
+        const selectedDirectory = await rygg_pickDirectory(
+          "Choose default directory for project"
+        );
+        if (selectedDirectory && selectedDirectory.path) {
+          this.setNewProjectPath([selectedDirectory.path])
+        }
       },
       setNewProjectPath(filepath) {
         this.newProjectLocation = filepath && filepath[0] ? filepath[0] : ''
-        this.closePopup();
       },
       createNewProject() {
         if(!this.newProjectName || !this.newProjectLocation) {
@@ -331,14 +323,13 @@
           this.renameData.projectId = null;
           });
       },
-      closePopup() {
-        this.showFilePickerPopup = false;
-      },
-      openProjectImport() {
-        this.isProjecImportModalOpen = true;
-      },
-      closeProjectImport() {
-        this.isProjecImportModalOpen = false;
+      async openProjectImport() {
+        const selectedProject = await rygg_pickFile(
+          "Choose project to import"
+        )
+        if (selectedProject && selectedProject.path) {
+          this.handleProjectImportConfirm([selectedProject.path])
+        }
       },
       async handleProjectImportConfirm (filepath) {
         const processedFilePath = filepath && filepath[0] ? filepath[0] : ''
@@ -357,7 +348,6 @@
         };
 
         if(this.GET_isProjectWithThisDirectoryExist(processedFilePath)) {
-          this.closeProjectImport();
           this.showInfoPopup('This project already exist');
           return;
         }

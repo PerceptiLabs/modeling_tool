@@ -7,6 +7,7 @@ import { RYGG_URL_CONFIG_PATH }   from "@/core/constants";
 import { RYGG_VERSION_CONFIG_PATH } from "@/core/constants";
 import { whenUrlIsResolved } from '@/core/urlResolver';
 import { whenVersionIsResolved } from '@/core/versionResolver';
+import { filePickerStorageKey } from '@/core/constants.js';
 
 const whenRyggReady = Promise.all([whenUrlIsResolved(RYGG_URL_CONFIG_PATH, RYGG_BASE_URL), whenVersionIsResolved(RYGG_VERSION_CONFIG_PATH)])
   .then(([url]) =>{
@@ -152,6 +153,67 @@ export const doesFileExist = (path) => {
 export const getFileContent = (path) => {
   return whenHaveFileservingToken()
     .then(fs => fs.get(`/files/get_file_content?path=${path}`))
+    .then(res => {
+      return (res.status === 200) ? res.data : null;
+    })
+}
+
+export const pickFile = (title, initialDir = null, fileTyps = null) => {
+  if(!initialDir && localStorage.hasOwnProperty(filePickerStorageKey)) {
+    initialDir = localStorage.getItem(filePickerStorageKey);
+  }
+  return whenHaveFileservingToken()
+    .then(fs => fs.get(`/files/pick_file`, {
+      params: {
+        title: title,
+        initial_dir: initialDir,
+        file_types: fileTyps
+      }
+    }))
+    .then(res => {
+      return (res.status === 200) ? res.data : null;
+    }).then((res) => {
+      if (res && res.path) {
+        localStorage.setItem(filePickerStorageKey, res.path);
+      }
+      return res;
+    })
+}
+
+export const saveAsFile = (title, initialDir = null, fileTyps = null) => {
+  if(!initialDir && localStorage.hasOwnProperty(filePickerStorageKey)) {
+    initialDir = localStorage.getItem(filePickerStorageKey);
+  }
+  return whenHaveFileservingToken()
+    .then(fs => fs.get(`/files/saveas_file`, {
+      params: {
+        title: title,
+        initial_dir: initialDir,
+        file_types: fileTyps
+      }
+    }))
+    .then(res => {
+      return (res.status === 200) ? res.data : null;
+    }).then((res) => {
+      if (res && res.path) {
+        localStorage.setItem(filePickerStorageKey, res.path);
+      }
+      return res;
+    })
+}
+
+export const pickDirectory = (title, initialDir = null) => {
+  if(!initialDir && localStorage.hasOwnProperty(filePickerStorageKey)) {
+    initialDir = localStorage.getItem(filePickerStorageKey);
+  }
+
+  return whenHaveFileservingToken()
+    .then(fs => fs.get(`/directories/pick_directory`, {
+      params: {
+        title: title,
+        initial_dir: initialDir,
+      }
+    }))
     .then(res => {
       return (res.status === 200) ? res.data : null;
     })

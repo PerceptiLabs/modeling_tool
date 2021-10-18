@@ -17,6 +17,7 @@ from rygg.files.views.file_view import (
     FileView,
     get_file_content,
     pick_file,
+    saveas_file,
 )
 from rygg.files.views.directory_view import (
     DirectoryView,
@@ -25,6 +26,7 @@ from rygg.files.views.directory_view import (
     get_folder_content,
     get_resolved_dir,
     get_root_path,
+    pick_directory,
 )
 from rygg.files.views.json_model_view import JsonModelView
 from rygg.files.views.model_directory_view import (modeldirectory_tree, get_modeldirectory)
@@ -52,8 +54,10 @@ urlpatterns = [
     path("files", FileView.as_view()),
     path("files/get_file_content", get_file_content),
     path("files/pick_file", pick_file),
+    path("files/saveas_file", saveas_file),
     path("json_models", JsonModelView.as_view()),
     path("directories", DirectoryView.as_view()),
+    path("directories/pick_directory", pick_directory),
     path("directories/tutorial_data", get_tutorial_data),
     path("directories/drives", get_drives),
     path("directories/get_folder_content", get_folder_content),

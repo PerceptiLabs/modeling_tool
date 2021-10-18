@@ -204,7 +204,8 @@ const actions = {
     commit('gp_ComingSoonPopup', true);
   },
   SET_filePickerPopup({commit}, value) {
-    commit('set_filePickerPopup', value);
+    console.error('globalView/SET_filePickerPopup is deprecated');
+    // commit('set_filePickerPopup', value);
   },
   SET_loadSettingPopup({commit}, value) {
     commit('set_loadSettingPopup', value);
