@@ -11,6 +11,8 @@ resources:
 jobs:
 - job: checkincludedfiles
   displayName: Check included_files.txt
+  pool:
+    vmImage: ubuntu-latest
   steps:
   - task: Bash@3
     inputs:
