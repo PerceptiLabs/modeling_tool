@@ -84,6 +84,8 @@ jobs:
 
 - job: testfrontend
   displayName: Test frontend
+  pool:
+    vmImage: ubuntu-latest
   steps:
   - task: NodeTool@0
     inputs:
