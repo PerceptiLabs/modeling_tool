@@ -1,5 +1,5 @@
 <template lang="pug">
-  div.wrapper
+  div.chart-wrapper-performance
     div.select-wrapper
       base-select(
         :value="currentChart"
@@ -8,19 +8,20 @@
         :selectMultiple="true"
       )
     div.labels-wrapper
-      base-radio(group-name="class-lable" value-input="Validation" v-model="labelForDisplay")
+      base-radio(:group-name="chartUUID" value-input="Validation" v-model="labelForDisplay")
         span Validation
-      base-radio(group-name="class-lable" value-input="Training" v-model="labelForDisplay")
+      base-radio(:group-name="chartUUID" value-input="Training" v-model="labelForDisplay")
         span Training
     chart-switch(
-      key="12"
-      chart-label="Precision"
+      :key="chartUUID"
+      :chart-label="chartTitle"
       :chart-data="getChart"
       :custom-color="colorListAccuracy"
     )
 </template>
 <script>
 import ChartSwitch from "@/components/charts/chart-switch";
+import { v4 as uuidv4  } from 'uuid';
 export default {
   name: 'ViewBoxPerformanceChart',
   components: {
@@ -28,6 +29,10 @@ export default {
   },
   props: {
     chartData: Object,
+    chartTitle: {
+      type: String,
+      required: true,
+    },
     colorListAccuracy: {
       type: Array,
       default: function() {
@@ -44,6 +49,7 @@ export default {
   },
   data() {
     return {
+      chartUUID: uuidv4(),
       currentChart: [],
       chartOptions: [],
       labelForDisplay: 'Validation',
@@ -102,6 +108,9 @@ export default {
 }
 </script>
 <style scoped lang="scss">
+.chart-wrapper-performance {
+  position: relative;
+}
 .select-wrapper {
   z-index: 1;
   position: absolute;

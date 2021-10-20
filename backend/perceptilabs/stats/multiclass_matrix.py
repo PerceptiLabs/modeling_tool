@@ -29,15 +29,44 @@ class MultiClassMatrixStats:
     def get_precision_over_epochs(self, phase='training'):
         summed_matrices = self.get_total_matrices_for_all_epochs(phase=phase)
         num_categories = len(summed_matrices[0])
-        precision = np.zeros((num_categories, len(summed_matrices)))
+        num_epochs = len(summed_matrices) if sum(sum(np.array(summed_matrices[-1]))) > 0 else len(summed_matrices) - 1
+        precision = np.zeros((num_categories, num_epochs))
         for epoch, summed_matrix in enumerate(summed_matrices):
             for i in range(num_categories):
+                if epoch == num_epochs:
+                    continue
                 sum_ = sum(summed_matrix[i])
                 if sum_ > 0:
                     precision[i,epoch] = summed_matrix[i][i]/sum_
                 else:
                     precision[i,epoch] = 0
         return precision
+        
+    def get_recall_over_epochs(self, phase='training'):
+        summed_matrices = self.get_total_matrices_for_all_epochs(phase=phase)
+        num_categories = len(summed_matrices[0])
+        num_epochs = len(summed_matrices) if sum(sum(np.array(summed_matrices[-1]))) > 0 else len(summed_matrices) - 1
+        recall = np.zeros((num_categories, num_epochs))
+        for epoch, summed_matrix in enumerate(summed_matrices):
+            summed_matrix = np.array(summed_matrix)
+            for i in range(num_categories):
+                if epoch == num_epochs:
+                    continue
+                sum_ = sum(summed_matrix[:,i])
+                if sum_ > 0:
+                    recall[i,epoch] = summed_matrix[i,i]/sum_
+                else:
+                    recall[i,epoch] = 0
+        return recall
+        
+    def get_f1_over_epochs(self, precision_over_epochs, recall_over_epochs):
+        f1_over_epochs = np.zeros(precision_over_epochs.shape)
+        for index, _ in np.ndenumerate(f1_over_epochs):
+            if precision_over_epochs[index] == 0 or recall_over_epochs[index] == 0:
+                f1_over_epochs[index] = 0.
+            else:
+                f1_over_epochs[index] = 2*precision_over_epochs[index]*recall_over_epochs[index]/(recall_over_epochs[index] + precision_over_epochs[index])
+        return f1_over_epochs
         
     def get_total_matrix_for_latest_epoch(self, phase='training'):
         epoch = len(self.prediction_matrices)-1

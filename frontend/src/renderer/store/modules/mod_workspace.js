@@ -396,7 +396,7 @@ const getters = {
     })
 
     const elUsedForPerformance = IOComponents.find(el => el.layerType === 'IoOutput');
-    
+    console.log('elUsedForPerformance', elUsedForPerformance);
     let componentsTabs = IOComponents.map(el => ({
         btnId: el.layerName,
         name: el.layerName ,
@@ -408,17 +408,19 @@ const getters = {
           text: 'View the global'
       },
     }))
-    componentsTabs.push({
-      btnId: 'Performance',
-      name:'Performance' ,
-      layerId: elUsedForPerformance.layerId,
-      type: 'component',  // default | component
-      layerType: elUsedForPerformance.layerType,
-      btnInteractiveInfo: {
-        title: 'Performance',
-        text: 'Performance'
-      },
-    });
+    if (elUsedForPerformance.layerSettings.DataType === 'categorical') {
+      componentsTabs.push({
+        btnId: 'Performance',
+        name:'Performance' ,
+        layerId: elUsedForPerformance.layerId,
+        type: 'component',  // default | component
+        layerType: elUsedForPerformance.layerType,
+        btnInteractiveInfo: {
+          title: 'Performance',
+          text: 'Performance'
+        },
+      });
+    }
     componentsTabs.push({
       btnId: "Global Loss",
       btnInteractiveInfo: {title: "Global Loss", text: "Global Loss"},

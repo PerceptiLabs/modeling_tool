@@ -129,10 +129,27 @@
               :custom-color="colorListAccuracy"
             )
       template(v-else-if="sectionTitle === 'Statistics' && currentTab === 'Performance'")
-        view-box-performance-chart(
-          :chartData="chartData.Precision && chartData.Precision.PrecisionOverEpochs"
-          :colorListAccuracy="colorListAccuracy"
-        )
+        .statistics-box
+          .statistics-box_main.statistics-box_col
+            .statistics-box_row
+              .statistics-box_col
+                view-box-performance-chart(
+                  :chartData="chartData.Precision && chartData.Precision.PrecisionOverEpochs"
+                  :colorListAccuracy="colorListAccuracy"
+                  chartTitle="Precision"
+                )
+              .statistics-box_col
+                view-box-performance-chart(
+                  :chartData="chartData.Recall && chartData.Recall.RecallOverEpochs"
+                  :colorListAccuracy="colorListAccuracy"
+                  chartTitle="Recall"
+                )
+              .statistics-box_col
+                view-box-performance-chart(
+                  :chartData="chartData.F1 && chartData.F1.F1OverEpochs"
+                  :colorListAccuracy="colorListAccuracy"
+                  chartTitle="F1"
+                )
       template(v-else)
         .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('ViewBox')")
           .statistics-box_row

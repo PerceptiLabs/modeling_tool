@@ -78,8 +78,8 @@ class CategoricalOutputStats(OutputStats):
         acc_over_epochs = self._get_dataobj_accuracy()
         loss_over_epochs = self._get_dataobj_loss()
         conf_mtx_latest_epoch = self._get_data_obj_confusion_matrix()
-        precision_over_epochs = self._get_data_obj_precision()
-
+        precision_over_epochs, recall_over_epochs, f1_over_epochs = self._get_performance_metrics()
+        
         pred_value = self._get_arbitrary_sample(type_='prediction')
         target_value = self._get_arbitrary_sample(type_='target')
         pred_vs_target_obj = create_data_object(
@@ -101,6 +101,12 @@ class CategoricalOutputStats(OutputStats):
             },
             "Precision": {
                 "PrecisionOverEpochs": precision_over_epochs
+            },
+            "Recall": {
+                "RecallOverEpochs": recall_over_epochs
+            },
+            "F1": {
+                "F1OverEpochs": f1_over_epochs
             }
         }
 
@@ -164,28 +170,41 @@ class CategoricalOutputStats(OutputStats):
 
         return dataobj_cm_in_latest_epoch
 
-    def _get_data_obj_precision(self):
+    def _get_performance_metrics(self):
         precision_training = self._multiclass_matrix.get_precision_over_epochs('training')
         precision_validation = self._multiclass_matrix.get_precision_over_epochs('validation')
-        categories = self._categories or list(range(len(precision_training)))
-        num_epochs = len(self.multiclass_matrix.prediction_matrices)
-        precision_objects = {}
+        
+        recall_training = self._multiclass_matrix.get_recall_over_epochs('training')
+        recall_validation = self._multiclass_matrix.get_recall_over_epochs('validation')
+        
+        f1_training = self._multiclass_matrix.get_f1_over_epochs(precision_training, recall_training)
+        f1_validation = self._multiclass_matrix.get_f1_over_epochs(precision_validation, recall_validation)
+        
+        precision_objects = self._get_performance_metric_data_obj(precision_training, precision_validation)
+        recall_objects = self._get_performance_metric_data_obj(recall_training, recall_validation)
+        f1_objects = self._get_performance_metric_data_obj(f1_training, f1_validation)
+        return precision_objects, recall_objects, f1_objects
+        
+    def _get_performance_metric_data_obj(self, metric_training, metric_validation):
+        categories = self._categories or list(range(len(metric_training)))
+        num_epochs = len(self._multiclass_matrix.prediction_matrices)
+        metric_objects = {}
         for i, category in enumerate(categories):
             if num_epochs > 1:
-                dataobj_precision = create_data_object(
-                [precision_validation[i,], precision_training[i,]],
+                dataobj_metric = create_data_object(
+                [metric_validation[i,], metric_training[i,]],
                 type_list=['line', 'line'],
                 name_list=['Validation', 'Training']
             )
             else:
-                dataobj_precision = create_data_object(
-                    [precision_validation[i,], precision_training[i,]],
+                dataobj_metric = create_data_object(
+                    [metric_validation[i,], metric_training[i,]],
                     type_list=['scatter', 'scatter'],
                     name_list=['Validation', 'Training']
                 )
-            precision_objects[category] = dataobj_precision
-        return precision_objects
-
+            metric_objects[category] = dataobj_metric
+        return metric_objects
+        
     def get_summary(self):
         """ Gets the stats summary for this layer
 

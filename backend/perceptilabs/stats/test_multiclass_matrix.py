@@ -135,3 +135,50 @@ def test_precision_over_epochs():
     precision_validation = obj.get_precision_over_epochs('validation')
     assert np.all(precision_training==np.array([[0.], [0.6]]))
     assert np.all(precision_validation==np.array([[0. ],[0.3]]))
+    
+    
+def test_recall_over_epochs():
+    pm1 = MultiClassMatrix([
+        [0, 1],
+        [2, 3]
+    ])
+    pm2 = MultiClassMatrix([
+        [0, 1],
+        [2, 3]
+    ])
+    pm3 = MultiClassMatrix([
+        [0, 1],
+        [7, 3]
+    ])
+    prediction_matrices = [[(pm1, True),(pm2, True),(pm3, False)]]
+    obj = MultiClassMatrixStats(prediction_matrices=prediction_matrices)
+    recall_training = obj.get_recall_over_epochs('training')
+    recall_validation = obj.get_recall_over_epochs('validation')
+    assert np.all(recall_training==np.array([[0.], [0.75]]))
+    assert np.all(recall_validation==np.array([[0. ],[0.75]]))
+    
+    
+def test_f1_over_epochs():
+    pm1 = MultiClassMatrix([
+        [0, 1],
+        [2, 3]
+    ])
+    pm2 = MultiClassMatrix([
+        [0, 1],
+        [2, 3]
+    ])
+    pm3 = MultiClassMatrix([
+        [0, 1],
+        [7, 3]
+    ])
+    prediction_matrices = [[(pm1, True),(pm2, True),(pm3, False)]]
+    obj = MultiClassMatrixStats(prediction_matrices=prediction_matrices)
+    recall_training = obj.get_recall_over_epochs('training')
+    recall_validation = obj.get_recall_over_epochs('validation')
+    precision_training = obj.get_precision_over_epochs('training')
+    precision_validation = obj.get_precision_over_epochs('validation')
+    
+    f1_training = obj.get_f1_over_epochs(precision_training, recall_training)
+    f1_validation = obj.get_f1_over_epochs(precision_validation, recall_validation)
+    assert np.all(np.around(f1_training, decimals=3)==np.array([[0.], [0.667]])) 
+    assert np.all(np.around(f1_validation, decimals=3)==np.array([[0.], [0.429]])) 
