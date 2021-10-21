@@ -9,6 +9,7 @@ from assertions import (
     assert_eventually, \
 )
 
+MAX_DATASET_SIZE = 10 * 1024 * 1024 # 10 MB
 
 @pytest.mark.timeout(1)
 def test_deleting_model_removes_it_from_dataset_models_list(rest, tmp_project, tmp_dataset):
@@ -166,26 +167,27 @@ def test_remote_categories(rest):
     response = rest.get("/datasets/remote_categories")
     assert "kaggle" in response
 
+
 @pytest.mark.timeout(1)
 def test_remote_list(rest):
     response = rest.get("/datasets/remote_with_categories")
-    is_mnist = lambda record: record.get("Name") == "mnist_data.zip"
-    assert filter(is_mnist, response["datasets"])
+    assert len(response["datasets"]) >= 1
+    key_set = response["datasets"][0].keys()
+    assert "UniqueName" in key_set
+
 
 @pytest.mark.timeout(1)
-
-
-def get_mnist_record(rest):
+def get_remote_record(rest):
     resp = rest.get("/datasets/remote_with_categories")
+
+    # find a dataset under MAX_DATASET_SIZE
     for dataset in resp["datasets"]:
-        if dataset.get("UniqueName") == "mnist_data.zip":
+        if not "SizeBytes" in dataset:
+            continue
+        sz = int(dataset["SizeBytes"])
+        if sz <= MAX_DATASET_SIZE:
             return dataset
     return None
-
-
-@pytest.mark.timeout(1)
-def test_remote_list(rest):
-    assert get_mnist_record(rest)
 
 
 def assert_task_progresses(rest, task_id):
@@ -210,12 +212,12 @@ def assert_task_progresses(rest, task_id):
 
 @pytest.mark.timeout(10)
 def test_create_dataset_from_remote(rest, tmpdir, tmp_project):
-    # don't try this if mnist is already linked to the dataset, which means that we're working on a non-test system
-    mnist_record = get_mnist_record(rest)
-    assert mnist_record
+    # don't try this if the remote dataset is already linked to the dataset, which means that we're working on a non-test system
+    test_record = get_remote_record(rest)
+    assert test_record
 
 
-    resp = rest.post('/datasets/create_from_remote/', {}, id="mnist_data.zip", destination=tmpdir, project_id=tmp_project.id)
+    resp = rest.post('/datasets/create_from_remote/', {}, id=test_record["UniqueName"], destination=tmpdir, project_id=tmp_project.id)
     assert "task_id" in resp
     assert "dataset_id" in resp
 
@@ -239,12 +241,12 @@ def test_create_dataset_from_remote(rest, tmpdir, tmp_project):
 
     # Check that the new dataset points to the remote dataset
     source_url = dataset["source_url"]
-    mnist_url_ending = mnist_record["UniqueName"]
-    assert source_url.endswith(mnist_url_ending)
+    remote_url_ending = test_record["UniqueName"]
+    assert source_url.endswith(remote_url_ending)
 
     # check that remote datasets response now points to the new dataset
-    mnist_record = get_mnist_record(rest)
-    assert mnist_record["localDatasetID"] == dataset_id
+    test_record = get_remote_record(rest)
+    assert test_record["localDatasetID"] == dataset_id
 
     # check that deleting the local copy makes exists_on_disk change to false
     shutil.rmtree(dataset['location'], ignore_errors=True)
