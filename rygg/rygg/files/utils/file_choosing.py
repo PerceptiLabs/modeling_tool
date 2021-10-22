@@ -23,6 +23,22 @@ else:
     from tkinter import filedialog, Tk
 
     from rygg.files.utils.procs import run_on_main_thread
+    from multiprocessing import get_start_method, set_start_method
+    import platform
+
+    def _set_start_method():
+        if not platform.system().lower().startswith("darwin"):
+            return
+
+        start_method = get_start_method(allow_none=True)
+
+        if not start_method:
+            set_start_method("spawn")
+
+        # if osx and not spawn then error
+        elif start_method != "spawn":
+            raise Exception("Integration error: start method must be spawn on osx")
+
 
     # Different OSes have different ways to get the window to the top of the z-order
     @contextmanager
@@ -65,6 +81,8 @@ else:
             return filename or None
 
     def open_file_dialog(initial_dir="~", title=None, file_types=None):
+        _set_start_method()
+
         # tkinter requires that you open the dialog from the main thread
         # We're in a server, so we need to spawn a process for that.
         if file_types:
@@ -78,6 +96,8 @@ else:
         )
 
     def open_saveas_dialog(initial_dir="~", title=None, file_types=None):
+        _set_start_method()
+
         # tkinter requires that you open the dialog from the main thread
         # We're in a server, so we need to spawn a process for that.
         if file_types:
@@ -102,6 +122,8 @@ else:
             return ret or None
 
     def open_directory_dialog(initial_dir="~", title=None, file_types=None):
+        _set_start_method()
+
         # tkinter requires that you open the dialog from the main thread
         # We're in a server, so we need to spawn a process for that.
         return run_on_main_thread(_open_directory_dialog, initial_dir=initial_dir, title=title)
