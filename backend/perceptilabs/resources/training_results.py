@@ -1,6 +1,7 @@
 import base64
 import pickle
 import os
+from perceptilabs.utils import b64decode_and_sanitize
 from perceptilabs.utils import sanitize_path
 
 
@@ -26,13 +27,8 @@ class TrainingResultsAccess:
             return results_dict        
 
     def _get_path(self, training_session_id):
-        padded_id = (training_session_id + '==').encode()  # TODO: should I just use model id for now instead of introducing a new concept!?
-
-        #print("URL: http://localhost:5001/models/blabla/training/{}/status".format(training_session_id))
+        directory = b64decode_and_sanitize(training_session_id)  # For now it's just a base64 path
         
-        directory = base64.urlsafe_b64decode(padded_id).decode()
-        directory = sanitize_path(directory)  # For now, the ID is just the checkpoint dir
-
         os.makedirs(directory, exist_ok=True)
         file_path = os.path.join(directory, 'latest-training-results.pkl')
         return file_path

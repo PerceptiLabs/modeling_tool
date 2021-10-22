@@ -15,7 +15,7 @@ class SessionStart(View):
         self._executor = executor
 
     def dispatch_request(self):
-        """ Starts a training/testing session"""
+        """ Starts a testing session"""
         json_data = request.get_json()
         receiver = json_data.get('receiver')
         user_email = json_data.get('value').get('userEmail')
@@ -23,9 +23,7 @@ class SessionStart(View):
         action = json_data.get('action')
         logger.info(f"Session proxy called with action {action}")
         
-        if action == "Start":
-            task_type = 'training-session'
-        elif action == "startTests":
+        if action == "startTests":
             task_type = 'testing-session'
         else:
             raise ValueError("Unknown action to session start! Got: " + action)        

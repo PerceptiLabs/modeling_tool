@@ -2,13 +2,14 @@ import logging
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.graph.spec import GraphSpec
+from perceptilabs.script import ScriptFactory
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class ModelAccess:
-    def __init__(self, script_factory):    
-        self._script_factory = script_factory
+    def __init__(self, script_factory=None):    
+        self._script_factory = script_factory or ScriptFactory()
 
     def get_training_model(self, model_id, checkpoint_path=None):
         training_model = TrainingModel(

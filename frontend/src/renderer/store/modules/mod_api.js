@@ -297,7 +297,7 @@ const actions = {
       models[id].layers = getters.GET_coreNetworkById(id);
       models[id].model_name = network.networkName;
       models[id].data_path = payload.dataPath;
-      models[id].checkpoint_directory = checkpoint_paths[id];
+      models[id].training_session_id = base64url(checkpoint_paths[id]);
     })
     
     const theData = {
@@ -393,33 +393,23 @@ const actions = {
   },
   
   API_startTraining({dispatch, getters, rootGetters}, { loadCheckpoint = false } = {}) {
-    const network = rootGetters['mod_workspace/GET_currentNetwork'];
+    const modelId = rootGetters['mod_workspace/GET_currentNetworkId'];
+    const network = getters.GET_coreNetworkWithCheckpointConfig(loadCheckpoint);
     const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];
     const userEmail = rootGetters['mod_user/GET_userEmail'];
-    const trainSettings = rootGetters['mod_workspace/GET_modelTrainingSetting'];
+    const trainingSettings = rootGetters['mod_workspace/GET_modelTrainingSetting'];
     const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectory'];
-    const settingCollection = {}
-    if(isEnvDataWizardEnabled()) {
-      settingCollection['trainSettings'] = trainSettings
+    const trainingSessionId = base64url(checkpointDirectory);
+
+    const trackingData = {
+      modelId: modelId,
+      userEmail: userEmail
     }
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: "Start",
-      value: {
-        modelId: rootGetters['mod_workspace/GET_currentNetworkId'],
-        userEmail: userEmail,
-        Layers: getters.GET_coreNetworkWithCheckpointConfig(loadCheckpoint),
-        'checkpointDirectory': checkpointDirectory,
-        'loadCheckpoint': loadCheckpoint,
-        'datasetSettings': datasetSettings,
-        ...settingCollection
-      }
-    };
-    // console.log('API_startTraining', theData);
-    renderingKernel.startSession(theData)
+    
+    renderingKernel.startTraining(modelId, trainingSessionId, network, datasetSettings, trainingSettings, checkpointDirectory, loadCheckpoint, userEmail)
       .then(()=> {
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
-        dispatch('mod_tracker/EVENT_trainingStart', theData.value, {root: true});
+        dispatch('mod_tracker/EVENT_trainingStart', trackingData, {root: true});
         setTimeout(()=> dispatch('mod_workspace/EVENT_chartsRequest', null, {root: true}), 500)
       })
       .catch((err)=> {
@@ -471,13 +461,11 @@ const actions = {
       });
   },
   API_stopTraining({dispatch, rootGetters}, receiver = null) {
+    const modelId = receiver || rootGetters['mod_workspace/GET_currentNetworkId']; 
+    const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](modelId);    
+    const trainingSessionId = base64url(checkpointDirectory);
 
-    const theData = {
-      receiver: receiver || rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'Stop',
-      value: ''
-    };
-    coreRequest(theData)
+    renderingKernel.stopTraining(modelId, trainingSessionId)
       .then((data)=> {
         dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
         dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
@@ -730,27 +718,17 @@ const actions = {
     const modelId = settings.modelId;
     const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettingsByModelId'](settings.modelId);
 
-    const isTraining = ['Training', 'Validation', 'Paused'].includes(rootGetters['mod_workspace/GET_networkCoreStatusByModelId'](settings.modelId));
-
     async function exportClosure() {
-      if (isTraining) {
-        const theData = {
-	        receiver: settings.modelId,
-          action: 'Export',
-          value: settings
-        };
-        return coreRequest(theData);
+      const network = getters.GET_coreNetworkById(settings.modelId);
+      const networkName = getters.GET_networkNameById(modelId)	
+      const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](settings.modelId);       
+      const trainingSessionId = base64url(checkpointDirectory);
+      
+      if (settings.Type != "Serve Gradio") {  // TODO: serving TEMPORARILY falls under export
+        return renderingKernel.exportModel(settings, datasetSettings, userEmail, modelId, network, trainingSessionId)
       } else {
-          const network = getters.GET_coreNetworkById(settings.modelId);
-	  const networkName = getters.GET_networkNameById(modelId)	
-          const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](settings.modelId);       
-
-	if (settings.Type != "Serve Gradio") {  // TODO: serving TEMPORARILY falls under export
-	  return renderingKernel.exportModel(settings, datasetSettings, userEmail, modelId, network, checkpointDirectory)
-        } else {
-	  const url = renderingKernel.waitForServedModelReady("gradio", datasetSettings, userEmail, modelId, network, checkpointDirectory, networkName)
-	  return url;
-	}
+        const url = renderingKernel.waitForServedModelReady("gradio", datasetSettings, userEmail, modelId, network, trainingSessionId, networkName)
+        return url;
       }
     }
 
@@ -1038,7 +1016,10 @@ const actions = {
         hasCheckpoint: false 
       });
     }
-    return renderingKernel.hasCheckpoint(checkpointDirFromProject(path))
+
+    const trainingSessionId = base64url(checkpointDirFromProject(path));
+    
+    return renderingKernel.hasCheckpoint(networkId, trainingSessionId)
       .then(res => {
         return ({
           networkId,

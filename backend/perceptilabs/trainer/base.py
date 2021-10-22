@@ -33,12 +33,12 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class Trainer:
-    def __init__(self, data_loader, training_model, training_settings, checkpoint_directory=None, exporter=None, model_id=None, user_email=None, initial_state=None):
+    def __init__(self, data_loader, training_model, training_settings, training_session_id, exporter=None, model_id=None, user_email=None, initial_state=None):
         self._initial_state = initial_state
         self._training_settings = training_settings.copy()
 
         self._hardware_stats = HardwareStats(
-            refresh_interval=settings.HARDWARE_STATS_REFRESH_INTERVAL)
+            refresh_interval=settings.TRAINING_RESULTS_REFRESH_INTERVAL)  # Worst case scenario, it is a factor of 2 seconds behind.
 
         self._model_id = model_id
         self._user_email = user_email
@@ -51,7 +51,7 @@ class Trainer:
         self._optimizer = self._resolve_optimizer(self._training_settings)
         self._loss_functions = self._setup_loss_functions(self._training_settings)
 
-        self._checkpoint_directory = checkpoint_directory
+        self._training_session_id = training_session_id
         self._auto_checkpoint = training_settings.get('AutoCheckpoint', False)
 
         self._initialize_results()
@@ -160,12 +160,14 @@ class Trainer:
         else:
             logger.info(f"Entering training loop (starting from epoch {self._num_epochs_completed}/{self.num_epochs})")
 
-        if self._checkpoint_directory is not None:
-            logger.info(f"Checkpoints will be saved to {self._checkpoint_directory}")
-
         self._set_status('Training')
         while self._num_epochs_completed < self.num_epochs and not self.is_closed:
             t0 = time.perf_counter()
+            
+            yield from self._sleep_while_paused()
+            if self.is_closed:
+                break
+            
             self._set_status('Training')
 
             yield from self._loop_over_dataset(
@@ -177,9 +179,11 @@ class Trainer:
                 is_training=True,
                 optimizer=self._optimizer
             )
-            time_paused_training = self._sleep_while_paused()
+            
+            yield from self._sleep_while_paused()
             if self.is_closed:
                 break
+
             self._set_status('Validation')
 
             yield from self._loop_over_dataset(
@@ -191,16 +195,11 @@ class Trainer:
                 is_training=False
             )
 
-            time_paused_validation = self._sleep_while_paused()
-            if self.is_closed:
-                break
-
             if self._auto_checkpoint:
                 self._auto_save_epoch(epoch=self._num_epochs_completed)
 
             self._num_epochs_completed += 1
-            epoch_time = time.perf_counter() - t0 - time_paused_training - \
-                time_paused_validation
+            epoch_time = time.perf_counter() - t0 
 
             self._log_epoch_summary(epoch_time)
             self._training_time += epoch_time
@@ -235,19 +234,15 @@ class Trainer:
             logger.error("Exporter not set. Cannot auto export")
             return
 
-        if self._checkpoint_directory is None:
-            logger.error("Auto checkpoint dir not set. Cannot auto export")
-            return
-
         epochs_access = EpochsAccess()
         checkpoint_path = epochs_access.get_checkpoint_path(
-            training_session_id=self.training_session_id,
+            training_session_id=self._training_session_id,
             epoch_id=epoch
         )
         self._exporter.export_checkpoint(checkpoint_path)
 
         state_dict = self.save_state()
-        epochs_access.save_state_dict(self._checkpoint_directory, epoch, state_dict)
+        epochs_access.save_state_dict(self._training_session_id, epoch, state_dict)
 
     def _log_epoch_summary(self, epoch_time):
         logger.info(
@@ -291,7 +286,6 @@ class Trainer:
     @tf.function
     def _work_on_batch(self, model, loss_functions, inputs_batch, targets_batch, is_training, optimizer):
         """ Train or validate on a batch of data """
-
         with tf.GradientTape() as tape:
             predictions_batch, final_and_intermediate_outputs = model(
                 inputs_batch, training=is_training)
@@ -532,11 +526,9 @@ class Trainer:
         return self.status == 'Paused'
 
     def _sleep_while_paused(self):
-        t0 = time.perf_counter()
         while self.is_paused:
-            time.sleep(1)
-
-        return time.perf_counter() - t0
+            time.sleep(0.1)
+            yield
 
     def _store_prev_status(self):
         if self.status == 'Training':
@@ -629,7 +621,7 @@ class Trainer:
             self._exporter.export_checkpoint(
                 os.path.join(export_directory, 'checkpoint.ckpt'))
         else:
-            self._exporter.export(export_directory)
+            self._exporter.export(export_directory, mode)
 
     def export_inference(self, path, mode):
         if self._exporter is not None:
@@ -699,7 +691,8 @@ class Trainer:
             return tf.keras.losses.CategoricalCrossentropy()
         elif loss == 'Dice':
             return dice
-
+        else:
+            raise NotImplementedError(f"No loss function called 'loss'")
 
     def _setup_loss_functions(self, training_settings):
         """ Creates a dict of losses, one per output """
@@ -746,6 +739,14 @@ class Trainer:
         logger.info(f"Saved data dump to {path}")
 
     @property
+    def model_id(self):
+        return self._model_id
+
+    @property
+    def session_id(self):
+        return self.training_session_id
+
+    @property
     def training_session_id(self):
-        return self._checkpoint_directory  # TODO: for now, this is just the ckpt dir...         
+        return self._training_session_id
     

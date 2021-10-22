@@ -2,8 +2,7 @@ import re
 import os
 import pickle
 
-from perceptilabs.utils import sanitize_path
-
+from perceptilabs.utils import b64decode_and_sanitize
 
 class EpochsAccess:
     def get_latest(self, training_session_id, require_checkpoint=True, require_trainer_state=False):
@@ -34,7 +33,7 @@ class EpochsAccess:
 
     def has_saved_epoch(self, training_session_id, require_checkpoint=True, require_trainer_state=True):
         epoch_id = self.get_latest(
-            training_session_id=training_session_id,  # TODO: Frontend needs to send ID
+            training_session_id=training_session_id, 
             require_checkpoint=require_checkpoint,
             require_trainer_state=require_trainer_state
         )
@@ -75,13 +74,14 @@ class EpochsAccess:
             pickle.dump(state_dict, f)
 
     def _resolve_directory_path(self, training_session_id):
-        return sanitize_path(training_session_id)  # For now, the ID is just the checkpoint dir
+        directory = b64decode_and_sanitize(training_session_id)  # For now it's just a base64 path
+        return directory
 
     def _get_epochs(self, training_session_id):
-        if not os.path.isdir(training_session_id):
-            return {}
-
         directory = self._resolve_directory_path(training_session_id)
+
+        if not os.path.isdir(directory):
+            return {}        
 
         def resolve_epoch_and_type(file_name):
             match = re.fullmatch('checkpoint-([0-9]*).ckpt.index', file_name)

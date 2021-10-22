@@ -152,15 +152,21 @@ def exporter(graph_spec, training_model, data_loader):
     yield exporter
 
 
-def test_progress_reaches_one(data_loader, training_model, training_settings):
-    trainer = Trainer(data_loader, training_model, training_settings)
+@pytest.fixture()
+def training_session_id(temp_path):
+    import base64    
+    return base64.urlsafe_b64encode(temp_path.encode()).decode()
+
+    
+def test_progress_reaches_one(data_loader, training_model, training_settings, training_session_id):
+    trainer = Trainer(data_loader, training_model, training_settings, training_session_id)
     assert trainer.progress == 0.0 and trainer.num_epochs_completed == 0
     trainer.run()
     assert trainer.progress == 1.0 and trainer.num_epochs_completed == trainer.num_epochs
 
 
-def test_trainer_has_all_statuses(data_loader, training_model, training_settings):
-    trainer = Trainer(data_loader, training_model, training_settings)
+def test_trainer_has_all_statuses(data_loader, training_model, training_settings, training_session_id):
+    trainer = Trainer(data_loader, training_model, training_settings, training_session_id)
 
     seen_statuses = [trainer.status]
 
@@ -177,8 +183,8 @@ def test_trainer_has_all_statuses(data_loader, training_model, training_settings
     assert seen_statuses == ['Waiting', 'Training', 'Validation', 'Finished']
 
 
-def test_num_completed_batches_are_ok(data_loader, training_model, training_settings):
-    trainer = Trainer(data_loader, training_model, training_settings)
+def test_num_completed_batches_are_ok(data_loader, training_model, training_settings, training_session_id):
+    trainer = Trainer(data_loader, training_model, training_settings, training_session_id)
     trainer.run()
 
     # Run some sanity checks
@@ -190,14 +196,14 @@ def test_num_completed_batches_are_ok(data_loader, training_model, training_sett
     assert trainer.num_batches_completed_this_epoch == trainer.num_batches_per_epoch
 
 
-def test_num_completed_batches_are_ok_even_if_batch_size_is_larger_than_dataset(data_loader, training_model, training_settings):
+def test_num_completed_batches_are_ok_even_if_batch_size_is_larger_than_dataset(data_loader, training_model, training_settings, training_session_id):
     batch_size = 200
     training_settings['Batch_size'] = batch_size
 
     assert data_loader.get_dataset_size(partition='training') > 0 and data_loader.get_dataset_size(partition='training') < batch_size
     assert data_loader.get_dataset_size(partition='validation') > 0 and data_loader.get_dataset_size(partition='validation') < batch_size
 
-    trainer = Trainer(data_loader, training_model, training_settings)
+    trainer = Trainer(data_loader, training_model, training_settings, training_session_id)
     trainer.run()
 
     # Run some sanity checks
@@ -209,7 +215,7 @@ def test_num_completed_batches_are_ok_even_if_batch_size_is_larger_than_dataset(
     assert trainer.num_batches_completed_this_epoch == trainer.num_batches_per_epoch
 
 
-def test_computed_results_do_not_change(data_loader, training_model, training_settings):
+def test_computed_results_do_not_change(data_loader, training_model, training_settings, training_session_id):
     """ Once results have been computed, the Trainer shouldn't modify the structure.
 
     A simple way to test for that is to pickle the structure twice.
@@ -217,7 +223,7 @@ def test_computed_results_do_not_change(data_loader, training_model, training_se
 
     Note: the results themselves should change
     """
-    trainer = Trainer(data_loader, training_model, training_settings)
+    trainer = Trainer(data_loader, training_model, training_settings, training_session_id)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
@@ -236,8 +242,8 @@ def test_computed_results_do_not_change(data_loader, training_model, training_se
     assert repickled_initial_results == pickled_initial_results  # But the initial results shouldn't change.
 
 
-def test_trainer_can_pause_and_unpause(data_loader, training_model, training_settings):
-    trainer = Trainer(data_loader, training_model, training_settings)
+def test_trainer_can_pause_and_unpause(data_loader, training_model, training_settings, training_session_id):
+    trainer = Trainer(data_loader, training_model, training_settings, training_session_id)
     next(trainer.run_stepwise()) # Take the first training steps
 
     trainer.pause()
@@ -247,16 +253,16 @@ def test_trainer_can_pause_and_unpause(data_loader, training_model, training_set
     assert trainer.status != 'Paused'
 
 
-def test_trainer_can_stop(data_loader, training_model, training_settings):
-    trainer = Trainer(data_loader, training_model, training_settings)
+def test_trainer_can_stop(data_loader, training_model, training_settings, training_session_id):
+    trainer = Trainer(data_loader, training_model, training_settings, training_session_id)
 
     next(trainer.run_stepwise()) # Take the first training steps
     trainer.stop()
     assert trainer.status == 'Finished'
 
 
-def test_trainer_can_pause_stop(data_loader, training_model, training_settings):
-    trainer = Trainer(data_loader, training_model, training_settings)
+def test_trainer_can_pause_stop(data_loader, training_model, training_settings, training_session_id):
+    trainer = Trainer(data_loader, training_model, training_settings, training_session_id)
 
     step = trainer.run_stepwise()
     next(step) # Take the first training steps
@@ -266,8 +272,8 @@ def test_trainer_can_pause_stop(data_loader, training_model, training_settings):
     assert trainer.status == 'Finished'
 
 
-def test_trainer_export_checkpoints_atleast_once(graph_spec, data_loader, training_model, training_settings, exporter, temp_path):
-    trainer = Trainer(data_loader, training_model, training_settings, checkpoint_directory=temp_path, exporter=exporter)
+def test_trainer_export_checkpoints_atleast_once(graph_spec, data_loader, training_model, training_settings, exporter, temp_path, training_session_id):
+    trainer = Trainer(data_loader, training_model, training_settings, training_session_id, exporter=exporter)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
@@ -283,8 +289,8 @@ def test_trainer_export_checkpoints_atleast_once(graph_spec, data_loader, traini
 
 
 
-def test_trainer_export_checkpoint_while_training(graph_spec, data_loader, training_model, training_settings, exporter, temp_path):
-    trainer = Trainer(data_loader, training_model, training_settings, exporter=exporter, checkpoint_directory=temp_path)
+def test_trainer_export_checkpoint_while_training(graph_spec, data_loader, training_model, training_settings, exporter, temp_path, training_session_id):
+    trainer = Trainer(data_loader, training_model, training_settings, training_session_id, exporter=exporter)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
@@ -295,8 +301,8 @@ def test_trainer_export_checkpoint_while_training(graph_spec, data_loader, train
     assert 'checkpoint' in os.listdir(temp_path)
 
 
-def test_trainer_export_pb_while_training(graph_spec, data_loader, training_model, training_settings, exporter, temp_path):
-    trainer = Trainer(data_loader, training_model, training_settings, exporter=exporter, checkpoint_directory=temp_path)
+def test_trainer_export_pb_while_training(graph_spec, data_loader, training_model, training_settings, exporter, temp_path, training_session_id):
+    trainer = Trainer(data_loader, training_model, training_settings, training_session_id, exporter=exporter)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
@@ -304,10 +310,10 @@ def test_trainer_export_pb_while_training(graph_spec, data_loader, training_mode
     assert 'saved_model.pb' not in os.listdir(temp_path)
 
 
-def test_trainer_custom_loss(data_loader, training_model, training_settings_custom_loss):
+def test_trainer_custom_loss(data_loader, training_model, training_settings_custom_loss, training_session_id):
     """ Tests if the trainer can finish a full training loop with a loss function not native to the Keras library, such as Dice. """
 
-    trainer = Trainer(data_loader, training_model, training_settings_custom_loss)
+    trainer = Trainer(data_loader, training_model, training_settings_custom_loss, training_session_id)
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
 
@@ -318,11 +324,11 @@ def test_trainer_custom_loss(data_loader, training_model, training_settings_cust
         pass
 
 
-def test_shuffle_is_called_for_training_but_not_for_validation(csv_path, training_model, training_settings_shuffle_data):
+def test_shuffle_is_called_for_training_but_not_for_validation(csv_path, training_model, training_settings_shuffle_data, training_session_id):
     data_loader = MagicMock()
     data_loader.get_dataset_size.return_value = 10
 
-    trainer = Trainer(data_loader, training_model, training_settings_shuffle_data)
+    trainer = Trainer(data_loader, training_model, training_settings_shuffle_data, training_session_id)
 
     step = trainer.run_stepwise()
 
@@ -334,37 +340,37 @@ def test_shuffle_is_called_for_training_but_not_for_validation(csv_path, trainin
         assert kwargs['partition'] == 'validation' and ('shuffle' not in kwargs or not kwargs['shuffle'])
 
 
-def test_trainer_validate_raises_no_error(data_loader, training_model, training_settings):
-    trainer = Trainer(data_loader, training_model, training_settings)
+def test_trainer_validate_raises_no_error(data_loader, training_model, training_settings, training_session_id):
+    trainer = Trainer(data_loader, training_model, training_settings, training_session_id)
     trainer.validate()
 
 
-def test_trainer_validate_raises_error_for_faulty_spec(data_loader, training_model_faulty, training_settings):
-    trainer = Trainer(data_loader, training_model_faulty, training_settings)
+def test_trainer_validate_raises_error_for_faulty_spec(data_loader, training_model_faulty, training_settings, training_session_id):
+    trainer = Trainer(data_loader, training_model_faulty, training_settings, training_session_id)
 
     with pytest.raises(tf.errors.InvalidArgumentError):  # Expects an error since num neurons == 112, while output shape == 1
         trainer.validate()
 
 
-def test_trainer_calls_export_checkpoint_once_per_epoch(graph_spec, data_loader, training_model, training_settings, temp_path):
+def test_trainer_calls_export_checkpoint_once_per_epoch(graph_spec, data_loader, training_model, training_settings, training_session_id, temp_path):
     training_settings['AutoCheckpoint'] = True
     exporter = MagicMock()
 
-    trainer = Trainer(data_loader, training_model, training_settings, exporter=exporter, checkpoint_directory=temp_path)
+    trainer = Trainer(data_loader, training_model, training_settings, training_session_id, exporter=exporter)
     step = trainer.run()
 
     assert exporter.export_checkpoint.call_count == training_settings['Epochs']
 
 
-def test_trainer_load_from_initial_gives_equal_results(graph_spec, data_loader, training_model, training_settings):
-    trainer1 = Trainer(data_loader, training_model, training_settings)
+def test_trainer_load_from_initial_gives_equal_results(graph_spec, data_loader, training_model, training_settings, training_session_id):
+    trainer1 = Trainer(data_loader, training_model, training_settings, training_session_id)
 
     step = trainer1.run_stepwise()
     for _ in range(3):
         next(step)
 
     saved_state = trainer1.save_state()
-    trainer2 = Trainer(data_loader, training_model, training_settings, initial_state=saved_state)
+    trainer2 = Trainer(data_loader, training_model, training_settings, training_session_id, initial_state=saved_state)
     trainer2.ensure_data_initialized()  # Without this, some data dependent results may be wrong
 
     results1 = trainer1.get_results()

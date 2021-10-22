@@ -55,7 +55,7 @@ def test_launcher_starts_endpoint():
     launcher.start(
         graph_spec=MagicMock(),
         data_loader=MagicMock(),
-        checkpoint_directory=MagicMock(),
+        training_session_id=MagicMock(),
         model_name='my model'                
     )
     wait_for_gradio_up(launcher)
@@ -219,7 +219,7 @@ def test_predictions_endpoint(script_factory, data_loader):
     launcher.start(
         graph_spec=make_graph_spec(data_loader),
         data_loader=data_loader,
-        checkpoint_directory=None,
+        training_session_id=None,
         model_name='my model'        
     )
     wait_for_gradio_up(launcher)

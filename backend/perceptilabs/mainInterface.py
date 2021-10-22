@@ -5,7 +5,6 @@ import pprint
 from sentry_sdk import configure_scope
 
 
-from perceptilabs.coreInterface import coreLogic
 from perceptilabs.utils import stringify
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.caching.utils import get_data_metadata_cache
@@ -49,15 +48,6 @@ class Interface():
             return self._has_remaining_work
         else:
             return True
-
-    def _addCore(self, receiver):
-        core = coreLogic(receiver, self._issue_handler, self._session_id)
-        self._cores[receiver] = core
-
-    def _setCore(self, receiver):
-        if receiver not in self._cores:
-            self._addCore(receiver)
-        self._core = self._cores[receiver]
 
     def _set_testcore(self, model_ids):
         """
@@ -132,8 +122,6 @@ class Interface():
             if action == 'startTests':
                 model_ids = value['models'].keys()
                 self._set_testcore(model_ids)
-        else:
-            self._setCore(receiver)
 
         try:
             response = self._create_response(receiver, action, value, is_retry, on_finished)
@@ -155,36 +143,7 @@ class Interface():
         return response, self._issue_handler
 
     def _create_response(self, receiver, action, value, is_retry, on_finished):
-        if action == "Close":
-            self.shutDown()
-
-        elif action == "closeCore":
-            return self.close_core(receiver)
-
-        elif action == "updateResults":
-            response = self._core.updateResults(value)
-            return response
-
-        elif action == "Start":
-            return self._create_response_start_training(value, is_retry, on_finished)
-
-        elif action == "Stop":
-            response = self._core.Stop()
-            return response
-
-        elif action == "Pause":
-            response = self._core.Pause()
-            return response
-
-        elif action == "Unpause":
-            response = self._core.Unpause()
-            return response
-
-        elif action == "Export":
-            response = self._create_response_export(value, receiver)
-            return response
-
-        elif action == "startTests":
+        if action == "startTests":
             response = self._create_response_tests(value, on_finished)
             return response
 
@@ -269,7 +228,7 @@ class Interface():
                     return
             models_info[model_id] = {
                 'graph_spec': graph_spec,
-                'checkpoint_directory': value_dict['checkpoint_directory'],
+                'training_session_id': value_dict['training_session_id'],
                 'data_path': value_dict['data_path'],
                 'data_loader': data_loader,
                 'model_name': value_dict['model_name'],

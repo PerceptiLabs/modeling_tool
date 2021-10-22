@@ -28,18 +28,24 @@ def access(monkeypatch):
     return access
 
 
-def test_get_latest_require_checkpoint(access, temp_path):
-    epoch_id = access.get_latest(temp_path, require_checkpoint=True, require_trainer_state=False)
+@pytest.fixture()
+def training_session_id(temp_path):
+    import base64    
+    return base64.urlsafe_b64encode(temp_path.encode()).decode()
+
+
+def test_get_latest_require_checkpoint(access, training_session_id):
+    epoch_id = access.get_latest(training_session_id, require_checkpoint=True, require_trainer_state=False)
     assert epoch_id == 200
 
     
-def test_get_latest_require_state(access, temp_path):
-    epoch_id = access.get_latest(temp_path, require_checkpoint=False, require_trainer_state=True)
+def test_get_latest_require_state(access, training_session_id):
+    epoch_id = access.get_latest(training_session_id, require_checkpoint=False, require_trainer_state=True)
     assert epoch_id == 100
 
     
-def test_get_latest_require_both(access, temp_path):
-    epoch_id = access.get_latest(temp_path, require_checkpoint=True, require_trainer_state=True)
+def test_get_latest_require_both(access, training_session_id):
+    epoch_id = access.get_latest(training_session_id, require_checkpoint=True, require_trainer_state=True)
     assert epoch_id == 10
 
 

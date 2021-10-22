@@ -3,32 +3,33 @@ import logging
 
 from flask_cors import CORS
 from flask_compress import Compress
-from flask import Flask as _Flask, request, g, jsonify, abort, make_response, json
-from flask.json import JSONEncoder as _JSONEncoder
+from flask import Flask, request, g, jsonify, abort, make_response, json
+from flask.json import JSONEncoder
 from werkzeug.exceptions import HTTPException
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
-from perceptilabs.resources.models import ModelAccess
+from perceptilabs.caching.utils import get_preview_cache, get_data_metadata_cache, NullCache
+from perceptilabs.messaging.base import get_message_broker
+from perceptilabs.tasks.utils import get_task_executor
 from perceptilabs.resources.training_results import TrainingResultsAccess
+from perceptilabs.resources.models import ModelAccess
+from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.script import ScriptFactory
-from perceptilabs.caching.utils import NullCache
 from perceptilabs.endpoints.version.base import Version
 from perceptilabs.endpoints.network_data.base import NetworkData, Previews
 from perceptilabs.endpoints.data.base import PutData, IsDataReady
-from perceptilabs.endpoints.training.base import TrainingStatus, TrainingResults
 from perceptilabs.endpoints.model_recommendations.base import ModelRecommendations
 from perceptilabs.endpoints.type_inference.base import TypeInference
 from perceptilabs.endpoints.layer_code.base import LayerCode
 from perceptilabs.endpoints.session.base import SessionStart, ActiveSessions, SessionProxy, SessionCancel, SessionWorkers
 from perceptilabs.endpoints.serving.base import ServingStart, IsServedModelReady, Models
-from perceptilabs.endpoints.export.base import Export
 from perceptilabs.endpoints.set_user.base import SetUser
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.issues import traceback_from_exception
 from perceptilabs.session.threaded_executor import ThreadedExecutor
-from perceptilabs.resources.epochs import EpochsAccess
+from perceptilabs.models.api import create_blueprint as create_models_blueprint
 import perceptilabs.utils as utils
 import perceptilabs.session.utils as session_utils
 
@@ -53,28 +54,39 @@ if utils.is_prod() and not utils.is_pytest():
     )
     logger.info(f"Initialized sentry for environment '{SENTRY_ENVIRONMENT}' and release '{SENTRY_RELEASE}'")
 
-class JSONEncoder(_JSONEncoder):
+class MyJSONEncoder(JSONEncoder):
     def default(self, obj):
         return utils.convert(obj)
 
-class Flask(_Flask):
-    json_encoder = JSONEncoder
-
+    
 def create_app(
         data_metadata_cache = NullCache(),
         preview_cache = NullCache(),
         data_executor = utils.DummyExecutor(),
-        session_executor = session_utils.get_threaded_session_executor(single_threaded=True)
+        session_executor = session_utils.get_threaded_session_executor(single_threaded=True),
+        task_executor = get_task_executor(),
+        message_broker = get_message_broker(),            
+        models_access = ModelAccess(),        
+        epochs_access = EpochsAccess(),
+        training_results_access = TrainingResultsAccess()        
 ):
     app = Flask(__name__)
-    cors = CORS(app, resorces={r'/d/*': {"origins": '*'}})
+    app.json_encoder = MyJSONEncoder
 
+    CORS(app, resources={r'/*': {'origins': '*'}})
+    
     compress = Compress()
     compress.init_app(app)
 
-    model_access = ModelAccess(ScriptFactory())
-    epochs_access = EpochsAccess()
-    training_results_access = TrainingResultsAccess()    
+    models = create_models_blueprint(
+        task_executor,
+        message_broker,
+        models_access,
+        epochs_access,
+        training_results_access,
+        data_metadata_cache        
+    )
+    app.register_blueprint(models)
 
     app.add_url_rule(
         '/set_user',
@@ -105,14 +117,14 @@ def create_app(
         methods=['POST'],
         view_func=NetworkData.as_view(
             'network_data',
-            model_access,
+            models_access,
             data_metadata_cache=data_metadata_cache, preview_cache=preview_cache
         )
     )
 
     previews_view = Previews.as_view(
         'previews',
-        model_access,
+        models_access,
         data_metadata_cache=data_metadata_cache,
         preview_cache=preview_cache
     )
@@ -136,7 +148,7 @@ def create_app(
     app.add_url_rule(
         '/layer_code',
         methods=['POST'],
-        view_func=LayerCode.as_view('layer_code', model_access)
+        view_func=LayerCode.as_view('layer_code', models_access)
     )
 
     app.add_url_rule(
@@ -187,39 +199,9 @@ def create_app(
     app.add_url_rule(
         '/serving/models/<model_id>', methods=['GET'], view_func=models_view)
 
-
-    app.add_url_rule(
-        '/models/<model_id>/training/<training_session_id>/status',
-        methods=['GET'],
-        view_func=TrainingStatus.as_view('training_status', training_results_access)
-    )
-
-    app.add_url_rule(
-        '/models/<model_id>/training/<training_session_id>/results',
-        methods=['GET'],
-        view_func=TrainingResults.as_view('training_results', training_results_access)
-    )    
-
-    app.add_url_rule(
-        '/export',
-        methods=['POST'],
-        view_func=Export.as_view('export', model_access, epochs_access, data_metadata_cache=data_metadata_cache)
-    )
-
     @app.route('/healthy', methods=['GET'])
     def healthy():
         return '{"healthy": "true"}'
-
-
-    @app.route('/has_checkpoint', methods=['GET'])
-    def has_checkpoint():
-        checkpoint_directory = request.args.get('directory')  # TODO: frontend should send ID
-
-        has_checkpoint = epochs_access.has_saved_epoch(
-            checkpoint_directory, require_trainer_state=False)
-        
-        return jsonify(has_checkpoint)
-
 
     @app.before_request
     def before_request():
@@ -246,4 +228,5 @@ def create_app(
         logger.exception(f"Error in request '{request.endpoint}'")
         return make_response(message), 500
 
+    #print(app.url_map)
     return app

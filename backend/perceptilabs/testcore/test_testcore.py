@@ -75,7 +75,13 @@ def graph_spec_few_epochs(csv_path):
 
 
 @pytest.fixture()
-def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
+def training_session_id(temp_path):
+    import base64    
+    return base64.urlsafe_b64encode(temp_path.encode()).decode()
+
+
+@pytest.fixture()
+def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader, training_session_id):
     training_model = TrainingModel(script_factory, graph_spec_few_epochs)
     exporter = Exporter(graph_spec_few_epochs, training_model, data_loader)
     checkpoint_path = os.path.join(temp_path, 'checkpoint-0000.ckpt')
@@ -83,7 +89,7 @@ def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
     models_info = {
         1: {
             'graph_spec': graph_spec_few_epochs,
-            'checkpoint_directory': temp_path,
+            'training_session_id': training_session_id,
             'data_path': csv_path,
             'data_loader': data_loader,
             'model_name': 'unit test'

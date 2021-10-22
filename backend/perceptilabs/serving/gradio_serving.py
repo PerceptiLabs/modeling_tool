@@ -42,12 +42,12 @@ class GradioLauncher:
     def get_url(self):
         return self._url_dict['url']
 
-    def start(self, graph_spec, data_loader, checkpoint_directory, model_name):
+    def start(self, graph_spec, data_loader, training_session_id, model_name):
         #if utils.is_debug():
         #    raise NotImplementedError("Cannot run Gradio in debug mode!")  # Flask development servers interfere
         self._thread = threading.Thread(
             target=self._worker,
-            args=(graph_spec, data_loader, checkpoint_directory, model_name, self._url_dict),
+            args=(graph_spec, data_loader, training_session_id, model_name, self._url_dict),
             daemon=True
         )
         self._thread.start()
@@ -62,17 +62,17 @@ class GradioLauncher:
         self._stop_event.set()
         self._thread.join()
         
-    def _worker(self, graph_spec, data_loader, checkpoint_directory, model_name, url_dict):
+    def _worker(self, graph_spec, data_loader, training_session_id, model_name, url_dict):
         try:
             return self._worker_internal(
-                graph_spec, data_loader, checkpoint_directory, model_name, url_dict)
+                graph_spec, data_loader, training_session_id, model_name, url_dict)
         except:
             logger.exception("Error in worker")
             raise
         
-    def _worker_internal(self, graph_spec, data_loader, checkpoint_directory, model_name, url_dict):        
+    def _worker_internal(self, graph_spec, data_loader, training_session_id, model_name, url_dict):        
         inference_model = self._get_inference_model(
-            graph_spec, data_loader, checkpoint_directory)
+            graph_spec, data_loader, training_session_id)
 
         metadata = data_loader.metadata
         inputs = {
@@ -121,15 +121,15 @@ class GradioLauncher:
 
         interface.close()
         
-    def _get_inference_model(self, graph_spec, data_loader, checkpoint_directory):
+    def _get_inference_model(self, graph_spec, data_loader, training_session_id):
         epoch_id = self._epochs_access.get_latest(
-            training_session_id=checkpoint_directory,  # TODO: F/E should send ID
+            training_session_id=training_session_id, 
             require_checkpoint=True,
             require_trainer_state=False
         )
 
         checkpoint_path = self._epochs_access.get_checkpoint_path(
-            training_session_id=checkpoint_directory, epoch_id=epoch_id)  # TODO: F/E should send ID
+            training_session_id=training_session_id, epoch_id=epoch_id)
 
         model = self._model_access \
             .get_training_model(
@@ -193,7 +193,7 @@ class GradioSession(Session):
 
     def on_start_called(self, payload, is_retry):
         graph_spec = self._model_access.get_graph_spec(payload['network'])  # TODO: F/E should send ID
-        checkpoint_directory = payload['checkpointDirectory']
+        training_session_id = payload['trainingSessionId']
         user_email = payload['userEmail']
         model_name = payload['modelName']
         
@@ -202,7 +202,7 @@ class GradioSession(Session):
 
         csv_path = payload['datasetSettings']['filePath']  # TODO: move one level up        
         data_loader = self._get_data_loader(csv_path, dataset_settings, user_email)
-        self._launcher.start(graph_spec, data_loader, checkpoint_directory, model_name)
+        self._launcher.start(graph_spec, data_loader, training_session_id, model_name)
 
     def _get_data_loader(self, csv_path, dataset_settings, user_email):
         key = ['pipelines', user_email, dataset_settings.compute_hash()]
@@ -210,5 +210,6 @@ class GradioSession(Session):
         data_metadata = cache.get(key)
 
         file_access = FileAccess(os.path.dirname(csv_path))         
-        data_loader = DataLoader.from_csv(file_access, csv_path, dataset_settings, metadata=data_metadata)        
+        data_loader = DataLoader.from_csv(
+            file_access, csv_path, dataset_settings, metadata=data_metadata)        
         return data_loader

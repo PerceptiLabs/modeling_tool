@@ -17,37 +17,35 @@ const whenRenderingKernelReady = whenUrlIsResolved(RENDERING_KERNEL_URL_CONFIG_P
 
 export const renderingKernel = {
 
-  async hasCheckpoint(directory) {
+  async hasCheckpoint(modelId, trainingSessionId) {
     return whenRenderingKernelReady     
-      .then(rk => rk.get(`/has_checkpoint?directory=${directory}`))
+      .then(rk => rk.get(`/models/${modelId}/training/${trainingSessionId}/has_checkpoint`))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
   },
 
-  async exportModel(exportSettings, datasetSettings, userEmail, modelId, network, checkpointDirectory) {
+  async exportModel(exportSettings, datasetSettings, userEmail, modelId, network, trainingSessionId) {
     const payload = {
       exportSettings: exportSettings,
       datasetSettings: datasetSettings,
       network: network,
-      checkpointDirectory: checkpointDirectory, 
       userEmail: userEmail,
-      modelId: modelId,
     };
     return whenRenderingKernelReady
-      .then(rk => rk.post('/export', payload))
+      .then(rk => rk.post(`/models/${modelId}/training/${trainingSessionId}/export`, payload))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
   },
 
-  async serveModel(type, datasetSettings, userEmail, modelId, network, checkpointDirectory, modelName) {
+  async serveModel(type, datasetSettings, userEmail, modelId, network, trainingSessionId, modelName) {
     const payload = {
       type: type,
       payload: {
         datasetSettings: datasetSettings,
         network: network,
-        checkpointDirectory: checkpointDirectory,
+	trainingSessionId: trainingSessionId,
         userEmail: userEmail,
         modelName: modelName,
         modelId: modelId,
@@ -238,6 +236,35 @@ export const renderingKernel = {
     })();
   },
 
+  async startTraining(modelId, trainingSessionId, network, datasetSettings, trainingSettings, checkpointDirectory, loadCheckpoint, userEmail) {
+    const payload = {
+      network: network,      
+      datasetSettings: datasetSettings,
+      trainingSettings: trainingSettings,
+      checkpointDirectory: checkpointDirectory,
+      loadCheckpoint: loadCheckpoint,
+      userEmail: userEmail      
+    };
+    
+    return whenRenderingKernelReady
+      .then(rk => rk.post(`/models/${modelId}/training/${trainingSessionId}`, payload))
+      .then(res => {
+        if (res.status !== 200) {
+          throw new Error('Failed to start training');
+        }
+      })
+  },
+
+  async stopTraining(modelId, trainingSessionId) {
+    return whenRenderingKernelReady
+      .then(rk => rk.put(`/models/${modelId}/training/${trainingSessionId}/stop`))
+0      .then(res => {
+        if (res.status !== 200) {
+          throw new Error('Failed to pause training');
+        }
+      })
+  },
+
   async startSession(payload) {
     return whenRenderingKernelReady
       .then(rk => rk.post('/session/start', payload))
@@ -247,7 +274,7 @@ export const renderingKernel = {
         }
       })
   },
-
+  
   async sessionProxy(action, receiver, userEmail, data) {
     const payload = {
       action: action,

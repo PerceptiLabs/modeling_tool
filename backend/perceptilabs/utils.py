@@ -1,3 +1,4 @@
+import base64
 import math
 import psutil
 import GPUtil
@@ -498,3 +499,10 @@ def find_free_port_in_range(min_port, max_port):
     raise IOError('no free ports')
 
 
+def b64decode_and_sanitize(input_):
+    padded = (input_ + '==').encode()
+    decoded = base64.urlsafe_b64decode(padded).decode()
+    sanitized = sanitize_path(decoded)
+    return sanitized
+    
+    

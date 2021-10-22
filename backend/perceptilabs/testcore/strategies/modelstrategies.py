@@ -15,7 +15,7 @@ class LoadInferenceModel():
         self._stopped = False
 
     @classmethod
-    def from_checkpoint(cls, checkpoint_directory, graph_spec, data_loader):
+    def from_checkpoint(cls, training_session_id, graph_spec, data_loader):
         """
         load model from checkpoint and graphspec
         """
@@ -23,13 +23,13 @@ class LoadInferenceModel():
 
         epochs_access = EpochsAccess()                
         epoch_id = epochs_access.get_latest(
-            training_session_id=checkpoint_directory,  # TODO: Frontend needs to send ID
+            training_session_id=training_session_id,
             require_checkpoint=True,
             require_trainer_state=False
         )
 
         checkpoint_path = epochs_access.get_checkpoint_path(
-            training_session_id=checkpoint_directory,
+            training_session_id=training_session_id,
             epoch_id=epoch_id
         )
         
