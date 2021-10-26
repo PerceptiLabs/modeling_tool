@@ -840,9 +840,8 @@ export default {
       this.$store.commit('mod_workspace/updateCheckpointPaths');
       
       this.$store.dispatch('mod_workspace/saveCurrentModelAction')
-        .then(_ => {
-          this.$store.dispatch('mod_api/API_startTraining', { loadCheckpoint: false });
-
+        .then(async (_) => {
+          await this.$store.dispatch('mod_api/API_startTraining', { loadCheckpoint: false });
           this.$store.dispatch('mod_workspace/SET_openStatistics', true);
           this.$store.dispatch('mod_workspace/setViewType', 'statistic');
           this.$store.dispatch('mod_workspace/SET_openTest', null);

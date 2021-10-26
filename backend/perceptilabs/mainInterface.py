@@ -173,7 +173,8 @@ class Interface():
     def _create_response_start_training(self, request_value, is_retry, on_finished):
         graph_dict = request_value['Layers']
         graph_spec = self._model_access.get_graph_spec(model_id=graph_dict)  # TODO: f/e should send an ID
-        
+        training_session_id = request_value.get('trainingSessionId', None)
+        self._core.clean_old_results(training_session_id)
         self._core.set_running_mode('training')
         model_id = int(request_value.get('modelId', None))
         user_email = request_value.get('userEmail', None)
@@ -181,7 +182,7 @@ class Interface():
         dataset_settings = request_value.get('datasetSettings', None)
         checkpoint_directory = request_value.get('checkpointDirectory', None)
         load_checkpoint = request_value.get('loadCheckpoint', False)
-
+        
         response = self._core.start_core(
             graph_spec,
             model_id,

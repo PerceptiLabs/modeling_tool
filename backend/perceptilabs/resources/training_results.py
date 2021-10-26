@@ -3,8 +3,8 @@ import pickle
 import os
 from perceptilabs.utils import b64decode_and_sanitize
 from perceptilabs.utils import sanitize_path
-
-
+import time
+import platform
 class TrainingResultsAccess:
     def store(self, training_session_id, results):
         if training_session_id is None:
@@ -32,4 +32,17 @@ class TrainingResultsAccess:
         os.makedirs(directory, exist_ok=True)
         file_path = os.path.join(directory, 'latest-training-results.pkl')
         return file_path
+        
+    def remove(self, training_session_id):
+        
+        if training_session_id is not None:
+            path = self._get_path(training_session_id)
+            if os.path.isfile(path):
+                while True:     #without this, deleting file operation breaks in windows os
+                    try:
+                        os.remove(path)
+                        break
+                    except:
+                        continue
+        
 

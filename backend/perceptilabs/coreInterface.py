@@ -9,7 +9,6 @@ from perceptilabs.exporter.base import Exporter
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
-
 class TrainingSessionInterface():
     def __init__(self, message_broker, model_access, epochs_access, results_access):
         self._message_broker = message_broker
@@ -22,6 +21,7 @@ class TrainingSessionInterface():
             pass
         
     def run_stepwise(self, data_loader, model_id, training_session_id, training_settings, load_checkpoint, user_email, results_interval=None, is_retry=False):
+        self._clean_old_status(training_session_id)
         graph_spec = self._model_access.get_graph_spec(model_id)
         
         epoch_id = self._epochs_access.get_latest(
@@ -109,3 +109,6 @@ class TrainingSessionInterface():
             trainer.export(payload['export_directory'], mode=payload['mode'])
         else:
             print(f"Unknown event '{event}'")  # TODO: use logger..
+
+    def _clean_old_status(self, training_session_id):
+        self._results_access.remove(training_session_id)

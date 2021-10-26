@@ -82,8 +82,8 @@ export default {
       this.updateCheckpointPaths();
 
       this.$store.dispatch('mod_workspace/saveCurrentModelAction')
-        .then(_ => {
-          this.API_startTraining({ loadCheckpoint: withWeights });
+        .then(async (_) => {
+          await this.API_startTraining({ loadCheckpoint: withWeights });
           this.setCurrentStatsIndex(this.currentNetworkIndex);
           this.$store.commit('mod_workspace/update_network_meta', {key: 'coreStatus', networkID: this.currentNetwork.networkID, value: {Status: 'Created'}});
           this.SET_openStatistics(true);

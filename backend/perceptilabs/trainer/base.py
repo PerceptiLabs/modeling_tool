@@ -280,7 +280,6 @@ class Trainer:
 
                 self._num_batches_completed_all_epochs += 1
                 set_num_batches_completed_this_epoch(steps_completed + 1)
-
                 yield
 
     @tf.function
@@ -589,7 +588,6 @@ class Trainer:
             'mem_usage': self._mem_usage,
             'layer_stats': self.get_layer_stats()
         }
-        #dict_ = {}
         t1 = time.perf_counter()
         logger.debug(f"get_results finished. Duration: {t1 - t0}")
         return dict_

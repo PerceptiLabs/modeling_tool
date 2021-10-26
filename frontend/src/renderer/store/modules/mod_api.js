@@ -405,8 +405,7 @@ const actions = {
       modelId: modelId,
       userEmail: userEmail
     }
-    
-    renderingKernel.startTraining(modelId, trainingSessionId, network, datasetSettings, trainingSettings, checkpointDirectory, loadCheckpoint, userEmail)
+    return renderingKernel.startTraining(modelId, trainingSessionId, network, datasetSettings, trainingSettings, checkpointDirectory, loadCheckpoint, userEmail)
       .then(()=> {
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
         dispatch('mod_tracker/EVENT_trainingStart', trackingData, {root: true});
@@ -763,10 +762,11 @@ const actions = {
           : rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'];
 
     const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](networkId);
-    
+
     const trainingSessionId = base64url(checkpointDirectory);
     renderingKernel.getTrainingStatus(networkId, trainingSessionId)
       .then((data)=> {
+        console.log('[DBG][END]->getStatus', JSON.parse(JSON.stringify(data)));
         if (!data) return;
         
         dispatch('mod_workspace/SET_statusNetworkCoreDynamically', {modelId: networkId, ...data}, {root: true})
@@ -787,6 +787,7 @@ const actions = {
     const trainingSessionId = base64url(checkpointDirectory);
     renderingKernel.getTrainingStatus(networkId, trainingSessionId)
       .then((data)=> {
+        console.log('getStatusRes:', data);
         dispatch('mod_workspace/SET_statusNetworkCoreDynamically', {
           ...data,
           modelId: modelId,

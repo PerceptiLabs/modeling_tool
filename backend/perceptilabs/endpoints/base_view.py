@@ -23,7 +23,6 @@ class BaseView(View):
         file_access = FileAccess(os.path.dirname(csv_path))          
         data_loader = DataLoader.from_csv(
             file_access, csv_path, dataset_settings, metadata=data_metadata)
-
         formatted_key = cache.put(key, data_loader.metadata)
         logger.info(f"Inserted metadata into cache (dataset key: {formatted_key})")
 
