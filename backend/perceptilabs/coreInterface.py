@@ -30,12 +30,14 @@ class TrainingSessionInterface():
             require_trainer_state=True
         )
 
+        initial_state = None
         checkpoint_path = None        
         if load_checkpoint or is_retry:
             checkpoint_path = self._epochs_access.get_checkpoint_path(
                 training_session_id=training_session_id,
                 epoch_id=epoch_id
             )
+            initial_state = self._epochs_access.load_state_dict(training_session_id, epoch_id)            
         
         training_model = self._model_access.get_training_model(
             model_id, checkpoint_path=checkpoint_path)
@@ -43,7 +45,7 @@ class TrainingSessionInterface():
         exporter = Exporter(
             graph_spec, training_model, data_loader,
             model_id=model_id, user_email=user_email
-        )        
+        )
         
         trainer = Trainer(
             data_loader,
@@ -52,7 +54,8 @@ class TrainingSessionInterface():
             training_session_id,
             exporter=exporter,
             model_id=model_id,
-            user_email=user_email
+            user_email=user_email,
+            initial_state=initial_state
         )
 
         training_step = trainer.run_stepwise()

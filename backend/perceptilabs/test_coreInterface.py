@@ -9,6 +9,7 @@ from perceptilabs.data.utils.builder import DatasetBuilder
 from perceptilabs.coreInterface import TrainingSessionInterface
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.script.base import ScriptFactory
+from perceptilabs.resources.epochs import EpochsAccess
 
 
 def make_session_id(string):
@@ -270,7 +271,7 @@ def test_load_checkpoint(message_broker, data_loader, graph_spec, training_model
     model_access.get_training_model.return_value = training_model
     model_access.get_graph_spec.return_value = graph_spec
 
-    epochs_access = MagicMock()
+    epochs_access = EpochsAccess()
     results_access = MagicMock()
     
     interface = TrainingSessionInterface(

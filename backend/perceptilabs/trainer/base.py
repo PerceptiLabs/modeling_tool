@@ -58,14 +58,13 @@ class Trainer:
         self._data_initialized = False
 
     def _initialize_results(self):
-        self._num_epochs = int(self._training_settings['Epochs'])
         self._batch_size = int(self._training_settings['Batch_size'])
         self._shuffle_training_set = self._training_settings['Shuffle']
         self._headless = False
 
         self._num_batches_per_epoch = -1  # Not known until data loader is ran
         self._num_batches_all_epochs = -1  # Not known until data loader is ran
-
+            
         if self._initial_state is None:
             self._set_status('Waiting')
             self._training_time = 0.0
@@ -73,6 +72,7 @@ class Trainer:
             self._num_batches_completed_all_epochs = 0
             self._set_num_training_batches_completed_this_epoch(0)
             self._set_num_validation_batches_completed_this_epoch(0)
+            self._num_epochs = int(self._training_settings['Epochs'])
         else:
             initial_state = self._initial_state
             self._set_status(self._initial_state['status'])
@@ -83,7 +83,7 @@ class Trainer:
                 initial_state['num_training_batches_completed_this_epoch'])
             self._set_num_validation_batches_completed_this_epoch(
                 initial_state['num_validation_batches_completed_this_epoch'])
-
+            self._num_epochs = int(self._training_settings['Epochs']) + initial_state['num_epochs_completed']
         self._reset_tracked_values(self._initial_state)
 
     def ensure_data_initialized(self):
@@ -163,7 +163,6 @@ class Trainer:
         self._set_status('Training')
         while self._num_epochs_completed < self.num_epochs and not self.is_closed:
             t0 = time.perf_counter()
-            
             yield from self._sleep_while_paused()
             if self.is_closed:
                 break
@@ -211,7 +210,8 @@ class Trainer:
             yield
 
         if not self._auto_checkpoint:  # At least save the final one.
-            self._auto_save_epoch(epoch=self._num_epochs_completed)
+            if self._num_epochs_completed > 0 or self._set_num_training_batches_completed_this_epoch > 0:
+                self._auto_save_epoch(epoch=self._num_epochs_completed)
 
 
         self._set_status('Finished')
