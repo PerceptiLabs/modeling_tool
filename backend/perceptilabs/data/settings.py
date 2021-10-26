@@ -195,9 +195,11 @@ class FeatureSpec(MyPydanticBaseModel):
 class DatasetSettings(MyPydanticBaseModel):
     feature_specs: Dict[str, FeatureSpec] = {}
     partitions: Partitions = Partitions()
+    name: str = ''
 
     @classmethod
     def from_dict(cls, dict_):
+        name = dict_.get('filePath', '')
         feature_specs = {
             feature_name: FeatureSpec.from_dict(feature_dict)
             for feature_name, feature_dict in dict_['featureSpecs'].items()
@@ -206,7 +208,8 @@ class DatasetSettings(MyPydanticBaseModel):
 
         return cls(
             partitions=partitions,
-            feature_specs=feature_specs
+            feature_specs=feature_specs,
+            name=name
         )
 
     @property
@@ -219,7 +222,7 @@ class DatasetSettings(MyPydanticBaseModel):
     def compute_hash(self):
         hasher = hashlib.md5()
         hasher.update(self.partitions.compute_hash().encode())
-
+        hasher.update(self.name.encode())
         for name, spec in self.feature_specs.items():
             hasher.update(name.encode())
             hasher.update(spec.compute_hash().encode())

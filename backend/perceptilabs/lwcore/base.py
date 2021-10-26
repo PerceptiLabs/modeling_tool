@@ -82,19 +82,20 @@ class LightweightCore:
         assert len(all_results) == len(subgraph_spec)
         return all_results, all_durations, all_used_cache
 
-    def _cache_key(self, layer_spec, subgraph_spec, dataset_hash):
+    def _cache_key(self, layer_spec, subgraph_spec, dataset_hash, data_batch_hash):
         layer_hash = subgraph_spec.compute_field_hash(layer_spec, include_ancestors=True)
         hasher = hashlib.md5()
         hasher.update(str(layer_hash).encode())
         hasher.update(dataset_hash.encode())
+        hasher.update(data_batch_hash.encode())
         return ['previews', hasher.hexdigest()]
 
 
     def _get_layer_results(self, layer_spec, subgraph_spec, ancestor_results, data_batch, dataset_hash):
         timer = Timer()
         desc = f"layer {layer_spec.id_} [{layer_spec.type_}]."
-
-        key = self._cache_key(layer_spec, subgraph_spec, dataset_hash)
+        data_batch_hash = self._compute_batch_data_hash(data_batch)
+        key = self._cache_key(layer_spec, subgraph_spec, dataset_hash, data_batch_hash)
 
         def calculate_result():
             with timer.wrap('compute'):
@@ -139,6 +140,13 @@ class LightweightCore:
             strategy = DefaultStrategy()
         return strategy
 
+    def _compute_batch_data_hash(self, data_batch):
+        hasher = hashlib.sha256()
+        for key in data_batch.keys():
+            array = data_batch[key].numpy()
+            hasher.update(array.tostring())
+        return hasher.hexdigest()
+        
     def _get_flat_data_batch(self):
         data_batch = {}
         inputs_batch, targets_batch = self._data_loader.get_example_batch(

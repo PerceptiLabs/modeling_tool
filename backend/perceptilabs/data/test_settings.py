@@ -191,3 +191,12 @@ def test_unequal_settings_have_unequal_hash(settings_dict):
     assert s1.compute_hash() != s2.compute_hash()
 
 
+def test_datasets_with_different_names_have_unequal_hash(settings_dict):
+    sd1 = copy.deepcopy(settings_dict)
+    sd2 = copy.deepcopy(settings_dict)
+    
+    sd2['filePath'] = "~/test_data2.csv"
+    
+    s1 = DatasetSettings.from_dict(sd1)
+    s2 = DatasetSettings.from_dict(sd2)
+    assert s1.compute_hash() != s2.compute_hash()
