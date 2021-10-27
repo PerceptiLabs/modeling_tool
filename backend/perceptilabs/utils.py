@@ -71,6 +71,11 @@ def is_dev():
     return get_version() == "development"
 
 
+def is_debug():
+    args = set(sys.argv)
+    return '--debug' in args or '-d' in args
+
+
 def is_prod():
     return not is_dev()
 

@@ -39,7 +39,7 @@ def main():
     perceptilabs.logconf.setup_console_logger(queue=issue_handler._logs)
 
     logger = logging.getLogger(perceptilabs.logconf.APPLICATION_LOGGER)
-    
+
     # utils.disable_gpus()  # Rendering and training kernels will compete for resources when running on the same machine. 
     if args.debug:
         app = create_app(

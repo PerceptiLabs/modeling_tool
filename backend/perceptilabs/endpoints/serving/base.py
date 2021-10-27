@@ -22,7 +22,9 @@ class ServingStart(View):
         """ Starts a training/testing session"""
 
         if utils.is_docker():
-            return jsonify({'error': 'serving is not implemented for the docker version'})
+            message = 'serving is not implemented for the docker version'
+            logger.error(message)
+            return jsonify({'error': message}), 501
         
         json_data = request.get_json()
 
@@ -33,6 +35,11 @@ class ServingStart(View):
         user_email = json_data.get('userEmail')
 
         if serving_type == "gradio":
+            if utils.is_debug():
+                message = 'gradio serving is not implemented for debug mode'
+                logger.error(message)                
+                return jsonify({'error': message}), 501
+            
             self._executor.start_session('gradio-session', payload)            
         else:
             raise NotImplementedError("No serving type called '{serving_type}'")

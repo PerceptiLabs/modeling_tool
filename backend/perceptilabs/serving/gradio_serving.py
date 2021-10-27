@@ -110,7 +110,7 @@ class GradioLauncher:
             inputs=list(inputs.values()),
             outputs=list(targets.values())
         )
-        
+
         flask_app, path_to_local_server, share_url = \
             interface.launch(share=False, prevent_thread_lock=True)  # Warning: Gradio conflicts with our Flask development server. URL is only valid when we run the kernel with debug == False
 
