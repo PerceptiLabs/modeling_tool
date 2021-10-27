@@ -383,11 +383,16 @@ def test_create_dataset_from_remote(rest, tmpdir, tmp_project):
     remote_url_ending = test_record["UniqueName"]
     assert source_url.endswith(remote_url_ending)
 
+    # re-fetch the remotes list so we can check the localDatasetId
+    remotes = [d for d in rest.get('/datasets/remote/') if d['UniqueName'] == test_record['UniqueName']]
+    assert remotes
+    test_record = remotes[0]
+
     # check that remote datasets response now points to the new dataset
     for remote,_ in get_datasets_with_size(rest):
         if remote["UniqueName"] == test_record["UniqueName"]:
             assert test_record["localDatasetID"] == dataset_id
-        break
+            break
 
     # check that deleting the local copy makes exists_on_disk change to false
     shutil.rmtree(os.path.dirname(dataset.location), ignore_errors=True)

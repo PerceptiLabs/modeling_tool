@@ -76,8 +76,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
     def remote_categories(self, request):
         return Response(self.fetch_remote_categories(), 201)
 
-    @action(detail=False, methods=['GET'])
-    def remote_with_categories(self, request):
+    def fetch_remote_datasets_list(self):
         lines = lines_from_url(settings.DATA_LIST)
         remote_datasets = list(csv_lines_to_dict(lines))
 
@@ -93,16 +92,19 @@ class DatasetViewSet(viewsets.ModelViewSet):
             if id:
                 dataset["localDatasetID"] = id
 
+        return remote_datasets
+
+    @action(detail=False, methods=['GET'])
+    def remote_with_categories(self, request):
         response = {
             "categories": self.fetch_remote_categories(),
-            "datasets": remote_datasets,
+            "datasets": self.fetch_remote_datasets_list(),
         }
         return Response(response, 201)
 
     @action(detail=False, methods=['GET'])
     def remote(self, request):
-        lines = lines_from_url(settings.DATA_LIST)
-        entries = list(csv_lines_to_dict(lines))
+        entries = self.fetch_remote_datasets_list()
         return Response(entries, 201)
 
 
