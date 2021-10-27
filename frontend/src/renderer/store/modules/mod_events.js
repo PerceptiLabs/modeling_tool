@@ -77,9 +77,6 @@ const mutations = {
   set_componentEvent_test_receiveData(state) {
     state.componentEvents.test.receiveData++;
   },
-  set_componentEvent_test_sessionIsClosed(state) {
-    state.componentEvents.test.sessionIsClosed++;
-  },
   set_enableCustomHotKey(state, value) {
     state.isEnableCustomHotKey = value
   },
@@ -484,9 +481,6 @@ const actions = {
   },
   SET_enableCustomHotKey({commit}, val) {
     commit('set_enableCustomHotKey', val)
-  },
-  EVENT_componentEvent_test_nextSampleClick({commit}) {
-    commit('set_componentEvent_test_nextSampleClick');
   },
   EVENT_componentEvent_model_resetSettingClick({commit}) {
     commit('set_componentEvent_model_resetSettingClick');

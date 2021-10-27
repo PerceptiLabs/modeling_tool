@@ -91,7 +91,7 @@
             template(v-if="isDatasetOpened(dataset.dataset_id)")  
               div.models-list-row.model-list-item.model-list-item-child(
                 v-for="(model, index) in getModelsByDataSetId(dataset.dataset_id)"
-                @contextmenu.stop.prevent="openContext($event, index)"
+                @contextmenu.stop.prevent="openContext($event, model.networkID)"
                 :key="'Valid_' + model.networkID"
                 :class="{'is-selected': isItemSelected(model.networkID)}")
                 div.column-1
@@ -102,7 +102,7 @@
                   .editable-field.model-name-wrapper
                     span.model-name(
                       :title="model.networkName"
-                      v-if="!isRenamingItem(index)" 
+                      v-if="!isRenamingItem(model.networkID)" 
                       v-tooltip:bottom="'Click to open Model'" 
                       @click.stop="goToNetworkView(model.networkID)"
                     ) {{model.networkName}}
@@ -217,25 +217,17 @@
     data: function () {
       return {
         isSelectedSortType: 0,
-        // searchValue: '',
         isNewUser: false,
-        sortOptions: [
-          {name: 'Name', value: 1},
-          {name: 'Date Last Opened', value: 2},
-          {name: 'Date Last Modified', value: 3},
-          {name: 'Date Created', value: 4},
-          {name: 'Size', value: 5},
-        ],
         initialModelList: mockModelList,
         modelList: mockModelList,
         selectedListIds: [],
         isImportModelsOpen: false,
-        contextModelIndex: null,
+        contextModelId: null,
         isContextOpened: false,
         modelContextStyles: {},
 
         // for renaming models
-        renameIndex: null,
+        renameId: null,
         renameValue: null,
         showUser: !process.env.NO_KC,
         dataSetIsOpenedStateArray: [],
@@ -262,25 +254,11 @@
       statusLocalCore() {
         return this.$store.state.mod_api.statusLocalCore;
       },
-      // filteredWorkspaceContent() {
-      //   let initialModelList = [...this.workspaceContent];
-      //   return initialModelList.filter(model => model.networkName.toLowerCase().indexOf(this.searchValue.toLowerCase()) !== -1);
-      // }
-      // workspaceContent() {
-      //   return this.$store.state.mod_workspace.workspaceContent;
-      // },
+      get_modelIndexById() {
+        return this.$store.getters['mod_workspace/GET_networkIndexById'](this.renameId);
+      }
     },
     watch: {
-      // searchValue: function (newValue) {
-      //   let initialModelList = [...this.initialModelList];
-      //   initialModelList = initialModelList.filter(model => model.name.toLocaleLowerCase().indexOf(newValue.toLowerCase()) !== -1);
-      //   let initialModelListIds = initialModelList.map(model => model.id);
-      //   this.selectedListIds = this.selectedListIds.filter(id => initialModelListIds.indexOf(id) !== -1);
-        
-      //   console.log(initialModelList)
-      //   this.modelList = initialModelList;
-      //   this.onSortByChanged(this.isSelectedSortType);
-      // },
       hotKeyPressDelete() {
         if (!this.projects) { return; }
 
@@ -321,9 +299,7 @@
         set_currentModelIndex: 'mod_workspace/SET_currentModelIndex',
         createProjectModel:  'mod_project/createProjectModel',
         setActivePageAction: 'modal_pages/setActivePageAction',
-        delete_network :     'mod_workspace/DELETE_network',
         delete_networkById:  'mod_workspace/DELETE_networkById',        
-        UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
         closeStatsTestViews:  'mod_workspace/SET_statisticsAndTestToClosed',
         setCurrentView:       'mod_tutorials/setCurrentView',
         setNextStep:          'mod_tutorials/setNextStep',
@@ -401,7 +377,6 @@
         
         if(localStorage.getItem(LOCAL_STORAGE_HIDE_DELETE_MODAL)) {
           for (const networkId of this.selectedListIds) {
-            this.$store.dispatch('mod_tracker/EVENT_modelDeletion');
             await this.delete_networkById(networkId);
           }
           this.selectedListIds = [];
@@ -411,9 +386,6 @@
               const promises = [];
 
               for (const networkId of this.selectedListIds) {
-                // promises.push(this.delete_networkById(networkId));
-                this.$store.dispatch('mod_tracker/EVENT_modelDeletion');
-
                 await this.delete_networkById(networkId);
               }
               
@@ -499,23 +471,23 @@
           this.showInfoPopup("The model does not have any statistics. Run this model to generate statistics.");
         }
       },
-      openContext(e, modelIndex) {
+      openContext(e, modelId) {
         const { pageX, pageY } = e;
         this.modelContextStyles = {
           top: pageY + 'px',
           left: pageX + 'px',
         };
         this.isContextOpened = true;
-        this.contextModelIndex = modelIndex;
+        this.contextModelId = modelId;
         document.addEventListener('click', this.closeContext);
       },
       closeContext() {
         document.removeEventListener('click', this.closeContext);
-        this.contextModelIndex = null;
+        this.contextModelId = null;
         this.isContextOpened = false
       },
       handleContextOpenModel() {
-        this.goToNetworkView(this.workspaceContent[this.contextModelIndex].networkID);
+        this.goToNetworkView(this.contextModelId);
         this.closeContext();
       },
 
@@ -525,16 +497,14 @@
           return;
         }
 
-        const modelIndex = this.contextModelIndex;
+        const modelId = this.contextModelId;
 
         if(localStorage.getItem(LOCAL_STORAGE_HIDE_DELETE_MODAL)) {
-          this.$store.dispatch('mod_tracker/EVENT_modelDeletion');
-          await this.delete_network(modelIndex);
+          await this.delete_networkById(modelId);
         } else {
           this.popupDeleteConfirm({
             ok: async () => {
-              this.$store.dispatch('mod_tracker/EVENT_modelDeletion');
-              await this.delete_network(modelIndex);
+              await this.delete_networkById(modelId);
             }
           });
         }
@@ -560,25 +530,25 @@
           this.showInfoPopup("Kernel is offline when calling 'handleContextRenameModel'");
           return;
         }
-        this.renameIndex = this.contextModelIndex;
-        this.renameValue = this.workspaceContent[this.renameIndex].networkName;
-
-        // setTimeout(() => {
-        //   this.$refs.titleInput.focus();
-        // }, 1000);
+        this.renameId = this.contextModelId;
+        this.renameValue = this.workspaceContent[this.get_modelIndexById].networkName;
+        setTimeout(() => {
+          this.$refs.titleInput[0].focus();
+        }, 300);
       },
 
-      isRenamingItem(index) {
-        return this.renameIndex === index;
+      isRenamingItem(modelId) {
+        return this.renameId === modelId;
       },
 
       renameModel() {
         // this.setNetworkNameAction(text);
-        if (this.renameIndex !== null) {
-          this.set_currentNetwork(this.renameIndex);
+        if (this.renameId !== null) {
+        const networkIndex = this.get_modelIndexById;
+          this.set_currentNetwork(networkIndex); // @todo
           this.setNetworkNameAction(this.renameValue);
         }
-        this.renameIndex = null;
+        this.renameId = null;
         this.renameValue = null;
       },
       formatDate (dateString) {

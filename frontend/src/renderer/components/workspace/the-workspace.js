@@ -20,7 +20,6 @@ import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-ne
 import ExportNetworkGitHub    from "@/components/global-popups/export-network-git-hub.vue";
 import ImportModel            from "@/components/global-popups/import-model-popup.vue";
 import GlobalTrainingSettings from "@/components/global-popups/global-training-settings.vue";
-import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
 import TheMiniMap             from '@/components/different/the-mini-map.vue'
@@ -44,7 +43,7 @@ export default {
     NetworkField, TextEditable,
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetworkGitHub, ImportModel,
-    TheTesting, TheViewBox, StartTrainingSpinner,
+    TheViewBox, StartTrainingSpinner,
     TheToaster, TheMiniMap, TheSidebar,
     CodeWindow, InformationPanel,
     ResourceMonitor, SelectModelModal,
@@ -403,7 +402,6 @@ export default {
     ...mapActions({
       popupConfirm:               'globalView/GP_confirmPopup',
       net_trainingDone:           'globalView/NET_trainingDone',
-      delete_network:             'mod_workspace/DELETE_network',
       set_openStatistics:         'mod_workspace/SET_openStatistics',
       set_openTest:               'mod_workspace/SET_openTest',
       set_elementUnselect:        'mod_workspace/SET_elementUnselect',
@@ -549,21 +547,6 @@ export default {
         }
       }
 
-    },
-    deleteTabNetwork(index) {
-      let hasUnsavedChanges = this.hasUnsavedChanges(this.workspace[index].networkID);
-      if (hasUnsavedChanges) {
-        this.popupConfirm(
-          {
-            text: `${this.workspace[index].networkName} has unsaved changes`,
-            cancel: () => { return; },
-            ok: () => {
-              this.delete_network(index);
-            }
-          });
-      } else {
-        this.delete_network(index);
-      }
     },
     notificationWindowStateHandlerNew(selectedTab){
       let state = true;
@@ -769,8 +752,6 @@ export default {
     },    
     trainStop() {
       this.stopTraining();
-      
-      this.$store.dispatch('mod_tracker/EVENT_trainingCompleted', 'User stopped');
     },
     trainPause() {
       this.pauseTraining();

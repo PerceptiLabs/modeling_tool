@@ -183,19 +183,6 @@ const actions = {
       mixPanel.track('Training Layer View', {'Layer Name': '', 'Chart Type': ''});
     }
   },
-  /* Test */
-  EVENT_testOpenTab() {
-    mixPanel.track('Test Open Tab');
-  },
-  EVENT_testPlay({}, data) {
-    mixPanel.track('Test Play', data);
-  },
-  EVENT_testStop() {
-    mixPanel.track('Test Stop');
-  },
-  EVENT_testMove({}, direction) {
-    mixPanel.track('Test Move', {direction});
-  },
   /* Training/test view tab */
   EVENT_viewboxMetricSelect({}, { view = 'Statistics', layerType = '', selectedMetric = '' }) {
     mixPanel.track('Viewbox metric selected', { view, layerType, selectedMetric } );

@@ -86,6 +86,13 @@ const state = {
 };
 
 const getters = {
+  GET_networkIndexById: (state) => (networkId) => {
+    const networkIndex = state.workspaceContent.findIndex(w => w.networkID == networkId);
+    if(networkIndex === -1) {
+      throw new Error(`Network: ${networkId} doesn't exists.`);
+    }
+    return networkIndex
+  },
   GET_defaultNetworkTemplate(state) {
     return state.defaultModelTemplate;
   },
@@ -2013,10 +2020,6 @@ const actions = {
       resolve();
     });
   },
-  DELETE_network({dispatch}, index) {
-    const networkID = state.workspaceContent[index].networkID;
-    return dispatch('DELETE_networkById', networkID);
-  },
   DELETE_networkById({commit, dispatch}, networkId) {
     return new Promise(resolve => {
 
@@ -2039,7 +2042,7 @@ const actions = {
       const modelApiMeta = state.workspaceContent[index].apiMeta;
       // deleting in rygg
       dispatch('mod_project/deleteModel', modelApiMeta, {root: true});
-
+      dispatch('mod_tracker/EVENT_modelDeletion', null, { root: true});
       commit('delete_networkById', networkId);
       resolve();
     })
@@ -2133,7 +2136,6 @@ const actions = {
   SET_chartsRequestsIfNeeded({state, dispatch}, networkID) {
     // This function is used to determine if the page has been refreshed after the training
     // has started, but before it is completed.
-
     const network = state.workspaceContent.find(network => network.networkID === networkID);
 
     console.log('SET_chartsRequestsIfNeeded', networkID, network);
@@ -2165,10 +2167,6 @@ const actions = {
         network.networkMeta.chartsRequest.waitGlobalEvent) {
         // statistics done, tests have started
         dispatch('EVENT_startDoRequest', true);
-      } else if (network.networkMeta.coreStatus.Status === 'Finished' &&
-        network.networkMeta.coreStatus.Progress >= 1) {
-        // statistics done, tests done
-        dispatch('mod_api/API_postTestMove', 'nextStep', {root: true});
       } else {
         dispatch('EVENT_onceDoRequest', true);
       }
