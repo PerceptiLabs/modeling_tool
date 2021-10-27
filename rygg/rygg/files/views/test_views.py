@@ -2,7 +2,7 @@ from unittest.mock import patch, Mock
 from django.test import TestCase
 import unittest
 from django_http_exceptions import HTTPExceptions
-from rygg.files.views.file_view import FileView
+from rygg.files.views.file_view import FileView, get_file_content
 from rygg.files.views.directory_view import (
         DirectoryView,
         get_tutorial_data,
@@ -24,6 +24,7 @@ from rest_framework.test import APIRequestFactory, APIClient
 import json
 import os
 import platform
+import tempfile
 
 
 class TestCaseBase(TestCase):
@@ -107,6 +108,16 @@ class FileViewTestCase(TestCaseBase):
         import secrets
         request_path = os.path.join("~", "{secrets.token_urlsafe()}")
         response = self.call_and_expect_error("head", f"/files?path={request_path}", HTTPExceptions.NO_CONTENT)
+
+
+class FileContentsViewTestCase(TestCaseBase):
+    VIEW_CLASS = MethodViewWrapper(get_file_content)
+    def test_get_file_content_with_invalid_unicode(self):
+        INVALID_UTF=b"text,label\nFreeMsg Hey there darling it's been 3 week's now and no word back! I'd like some fun you up for it still? Tb ok! std chgs to send \xc3\xa5\xc2\xa31.50 to rcv,spam\n"
+        with tempfile.NamedTemporaryFile(mode="wb", delete=False) as f:
+            f.write(INVALID_UTF)
+            f.close()
+            resp = self.call_and_expect_code("get", f"/files/get_file_content?path={f.name}", 200)
 
 
 class DirectoriesViewTestCase(TestCaseBase):
