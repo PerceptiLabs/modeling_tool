@@ -20,7 +20,7 @@ def test_project_delete_also_deletes_model(rest):
         model.fetch()
 
 def test_project_delete_also_deletes_dataset(rest, tmp_text_file):
-    if rest.is_enterprise():
+    if rest.is_enterprise:
         filename = os.path.basename(tmp_text_file)
     else:
         filename = tmp_text_file

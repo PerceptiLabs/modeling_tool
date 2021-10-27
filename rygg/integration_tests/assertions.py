@@ -16,12 +16,11 @@ def assert_is_subdict(l, r, *keys):
     assert subdict(l, *r.keys()) == r
 
 def has_expected_files(rest, expected, root):
-    upload_path = rest.get("/upload_dir")["path"]
-    assert upload_path
+    assert rest.upload_dir
 
-    path = upload_path
+    path = rest.upload_dir
     if root:
-        path = os.path.join(upload_path, root)
+        path = os.path.join(path, root)
 
     got = rest.get("/directories/get_folder_content", path=path)
     return set(expected) <= set(got["files"])

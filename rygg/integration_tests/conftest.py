@@ -78,7 +78,7 @@ def tmp_utf8_file(tmp_file):
 
 @pytest.fixture
 def tmp_dataset(tmp_text_file, rest, tmp_project):
-    if rest.is_enterprise():
+    if rest.is_enterprise:
         filename = os.path.basename(tmp_text_file)
     else:
         filename = tmp_text_file

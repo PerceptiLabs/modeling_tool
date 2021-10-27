@@ -125,6 +125,14 @@ class DatasetClient(ClientBase):
         return self.as_dict["location"]
 
     @property
+    def source_url(self):
+        return self.as_dict["source_url"]
+
+    @property
+    def exists_on_disk(self):
+        return self.as_dict["exists_on_disk"]
+
+    @property
     def models(self):
         return self.get_nested_detail("models")
 

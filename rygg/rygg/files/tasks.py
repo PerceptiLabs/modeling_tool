@@ -1,4 +1,6 @@
-from rygg.api.models import Dataset
+import glob
+import os
+
 from rygg.files.utils.download_data import download
 from rygg.files.utils.zip import unzipped_files
 from rygg.settings import IS_CONTAINERIZED
@@ -41,6 +43,7 @@ def download_task(self, dataset_id):
 
 
 def download_unzip(cancel_token, dataset_id):
+    from rygg.api.models import Dataset
 
     dataset = Dataset.objects.get(dataset_id=dataset_id)
     dataset.status = "uploading"
@@ -48,11 +51,21 @@ def download_unzip(cancel_token, dataset_id):
 
     file_path, chunk_count, chunks = download(dataset.source_url, dataset.location, cancel_token)
     yield (2, "Downloading", chunk_count, chunks)
-
     unzipped_count, unzipped = unzipped_files(file_path, dest=dataset.location, cancel_token=cancel_token)
+
     yield (2, "Unzipping", unzipped_count, unzipped)
 
-    dataset.status = "uploaded"
+    # remove the zip
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    glob_pattern = os.path.join(dataset.location, "**", "*.csv")
+    matches = glob.glob(glob_pattern, recursive=True)
+    if matches:
+        dataset.status = "uploaded"
+        dataset.location = matches[0]
+    else:
+        dataset.status = "failed: no data found"
     dataset.save()
 
 

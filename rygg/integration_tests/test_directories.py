@@ -33,7 +33,7 @@ def test_post_delete_directories(rest, working_dir):
 
 
 def test_directory_chooser(rest):
-    if rest.is_enterprise():
+    if rest.is_enterprise:
         with pytest.raises(Exception, match="404"):
             rest.get("/directories/pick_directory", initial_dir="~")
     else:

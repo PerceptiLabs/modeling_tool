@@ -24,8 +24,7 @@ def lines_from_utf8(filename):
 
 
 def clean_files_from_server(rest, files):
-    upload_dir = rest.get("/upload_dir")["path"]
-    paths = (os.path.join(upload_dir, f) for f in files)
+    paths = (os.path.join(rest.upload_dir, f) for f in files)
     for p in paths:
         rest.delete("/files", path=p)
 
@@ -41,11 +40,10 @@ def clean_uploads_dir(rest, files):
 
 @pytest.mark.timeout(1)
 def test_upload_utf8_file_roundtrip(rest, tmp_utf8_file):
-    if not rest.is_enterprise():
+    if not rest.is_enterprise:
         return
 
-    upload_dir = rest.get("/upload_dir")["path"]
-    remote_path = os.path.join(upload_dir, "utf8file")
+    remote_path = os.path.join(rest.upload_dir, "utf8file")
 
     with clean_uploads_dir(rest, ["utf8file"]):
         # Step 1: upload
@@ -62,10 +60,9 @@ def test_upload_utf8_file_roundtrip(rest, tmp_utf8_file):
 
 @pytest.mark.timeout(1)
 def test_upload_file(rest, tmp_text_file):
-    if not rest.is_enterprise():
+    if not rest.is_enterprise:
         return
 
-    upload_dir = rest.get("/upload_dir")["path"]
     with clean_uploads_dir(rest, ["uploadedfile"]):
         ret = rest.post_file("/upload", tmp_text_file, "uploadedfile", overwrite=True)
 
@@ -82,7 +79,7 @@ def test_upload_file(rest, tmp_text_file):
 
 @pytest.mark.timeout(30)
 def test_upload_zip(rest):
-    if not rest.is_enterprise():
+    if not rest.is_enterprise:
         return
 
     UNZIPPED_PATHS = [os.path.join("destfilename", f) for f in SAMPLE_ZIP_FILES]

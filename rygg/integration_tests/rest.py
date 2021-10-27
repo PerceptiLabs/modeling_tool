@@ -64,5 +64,16 @@ class RyggRest():
         self.assert_success(resp)
         return None if not resp.content else resp.json()
 
+    @property
     def is_enterprise(self):
-        return self.get("/app/is_enterprise")["is_enterprise"]
+        if not hasattr(self, "_is_enterprise"):
+            self._is_enterprise = self.get("/app/is_enterprise")["is_enterprise"]
+
+        return self._is_enterprise
+
+    @property
+    def upload_dir(self):
+        if not hasattr(self, "_upload_dir"):
+            self._upload_dir = self.get("/upload_dir")["path"]
+
+        return self._upload_dir

@@ -44,7 +44,7 @@ class ModelViewSet(viewsets.ModelViewSet):
 
             serializer = DatasetSerializer(ds.datasets, many=True)
             return Response(serializer.data)
-
         else:
+
             raise HTTPExceptions.METHOD_NOT_ALLOWED.withContent(request.method)
 

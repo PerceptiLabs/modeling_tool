@@ -9,8 +9,8 @@ import urllib.request
 
 from rygg.api.models import Dataset, Model
 from rygg.api.serializers import DatasetSerializer, ModelSerializer
-from rygg.files.tasks import download_async
 from rygg.files.views.util import request_as_dict, get_required_param, get_optional_param
+from rygg.settings import IS_CONTAINERIZED
 
 def lines_from_url(url):
     with urllib.request.urlopen(url) as res:
@@ -83,7 +83,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
 
         # Make a table of datasets that have been downloaded from our remote
         # Sort the query by dataset_id so that the newest ones end up being the representatives in the lists
-        datasets_from_remote_query = Dataset.objects.filter(source_url__startswith = settings.DATA_BLOB).order_by('dataset_id')
+        datasets_from_remote_query = Dataset.available_objects.filter(source_url__startswith = settings.DATA_BLOB).order_by('dataset_id')
         prefix_len = len(settings.DATA_BLOB) + 1 # +1 for the slash "/"
         datasets_from_remote = {d.source_url[prefix_len:] : d.dataset_id for d in datasets_from_remote_query}
 
@@ -108,16 +108,18 @@ class DatasetViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['POST'])
     def create_from_remote(self, request):
-        ds_name = get_optional_param(request, "name", f"New Dataset")
-        remote_name = get_required_param(request, "id")
-        data_url = f"{settings.DATA_BLOB}/{remote_name}"
+        name = get_optional_param(request, "name", f"New Dataset")
+        remote_id = get_required_param(request, "id")
         project_id = get_required_param(request, "project_id")
-        dest_path = get_required_param(request, "destination")
+        destination = None if IS_CONTAINERIZED else get_required_param(request, "destination")
 
-        dataset = Dataset(project_id=project_id, name=ds_name, source_url=data_url, location=dest_path)
-        dataset.save()
+        task_id, dataset = Dataset.create_from_remote(
+            project_id,
+            name,
+            remote_id,
+            destination,
+        )
 
-        task_id = download_async(dataset.dataset_id)
         response = {
             "task_id": task_id,
             "dataset_id": dataset.dataset_id,
