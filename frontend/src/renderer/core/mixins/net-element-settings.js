@@ -18,6 +18,7 @@ const netElementSettings = {
     } else {
       // it will be triggered only when component is created
       this.saveSettingsToStore("Settings");
+      this.settings = deepCopy(this.currentEl.layerSettings);
       this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.currentEl.layerId);
     }
 
@@ -50,6 +51,11 @@ const netElementSettings = {
             this.isFirstSettingChange = false;
           } else {
             this.debouncedSaveSettings();
+          } 
+        } else {
+          if(this.isFirstSettingChange) {
+            //component was create and have the same settings
+            this.isFirstSettingChange = false;
           }
         }
       },
