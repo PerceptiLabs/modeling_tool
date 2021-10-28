@@ -702,7 +702,7 @@ const actions = {
     const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](modelId);
     
     const trainingSessionId = base64url(checkpointDirectory);
-    renderingKernel.getTrainingStatus(networkId, trainingSessionId)
+    renderingKernel.getTrainingStatus(modelId, trainingSessionId)
       .then((data)=> {
         console.log('getStatusRes:', data);
         dispatch('mod_workspace/SET_statusNetworkCoreDynamically', {

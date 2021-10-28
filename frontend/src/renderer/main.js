@@ -49,7 +49,7 @@ if (process.env.ENABLE_LOGROCKET) {
 //- Use plugin
 if (!Vue.config.devtools) {
   Sentry.init({
-    dsn: 'https://2497f27009b24990b4c0f3feeda4d37d@sentry.io/1833551',
+    dsn: 'https://2497f27009b24990b4c0f3feeda4d37d@o283802.ingest.sentry.io/1833551',
     integrations: [new Integrations.Vue({Vue, attachProps: true})],
   });
 }
