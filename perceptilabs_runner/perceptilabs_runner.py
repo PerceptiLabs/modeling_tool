@@ -9,8 +9,6 @@ import sys
 import time
 import platform
 import pkg_resources
-import zipfile
-import requests
 import io
 
 PYTHON = sys.executable
@@ -60,9 +58,6 @@ SERVICE_CMDS = [
 ]
 
 TUTORIAL_DATA_PATH = pkg_resources.resource_filename('perceptilabs', 'tutorial_data')
-# TODO: move hard-coded dataset URL and names out of the code base
-SAMPLE_DATASETS_URL = 'https://perceptilabs.blob.core.windows.net/data/'
-DATASET_NAMES=['mnist_data', 'Wildfires', 'HumanActivity', 'Covid-19']
 
 def which_cmd():
     return "where" if IS_WIN else "which"
@@ -169,27 +164,6 @@ class PortPoller:
             time.sleep(interval_secs)
 
 
-def download_one_dataset(dataset):
-    if os.path.isdir(os.path.join(TUTORIAL_DATA_PATH, dataset)):
-        return
-
-    path = SAMPLE_DATASETS_URL + dataset + '.zip'
-
-    print(f"Downloading {dataset} tutorial dataset ... ", end='')
-    sys.stdout.flush()
-    try:
-        request = requests.get(path)
-        file = zipfile.ZipFile(io.BytesIO(request.content))
-        file.extractall(TUTORIAL_DATA_PATH)
-        print("done")
-    except:
-        print("failed")
-
-
-def download_tutorial_datasets():
-    for dataset in DATASET_NAMES:
-        download_one_dataset(dataset)
-
 def start(verbosity):
     # give the handler closure the shared procs variable
     procs = []
@@ -201,7 +175,6 @@ def start(verbosity):
 
     try:
         check_for_git()
-        download_tutorial_datasets()
         pipes = get_pipes(verbosity)
         api_token = secrets.token_urlsafe()
         do_migration(pipes, api_token)
