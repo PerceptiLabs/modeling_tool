@@ -4,7 +4,7 @@ import os
 from rygg.files.utils.download_data import download
 from rygg.files.utils.zip import unzipped_files
 from rygg.settings import IS_CONTAINERIZED
-from rygg.tasks import run_async, get_task_status, cancel_task
+from rygg.tasks import run_async
 
 # TODO: get this behind the tasks api
 from celery.decorators import task

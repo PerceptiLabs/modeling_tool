@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models as dj_models
-from django.db.models.signals import pre_delete, post_delete
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from django_http_exceptions import HTTPExceptions
 from model_utils import Choices
@@ -10,7 +10,7 @@ import os
 import shutil
 import uuid
 
-from rygg.api.tasks import delete_path
+from rygg.api.tasks import delete_path_async
 from rygg.files.tasks import download_async
 from rygg.settings import IS_CONTAINERIZED, FILE_UPLOAD_DIR, IS_SERVING, DATA_BLOB
 
@@ -97,6 +97,10 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         ret = os.path.isfile(self.location)
         return ret
 
+    @property
+    def is_perceptilabs_sourced(self):
+        return self.source_url and self.source_url.startswith(DATA_BLOB)
+
 
     def __str__(self):
         return f"{self.name} ({self.dataset_id})"
@@ -131,9 +135,12 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         return task_id, dataset
 
 
-@receiver(pre_delete, sender=Dataset)
+@receiver(pre_save, sender=Dataset)
 def dataset_deleted_pre(sender, **kwargs):
     ds = kwargs["instance"]
+    if not ds.is_removed:
+        return
+
     # TODO: fail when the dataset isn't done unpacking yet. (Or make sure the task is abandoned)
     # TODO: ... or see whether renaming the directory below just breaks the download/unzip and upload/unzip tasks.
     # if ds.status
@@ -148,17 +155,29 @@ def dataset_deleted_pre(sender, **kwargs):
 
     # also move the files just in case the client wants to create a new dataset in the same location right away, before the cleanup task runs
     # (but only in enterprise mode, where we own the files)
-    if os.path.exists(ds.location) and IS_CONTAINERIZED:
+    if os.path.exists(ds.location) and ds.is_perceptilabs_sourced:
         shutil.move(ds.location, new_location)
 
     ds.location += unique_str
 
 
-@receiver(post_delete, sender=Dataset)
+@receiver(post_save, sender=Dataset)
 def dataset_deleted_post(sender, **kwargs):
     ds = kwargs["instance"]
-    # Only delete the directory when we're in enterprise mode.
-    # we also don't know the root dir except for files with a source_url, so only delete them
-    if ds.source_url:
+    if not ds.is_removed:
+        return
+
+    # we don't know the root dir except for files with a source_url, so only delete them
+    if not ds.is_perceptilabs_sourced:
+        return
+
+    # after unpacking, remote datasets have their path edited. Take that into account
+    if os.path.isfile(ds.location):
         full_path = os.path.dirname(ds.location)
-        delete_path(full_path)
+    elif os.path.isdir(ds.location):
+        full_path = ds.location
+    else:
+        # It's not there. Bail out.
+        return
+
+    delete_path_async(full_path)

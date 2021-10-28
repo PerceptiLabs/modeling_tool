@@ -1,8 +1,9 @@
 from celery.decorators import task
-import os, shutil
+import os
+import shutil
 
-from rygg.celery import app as celery_app
-from rygg.settings import FILE_UPLOAD_DIR
+from rygg.tasks import run_async
+from rygg.settings import FILE_UPLOAD_DIR, IS_CONTAINERIZED
 
 import logging
 logger = logging.getLogger(__name__)
@@ -30,23 +31,25 @@ def is_subdir(child, parent):
     return True
 
 def delete_path(path):
+    if _rm_rf(path):
+        logger.info(f"Removed dataset at {path}")
+
+def delete_path_async(path):
     if not os.path.exists(path):
         return;
 
-    full = os.path.abspath(path)
 
     # only allow deleting from inside the upload dir
-    if not is_subdir(full, FILE_UPLOAD_DIR):
-        raise Exception(f"'{path}' isn't available for deletion")
+    if IS_CONTAINERIZED:
+        full = os.path.abspath(path)
+        if not is_subdir(full, FILE_UPLOAD_DIR):
+            raise Exception(f"'{path}' isn't available for deletion")
 
-    task = celery_app.tasks["delete_path"].delay(path)
-    celery_app.backend.store_result(task.id, {"message": f"Queued delete_path task for {path}"}, "PENDING")
-    return task.id
+    run_async("delete_path", delete_path, path)
 
 @task(
     name="delete_path",
     bind=True,
 )
 def delete_path_task(self, path):
-    if _rm_rf(path):
-        logger.info(f"Removed dataset at {path}")
+    delete_path(path)

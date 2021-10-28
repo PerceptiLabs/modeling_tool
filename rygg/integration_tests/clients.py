@@ -129,6 +129,10 @@ class DatasetClient(ClientBase):
         return self.as_dict["source_url"]
 
     @property
+    def is_perceptilabs_sourced(self):
+        return self.as_dict["is_perceptilabs_sourced"]
+
+    @property
     def exists_on_disk(self):
         return self.as_dict["exists_on_disk"]
 

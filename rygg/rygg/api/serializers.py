@@ -81,6 +81,7 @@ class DatasetSerializer(serializers.ModelSerializer):
                   "models",
                   "source_url",
                   "exists_on_disk",
+                  "is_perceptilabs_sourced",
                   ]
 
 class ModelSerializer(serializers.ModelSerializer):

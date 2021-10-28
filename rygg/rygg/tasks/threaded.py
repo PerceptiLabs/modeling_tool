@@ -37,6 +37,12 @@ class LocalTasks():
         info = entry["info"]
         info["state"] = "SUCCESS"
 
+    def failed(task_id):
+        entry = LocalTasks.tasks[task_id]
+        entry["cancel_token"] = None
+        info = entry["info"]
+        info["state"] = "FAILED"
+
 
 def work_in_thread(fn, *args, **kwargs):
     def update_status(expected, so_far, message):
@@ -58,9 +64,12 @@ def work_in_thread(fn, *args, **kwargs):
     task_id = str(uuid.uuid4())
 
     def go():
-        status_seq = fn(cancel_token, *args, **kwargs)
-        observe_work(status_seq, update_status)
-        LocalTasks.completed(task_id)
+        try:
+            status_seq = fn(cancel_token, *args, **kwargs)
+            observe_work(status_seq, update_status)
+            LocalTasks.completed(task_id)
+        except:
+            LocalTasks.failed(task_id)
 
     t = Thread(target=go)
     task_id = LocalTasks.add(task_id, t, cancel_token)

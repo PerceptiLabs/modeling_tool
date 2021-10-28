@@ -74,8 +74,10 @@ def test_delete_dataset_in_downloading(rest, tmpdir, tmp_project):
 
     # make a remote dataset from a large dataset
     big_dataset_name = get_medium_remote_record(rest)["UniqueName"]
-    glob_pattern = os.path.join(dest, "**", big_dataset_name)
-    is_zip_removed = lambda : not glob.glob(glob_pattern, recursive=True)
+    glob_pattern = os.path.join(dest, big_dataset_name)
+    def is_zip_removed():
+        found_files = glob.glob(glob_pattern, recursive=True)
+        return not found_files
 
     resp = rest.post('/datasets/create_from_remote/', {}, id=big_dataset_name, destination=tmpdir, project_id=tmp_project.id)
     task_id = resp["task_id"]
@@ -83,7 +85,6 @@ def test_delete_dataset_in_downloading(rest, tmpdir, tmp_project):
 
         # wait for it to start unzipping
         assert_task_starts(rest, task_id)
-        assert not is_zip_removed()
 
         # cancel the download by leaving the context and deleting the dataset
 
@@ -324,12 +325,16 @@ def test_deleting_allows_same_name(rest, tmpdir, tmp_project):
 
     # create and then delete a dataset
     ds = DatasetClient.make(rest, **common_params)
-    ds.delete()
 
     # now try to make another with the same name and location
-    # TODO: It returns a 500, but should be a 400
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="400"):
         DatasetClient.make(rest, **common_params)
+
+    # delete the original dataset to make room
+    ds.delete()
+
+    # now we should be able to make a duplicate
+    DatasetClient.make(rest, **common_params)
 
     # make sure we didn't delete too high in the directory tree
     assert_workingdir(rest)
@@ -354,6 +359,7 @@ def test_create_dataset_from_remote(rest, tmpdir, tmp_project):
     # re-fetch the dataset by id
     dataset = DatasetClient(rest, dataset_id)
     assert dataset.status == "uploaded"
+    assert dataset.is_perceptilabs_sourced == True
 
     # Check the download. Since we currently only support csv, make sure it's the right file type
     assert os.path.isfile(dataset.location)
