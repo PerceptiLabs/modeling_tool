@@ -241,6 +241,7 @@ const layerBgColor = function (componentName) {
     case 'PreTrainedVGG16':
     case 'PreTrainedMobileNetV2':
     case 'PreTrainedInceptionV3':
+    case 'UNet':
       className = 'net-color-learn-deep';
       break;
     case 'ProcessCrop':
