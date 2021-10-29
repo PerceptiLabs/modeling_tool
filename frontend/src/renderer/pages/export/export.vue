@@ -1,7 +1,7 @@
 <template lang="pug">
   chart-spinner(v-if="loadingMessage" :text="loadingMessage")
   div(v-else)
-    h1.export-header.bold Export
+    h1.export-header.bold Deploy
     div.export-page-wrapper
       .export-model-list.export-view
       
