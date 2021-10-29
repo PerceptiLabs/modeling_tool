@@ -1,4 +1,5 @@
 import { sleep, calcLayerPosition }      from "@/core/helpers.js";
+import { v4 as uuid} from 'uuid';
 import cloneDeep      from 'lodash.clonedeep';
 
 import IoInputSetting   from '@/components/network-elements/elements/io-input/set-io-input.vue';
@@ -76,102 +77,64 @@ const getDefaultLayerTemplate = ({
   
   layer.componentName = componentName;
 
-  layer.inputs = setupInput(componentName);
-  layer.outputs = setupOutput(componentName);
-
   return layer;
 };
 
-const componentsInputs = {
-  DataData: [],
-  DataEnvironment: [],
-  DataRandom: [],
 
-  ProcessReshape: ['input'],
-  ProcessGrayscale: ['input'],
-  ProcessOneHot: ['input'],
-  ProcessRescale: ['input'],
+const setUpInputsAndOutputs = (layers) => {
+  const InputOutputData = {};
+    
+    Object.keys(layers).map((key) => {
+        InputOutputData[key] = {
+            inputs: [],
+            outputs: [],
+        };
+    });
 
-  DeepLearningFC: ['input'],
-  DeepLearningConv: ['input'],
-  DeepLearningDeconv: ['input'],
-  DeepLearningRecurrent: ['input'],
+    const res = {};
+    for(let [k, v] of Object.entries(layers)) {
+        const theKey = k;
+        const backward_connections = v.backward_connections;
+        backward_connections.forEach(f => {
+          InputOutputData[f.src_id].outputs.push(f.src_var);
+          InputOutputData[theKey].inputs.push(f.dst_var);
+        })
+    }
+    
+    for(let [k, v] of Object.entries(InputOutputData)) {
+        res[k] = {};
+        res[k].inputs = setupInput(v.inputs);
+        res[k].outputs = setupOutput(v.outputs);
+    }
 
-  MathArgmax: ['input'],
-  MathMerge: ['input1', 'input2'],
-  MathSwitch: ['input1', 'input2'],
+  return res;
+}
 
-  TrainNormal: ['predictions', 'labels'],
-  TrainRegression: ['predictions', 'labels'],
-  TrainReinforce: ['action'],
-  TrainGan: ['input'],
-  TrainDetector: ['predictions', 'labels'],
-  LayerCustom: ['input'],
-  UNet: ['input'],
-
-  IoInput: [],
-  IoOutput: ['input']
-};
-
-const componentsOutputs = {
-  DataData: ['output'],
-  DataEnvironment: ['output'],
-  DataRandom: ['output'],
-
-  ProcessReshape: ['output'],
-  ProcessGrayscale: ['output'],
-  ProcessOneHot: ['output'],
-  ProcessRescale: ['output'],
-
-  DeepLearningFC: ['output'],
-  DeepLearningConv: ['output'],
-  DeepLearningDeconv: ['output'],
-  DeepLearningRecurrent: ['output'],
-
-  MathArgmax: ['output'],
-  MathMerge: ['output'],
-  MathSwitch: ['output'],
-  LayerCustom: ['output'],
-
-  TrainNormal: [],
-  TrainRegression: [],
-  TrainReinforce: [],
-  TrainGan: [],
-  TrainDetector: [],
-  UNet: ['output'],
-
-  IoInput: ['output'],
-  IoOutput: []
-};
-
-const setupInput = (componentName) => {
+const setupInput = (inputVariableArray) => {
   let inputs = {};
-  const inputVariableArray = componentsInputs[componentName];
   if(inputVariableArray && inputVariableArray.length > 0) {
-    inputVariableArray.map((inputName, index) => {
+    inputVariableArray.map((inputName) => {
       let input = {
         name: inputName,
         reference_var_id: null,
         reference_layer_id: null,
         isDefault: true
       }
-      inputs[Date.now().toString() + index] = input;
+      inputs[uuid()] = input;
     })
   }
   return inputs;
-
 }
 
-const setupOutput = (componentName) => {
+const setupOutput = (outputVariableArray) => {
   let outputs = {};
-  const outputVariableArray = componentsOutputs[componentName];
   if(outputVariableArray && outputVariableArray.length > 0) {
-    outputVariableArray.map((outputName, index) => {
+    outputVariableArray.map((outputName) => {
       let output = {
         name: outputName,
         reference_var: outputName,
       }
-      outputs[[Date.now().toString() + index]] = output;
+      outputs[uuid()] = output;
     })
   }
   return outputs;
@@ -211,7 +174,12 @@ const createLayers = async (coreNetwork, layerPositions) => {
     // need new layerId
     await sleep(1);
   }
+  const IO = setUpInputsAndOutputs(coreNetwork);
 
+  for(let [k, v] of Object.entries(newLayers)) {
+    newLayers[k].inputs = IO[k].inputs;
+    newLayers[k].outputs = IO[k].outputs;
+  }
   return newLayers;
 }
 

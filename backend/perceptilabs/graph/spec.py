@@ -303,3 +303,9 @@ class GraphSpec(AbstractGraphSpec):
 
         return different_layers
 
+    def __repr__(self):
+        text = ''
+        for layer in self.get_ordered_layers():
+            text += repr(layer) + '\n'
+        return text
+

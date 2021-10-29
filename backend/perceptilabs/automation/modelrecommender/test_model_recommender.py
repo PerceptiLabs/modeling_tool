@@ -52,6 +52,25 @@ def test_image_input_and_mask_output_gives_basic_network():
     assert last.is_target_layer and last.feature_name == 'y1'
 
 
+def test_multi_inputs():
+    feature_specs={
+        'x1': FeatureSpec(datatype='numerical', iotype='input'),
+        'x2': FeatureSpec(datatype='numerical', iotype='input'),
+        'x3': FeatureSpec(datatype='numerical', iotype='input'),                
+        'y1': FeatureSpec(datatype='numerical', iotype='target'),
+    }
+    recommender = ModelRecommender()
+    graph_spec = recommender.get_graph(feature_specs)
+
+    num_inputs_to_first_merge = None
+    for layer_spec in graph_spec.get_ordered_layers():
+        if layer_spec.type_ == 'MathMerge':
+            num_inputs_to_first_merge = len(layer_spec.input_connections)
+            break
+
+    assert num_inputs_to_first_merge == 3
+    
+
 
 
 

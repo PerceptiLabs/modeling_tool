@@ -85,10 +85,10 @@ class ModelRecommender:
             combiner_id = encoder_end_nodes[0]
         else:
             combiner_id = builder.add_layer(
-                'MathMerge', settings={'input_count': num_encoders}
-            )
+                'MathMerge', settings={'input_count': num_encoders, 'merge_type': 'Concat', 'merge_dim': 1})
+
             for i, layer_id in enumerate(encoder_end_nodes):
-                builder.add_connection(layer_id, 'output', combiner_id, f'input{i}')
+                builder.add_connection(layer_id, 'output', combiner_id, f'input{i+1}')
 
         for layer_id in decoder_start_nodes:
             builder.add_connection(combiner_id, 'output', layer_id, 'input')
