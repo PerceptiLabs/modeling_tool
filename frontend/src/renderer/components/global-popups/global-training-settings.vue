@@ -53,6 +53,7 @@
             type="number"
             name="Learning_rate"
             :value="settings.Learning_rate"
+            @input="handleInputChange"
             @focus="setIsSettingInputFocused(true)"
             @blur="setIsSettingInputFocused(false)")
       .form_row
@@ -155,10 +156,6 @@
         return this.$store.getters['mod_workspace/GET_modelTrainingSetting'];
       },
     },
-    created() {
-      console.log(this.isModalOpened)
-      // alert('GlobalTrainingSettings is created')
-    },
     methods: {
       closeModal() {
         this.$store.dispatch('globalView/showGlobalTrainingSettingsAction',{isOpen: false, cb: () => null}, { root: true} );
@@ -169,11 +166,14 @@
       },
       handleInputChange(e) {
         const { name, value } = e.target;
-        console.log(name, value);
-        this.$store.dispatch('mod_workspace/setModelRunSettingsAction', {name, value}, { root: true});
+        this.updateSettingsInStore(name, value);
         
       },
       handleCheckboxAndSelectChange(value, name) {
+        this.updateSettingsInStore(name, value);
+      },
+      updateSettingsInStore(name, value) {
+        console.log({name, value});
         this.$store.dispatch('mod_workspace/setModelRunSettingsAction', {name, value}, { root: true});
       }
     }
