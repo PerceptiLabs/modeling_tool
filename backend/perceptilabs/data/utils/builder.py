@@ -14,10 +14,11 @@ from perceptilabs.data.settings import DatasetSettings
 
 
 class Row:
-    def __init__(self, literals=None, file_data=None, file_type=None):
+    def __init__(self, literals=None, file_data=None, file_type=None, dtypes=None):
         self.literals = (literals or {}).copy()
         self.file_data = (file_data or {}).copy()
         self.file_type = (file_type or {}).copy()
+        self.dtypes = (dtypes or {}).copy()        
 
     def __setitem__(self, key, value):
         self.literals[key] = value
@@ -62,7 +63,11 @@ class Row:
                 raise ValueError(f"Unsupported file type '{file_type}'")
             
             dict_[feature] = file_path
-        
+
+        for feature, value in dict_.items():
+            dict_[feature] = np.asarray(
+                value, dtype=self.dtypes.get(feature))  # Cast all types if specified
+
         return dict_
 
 
@@ -99,8 +104,8 @@ class DatasetBuilder:
         yield row
         self._save_row(row)        
 
-    def add_row(self, literals=None, file_data=None, file_type=None):
-        row = Row(literals=literals, file_data=file_data, file_type=file_type)
+    def add_row(self, literals=None, file_data=None, file_type=None, dtypes=None):
+        row = Row(literals=literals, file_data=file_data, file_type=file_type, dtypes=dtypes)
         self._save_row(row)
 
     def _save_row(self, row):
@@ -127,7 +132,7 @@ class DatasetBuilder:
         self.directories.append(directory)
         
         df = pd.DataFrame(columns=self.fields)
-        
+
         for index, row in enumerate(self.rows):
             row_dict = row.create(directory.name, index)
             

@@ -9,7 +9,7 @@ from perceptilabs.exporter.base import Exporter
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
-class TrainingSessionInterface():
+class TrainingSessionInterface:
     def __init__(self, message_broker, model_access, epochs_access, results_access):
         self._message_broker = message_broker
         self._model_access = model_access
@@ -38,14 +38,13 @@ class TrainingSessionInterface():
                 epoch_id=epoch_id
             )
             initial_state = self._epochs_access.load_state_dict(training_session_id, epoch_id)            
-        
         training_model = self._model_access.get_training_model(
             graph_spec.to_dict(), checkpoint_path=checkpoint_path)
 
         exporter = Exporter(
             graph_spec, training_model, data_loader,
             model_id=model_id, user_email=user_email
-        )
+        )        
         
         trainer = Trainer(
             data_loader,
@@ -71,12 +70,12 @@ class TrainingSessionInterface():
                 training_step_result = next(training_step, training_sentinel)
                 is_running = training_step_result is not training_sentinel
                 
-                last_update = self._maybe_update_results(
+                last_update = self._maybe_write_results(
                     results_interval, last_update, trainer, training_session_id, is_running)
 
                 yield
                 
-    def _maybe_update_results(self, results_interval, last_update, trainer, training_session_id, is_running):
+    def _maybe_write_results(self, results_interval, last_update, trainer, training_session_id, is_running):
         time_since_update = time.time() - last_update
 
         if (results_interval is None) or (time_since_update >= results_interval) or not is_running:

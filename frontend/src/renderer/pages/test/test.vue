@@ -75,7 +75,9 @@
     .test-overlay(v-if="isTestRunning")
       .spinner
         chart-spinner
+
       p.text-center(v-if="testStatus && testStatus[0]") {{testStatus && testStatus[0]}}
+      p.text-center(v-else) Initializing tests...
       p.text-center(v-if="testStatus && testStatus[1]") {{testStatus && testStatus[1]}}
       button.btn.btn--secondary.stop-test(@click="stopTest()") Stop Test
     test-configuration-popup(v-if="isTestConfigurationPopupOpened")

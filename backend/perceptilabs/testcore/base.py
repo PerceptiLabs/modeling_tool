@@ -20,7 +20,8 @@ user_logger = logging.getLogger(USER_LOGGER)
 
 
 class TestCore():
-    def __init__(self, model_ids, models_info, tests, issue_handler, user_email=None):
+    def __init__(self, testing_session_id, model_ids, models_info, tests, issue_handler, user_email=None):
+        self._testing_session_id = testing_session_id
         self._status = None
         self.set_status('Initializing')
         self._issue_handler = issue_handler
@@ -38,6 +39,13 @@ class TestCore():
         self._model_number = 0
         self._test_number = 0
 
+    @property
+    def session_id(self):
+        return self._testing_session_id
+        
+    @property
+    def tests(self):
+        return self._tests.copy()
 
     def load_models_and_data(self):
         """
@@ -80,7 +88,13 @@ class TestCore():
         """
         Runs the list of tests for all models in the testcore and saves the results.
         """
+        for _ in self.run_stepwise():
+            pass        
+
+    def run_stepwise(self):
         self.set_status('Loading')
+        yield
+        
         self.load_models_and_data()
         self._model_number = 0
         for model_id in self._models:
@@ -90,10 +104,14 @@ class TestCore():
             self._model_number += 1
             compatible_layers = self.get_compatible_layers_for_tests()
             # all the results are being collected at once to not repeat the same computations for every test.
-            model_inputs, model_outputs = self._get_model_outputs()
+            yield from self._compute_model_outputs()
+
+            model_inputs = self._models[model_id].model_inputs
+            model_outputs = self._models[model_id].model_outputs
+            
             self._results[model_id] = {}
             self._test_number = 0
-            self._run_tests(model_id, compatible_layers, model_outputs, model_inputs)
+            yield from self._run_tests(model_id, compatible_layers, model_outputs, model_inputs)
         if not self._stopped:
             self.set_status('Completed')
 
@@ -104,8 +122,11 @@ class TestCore():
                 logger.info("Starting test %s for model %s.", test, model_id)
                 self.set_status('Testing')
                 self._test_number += 1
+
                 self._results[model_id][test] = self._run_test(
                     test, compatible_layers[test], model_outputs, model_inputs)
+                
+                yield
 
     def _run_test(self, test, compatible_output_layers, model_outputs, model_inputs=None):
         "runs the given test for a given model information."
@@ -131,18 +152,19 @@ class TestCore():
                 raise Exception(
                     f"{test} test is not supported yet by {self._current_model_name} model.")
 
-    def _get_model_outputs(self):
+    def _compute_model_outputs(self):
         model_id = self._current_model_id
         data_iterator = self._get_data_generator(model_id)
         logger.info("Generating outputs for model %s.", model_id)
         self.set_status('Inference')
+        
         return_inputs = True if "outputs_visualization" in self._tests else False
         try:
-            model_inputs, model_outputs = self._models[model_id].run_inference(data_iterator, return_inputs)
+            yield from self._models[model_id].run_inference_stepwise(data_iterator, return_inputs)
+            
             # TODO(mukund): support inner layer outputs
             if not self._stopped:
                 logger.info("Outputs generated for model %s.", model_id)
-                return model_inputs, model_outputs
         except Exception as e:
             self._found_error(
                 f"Error while running inference on {self._current_model_name} model.")
@@ -303,6 +325,11 @@ class TestCore():
         else:
             return {}
 
+    @property
+    def models(self):
+        return self._models.copy()
+        
+
 class ProcessResults():
     """process results here.
     """
@@ -392,3 +419,4 @@ class ProcessResults():
             data_object = createDataObject(data_list=images, normalize=True)
             self._results[layer_name] = data_object
         return  self._results
+

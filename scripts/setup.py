@@ -72,7 +72,13 @@ def get_all_cythonized_modules():
         return [make_extension(module) for module in get_all_modules_to_cythonize()]
 
     extensions = list(get_all_cy_extensions())
-    ret = cythonize(extensions, compiler_directives={"language_level": 2})
+    ret = cythonize(
+        extensions,
+        compiler_directives={
+            "language_level": 2,
+            "always_allow_keywords": True  # See: https://github.com/cython/cython/issues/2136
+        }
+    )
     return ret
 
 

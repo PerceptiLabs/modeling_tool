@@ -3,7 +3,8 @@ const namespaced = true;
 const state = {
   isTestRunning: false,
   testStatus: null,
-  testData: null
+  testData: null,
+  testSessionId: null
 };
 
 const getters = {
@@ -15,7 +16,10 @@ const getters = {
   },
   GET_testStatus(state) {
     return state.testStatus;
-  }
+  },
+  GET_testSessionId(state) {
+    return state.testSessionId;
+  }  
 };
 
 const mutations = {
@@ -30,6 +34,9 @@ const mutations = {
   },
   setTestIntervalIDMutation(state, value) {
     state.testIntervalID = value;
+  },
+  setTestSessionIdMutation(state, value) {
+    state.testSessionId = value;
   }
 };
 
@@ -38,11 +45,12 @@ const actions = {
     ctx.commit("setTestDataMutation", value);
     ctx.dispatch("mod_webstorage/saveTestStatistic", value, { root: true });
   },
-  testStart({ dispatch, commit }) {
+  testStart({ dispatch, commit }, payload) {
     commit("setTestRunningMutation", true);
     dispatch("setTestData", null);
     dispatch("setTestMessage", ['Loading Data...']);
-
+    dispatch("setTestSessionId", payload);    
+      
     dispatch("mod_api/API_getTestStatus", null, { root: true });
   },
   testFinish({ commit, state }) {
@@ -50,7 +58,10 @@ const actions = {
   },
   setTestMessage({ commit }, payload) {
     commit("setTestStatusMutation", payload);
-  }
+  },
+  setTestSessionId({ commit }, payload) {
+    commit("setTestSessionIdMutation", payload);
+  }  
 };
 
 export default {

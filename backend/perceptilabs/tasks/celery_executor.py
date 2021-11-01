@@ -1,4 +1,3 @@
-# TODO: update celery module path in Docker
 import logging
 from celery import Celery, shared_task
 
@@ -7,7 +6,8 @@ import perceptilabs.settings as settings
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.tasks.base import (
     TaskExecutor,
-    training_task
+    training_task,
+    testing_task
 )
 
 
@@ -20,12 +20,9 @@ CELERY_APP = Celery(
     broker=settings.CELERY_REDIS_URL,
     imports=('perceptilabs',),
     task_routes={
-        'session_task': {
-            'queue': 'training'
-        },
-        'training_task': {
-            'queue': 'training'
-        }        
+        'session_task': {'queue': 'training'},
+        'training_task': {'queue': 'training'},
+        'testing_task': {'queue': 'training'}
     }
 )
 
@@ -92,7 +89,17 @@ def training_task_wrapper(self, dataset_settings_dict, model_id, graph_spec_dict
         is_retry=(self.request.retries > 0),                
     )
 
+@shared_task(
+    bind=True,
+    name="testing_task",
+    autoretry_for=(Exception,),
+    default_retry_delay=5,
+    max_retries=3,
+)
+def testing_task_wrapper(self, *args, **kwargs):
+    testing_task(*args, **kwargs)
 
+    
 class CeleryTaskExecutor(TaskExecutor):
     def __init__(self, app=CELERY_APP):
         self._app = app

@@ -13,16 +13,17 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class ModelsInterface:
-    def __init__(self, task_executor, message_broker, model_access, epochs_access, training_results_access, data_metadata_cache):
+    def __init__(self, task_executor, message_broker, model_access, epochs_access, training_results_access, testing_results_access, data_metadata_cache):
         self._task_executor = task_executor
         self._message_broker = message_broker
         self._model_access = model_access        
         self._epochs_access = epochs_access
         self._training_results_access = training_results_access
+        self._testing_results_access = testing_results_access        
         self._data_metadata_cache = data_metadata_cache
 
-    def start_training(self, *args):
-        self._task_executor.enqueue('training_task', *args)
+    def start_training(self, dataset_settings_dict, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email):
+        self._task_executor.enqueue('training_task', dataset_settings_dict, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email)
 
     def stop_training(self, model_id, training_session_id):
         self._message_broker.publish(
@@ -170,3 +171,25 @@ class ModelsInterface:
             file_access, csv_path, dataset_settings, metadata=data_metadata)
 
         return data_loader
+
+    def start_testing(self, models_info, tests, user_email):
+        testing_session_id = self._testing_results_access.new_id()
+        self._task_executor.enqueue('testing_task', testing_session_id, models_info, tests, user_email)
+        return testing_session_id
+    
+    def get_testing_status(self, testing_session_id):
+        results_dict = self._testing_results_access.get_latest(testing_session_id)
+
+        if results_dict:
+            return results_dict['status']
+        else:
+            return {}
+
+    def get_testing_results(self, testing_session_id):
+        results_dict = self._testing_results_access.get_latest(testing_session_id)
+
+        if results_dict:
+            return results_dict['results']
+        else:
+            return {}
+        

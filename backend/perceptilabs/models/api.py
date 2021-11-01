@@ -8,7 +8,8 @@ import perceptilabs.utils as utils
 
 def create_blueprint(
         task_executor, message_broker,
-        models_access, epochs_access, training_results_access,
+        models_access, epochs_access,
+        training_results_access, testing_results_access,
         data_metadata_cache        
 ):    
     models_interface = ModelsInterface(
@@ -17,6 +18,7 @@ def create_blueprint(
         models_access,
         epochs_access,
         training_results_access,
+        testing_results_access,        
         data_metadata_cache
     )
     
@@ -93,5 +95,25 @@ def create_blueprint(
             user_email
         )        
         return jsonify(status)
+
+    @bp.route('/models/testing', methods=['POST'])
+    def start_testing():
+        json_data = request.get_json()
+        models_info = json_data['modelsInfo']
+        tests = json_data['tests']        
+        user_email = json_data.get('userEmail')
+
+        session_id = models_interface.start_testing(models_info, tests, user_email)
+        return jsonify(session_id)
+
+    @bp.route('/models/testing/<testing_session_id>/status', methods=['GET'])
+    def testing_status(testing_session_id):
+        output = models_interface.get_testing_status(testing_session_id)
+        return jsonify(output)
+    
+    @bp.route('/models/testing/<testing_session_id>/results', methods=['GET'])
+    def testing_results(testing_session_id):
+        output = models_interface.get_testing_results(testing_session_id)
+        return jsonify(output)
 
     return bp

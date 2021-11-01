@@ -295,6 +295,37 @@ export const renderingKernel = {
     return whenRenderingKernelReady
       .then(rk => rk.post(`/set_user`, payload));
   },
+
+  async startTesting(modelsInfo, tests, userEmail) {
+    const payload = {
+      modelsInfo: modelsInfo,
+      tests: tests,
+      userEmail: userEmail      
+    };
+    
+    return whenRenderingKernelReady
+      .then(rk => rk.post(`/models/testing`, payload))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },
+
+  async getTestingStatus(testingSessionId) {
+    return whenRenderingKernelReady
+      .then(rk => rk.get(`/models/testing/${testingSessionId}/status`))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },
+
+  async getTestingResults(testingSessionId) {
+    return whenRenderingKernelReady
+      .then(rk => rk.get(`/models/testing/${testingSessionId}/results`))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },
+  
 }
 
 

@@ -285,7 +285,7 @@ const actions = {
   //---------------
   //  NETWORK TRAINING
   //---------------
-  API_testStart({dispatch, getters, rootGetters}, payload) {
+  API_testStart({dispatch, getters, rootGetters, commit}, payload) {
     const { modelIds, checkpoint_paths }  = payload;
     
     let models = {};
@@ -296,27 +296,16 @@ const actions = {
       models[id] = {};
       models[id].layers = getters.GET_coreNetworkById(id);
       models[id].model_name = network.networkName;
-      models[id].data_path = payload.dataPath;
       models[id].training_session_id = base64url(checkpoint_paths[id]);
+      models[id].datasetSettings = network.networkMeta.datasetSettings;
+      models[id].data_path = payload.dataPath;
     })
-    
-    const theData = {
-      action: 'startTests',
-      receiver: 'test_requests',
-      value: {
-	      models: models,
-        tests: payload.testTypes,
-        userEmail: rootGetters['mod_user/GET_userEmail'],	
-        datasetSettings: modelIds.reduce((acc, id) => {
-          const network = rootGetters['mod_workspace/GET_networkByNetworkId'](id);
-          return { ...acc, [id]: network.networkMeta.datasetSettings };
-        }, {})
-      }
-    }
 
-    return renderingKernel.startSession(theData)
-    .then(() => {
-      dispatch('mod_test/testStart', payload, {root: true});
+    const userEmail = rootGetters['mod_user/GET_userEmail']
+    
+    return renderingKernel.startTesting(models, payload.testTypes, userEmail)
+    .then((data) => {
+      dispatch('mod_test/testStart', data, {root: true});
     })
     .catch((err) => {
       console.error(err);
@@ -346,13 +335,18 @@ const actions = {
       console.error(err);
     })
   },
-  API_getTestStatus({dispatch}) {
+  API_getTestStatus({dispatch, getters, rootGetters}) {
+    const sessionId = rootGetters['mod_test/GET_testSessionId'];
+    /*if(!sessionId) { 
+      setTimeout(() => {
+        dispatch('API_getTestStatus');
+      }, 1000);
+      return
+    }*/
+    
     let startTime = new Date().getTime();
-    const theData = {
-      receiver: 'test_requests',
-      action: 'getTestStatus',
-    }
-    return coreRequest(theData).then((data)=> {
+    
+    return renderingKernel.getTestingStatus(sessionId).then((data)=> {
       if(!data) { 
         setTimeout(() => {
           dispatch('API_getTestStatus');
@@ -377,12 +371,10 @@ const actions = {
       console.error(err);
     });
   },
-  API_getTestResults({dispatch}) {
-    const theData = {
-      receiver: 'test_requests',
-      action: 'getTestResults',
-    }
-    return coreRequest(theData).then((data)=> {
+  API_getTestResults({dispatch, getters, rootGetters}) {
+    const sessionId = rootGetters['mod_test/GET_testSessionId'];
+    
+    return renderingKernel.getTestingResults(sessionId).then((data)=> {
       dispatch('API_closeTest');
       dispatch('mod_test/setTestData', data, {root: true});
       dispatch('mod_test/setTestMessage', null, {root: true});

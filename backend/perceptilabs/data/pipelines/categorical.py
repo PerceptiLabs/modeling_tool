@@ -54,7 +54,7 @@ class CategoricalPipelineBuilder(PipelineBuilder):
         dtypes = set()
         unique_values = set()
         size = len(dataset)
-        for index,tensor in enumerate(dataset):
+        for index, tensor in enumerate(dataset):
             value = tensor.numpy()
 
             if isinstance(value, bytes):

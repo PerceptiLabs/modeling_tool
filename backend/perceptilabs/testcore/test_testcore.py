@@ -9,6 +9,7 @@ import pandas as pd
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings, FeatureSpec
+from perceptilabs.data.utils.builder import DatasetBuilder
 from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.exporter.base import Exporter
@@ -18,38 +19,40 @@ from perceptilabs.resources.files import FileAccess
 
 
 @pytest.fixture()
-def file_access(temp_path):
-    return FileAccess(temp_path)
+def data_loader():
+    builder = DatasetBuilder.from_features({
+        'x1': {'datatype': 'numerical', 'iotype': 'input'},
+        'y1': {'datatype': 'categorical', 'iotype': 'target'}
+    })
+
+    with builder:
+        builder.add_row({'x1': 123.0, 'y1': 1}, dtypes={'y1': np.int32})
+        builder.add_row({'x1': 24.0, 'y1': 0}, dtypes={'y1': np.int32})
+        builder.add_row({'x1': 13.0, 'y1': 1}, dtypes={'y1': np.int32})
+        builder.add_row({'x1': 46, 'y1': 0}, dtypes={'y1': np.int32})
+        builder.add_row({'x1': 52, 'y1': 0}, dtypes={'y1': np.int32})
+        builder.add_row({'x1': 56, 'y1': 0}, dtypes={'y1': np.int32})
+        builder.add_row({'x1': 3, 'y1': 1}, dtypes={'y1': np.int32})
+        builder.add_row({'x1': 67, 'y1': 1}, dtypes={'y1': np.int32})
+        builder.add_row({'x1': 32, 'y1': 0}, dtypes={'y1': np.int32})
+        builder.add_row({'x1': 94, 'y1': 0}, dtypes={'y1': np.int32})
+        builder.add_row({'x1': 16, 'y1': 0}, dtypes={'y1': np.int32})
+        builder.add_row({'x1': 55, 'y1': 1}, dtypes={'y1': np.int32})
+        builder.add_row({'x1': 61, 'y1': 1}, dtypes={'y1': np.int32})
+        builder.add_row({'x1': 33, 'y1': 0}, dtypes={'y1': np.int32})
+        builder.add_row({'x1': 92, 'y1': 0}, dtypes={'y1': np.int32})
+        
+        dl = builder.get_data_loader()
+        yield dl
 
 
 @pytest.fixture()
-def csv_path(temp_path):
-    file_path = os.path.join(temp_path, 'data.csv')
-    df = pd.DataFrame({'x1': [123.0, 24.0, 13.0, 46, 52, 56, 3, 67, 32, 94], 'y1': [1, 0, 1, 0, 0, 0, 1, 1, 0, 0]})
-    df.to_csv(file_path, index=False)
-    yield file_path
-
-
-@pytest.fixture()
-def data_loader(file_access, csv_path):
-    settings = DatasetSettings(
-        feature_specs={
-            'x1': FeatureSpec(datatype='numerical', iotype='input'),
-            'y1': FeatureSpec(datatype='categorical', iotype='target')
-        },
-    )
-    dl = DataLoader.from_csv(file_access, csv_path, settings)
-    yield dl
-
-
-@pytest.fixture()
-def graph_spec_few_epochs(csv_path):
+def graph_spec_few_epochs():
     gsb = GraphSpecBuilder()
-    dirpath = tempfile.mkdtemp()
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
-        settings={'datatype': 'numerical', 'feature_name': 'x1', 'file_path': csv_path, 'checkpoint_path':dirpath}
+        settings={'datatype': 'numerical', 'feature_name': 'x1'}
     )
     id2 = gsb.add_layer(
         'DeepLearningFC',
@@ -57,7 +60,7 @@ def graph_spec_few_epochs(csv_path):
     )
     id3 = gsb.add_layer(
         'IoOutput',
-        settings={'datatype': 'categorical', 'feature_name': 'y1', 'file_path': csv_path}
+        settings={'datatype': 'categorical', 'feature_name': 'y1'}
     )
 
     # Connect the layers
@@ -90,16 +93,28 @@ def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader, trai
         1: {
             'graph_spec': graph_spec_few_epochs,
             'training_session_id': training_session_id,
-            'data_path': csv_path,
             'data_loader': data_loader,
             'model_name': 'unit test'
-        }
+        },
+        2: {
+            'graph_spec': graph_spec_few_epochs,
+            'training_session_id': training_session_id,
+            'data_loader': data_loader,
+            'model_name': 'unit test'
+        },
+        3: {
+            'graph_spec': graph_spec_few_epochs,
+            'training_session_id': training_session_id,
+            'data_loader': data_loader,
+            'model_name': 'unit test'
+        },
     }
     tests = []
-    testcore = TestCore([1], models_info, tests, IssueHandler())
+    testcore = TestCore(training_session_id, [1], models_info, tests, IssueHandler())
     testcore.load_models_and_data()
     yield testcore
 
+    
 def test_testcore_is_loading_data(testcore, data_loader):
     assert type(data_loader).__name__ == 'DataLoader'
     dataset_generator = data_loader.get_dataset(partition='test').batch(1)
@@ -109,24 +124,35 @@ def test_testcore_is_loading_data(testcore, data_loader):
         data2 = input_2
     assert data1 == data2
 
+    
 def test_model_is_loaded_from_checkpoint(testcore):
     assert testcore._models[1]._model is not None
 
+    
 def test_model_outputs_structure_is_accurate(testcore):
     data_iterator = testcore._get_data_generator(1)
-    model_inputs, model_outputs = testcore._models[1].run_inference(data_iterator)
+    model_inputs, model_outputs = testcore.models[1].run_inference(data_iterator)
     assert list(model_outputs.keys()) == ['outputs', 'targets']
     assert list(model_outputs['outputs'][0].keys()) == ['y1']
     assert list(model_outputs['targets'][0].keys()) == ['y1']
 
+    
 def test_model_has_compatible_output_layers_for_confusionmatrix(testcore):
     layers = testcore.get_compatible_output_layers('confusion_matrix', 1)
     assert layers == {'y1':'categorical'}
 
 
+def test_status_messages(testcore, data_loader):
+    num_models = len(testcore.models)
+    num_samples = data_loader.get_dataset_size(partition='test')
+    
+    status_messages = []
+    
+    for step in iter(testcore.run_stepwise()):
+        status = testcore.get_testcore_status()
+        status_messages.append(status)
 
-
-
+    assert len(status_messages) == num_models*num_samples + 1 # one message per sample and +1 for the initial "loading models" message...
 
 
 

@@ -21,6 +21,9 @@ def make_session_id(string):
     return base64.urlsafe_b64encode(string.encode()).decode()
 
 
+# TODO: session IDs [both training and testing] should be created in the Kernel... As a hack, just aask for the checkpoint directory on "start training" and "start testing", then the frontend can keep track of the returned session IDs.
+
+
 @pytest.fixture(scope='function')
 def client(request, celery_worker):
     if request.param == 'threaded':
@@ -56,7 +59,7 @@ def dataset_settings():
             },
             "y1": {
                 "iotype": "target",
-                "datatype": "numerical",
+                "datatype": "categorical",
                 "preprocessing": {}
             }
         },
@@ -153,7 +156,41 @@ def test_modeling_flow(client, tmp_path, dataset_settings, training_settings):
     wait_for_training()
 
     res = client.post(
-        f'/models/{model_id}/training/{training_session_id}/export',
+        f'/models/testing',
+        json={
+            'modelsInfo': {
+                model_id: {
+                    'layers': network,
+                    'model_name': 'MyModel',
+                    'training_session_id': training_session_id,
+                    'datasetSettings': dataset_settings
+                }
+            },
+            'tests': ['confusion_matrix'],
+            'userEmail': user_email
+        }
+    )
+    assert res.status_code == 200
+    testing_session_id = res.json
+
+    @retry(stop_max_attempt_number=10, wait_fixed=1000)
+    def wait_for_testing():
+        res = client.get(
+            f'/models/testing/{testing_session_id}/status')
+        
+        assert res.status_code == 200
+        assert res.json['status'] == 'Completed'
+
+        res = client.get(
+            f'/models/testing/{testing_session_id}/results')
+        
+        assert res.status_code == 200    
+        assert res.json['confusion_matrix'] != {}
+
+    wait_for_testing()
+
+    res = client.post(
+        f'/models/{model_id}/training/{training_session_id}/export',  # TODO: shouldn't be under training... just make session id a default arg
         json={
             'network': network,
             'datasetSettings': dataset_settings,

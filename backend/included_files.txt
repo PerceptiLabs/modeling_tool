@@ -5,9 +5,7 @@ perceptilabs/mainServer.py
 perceptilabs/settings.py
 perceptilabs/logconf.py
 perceptilabs/main_setup.py
-perceptilabs/mainInterface.py
 perceptilabs/coreInterface.py
-perceptilabs/CoreThread.py
 perceptilabs/createDataObject.py
 perceptilabs/utils.py
 perceptilabs/license_checker.py
@@ -390,4 +388,5 @@ perceptilabs/resources/models.py
 perceptilabs/resources/epochs.py
 perceptilabs/resources/files.py
 perceptilabs/resources/training_results.py
+perceptilabs/resources/testing_results.py
 

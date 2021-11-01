@@ -14,6 +14,7 @@ from perceptilabs.caching.utils import get_preview_cache, get_data_metadata_cach
 from perceptilabs.messaging.base import get_message_broker
 from perceptilabs.tasks.utils import get_task_executor
 from perceptilabs.resources.training_results import TrainingResultsAccess
+from perceptilabs.resources.testing_results import TestingResultsAccess
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.script import ScriptFactory
@@ -68,7 +69,8 @@ def create_app(
         message_broker = get_message_broker(),            
         models_access = ModelAccess(),        
         epochs_access = EpochsAccess(),
-        training_results_access = TrainingResultsAccess()        
+        training_results_access = TrainingResultsAccess(),
+        testing_results_access = TestingResultsAccess()                
 ):
     app = Flask(__name__)
     app.json_encoder = MyJSONEncoder
@@ -84,6 +86,7 @@ def create_app(
         models_access,
         epochs_access,
         training_results_access,
+        testing_results_access,        
         data_metadata_cache        
     )
     app.register_blueprint(models)
@@ -224,8 +227,7 @@ def create_app(
     @app.errorhandler(Exception)
     def handle_endpoint_error(e):
         message = traceback_from_exception(e)
-        print(message)
-        logger.exception(f"Error in request '{request.endpoint}'")
+        logger.exception(f"Error in request '{request.url}'")
         return make_response(message), 500
 
     #print(app.url_map)

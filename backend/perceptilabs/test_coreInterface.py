@@ -157,9 +157,10 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
     )
 
     for counter, _ in enumerate(step):
-        expected_progress = results_access.store.call_args[0][1]['progress']
+        progress = results_access.store.call_args[0][1]['progress']
 
-        if expected_progress > 0.5:
+        if progress > 0.5:
+            expected_progress = progress
             queue.put({'event': 'training-stop', 'payload': {'model_id': model_id, 'training_session_id': training_session_id}})
         
     actual_progress = results_access.store.call_args[0][1]['progress']    

@@ -6,13 +6,15 @@ from perceptilabs.utils import sanitize_path
 import time
 import platform
 class TrainingResultsAccess:
+    FILE_NAME = 'latest-training-results.pkl'
+    
     def store(self, training_session_id, results):
         if training_session_id is None:
             return None
 
         path = self._get_path(training_session_id)
         with open(path, 'wb') as f:
-            pickle.dump(results, f)            
+            pickle.dump(results, f)
 
     def get_latest(self, training_session_id):
         if training_session_id is None:
@@ -30,7 +32,7 @@ class TrainingResultsAccess:
         directory = b64decode_and_sanitize(training_session_id)  # For now it's just a base64 path
         
         os.makedirs(directory, exist_ok=True)
-        file_path = os.path.join(directory, 'latest-training-results.pkl')
+        file_path = os.path.join(directory, self.FILE_NAME)
         return file_path
         
     def remove(self, training_session_id):

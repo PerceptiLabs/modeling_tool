@@ -1,140 +1,90 @@
-import os
+import time
 import logging
-import numpy as np
-import tensorflow as tf
-import platform
-import shutil
-import threading
+from queue import Empty
 
-from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
-from perceptilabs.createDataObject import createDataObject, subsample_data
-import perceptilabs.logconf
 import perceptilabs.utils as utils
+from perceptilabs.issues import IssueHandler
 from perceptilabs.testcore import TestCore, ProcessResults
-from perceptilabs.CoreThread import CoreThread
-
+from perceptilabs.logconf import APPLICATION_LOGGER
 
 logger = logging.getLogger(APPLICATION_LOGGER)
-user_logger = logging.getLogger(USER_LOGGER)
 
 
-class TestLogic():
+class TestingSessionInterface():
     """Main Class that does all the computations for the tests and returns the results
     """
+    def __init__(self, message_broker, model_access, epochs_access, results_access):
+        self._message_broker = message_broker
+        self._model_access = model_access
+        self._epochs_access = epochs_access
+        self._results_access = results_access
 
-    def __init__(self, issue_handler, model_ids):
-        self._issue_handler = issue_handler
-        self._model_ids = model_ids
-        self._stopped = False
+    def run(self, *args, **kwargs):
+        for _ in self.run_stepwise(*args, **kwargs):
+            pass
 
-    def setup_test_interface(self, models_info, tests, user_email):
-        self._models_info = models_info
-        self._tests = tests
-        self._results = {}
-        self._core = TestCore(
-            model_ids=self._model_ids,
-            models_info=self._models_info,
-            tests=self._tests,
-            issue_handler=self._issue_handler,
+    def run_stepwise(self, testing_session_id, models, tests, user_email, results_interval=None):
+        issue_handler = IssueHandler()
+        
+        core = TestCore(
+            testing_session_id,
+            list(models.keys()),
+            models,
+            tests,
+            issue_handler,
             user_email=user_email,
         )
 
-    def run(self, on_finished, user_email=None):
-        """
-        Runs all the tests for all the models iteratively.
+        testing_step = core.run_stepwise()
+        testing_sentinel = object()
 
-        Args:
-            on_finished: utils function that sets global variables
-            user_email: the email of the user. Optional.
-        Returns:
-            results: returns dict containing required test results in the appropriate format
-        """
+        last_update = -1
+        is_running = True
+        with self._message_broker.subscription() as queue:
+            
+            while is_running:
+                self._maybe_handle_messages(queue, core)
 
-        self._start_testing_thread(on_finished)
-        return "Testing started."
+                testing_step_result = next(testing_step, testing_sentinel)
+                is_running = testing_step_result is not testing_sentinel
 
-    def _start_testing_thread(self, on_finished):
-        def run():
-            try:
-                self._core.run()
-            except:
-                failed = True
-                raise
-            else:
-                failed = False
-            finally:
-                on_finished(failed)
+                last_update = self._maybe_write_results(
+                    results_interval, last_update, core, testing_session_id, is_running)
 
-        try:
-            threading.Thread(target=run, daemon=True).start()
-        except Exception as e:
-            message = "Could not boot up the new thread to run the computations on because of: " + \
-                str(e)
-            with self._issue_handler.create_issue(message, e) as issue:
-                self._issue_handler.put_error(issue.frontend_message)
-                logger.error(issue.internal_message)
+                yield
+                
+    def _maybe_write_results(self, results_interval, last_update, core, testing_session_id, is_running):
+        time_since_update = time.time() - last_update
+        
+        if (results_interval is None) or (time_since_update >= results_interval) or not is_running:
+
+            self._write_results(core, testing_session_id)
+            return time.time()
         else:
-            logger.info(
-                f"Started core for computing {self._tests} for {self._model_ids}")
+            return last_update
 
-    def get_results(self):
-        if not self._stopped:
-            unprocessed_results = self._core.get_results()
-            self._update_results(unprocessed_results)
-            return self._results
-        else:
-            return 'tests were stopped.'
+    def _write_results(self, core, testing_session_id):         
+        status = core.get_testcore_status()
+        unprocessed_results = core.get_results()
 
-    def _update_results(self, unprocessed_results):
-        for test in self._tests:
-            self._results[test] = {}
+        results = {}
+        for test in core.tests:
+            results[test] = {}
             for model_id in unprocessed_results:
-                processed_output = self._process_results(
-                    unprocessed_results[model_id][test], test)
-                self._results[test][model_id] = processed_output
+                processed_output = ProcessResults(
+                    unprocessed_results[model_id][test], test).run()
+                results[test][model_id] = processed_output
+                
+        all_results = {'results': results, 'status': status}
+        self._results_access.store(testing_session_id, all_results)
 
-    def _process_results(self, results, test):
-        """Process the results into required format for frontend
-        Args:
-            results: dict
-            test: string
-        """
-        processed_output = ProcessResults(results, test).run()
-        return processed_output
-
-    def process_request(self, request, on_finished=None, value=None):
-        logger.debug("{} request is being processed in the testcore.".format(request))
-        print(request, self)
-        if request == 'StartTest':
-            if value:
-                user_email = value['user_email']
-            return self.run(on_finished, user_email=user_email)
-        elif request == 'Stop':
-            return self.stop()
-        elif request == 'GetResults':
-            return self.get_results()
-        elif request == 'GetStatus':
-            return self.get_status()
-        elif request == 'Close':
-            return self.close()
-        else:
-            logger.info('Unknown request {} sent.'.format(request))
-
-    def get_status(self):
-        return self._core.get_testcore_status()
-
-    def stop(self):
-        self._stopped = True
+    def _maybe_handle_messages(self, queue, core):
         try:
-            self._core.stop()
-        except Exception as e:
-            with self._issue_handler.create_issue('Error while stopping model', e) as issue:
-                logger.exception(issue.internal_message)
-
-    def close(self):
-        try:
-            self._core.stop()
-            del self._core
-        except Exception as e:
-            with self._issue_handler.create_issue('Error while closing model', e) as issue:
-                logger.exception(issue.internal_message)
+            for message in iter(queue.get_nowait, None):
+                event = message['event']
+                payload = message.get('payload', {})
+                
+                if event == 'testing-stop' and payload['testing_session_id'] == core.session_id:
+                    core.stop()                
+        except Empty:
+            pass
