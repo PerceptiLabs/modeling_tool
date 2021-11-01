@@ -18,7 +18,7 @@
           i.icon.icon-player-play.scaled-icon
         
         button.btn-menu-bar(
-          v-if="!(statusNetworkCore === 'Stop' || statusNetworkCore === 'Created')"
+          v-if="!(statusNetworkCore === 'Stopped' || statusNetworkCore === 'Created')"
           @click="onStopClick"
         )
           i.icon.icon-stop2
@@ -64,7 +64,7 @@ export default {
   watch: {
     statusNetworkCore: {
       handler(statusNetworkCore) {
-        if(statusNetworkCore === 'Stop' || statusNetworkCore === 'Paused' || statusNetworkCore === 'Finished') {
+        if(statusNetworkCore === 'Stopped' || statusNetworkCore === 'Paused' || statusNetworkCore === 'Finished') {
           this.isTrainingStopped = true;
         } else {
           this.isTrainingStopped = false;

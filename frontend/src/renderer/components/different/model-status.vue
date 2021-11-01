@@ -3,13 +3,16 @@
       div(v-if="statusData.Status === 'Finished'").d-flex.align-items-center
         img(src="./../../../../static/img/model-status-complete-white.svg")
         span.training-complete-text Training Complete
+      div(v-if="statusData.Status === 'Stopped'").d-flex.align-items-center
+        img(src="./../../../../static/img/model-status-complete-white.svg")
+        span.training-complete-text Training Stopped
       div(
         :class="{'show-status-inline': options.styleInlineLabel}"
         v-else
         )
         
         .name.warn-color(v-if="showError()") Error
-        .name(v-else :class="{'warn-color': showError(), 'have-progress': !isNaN(parseInt(statusData.Progress * 100, 10))}") {{statusData.Status ? statusData.Status === 'Stop' ? 'Stopped' : statusData.Status : 'Untrained'}}
+        .name(v-else :class="{'warn-color': showError(), 'have-progress': !isNaN(parseInt(statusData.Progress * 100, 10))}") {{statusData.Status ? statusData.Status : 'Untrained'}}
         
         div.d-flex.align-items-center(v-if="showProgress")
           .train-progress-wrapper
@@ -86,7 +89,7 @@ export default {
       }
       const svg = `<svg width="3" height="14" viewBox="0 0 1 14" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="14" rx="0.5" fill="${color}"/></svg>`;
       const encodedSvg = `url(data:image/svg+xml;base64,${window.btoa(svg)}`
-      if(this.statusData.Status === 'Stop' || this.statusData.Status === 'Training' || this.statusData.Status === 'Validation' || this.statusData.Status === 'Paused') {
+      if(this.statusData.Status === 'Stopped' || this.statusData.Status === 'Training' || this.statusData.Status === 'Validation' || this.statusData.Status === 'Paused') {
         progress = parseInt(this.statusData.Progress * 100, 10);
       }
       this.progressStyle = {

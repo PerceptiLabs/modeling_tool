@@ -214,19 +214,24 @@ class Trainer:
                 self._auto_save_epoch(epoch=self._num_epochs_completed)
 
 
-        self._set_status('Finished')
-        logger.info(
-            f"Training completed. Total duration: {round(self._training_time, 3)} s")
+        if self._num_epochs_completed == self.num_epochs:        
+            self._set_status('Finished')
+            
+            logger.info(
+                f"Training completed. Total duration: {round(self._training_time, 3)} s")
 
-        if self._user_email and self._num_epochs_completed == self.num_epochs:
-            tracking.send_training_completed(
-                self._user_email,
-                self._model_id,
-                self._graph_spec,
-                self._training_time,
-                peak_memory_usage,
-                self.get_output_stats_summaries()
-            )
+            if self._user_email:
+                tracking.send_training_completed(
+                    self._user_email,
+                    self._model_id,
+                    self._graph_spec,
+                    self._training_time,
+                    peak_memory_usage,
+                    self.get_output_stats_summaries()
+                )
+        else:
+            logger.info(
+                f"Training ended before completion. Total duration: {round(self._training_time, 3)} s")
 
     def _auto_save_epoch(self, epoch):
         """ Exports the model so that we can restore it between runs """
@@ -463,7 +468,7 @@ class Trainer:
         self._num_validation_batches_completed_this_epoch = value
 
     def _set_status(self, value):
-        if value not in ['Waiting', 'Paused', 'Training', 'Validation', 'Finished']:
+        if value not in ['Waiting', 'Paused', 'Training', 'Validation', 'Finished', 'Stopped']:
             raise ValueError(f"Cannot set status to '{value}'")
         self._status = value
 
@@ -514,7 +519,7 @@ class Trainer:
 
     @property
     def is_closed(self):
-        return self.status == 'Finished'
+        return self.status == 'Finished' or self.status == 'Stopped'
 
     @property
     def is_ready(self):
@@ -545,7 +550,7 @@ class Trainer:
         logger.info(f"Trainer is in state %s", self._prev_status)
 
     def stop(self):
-        self._set_status('Finished')
+        self._set_status('Stopped')
 
         if self._user_email:
             tracking.send_training_stopped(

@@ -80,9 +80,10 @@ def session_task(self, session_type, start_payload):
     default_retry_delay=5,
     max_retries=3,
 )
-def training_task_wrapper(self, dataset_settings_dict, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email):
+def training_task_wrapper(self, dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email):
     training_task(
         dataset_settings_dict,
+        model_id,
         graph_spec_dict,
         training_session_id,
         training_settings,

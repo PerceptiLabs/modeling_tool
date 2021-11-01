@@ -258,7 +258,7 @@ def test_trainer_can_stop(data_loader, training_model, training_settings, traini
 
     next(trainer.run_stepwise()) # Take the first training steps
     trainer.stop()
-    assert trainer.status == 'Finished'
+    assert trainer.status == 'Stopped'
 
 
 def test_trainer_can_pause_stop(data_loader, training_model, training_settings, training_session_id):
@@ -269,7 +269,7 @@ def test_trainer_can_pause_stop(data_loader, training_model, training_settings, 
     trainer.pause()
     next(step)
     trainer.stop()
-    assert trainer.status == 'Finished'
+    assert trainer.status == 'Stopped'
 
 
 def test_trainer_export_checkpoints_atleast_once(graph_spec, data_loader, training_model, training_settings, exporter, temp_path, training_session_id):

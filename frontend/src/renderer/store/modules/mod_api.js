@@ -466,7 +466,6 @@ const actions = {
 
     renderingKernel.stopTraining(modelId, trainingSessionId)
       .then((data)=> {
-        dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
         dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
         dispatch('mod_workspace/saveCurrentModelAction', null, {root: true});
         dispatch('API_getStatus');

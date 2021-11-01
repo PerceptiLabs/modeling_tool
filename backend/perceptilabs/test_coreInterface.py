@@ -116,6 +116,7 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, training_mo
     interface.run(
         data_loader,
         model_id='456',
+        graph_spec_dict=graph_spec.to_dict(),        
         training_session_id=make_session_id('789'),
         training_settings=training_settings,
         load_checkpoint=False,
@@ -148,6 +149,7 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
     step = interface.run_stepwise(
         data_loader,
         model_id=model_id,
+        graph_spec_dict=graph_spec.to_dict(),        
         training_session_id=training_session_id,  
         training_settings=training_settings,
         load_checkpoint=False,
@@ -186,6 +188,7 @@ def test_pausing_mid_training(queue, message_broker, data_loader, graph_spec, tr
     step = interface.run_stepwise(
         data_loader,
         model_id=model_id,
+        graph_spec_dict=graph_spec.to_dict(),        
         training_session_id=training_session_id,
         training_settings=training_settings,
         load_checkpoint=False,
@@ -237,6 +240,7 @@ def test_export_mid_training(monkeypatch, queue, message_broker, data_loader, gr
     step = interface.run_stepwise(
         data_loader,
         model_id=model_id,
+        graph_spec_dict=graph_spec.to_dict(),        
         training_session_id=training_session_id,
         training_settings=training_settings,
         load_checkpoint=False,
@@ -284,6 +288,7 @@ def test_load_checkpoint(message_broker, data_loader, graph_spec, training_model
     interface.run(
         data_loader,
         model_id='456',
+        graph_spec_dict=graph_spec.to_dict(),        
         training_session_id=make_session_id('789'),
         training_settings=training_settings,
         load_checkpoint=load_checkpoint,
@@ -328,6 +333,7 @@ def test_ignores_stopping_for_different_interface(model_id, session_id, expect_f
     step = interface.run_stepwise(
         data_loader,
         model_id=actual_model_id,
+        graph_spec_dict=graph_spec.to_dict(),
         training_session_id=actual_training_session_id,  
         training_settings=training_settings,
         load_checkpoint=False,

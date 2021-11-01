@@ -20,9 +20,9 @@ class TrainingSessionInterface():
         for _ in self.run_stepwise(*args, **kwargs):
             pass
         
-    def run_stepwise(self, data_loader, model_id, training_session_id, training_settings, load_checkpoint, user_email, results_interval=None, is_retry=False):
+    def run_stepwise(self, data_loader, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email, results_interval=None, is_retry=False):
         self._clean_old_status(training_session_id)
-        graph_spec = self._model_access.get_graph_spec(model_id)
+        graph_spec = self._model_access.get_graph_spec(graph_spec_dict)
         
         epoch_id = self._epochs_access.get_latest(
             training_session_id=training_session_id,
@@ -40,7 +40,7 @@ class TrainingSessionInterface():
             initial_state = self._epochs_access.load_state_dict(training_session_id, epoch_id)            
         
         training_model = self._model_access.get_training_model(
-            model_id, checkpoint_path=checkpoint_path)
+            graph_spec.to_dict(), checkpoint_path=checkpoint_path)
 
         exporter = Exporter(
             graph_spec, training_model, data_loader,

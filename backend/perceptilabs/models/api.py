@@ -35,6 +35,7 @@ def create_blueprint(
 
         models_interface.start_training(
             dataset_settings,
+            model_id,
             graph_spec_dict,
             training_session_id,
             training_settings,

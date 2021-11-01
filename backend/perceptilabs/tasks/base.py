@@ -25,7 +25,7 @@ class TaskExecutor(ABC):
     
 
 @log_exceptions    
-def training_task(dataset_settings_dict, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email, is_retry=False):
+def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email, is_retry=False):
     
     import perceptilabs.settings as settings    
     from perceptilabs.coreInterface import TrainingSessionInterface
@@ -69,6 +69,7 @@ def training_task(dataset_settings_dict, graph_spec_dict, training_session_id, t
 
     interface.run(
         data_loader,
+        model_id,
         graph_spec_dict,
         training_session_id,
         training_settings,
