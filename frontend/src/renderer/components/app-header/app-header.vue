@@ -39,9 +39,12 @@
           path(fill-rule="evenodd" clip-rule="evenodd" d="M20.7002 10C20.7002 12.6522 19.6466 15.1957 17.7713 17.0711C15.8959 18.9464 13.3524 20 10.7002 20C8.04803 20 5.50449 18.9464 3.62913 17.0711C1.75376 15.1957 0.700195 12.6522 0.700195 10C0.700195 7.34784 1.75376 4.8043 3.62913 2.92893C5.50449 1.05357 8.04803 0 10.7002 0C13.3524 0 15.8959 1.05357 17.7713 2.92893C19.6466 4.8043 20.7002 7.34784 20.7002 10ZM7.5702 7.54125C7.5299 7.5418 7.48992 7.53412 7.4527 7.51868C7.41548 7.50324 7.38179 7.48038 7.35371 7.45148C7.32563 7.42257 7.30374 7.38825 7.28938 7.3506C7.27502 7.31295 7.26849 7.27276 7.2702 7.2325C7.3877 5.11375 9.12145 4.375 10.7064 4.375C12.4514 4.375 14.0464 5.2875 14.0464 7.175C14.0464 8.525 13.2527 9.1675 12.4914 9.74625C11.5702 10.445 11.2289 10.7063 11.2289 11.6038V11.735C11.2289 11.8179 11.196 11.8974 11.1374 11.956C11.0788 12.0146 10.9993 12.0475 10.9164 12.0475H9.90394C9.82192 12.0475 9.74319 12.0153 9.68472 11.9577C9.62626 11.9002 9.59276 11.822 9.59144 11.74L9.58645 11.4688C9.53895 10.31 10.2052 9.59625 11.0464 8.985C11.7839 8.43 12.2527 8.065 12.2527 7.27125C12.2527 6.24 11.4677 5.81125 10.6102 5.81125C9.60645 5.81125 9.04395 6.40875 8.9327 7.22875C8.9102 7.4 8.7727 7.54125 8.6002 7.54125H7.56894H7.5702ZM10.4764 15.595C9.74645 15.595 9.21519 15.1025 9.21519 14.4362C9.21519 13.7463 9.74645 13.2613 10.4777 13.2613C11.2389 13.2613 11.7627 13.7463 11.7627 14.4362C11.7627 15.1025 11.2377 15.595 10.4764 15.595Z")
 
 
-        .help-button-panel(v-if="showHelpPanel")
+        .dropdown.help-button-panel(v-if="showHelpPanel")
           .help-button-panel-content
-            .help-button-panel-content-item(@click="startUserFlow") Get Started
+            app-header-link(
+              name="Start Onboarding"
+              @handleClick="startUserFlow"
+            )
             app-header-link(
               name="Tutorials"
               @handleClick="openVideoTutorials"
@@ -51,7 +54,6 @@
               @handleClick="goToDocumentation"
             )
             hr.help-button-panel-content-item
-            .help-button-panel-content-item.cursor-default External resources
             app-header-link(
               name="YouTube"
               @handleClick="onOpenYouTube"
@@ -358,15 +360,9 @@ import {
       // transform-origin: top right;
       position: absolute;
       top: 3rem;
-      right: 0;
-
-      background: #131B30;
-      border: 1px solid #363E51;
-      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+      right: -29px;
+      box-shadow: 0px 4px 4px rgba(122, 122, 122, 0.36);
       border-radius: 2px;
-
-      // width: 16rem;
-
       margin-left: 0;
 
       .help-button-panel-content {
@@ -377,28 +373,7 @@ import {
         flex-direction: column;
         justify-content: space-between;
         
-        padding: 1.5rem 1rem;
-
-        > .help-button-panel-content-item {
-          margin: 0;
-          font-family: Nunito Sans;
-          font-style: normal;
-          font-weight: normal;
-          font-size: 14px;
-          line-height: 19px;
-          color: #FFFFFF;
-
-          cursor: pointer;
-
-          display: flex;
-          align-items: center;
-          white-space: nowrap;
-
-        }
-
-        > .help-button-panel-content-item + .help-button-panel-content-item {
-          margin-top: 1rem;
-        }
+        padding: 0 1rem;
       }
     }
   } 
@@ -440,4 +415,9 @@ import {
   .cursor-default {
     cursor: default !important;
   }
+hr {
+  margin-top: 0.5rem;
+  cursor: default;
+  width: 100%;
+}
 </style>
