@@ -2,7 +2,7 @@
   .statistics-box
     .statistics-box_main.statistics-box_col(v-if="currentTab !== 'Global Loss'")
       template(v-if="sectionTitle === 'Statistics' && currentTab !== 'Performance'")
-        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('Accuracy')")
+        template(v-if="chartData.hasOwnProperty('Accuracy')")
           .statistics-box_row
             chart-switch(
               key="1"
@@ -16,7 +16,7 @@
               :chart-data="chartData.Accuracy.OverEpochs"
               :custom-color="colorListAccuracy"
             )
-        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('LossAndAccuracy')")
+        template(v-if="chartData.hasOwnProperty('LossAndAccuracy')")
           .statistics-box_row
             chart-switch(
               key="1"
@@ -30,7 +30,7 @@
               :chart-data="chartData.LossAndAccuracy.AccOverEpochs"
               :custom-color="colorListAccuracy"
             )
-        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('LossAndRSquared')")
+        template(v-if="chartData.hasOwnProperty('LossAndRSquared')")
           .statistics-box_row
             chart-switch(
               key="1"
@@ -44,7 +44,7 @@
               :chart-data="chartData.LossAndRSquared.RSquaredOverEpochs"
               :custom-color="colorListAccuracy"
             )
-        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('PvGAndConfusionMatrix')")
+        template(v-if="chartData.hasOwnProperty('PvGAndConfusionMatrix')")
           .statistics-box_row
             chart-switch(
               key="3"
@@ -58,7 +58,7 @@
               :chart-data="chartData.PvGAndConfusionMatrix.LastEpoch"
               :custom-color="colorList"
             )
-        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('PvGAndMAE')")
+        template(v-if="chartData.hasOwnProperty('PvGAndMAE')")
           .statistics-box_row
             chart-switch(
               key="3"
@@ -72,7 +72,7 @@
               :chart-data="chartData.PvGAndMAE.Sample"
               :custom-color="colorList"
             )
-        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('PvG')")
+        template(v-if="chartData.hasOwnProperty('PvG')")
           .statistics-box_row
             chart-switch(
               key="3"
@@ -86,7 +86,7 @@
               :chart-data="chartData.PvG.BatchAverage"
               :custom-color="colorList"
             )
-        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('PvGAndImage')")
+        template(v-if="chartData.hasOwnProperty('PvGAndImage')")
           .statistics-box_row
             chart-switch(
               key="3"
@@ -100,7 +100,7 @@
               :chart-data="chartData.PvGAndImage.Prediction"
               :custom-color="colorList"
             )
-        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('IoU')")
+        template(v-if="chartData.hasOwnProperty('IoU')")
           .statistics-box_row
             chart-switch(
               key="5"
@@ -114,7 +114,7 @@
               :chart-data="chartData.IoU.OverEpochs"
               :custom-color="colorListAccuracy"
             ) 
-        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('IoUAndLoss')")
+        template(v-if="chartData.hasOwnProperty('IoUAndLoss')")
           .statistics-box_row
             chart-switch(
               key="5"
@@ -129,29 +129,27 @@
               :custom-color="colorListAccuracy"
             )
       template(v-else-if="sectionTitle === 'Statistics' && currentTab === 'Performance'")
-        .statistics-box
-          .statistics-box_main.statistics-box_col
-            .statistics-box_row
-              .statistics-box_col
-                view-box-performance-chart(
-                  :chartData="chartData.Precision && chartData.Precision.PrecisionOverEpochs"
-                  :colorListAccuracy="colorListAccuracy"
-                  chartTitle="Precision"
-                )
-              .statistics-box_col
-                view-box-performance-chart(
-                  :chartData="chartData.Recall && chartData.Recall.RecallOverEpochs"
-                  :colorListAccuracy="colorListAccuracy"
-                  chartTitle="Recall"
-                )
-              .statistics-box_col
-                view-box-performance-chart(
-                  :chartData="chartData.F1 && chartData.F1.F1OverEpochs"
-                  :colorListAccuracy="colorListAccuracy"
-                  chartTitle="F1"
-                )
+        .statistics-box_row
+          .statistics-box_col
+            view-box-performance-chart(
+              :chartData="chartData.Precision && chartData.Precision.PrecisionOverEpochs"
+              :colorListAccuracy="colorListAccuracy"
+              chartTitle="Precision"
+            )
+          .statistics-box_col
+            view-box-performance-chart(
+              :chartData="chartData.Recall && chartData.Recall.RecallOverEpochs"
+              :colorListAccuracy="colorListAccuracy"
+              chartTitle="Recall"
+            )
+          .statistics-box_col
+            view-box-performance-chart(
+              :chartData="chartData.F1 && chartData.F1.F1OverEpochs"
+              :colorListAccuracy="colorListAccuracy"
+              chartTitle="F1"
+            )
       template(v-else)
-        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('ViewBox')")
+        template(v-if="chartData.hasOwnProperty('ViewBox')")
           .statistics-box_row
             chart-switch(
               key="7"
