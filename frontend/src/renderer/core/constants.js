@@ -106,7 +106,7 @@ export const defaultTrainingSettings = {
   Epochs: 100,
   Batch_size: 32,
   Shuffle: true,
-  Loss: 'Quadratic', //[Cross-Entropy, Quadratic, Weighted Cross-Entropy, Dice]
+  Loss: 'Cross-Entropy', //[Cross-Entropy, Quadratic, Weighted Cross-Entropy, Dice]
   LossOptions: [
     {text: 'Cross-Entropy', value: 'Cross-Entropy'},
     {text: 'Quadratic', value: 'Quadratic'},
