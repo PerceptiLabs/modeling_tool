@@ -60,11 +60,11 @@
           )
             i.icon.icon-box
       .toolbar_settings
-        base-toggle.toggle(
-          :value="modelWeightsActive"
-          :disabled="!networkHasCheckpoint" 
-          :onClick="toggleModelWeights")
-          span.bold Weights
+        //- base-toggle.toggle(
+        //-   :value="modelWeightsActive"
+        //-   :disabled="!networkHasCheckpoint" 
+        //-   :onClick="toggleModelWeights")
+        //-   span.bold Weights
 
         base-toggle.toggle(
           :value="showModelPreviews" 
@@ -166,9 +166,6 @@ export default {
     },
     modelWeightsActive() {
       return this.isUsingModelWeights;
-    },
-    networkIsTrained() {
-      return typeof this.statisticsIsOpen === 'boolean';
     },
     networkHasCheckpoint() {
       // Checking testIsOpen because it is a boolean if scanCheckpoint returns true.
@@ -276,53 +273,6 @@ export default {
     isModelPageAndNetworkHasStatistic() {
       return this.$route.name === 'app' && this.currentNetwork.networkMeta.openStatistics !== null
     },
-    toModelStatistic() {
-        //$route.name === 'app' && currentNetwork.networkMeta.openStatistics !== null
-        if(this.$route.name === 'app') {
-          // networkMeta.openStatistics !== null
-          if(this.isModelPageAndNetworkHasStatistic()) {
-            this.$store.dispatch("mod_workspace/setViewType", 'statistic');
-            const item = this.workspaceModels[this.statisticItemIndex];
-            this.SET_currentNetwork(this.statisticItemIndex)
-              .then(() => { 
-                this.$store.dispatch("mod_workspace/EVENT_onceDoRequest");
-                this.$store.commit('mod_workspace/update_network_meta', {key: 'hideStatistics', networkID: item.networkID, value: false});
-                this.SET_openStatistics(true);
-                this.set_chartRequests(item.networkID);
-                })
-          } else {
-            const { statisticItemIndex } = this;
-            
-            if(statisticItemIndex !== null) {
-              this.$store.dispatch("mod_workspace/setViewType", 'statistic');
-              const item = this.workspaceModels[this.statisticItemIndex];
-              this.$store.commit('mod_workspace/update_network_meta', {key: 'hideStatistics', networkID: item.networkID, value: false});
-              this.SET_currentNetwork(statisticItemIndex);
-              this.SET_openStatistics(true);
-              this.SET_openTest(false);
-            }
-          }
-
-        } else {
-          const { statisticItemIndex } = this;
-          if(statisticItemIndex !== null) {
-            this.$store.dispatch("mod_workspace/setViewType", 'statistic');
-            const item = this.workspaceModels[this.statisticItemIndex];
-            this.$store.commit('mod_workspace/update_network_meta', {key: 'hideStatistics', networkID: item.networkID, value: false});
-            this.SET_currentNetwork(statisticItemIndex)
-              .then(() => {
-                this.$router.push({name: 'app'});
-                this.SET_openStatistics(true);
-              });
-          }
-        }
-
-        this.$nextTick(() => {
-          if (!this.showNewModelPopup) {
-            this.setCurrentView('tutorial-statistics-view');
-          }
-        });
-      },
     handleStatisticState(models) {
       const firsImteWithStatistcsIndex = models.findIndex(model => model.networkMeta.openStatistics !== null);
       if(firsImteWithStatistcsIndex !== -1) {
