@@ -33,7 +33,7 @@ export const renderingKernel = {
       userEmail: userEmail,
     };
     return whenRenderingKernelReady
-      .then(rk => rk.post(`/models/${modelId}/training/${trainingSessionId}/export`, payload))
+      .then(rk => rk.put(`/models/${modelId}/export?training_session_id=${trainingSessionId}`, payload))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
@@ -42,29 +42,23 @@ export const renderingKernel = {
   async serveModel(type, datasetSettings, userEmail, modelId, network, trainingSessionId, modelName) {
     const payload = {
       type: type,
-      payload: {
-        datasetSettings: datasetSettings,
-        network: network,
-	trainingSessionId: trainingSessionId,
-        userEmail: userEmail,
-        modelName: modelName,
-        modelId: modelId,
-      },
+      datasetSettings: datasetSettings,
+      network: network,
       userEmail: userEmail,
-      modelId: modelId,
+      modelName: modelName,
     };
     return whenRenderingKernelReady
-      .then(rk => rk.post('/serving/start', payload))
+      .then(rk => rk.post(`/models/${modelId}/serve?training_session_id=${trainingSessionId}`, payload))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
   },
 
-  async isServedModelReady(modelId, userEmail) {
+  async isServedModelReady(servingSessionId) {
     return whenRenderingKernelReady
-    .then(rk => rk.get(`/serving/model?model_id=${modelId}&user_email=${userEmail}`))
+    .then(rk => rk.get(`/models/serving/${servingSessionId}/status`))
     .then(res => {
-      return res.data;
+      return res.data['url'];
     }).catch((err) => {
       console.error(err);
       return null;
@@ -72,16 +66,16 @@ export const renderingKernel = {
   },
 
   async waitForServedModelReady(type, datasetSettings, userEmail, modelId, network, checkpointDirectory, modelName) {
-    await renderingKernel.serveModel(type, datasetSettings, userEmail, modelId, network, checkpointDirectory, modelName);
+    const servingSessionId = await renderingKernel.serveModel(type, datasetSettings, userEmail, modelId, network, checkpointDirectory, modelName);
 	
     return await (async function () {
-      let url = await renderingKernel.isServedModelReady(modelId, userEmail);
+      let url = await renderingKernel.isServedModelReady(servingSessionId);
       
       while(!url) {
         await new Promise(resolve => {
           setTimeout(resolve, 1000);
         });
-	url = await renderingKernel.isServedModelReady(modelId, userEmail);
+	url = await renderingKernel.isServedModelReady(servingSessionId);
       }
       return url      
     })();
@@ -264,30 +258,7 @@ export const renderingKernel = {
         }
       })
   },
-
-  async startSession(payload) {
-    return whenRenderingKernelReady
-      .then(rk => rk.post('/session/start', payload))
-      .then(res => {
-        if (res.status !== 200) {
-          throw new Error('Failed to start session');
-        }
-      })
-  },
   
-  async sessionProxy(action, receiver, userEmail, data) {
-    const payload = {
-      action: action,
-      receiver: receiver,
-      user_email: userEmail,
-      data: data
-    };
-    return whenRenderingKernelReady
-      .then(rk => rk.post('/session/proxy', payload))
-      .then(res => {
-        return (res.status === 200) ? res.data : null;
-      })
-  },
   async set_user(userEmail) {
     const payload = {
       userEmail,
@@ -325,7 +296,7 @@ export const renderingKernel = {
         return (res.status === 200) ? res.data : null;
       })
   },
-  
+
 }
 
 

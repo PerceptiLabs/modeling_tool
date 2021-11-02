@@ -15,6 +15,7 @@ from perceptilabs.messaging.base import get_message_broker
 from perceptilabs.tasks.utils import get_task_executor
 from perceptilabs.resources.training_results import TrainingResultsAccess
 from perceptilabs.resources.testing_results import TestingResultsAccess
+from perceptilabs.resources.serving_results import ServingResultsAccess
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.script import ScriptFactory
@@ -24,15 +25,11 @@ from perceptilabs.endpoints.data.base import PutData, IsDataReady
 from perceptilabs.endpoints.model_recommendations.base import ModelRecommendations
 from perceptilabs.endpoints.type_inference.base import TypeInference
 from perceptilabs.endpoints.layer_code.base import LayerCode
-from perceptilabs.endpoints.session.base import SessionStart, ActiveSessions, SessionProxy, SessionCancel, SessionWorkers
-from perceptilabs.endpoints.serving.base import ServingStart, IsServedModelReady, Models
 from perceptilabs.endpoints.set_user.base import SetUser
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.issues import traceback_from_exception
-from perceptilabs.session.threaded_executor import ThreadedExecutor
 from perceptilabs.models.api import create_blueprint as create_models_blueprint
 import perceptilabs.utils as utils
-import perceptilabs.session.utils as session_utils
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -64,13 +61,13 @@ def create_app(
         data_metadata_cache = NullCache(),
         preview_cache = NullCache(),
         data_executor = utils.DummyExecutor(),
-        session_executor = session_utils.get_threaded_session_executor(single_threaded=True),
         task_executor = get_task_executor(),
         message_broker = get_message_broker(),            
         models_access = ModelAccess(),        
         epochs_access = EpochsAccess(),
         training_results_access = TrainingResultsAccess(),
-        testing_results_access = TestingResultsAccess()                
+        testing_results_access = TestingResultsAccess(),
+        serving_results_access = ServingResultsAccess()                        
 ):
     app = Flask(__name__)
     app.json_encoder = MyJSONEncoder
@@ -86,7 +83,8 @@ def create_app(
         models_access,
         epochs_access,
         training_results_access,
-        testing_results_access,        
+        testing_results_access,
+        serving_results_access,                
         data_metadata_cache        
     )
     app.register_blueprint(models)
@@ -154,54 +152,6 @@ def create_app(
         view_func=LayerCode.as_view('layer_code', models_access)
     )
 
-    app.add_url_rule(
-        '/session/workers',   # TODO: split into training and testing
-        methods=['GET'],
-        view_func=SessionWorkers.as_view('active_workers', session_executor)
-    )
-
-    app.add_url_rule(
-        '/session/start',  # TODO: split into training and testing
-        methods=['POST'],
-        view_func=SessionStart.as_view('session_start', session_executor)
-    )
-
-    app.add_url_rule(
-        '/session',  # TODO: split into training and testing
-        methods=['DELETE'],
-        view_func=SessionCancel.as_view('session_delete', session_executor)
-    )
-
-    app.add_url_rule(
-        '/session/list', # TODO: split into training and testing
-        methods=['GET'],
-        view_func=ActiveSessions.as_view('active_sessions', session_executor)
-    )
-
-    app.add_url_rule(
-        '/session/proxy', 
-        methods=['POST'],
-        view_func=SessionProxy.as_view('session_proxy', session_executor)
-    )
-
-    app.add_url_rule(
-        '/serving/start',
-        methods=['POST'], 
-        view_func=ServingStart.as_view('serving_start', session_executor)
-    )
-
-    app.add_url_rule(
-        '/serving/model',  # TODO. use the serving/models/<id> endpoint instead
-        methods=['GET'],
-        view_func=IsServedModelReady.as_view('is_served_model_ready', session_executor)
-    )
-
-    models_view = Models.as_view('models', session_executor)
-    app.add_url_rule(
-        '/serving/models', methods=['GET'], view_func=models_view, defaults={'model_id': None})
-    app.add_url_rule(
-        '/serving/models/<model_id>', methods=['GET'], view_func=models_view)
-
     @app.route('/healthy', methods=['GET'])
     def healthy():
         return '{"healthy": "true"}'
@@ -214,14 +164,7 @@ def create_app(
     @app.after_request
     def after_request(response):
         duration = time.perf_counter() - g.request_started
-
-        if request.endpoint == 'session_proxy':
-            action = (request.get_json() or {}).get('action')
-            logger.info(
-                f"Request to endpoint '{request.endpoint}' took {duration:.4f}s. Action: '{action}'")
-        else:
-            logger.info(f"Request to endpoint '{request.endpoint}' took {duration:.4f}s")
-            
+        logger.info(f"Request to endpoint '{request.endpoint}' took {duration:.4f}s")
         return response
 
     @app.errorhandler(Exception)

@@ -13,13 +13,14 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class ModelsInterface:
-    def __init__(self, task_executor, message_broker, model_access, epochs_access, training_results_access, testing_results_access, data_metadata_cache):
+    def __init__(self, task_executor, message_broker, model_access, epochs_access, training_results_access, testing_results_access, serving_results_access, data_metadata_cache):
         self._task_executor = task_executor
         self._message_broker = message_broker
         self._model_access = model_access        
         self._epochs_access = epochs_access
         self._training_results_access = training_results_access
-        self._testing_results_access = testing_results_access        
+        self._testing_results_access = testing_results_access
+        self._serving_results_access = serving_results_access                
         self._data_metadata_cache = data_metadata_cache
 
     def start_training(self, dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email):
@@ -172,6 +173,19 @@ class ModelsInterface:
             file_access, csv_path, dataset_settings, metadata=data_metadata)
 
         return data_loader
+
+    def start_serving(self, serving_type, dataset_settings_dict, graph_spec_dict, training_session_id, model_name, user_email):
+        serving_session_id = self._serving_results_access.new_id()
+        self._task_executor.enqueue('serving_task', serving_type, dataset_settings_dict, graph_spec_dict, training_session_id, model_name, user_email, serving_session_id)
+        return serving_session_id
+
+    def get_serving_status(self, serving_session_id):
+        status_dict = self._serving_results_access.get_latest(serving_session_id)
+        return status_dict
+
+    def stop_serving(self, serving_session_id):
+        self._message_broker.publish(
+            {'event': 'serving-stop', 'payload': {'serving_session_id': serving_session_id}})
 
     def start_testing(self, models_info, tests, user_email):
         testing_session_id = self._testing_results_access.new_id()

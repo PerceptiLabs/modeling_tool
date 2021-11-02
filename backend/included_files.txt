@@ -327,10 +327,7 @@ perceptilabs/endpoints/__init__.py
 # backend/perceptilabs/serving/
 perceptilabs/serving/__init__.py
 perceptilabs/serving/gradio_serving.py
-
-# backend/perceptilabs/endpoints/serving/
-perceptilabs/endpoints/serving/__init__.py
-perceptilabs/endpoints/serving/base.py
+perceptilabs/serving/interface.py
 
 # backend/perceptilabs/models/
 perceptilabs/models/__init__.py
@@ -343,16 +340,6 @@ perceptilabs/tasks/base.py
 perceptilabs/tasks/celery_executor.py
 perceptilabs/tasks/threaded_executor.py
 perceptilabs/tasks/utils.py
-
-# backend/perceptilabs/endpoints/session/
-perceptilabs/endpoints/session/__init__.py
-perceptilabs/endpoints/session/base.py
-
-# backend/perceptilabs/session/
-perceptilabs/session/base.py
-perceptilabs/session/celery_executor.py
-perceptilabs/session/threaded_executor.py
-perceptilabs/session/utils.py
 
 # backend/perceptilabs/endpoints/data/
 perceptilabs/endpoints/data/__init__.py
@@ -389,4 +376,5 @@ perceptilabs/resources/epochs.py
 perceptilabs/resources/files.py
 perceptilabs/resources/training_results.py
 perceptilabs/resources/testing_results.py
+perceptilabs/resources/serving_results.py
 

@@ -3,7 +3,8 @@ from concurrent.futures import ThreadPoolExecutor
 from perceptilabs.tasks.base import (
     TaskExecutor,
     training_task,
-    testing_task
+    testing_task,
+    serving_task,    
 )
 
 
@@ -11,7 +12,8 @@ class ThreadedTaskExecutor:
     def __init__(self):
         self._tasks = {
             'training_task': training_task,
-            'testing_task': testing_task            
+            'testing_task': testing_task,
+            'serving_task': serving_task                        
         }        
         self._pool = ThreadPoolExecutor()
 

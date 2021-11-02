@@ -14,3 +14,4 @@ TRAINING_DUMP_ROWS = os.getenv("PL_TRAINING_DUMP_ROWS")
 
 TRAINING_RESULTS_REFRESH_INTERVAL = 3.0 # seconds [None == for every iteration]
 TESTING_RESULTS_REFRESH_INTERVAL = None # seconds [None == for every iteration]
+SERVING_RESULTS_REFRESH_INTERVAL = 1.0 # seconds [None == for every iteration]

@@ -15,7 +15,6 @@ from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings
-from perceptilabs.session.utils import Session
 from perceptilabs.caching.utils import get_data_metadata_cache
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import get_file_path
@@ -175,41 +174,3 @@ class GradioLauncher:
             raise NotImplementedError(f"No gradio output type found for datatype '{datatype}'")
 
     
-class GradioSession(Session):
-    def __init__(self):
-        self._model_access = ModelAccess(ScriptFactory())
-        
-        self._launcher = GradioLauncher(
-            self._model_access,
-            EpochsAccess()
-        )
-    
-    def on_request_received(self, request):
-        if request['action'] == 'Stop':  
-            self._launcher.stop()
-            return {}
-        elif request['action'] == 'get_url':
-            return self._launcher.get_url()
-
-    def on_start_called(self, payload, is_retry):
-        graph_spec = self._model_access.get_graph_spec(payload['network'])  # TODO: F/E should send ID
-        training_session_id = payload['trainingSessionId']
-        user_email = payload['userEmail']
-        model_name = payload['modelName']
-        
-
-        dataset_settings = DatasetSettings.from_dict(payload['datasetSettings'])
-
-        csv_path = get_file_path(payload['datasetSettings']) # TODO: move one level up        
-        data_loader = self._get_data_loader(csv_path, dataset_settings, user_email)
-        self._launcher.start(graph_spec, data_loader, training_session_id, model_name)
-
-    def _get_data_loader(self, csv_path, dataset_settings, user_email):
-        key = ['pipelines', user_email, dataset_settings.compute_hash()]
-        cache = get_data_metadata_cache().for_compound_keys()        
-        data_metadata = cache.get(key)
-
-        file_access = FileAccess(os.path.dirname(csv_path))         
-        data_loader = DataLoader.from_csv(
-            file_access, csv_path, dataset_settings, metadata=data_metadata)        
-        return data_loader

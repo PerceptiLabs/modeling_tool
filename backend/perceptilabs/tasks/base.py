@@ -142,3 +142,58 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
         results_interval=settings.TESTING_RESULTS_REFRESH_INTERVAL        
     )
      
+
+@log_exceptions    
+def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, training_session_id, model_name, user_email, serving_session_id, is_retry=False):
+    
+    import perceptilabs.settings as settings    
+    from perceptilabs.serving.interface import ServingSessionInterface
+    from perceptilabs.caching.utils import get_data_metadata_cache    
+    from perceptilabs.script.base import ScriptFactory    
+    from perceptilabs.resources.models import ModelAccess
+    from perceptilabs.resources.epochs import EpochsAccess
+    from perceptilabs.resources.files import FileAccess
+    from perceptilabs.resources.serving_results import ServingResultsAccess
+    from perceptilabs.data.base import DataLoader
+    from perceptilabs.data.settings import DatasetSettings
+    from perceptilabs.messaging.base import get_message_broker    
+    import perceptilabs.utils as utils
+    import os
+
+    message_broker = get_message_broker()    
+    data_metadata_cache = get_data_metadata_cache().for_compound_keys()
+    
+    model_access = ModelAccess(ScriptFactory())
+    epochs_access = EpochsAccess()
+    results_access = ServingResultsAccess()        
+
+    csv_file = dataset_settings_dict['filePath']  # TODO: move one level up        
+    num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
+
+    dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
+    key = ['pipelines', user_email, csv_file, dataset_settings.compute_hash()]
+    data_metadata = data_metadata_cache.get(key)
+
+    file_access = FileAccess(os.path.dirname(csv_file))        
+    data_loader = DataLoader.from_csv(
+        file_access,
+        csv_file,
+        dataset_settings,
+        num_repeats=num_repeats,
+        metadata=data_metadata
+    )
+    
+    interface = ServingSessionInterface(
+        message_broker, model_access, epochs_access, results_access)
+
+    interface.run(
+        data_loader,
+        graph_spec_dict,
+        training_session_id,
+        serving_session_id,
+        model_name,
+        user_email,
+        results_interval=settings.SERVING_RESULTS_REFRESH_INTERVAL,
+        is_retry=is_retry
+    )
+    

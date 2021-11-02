@@ -7,9 +7,13 @@ import perceptilabs.utils as utils
 
 
 def create_blueprint(
-        task_executor, message_broker,
-        models_access, epochs_access,
-        training_results_access, testing_results_access,
+        task_executor,
+        message_broker,
+        models_access,
+        epochs_access,
+        training_results_access,
+        testing_results_access,
+        serving_results_access,        
         data_metadata_cache        
 ):    
     models_interface = ModelsInterface(
@@ -18,7 +22,8 @@ def create_blueprint(
         models_access,
         epochs_access,
         training_results_access,
-        testing_results_access,        
+        testing_results_access,
+        serving_results_access,
         data_metadata_cache
     )
     
@@ -28,7 +33,6 @@ def create_blueprint(
     @bp.route('/models/<model_id>/training/<training_session_id>', methods=['POST'])
     def start_training(model_id, training_session_id):
         json_data = request.get_json()
-
         graph_spec_dict = json_data['network']
         dataset_settings = json_data['datasetSettings']
         training_settings = json_data['trainingSettings']
@@ -78,9 +82,10 @@ def create_blueprint(
             layer_id=request.args.get('layerId'), view=request.args.get('view'))
         return jsonify(output)
 
-    @bp.route('/models/<model_id>/training/<training_session_id>/export', methods=['POST'])
-    def export(model_id, training_session_id):
+    @bp.route('/models/<model_id>/export', methods=['PUT'])
+    def export(model_id):
         json_data = request.get_json()
+        training_session_id = request.args.get('training_session_id')        
         graph_spec_dict = json_data['network']
         dataset_settings_dict = json_data['datasetSettings']
         export_options = json_data['exportSettings']        
@@ -96,6 +101,30 @@ def create_blueprint(
         )        
         return jsonify(status)
 
+    @bp.route('/models/<model_id>/serve', methods=['POST'])
+    def start_serving(model_id):
+        json_data = request.get_json()
+
+        session_id = models_interface.start_serving(
+            json_data['type'],
+            json_data['datasetSettings'],
+            json_data['network'],
+            request.args.get('training_session_id'),            
+            json_data['modelName'],
+            json_data['userEmail']
+        )        
+        return jsonify(session_id)
+
+    @bp.route('/models/serving/<serving_session_id>/status', methods=['GET'])
+    def serving_status(serving_session_id):
+        output = models_interface.get_serving_status(serving_session_id)
+        return jsonify(output)
+
+    @bp.route('/models/serving/<serving_session_id>/stop', methods=['POST'])
+    def stop_serving(serving_session_id):
+        models_interface.stop_serving(serving_session_id)        
+        return jsonify('success')
+    
     @bp.route('/models/testing', methods=['POST'])
     def start_testing():
         json_data = request.get_json()

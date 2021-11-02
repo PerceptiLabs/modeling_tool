@@ -29,7 +29,6 @@ def get_input_args():
 
 def main():
     from perceptilabs.endpoints.base import create_app    
-    import perceptilabs.session.utils as session_utils
     
     args = get_input_args()
 
@@ -42,7 +41,6 @@ def main():
         app = create_app(
             data_executor=utils.DummyExecutor(),
             preview_cache=get_preview_cache(),                                
-            session_executor=session_utils.get_session_executor(),
             data_metadata_cache=get_data_metadata_cache()
         )            
         app.run(port=PORT_RENDERING_KERNEL, debug=True)
@@ -50,7 +48,6 @@ def main():
         app = create_app(
             data_executor=ThreadPoolExecutor(),                
             preview_cache=get_preview_cache(),                
-            session_executor=session_utils.get_session_executor(),
             data_metadata_cache=get_data_metadata_cache()
         )
         serve(

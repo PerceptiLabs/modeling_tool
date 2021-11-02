@@ -2326,18 +2326,12 @@ const actions = {
   EVENT_chartsRequest({dispatch, commit, rootState, getters, state}, payload) {
     var networkIndex = payload && payload.networkIndex !== undefined ? payload.networkIndex : state.currentNetwork;
     commit('set_charts_showCharts', {getters, networkIndex});
-    dispatch('mod_api/API_updateResults', { networkIndex }, {root: true})
-      .then(()=> {
-        commit('set_charts_doRequest', {getters, networkIndex});
-        dispatch('mod_api/API_getStatus', { networkIndex }, {root: true});
-      });
+    commit('set_charts_doRequest', {getters, networkIndex});
+    dispatch('mod_api/API_getStatus', { networkIndex }, {root: true});
   },
   EVENT_onceDoRequest({dispatch, commit, rootState, getters}, isStart) {
-    dispatch('mod_api/API_updateResults', null, {root: true})
-      .then(()=> {
-        commit('set_charts_doRequest', {getters});
-        dispatch('mod_api/API_getStatus', null, {root: true});
-      });
+    commit('set_charts_doRequest', {getters});
+    dispatch('mod_api/API_getStatus', null, {root: true});
   },
   UPDATE_MODE_ACTION(ctx, {index, field, value}){
     ctx.commit('update_model', {index, field, value});

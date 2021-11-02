@@ -14,6 +14,7 @@ from perceptilabs.caching.utils import DictCache
 from perceptilabs.endpoints.base import create_app
 from perceptilabs.tasks.celery_executor import CeleryTaskExecutor
 from perceptilabs.tasks.threaded_executor import ThreadedTaskExecutor
+import perceptilabs.settings as settings
 
 
 def make_session_id(string):
@@ -92,6 +93,75 @@ def training_settings():
     }
 
 
+def assert_export(client, dataset_settings, network, user_email, model_id, training_session_id, tmp_path):
+    res = client.put(
+        f'/models/{model_id}/export?training_session_id={training_session_id}', 
+        json={
+            'network': network,
+            'datasetSettings': dataset_settings,
+            'exportSettings': {
+                'Location': str(tmp_path),
+                'name': 'my-model',
+                'Type': 'TFModel',
+                'Compressed': False,
+                'Quantized': False
+            },
+            'userEmail': user_email
+        }
+    )
+    expected_path = os.path.join(tmp_path, 'my-model')
+    
+    assert res.status_code == 200
+    assert res.json == f"Model exported to '{expected_path}'"
+
+    assert set(os.listdir(expected_path)) == set([
+        'saved_model.pb', 'variables', 'keras_metadata.pb', 'assets'])
+
+
+def assert_serving(client, dataset_settings, network, user_email, model_id, training_session_id):
+    res = client.post(
+        f'/models/{model_id}/serve?training_session_id={training_session_id}', 
+        json={
+            'type': 'gradio',
+            'network': network,
+            'datasetSettings': dataset_settings,
+            'modelName': 'my-model',
+            'userEmail': user_email
+        }
+    )
+    assert res.status_code == 200
+    serving_session_id = res.json
+
+
+    def has_expired(last_update):
+        from datetime import datetime
+        current_time = datetime.now().timestamp()  # Current unix time
+        time_since_update = current_time - last_update
+        
+        return time_since_update > 2 * settings.SERVING_RESULTS_REFRESH_INTERVAL
+    
+    
+    @retry(stop_max_attempt_number=10, wait_fixed=1000)
+    def wait_for_serving_up():
+        res = client.get(f"/models/serving/{serving_session_id}/status")
+        assert res.status_code == 200
+        assert 'url' in res.json
+        assert not has_expired(res.json['last_update'])
+
+    wait_for_serving_up()                    
+
+    res = client.post(f"/models/serving/{serving_session_id}/stop")
+    assert res.status_code == 200
+    
+    @retry(stop_max_attempt_number=10, wait_fixed=1000)
+    def wait_for_serving_down():
+        res = client.get(f"/models/serving/{serving_session_id}/status")
+        assert res.status_code == 200
+        assert has_expired(res.json['last_update'])        
+    
+    wait_for_serving_down()            
+
+    
 def assert_data(client, dataset_settings):
     # Start preprocessing the dataset
     res = client.put('/data', json={'datasetSettings': dataset_settings})
@@ -155,8 +225,9 @@ def assert_training(client, model_id, network, dataset_settings, training_settin
     wait_for_training()
 
     
+@pytest.mark.parametrize("deployment", ["export", "serving"])    
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
-def test_modeling_flow(client, tmp_path, dataset_settings, training_settings):
+def test_modeling_flow(client, deployment, tmp_path, dataset_settings, training_settings):
     assert_data(client, dataset_settings)
     network = assert_model_recommendation(client, dataset_settings)
     
@@ -200,147 +271,36 @@ def test_modeling_flow(client, tmp_path, dataset_settings, training_settings):
 
     wait_for_testing()
 
-    res = client.post(
-        f'/models/{model_id}/training/{training_session_id}/export',  # TODO: shouldn't be under training... just make session id a default arg
-        json={
-            'network': network,
-            'datasetSettings': dataset_settings,
-            'exportSettings': {
-                'Location': str(tmp_path),
-                'name': 'my-model',
-                'Type': 'TFModel',
-                'Compressed': False,
-                'Quantized': False
-            },
-            'userEmail': user_email
-        }
-    )
-    expected_path = os.path.join(tmp_path, 'my-model')
-    
-    assert res.status_code == 200
-    assert res.json == f"Model exported to '{expected_path}'"
-
-    assert set(os.listdir(expected_path)) == set([
-        'saved_model.pb', 'variables', 'keras_metadata.pb', 'assets'])
-
+    if deployment == 'export':
+        assert_export(
+            client, dataset_settings, network, user_email, model_id, training_session_id, tmp_path)
+    elif deployment == 'serving':
+        assert_serving(
+            client, dataset_settings, network, user_email, model_id, training_session_id)
+        
 
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
 def test_multi_input_modeling_flow(client, tmp_path, dataset_settings, training_settings):
     dataset_settings["featureSpecs"]["x2"]["iotype"] = "input"  # Enable more inputs
-    
-    # Start preprocessing the dataset
-    res = client.put('/data', json={'datasetSettings': dataset_settings})
-    assert res.status_code == 200
-    assert 'datasetHash' in res.json
+    assert_data(client, dataset_settings)
 
-    dataset_hash = res.json['datasetHash']
-
-    @retry(stop_max_attempt_number=10, wait_fixed=1000)
-    def wait_for_data():
-        res = client.get(f"/data?dataset_hash={dataset_hash}")
-        assert res.status_code == 200    
-        assert res.json == {'is_complete': True, 'message': "Build status: 'complete'"}
-        
-    wait_for_data()        
-
-    # Get a model recommendation
-    res = client.post('/model_recommendations', json={'datasetSettings': dataset_settings})    
-    assert res.status_code == 200
-    
-    layer_types = [spec['Type'] for spec in res.json.values()]
-    assert layer_types.count('IoInput') == 2
-    assert layer_types.count('MathMerge') == 1
-    
-    network = res.json
+    network = assert_model_recommendation(client, dataset_settings)    
     user_email = 'a@b.com'
     model_id = '123'
     training_session_id = make_session_id(str(tmp_path))  # TODO: This should be generated by one of the endpoints....
 
-    res = client.post(
-        f'/models/{model_id}/training/{training_session_id}',
-        json={
-            'network': network,
-            'datasetSettings': dataset_settings,
-            'trainingSettings': training_settings,
-            'loadCheckpoint': False,
-            'userEmail': user_email
-        }
-    )
-    assert res.status_code == 200
-    assert res.json == {'content': 'core started'}
-
-    @retry(stop_max_attempt_number=10, wait_fixed=1000)
-    def wait_for_training():
-        res = client.get(f'/models/{model_id}/training/{training_session_id}/status')
-        assert res.status_code == 200
-
-        assert 'Epoch' in res.json        
-        assert 'CPU' in res.json
-        assert 'GPU' in res.json
-        assert 'Iterations' in res.json
-        assert 'Memory' in res.json
-        assert 'Training_Duration' in res.json        
-        assert res.json['Progress'] == 1.0
-        assert res.json['Status'] == 'Finished'
-        
-        for type_ in ['global-results', 'end-results']:
-            res = client.get(
-                f'/models/{model_id}/training/{training_session_id}/results?type={type_}')
-            
-            assert res.status_code == 200    
-            assert res.json != {}
-
-    wait_for_training()
-
-    res = client.post(
-        f'/models/{model_id}/training/{training_session_id}/export',
-        json={
-            'network': network,
-            'datasetSettings': dataset_settings,
-            'exportSettings': {
-                'Location': str(tmp_path),
-                'name': 'my-model',
-                'Type': 'TFModel',
-                'Compressed': False,
-                'Quantized': False
-            },
-            'userEmail': user_email
-        }
-    )
-    expected_path = os.path.join(tmp_path, 'my-model')
+    assert_training(client, model_id, network, dataset_settings, training_settings, training_session_id, user_email)
     
-    assert res.status_code == 200
-    assert res.json == f"Model exported to '{expected_path}'"
-
-    assert set(os.listdir(expected_path)) == set([
-        'saved_model.pb', 'variables', 'keras_metadata.pb', 'assets'])
+    assert_export(
+        client, dataset_settings, network, user_email, model_id, training_session_id, tmp_path)
 
 
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
 def test_modeling_flow_stop_training(client, tmp_path, dataset_settings, training_settings):
     training_settings["Epochs"] = 500  # Ensure we run for a while...
-    
-    # Start preprocessing the dataset
-    res = client.put('/data', json={'datasetSettings': dataset_settings})
-    assert res.status_code == 200
-    assert 'datasetHash' in res.json
 
-    dataset_hash = res.json['datasetHash']
-
-    @retry(stop_max_attempt_number=10, wait_fixed=1000)
-    def wait_for_data():
-        res = client.get(f"/data?dataset_hash={dataset_hash}")
-        assert res.status_code == 200    
-        assert res.json == {'is_complete': True, 'message': "Build status: 'complete'"}
-        
-    wait_for_data()        
-
-    # Get a model recommendation
-    res = client.post('/model_recommendations', json={'datasetSettings': dataset_settings})    
-
-    assert res.status_code == 200        
-    
-    network = res.json
+    assert_data(client, dataset_settings)
+    network = assert_model_recommendation(client, dataset_settings)
     user_email = 'a@b.com'
     model_id = '123'
     training_session_id = make_session_id(str(tmp_path))  # TODO: This should be generated by one of the endpoints....
