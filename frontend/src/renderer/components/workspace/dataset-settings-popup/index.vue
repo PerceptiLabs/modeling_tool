@@ -13,9 +13,9 @@
             .form_row
               h5.default-text Current dataset:
               input.dataset-location(disabled :value="datasetPath")
-              button.btn.btn--secondary(
-                @click="replaceDataset"
-              ) Replace
+              //- button.btn.btn--secondary(
+              //-   @click="replaceDataset"
+              //- ) Replace
           csv-table(
             v-if="dataset"
             :dataSet="dataset",
