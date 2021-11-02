@@ -13,6 +13,6 @@ module.exports = {
   ENABLE_DATAWIZARD: '"true"',
   INTERCOM_ID: '"ujvkp2qi"',
   USERFLOW_KEY: '"ct_ertrpr7nzfc5himsrvqpz4kota"',
-  ENABLE_PUBLIC_DATASET: '"false"',
+  ENABLE_PUBLIC_DATASET: '"true"',
   ENABLE_SERVING: '"true"',
 }

@@ -84,6 +84,7 @@ export const MODAL_PAGE_CREATE_MODEL = 'MODAL_PAGE_CREATE_MODEL';
 export const MODAL_PAGE_QUESTIONNAIRE = 'MODAL_PAGE_QUESTIONNAIRE';
 
 export const PROJECT_DEFAULT_FOLDER = '/Users/antonbourosu/proj/'
+export const AZURE_BLOB_PATH_PREIFX = "https://perceptilabs.blob.core.windows.net/data/";
 
 
 export const TRACKER_SCREENNAME_PROJECTS = 'Projects';

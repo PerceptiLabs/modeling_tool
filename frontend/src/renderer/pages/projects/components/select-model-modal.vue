@@ -38,22 +38,26 @@ div
               span Add Class
         
         div(v-show="onStep === STEP.LOADCSV")
-          .main-file-structure-contents
-            .load-contents-group
-              button.btn.btn--primary.load-dataset(
-                @click="openFilePicker('setDataPath')"
-                :data-tutorial-target="'tutorial-data-wizard-load-csv'"
-              ) Upload .CSV
-              p(v-if="isPublicDatasetEnabled").choose-public-datasets
-                | or choose from 
-                a(@click="goToPublicDatasets") Public Datasets
-          div.find-out-message Find our starting guide 
-            span.guide-link(@click="openPLVideoTutorialPage") here.
+          load-dataset(
+            v-if="isPublicDatasetEnabled"
+            @openFilePicker="openFilePicker('setDataPath')"
+            @openPLVideoTutorialPage="openPLVideoTutorialPage()"
+            @handleDataPathUpdates="handleDataPathUpdates"
+          )
+          template(v-else)
+            .main-file-structure-contents
+              .load-contents-group
+                button.btn.btn--primary.load-dataset(
+                  @click="openFilePicker('setDataPath')"
+                  :data-tutorial-target="'tutorial-data-wizard-load-csv'"
+                ) Upload .CSV
+            div.find-out-message Find our starting guide 
+              span.guide-link(@click="openPLVideoTutorialPage") here.
 
         .dataset-settings(v-show="onStep === STEP.PARTITION")
           chart-spinner(v-if="showLoadingSpinner")
           template(v-if="isCreateModelLoading")
-            chart-spinner(text="Building preprocessing pipelines...")
+            chart-spinner(:text="buildingPreProcessingStatus")
             error-cta.cta-container(v-if="isShowCTA")
           template(v-else-if="dataset")
             .form_row
@@ -114,15 +118,10 @@ div
             div.randome-seed-input-wrapper.form_row
               h5.default-text Seed:
               input.random-seed-input(type="text" v-model="datasetSettings.randomSeed")
-        //- div.d-flex.justify-content-center(v-show="onStep === STEP.TRAINING")
+      //- div.d-flex.justify-content-center(v-show="onStep === STEP.TRAINING")
         //-   template(v-if="isCreateModelLoading")
         //-     chart-spinner(text="Building preprocessing pipelines...")
-        //-     error-cta.cta-container(v-if="isShowCTA")
-        
-        div(v-show="onStep === STEP.PUBLIC_LIST")
-          public-datasets-list(
-            @goBack="onStep = 1"
-          )
+        //-     error-cta.cta-container(v-if="isShowCTA") 
     template(slot="action" v-if="onStep === STEP.CLASS")
       div.btn.btn-back(@click="gotoTypeStep")
         img.icon(src="/static/img/back.svg")
@@ -189,7 +188,7 @@ import { renderingKernel }              from "@/core/apiRenderingKernel";
 import { formatCSVTypesIntoKernelFormat } from "@/core/helpers/model-helper";
 import { ENTERPRISE_DATASET_FOLDER_PREFIX } from '@/core/constants.js';
 
-import PublicDatasetsList from './public-datasets-list.vue'
+import LoadDataset from './load-dataset.vue'
 
 const STEP = {
   LOADCSV: 1,
@@ -218,7 +217,7 @@ const mockClassList = [
 
 export default {
   name: "SelectModelModal",
-  components: { BaseGlobalPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner, DataColumnOptionSidebar, PublicDatasetsList, ErrorCta },
+  components: { BaseGlobalPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner, DataColumnOptionSidebar, ErrorCta, LoadDataset },
   mixins: [mixinFocus],
   async created() {
     const showNewModelPopup = this.showNewModelPopup;
@@ -346,7 +345,7 @@ export default {
     },
     getModalTitle() {
       switch (this.onStep){
-        case STEP.LOADCSV: return 'Load your dataset'; break;
+        case STEP.LOADCSV: return 'Load dataset'; break;
         case STEP.PARTITION: return 'Define your dataset'; break;
         case STEP.TRAINING: return 'Training settings'; break;
         case STEP.PUBLIC_LIST: return 'Load dataset'; break;
@@ -788,6 +787,7 @@ export default {
       this.setNextStep({ currentStep: "tutorial-create-model-model-name" });
     },
     async handleDataPathUpdates(dataPath) {
+      console.log('handleDataPathUpdates', dataPath)
       if (!dataPath || !dataPath.length || !dataPath[0]) {
         return;
       }
@@ -880,7 +880,11 @@ export default {
       return !dirAlreadyExist;
     },
     toNextStep() {
-      this.onStep += 1;
+      if (this.onStep === 4) {
+        this.onStep = 2;
+      } else {
+        this.onStep += 1;
+      }
     },
     toPrevStep() {
       this.onStep -= 1;

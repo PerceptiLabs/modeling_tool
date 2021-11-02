@@ -20,6 +20,7 @@ import { isDevelopMode } from '@/core/constants.js'
 import BaseCheckbox     from '@/components/base/checkbox.vue'
 import BaseRadiobutton  from '@/components/base/radiobutton.vue'
 import BaseSelect       from '@/components/base/select.vue'
+import BaseSwitch       from '@/components/base/switch.vue'
 import BaseRange        from '@/components/base/range.vue'
 import BaseToggleButton from '@/components/base/toggle.vue'
 import BaseToggleExpandButton from '@/components/base/toggle-expand.vue'
@@ -71,6 +72,7 @@ import {renderingKernel} from '@/core/apiRenderingKernel';
 Vue.component('base-checkbox', BaseCheckbox);
 Vue.component('base-radio', BaseRadiobutton);
 Vue.component('base-select', BaseSelect);
+Vue.component('base-switch', BaseSwitch);
 Vue.component('base-range', BaseRange);
 Vue.component('base-toggle', BaseToggleButton);
 Vue.component('base-toggle-expand', BaseToggleExpandButton);

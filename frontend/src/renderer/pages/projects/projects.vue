@@ -78,15 +78,22 @@
                   bdi {{dataset.name | datasetformat}}
                   
               div.column-2
+                strong(
+                  v-if="dataset.exists_on_disk === false"
+                ) (Missing Data)
               div.column-3
               div.column-4
               div.column-5
               div.column-6
               div.column-7.d-flex.flex-row-reverse
                 div.new-model-btn(
+                  v-if="dataset.exists_on_disk === true"
                   @click="createModelWithCurrentDataSetPath(dataset.dataset_id)"
                 )
                   div + New Model
+                template(v-else)
+                  span.img-button( :class="{ 'disabledIconButton': dataset.models.length > 0 }" @click="deleteDataset(dataset.dataset_id)")
+                    img(src="../../../../static/img/project-page/remove-red.svg")
             //-- MODELS BELONG TO DATASET --//
             template(v-if="isDatasetOpened(dataset.dataset_id)")  
               div.models-list-row.model-list-item.model-list-item-child(
@@ -239,7 +246,7 @@
         currentProject:       'mod_project/GET_project',
         getCurrentStepCode:   'mod_tutorials/getCurrentStepCode',
         isEnterpriseMode:     'globalView/get_isEnterpriseApp',
-        allDatasets: 'mod_datasets/GET_datasets',
+        allDatasets:          'mod_datasets/GET_datasets',
       }),
       ...mapState({
         currentProjectId:     state => state.mod_project.currentProject,
@@ -303,6 +310,7 @@
         closeStatsTestViews:  'mod_workspace/SET_statisticsAndTestToClosed',
         setCurrentView:       'mod_tutorials/setCurrentView',
         setNextStep:          'mod_tutorials/setNextStep',
+        deleteDataset:    'mod_datasets/deleteDataset',
 
         SET_openStatistics:   'mod_workspace/SET_openStatistics',
         SET_openTest:         'mod_workspace/SET_openTest',
@@ -523,7 +531,7 @@
             }
           })
       },
-
+      
       // Rename Module
       handleContextRenameModel() {
         if(this.isCoreOffline) {
@@ -650,7 +658,11 @@
         let lestSlashIx = val.lastIndexOf('/');
         const datasetName = val.substring(lestSlashIx + 1);
         const folderName = val.substring(val.substring(0, lestSlashIx).lastIndexOf('/') + 1, lestSlashIx);
-        return `${folderName[0].toUpperCase() + folderName.substring(1)} - ${datasetName}`;
+        if (folderName) {
+          return `${folderName[0].toUpperCase() + folderName.substring(1)} - ${datasetName}`;
+        } else {
+          return datasetName;
+        }
       }
     }
   }

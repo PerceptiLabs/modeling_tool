@@ -2044,6 +2044,7 @@ const actions = {
       dispatch('mod_project/deleteModel', modelApiMeta, {root: true});
       dispatch('mod_tracker/EVENT_modelDeletion', null, { root: true});
       commit('delete_networkById', networkId);
+      dispatch('mod_datasets/deleteModel', networkId, {root: true});
       resolve();
     })
   },

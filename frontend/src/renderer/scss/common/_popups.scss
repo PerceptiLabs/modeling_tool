@@ -236,6 +236,8 @@
 
 .select-model {
 	& .popup {
+		width: 900px;
+		max-width: 100%;
 		min-width: 720px;
 	}
 	& .popup_foot {
