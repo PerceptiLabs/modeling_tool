@@ -118,7 +118,7 @@ class TrainingSessionInterface:
     def _handle_message(self, event, payload, trainer):
         model_id = payload.get('model_id')
         session_id = payload.get('training_session_id')
-
+        
         if model_id != trainer.model_id or session_id != trainer.session_id:
             return            
         

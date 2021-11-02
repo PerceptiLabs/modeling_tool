@@ -66,7 +66,7 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
     
     interface = TrainingSessionInterface(
         message_broker, model_access, epochs_access, results_access)
-
+    
     interface.run(
         data_loader,
         model_id,

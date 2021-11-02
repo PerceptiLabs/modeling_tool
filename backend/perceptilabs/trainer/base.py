@@ -1,10 +1,12 @@
 import collections
 import os
+import sys
 import time
 import logging
 from typing import Dict
 
 import tensorflow as tf
+import tensorflow.keras.backend as K
 import numpy as np
 import json
 import time
@@ -194,6 +196,9 @@ class Trainer:
                 is_training=False
             )
 
+            if self.is_closed:
+                break
+
             if self._auto_checkpoint:
                 self._auto_save_epoch(epoch=self._num_epochs_completed)
 
@@ -213,22 +218,33 @@ class Trainer:
             if self._num_epochs_completed > 0 or self._set_num_training_batches_completed_this_epoch > 0:
                 self._auto_save_epoch(epoch=self._num_epochs_completed)
 
-
-        if self._num_epochs_completed == self.num_epochs:        
+        if self._num_epochs_completed == self.num_epochs:
             self._set_status('Finished')
             
-            logger.info(
-                f"Training completed. Total duration: {round(self._training_time, 3)} s")
+        logger.info(
+            f"Training completed. Total duration: {round(self._training_time, 3)} s")
 
-            if self._user_email:
-                tracking.send_training_completed(
-                    self._user_email,
-                    self._model_id,
-                    self._graph_spec,
-                    self._training_time,
-                    peak_memory_usage,
-                    self.get_output_stats_summaries()
-                )
+        if self._user_email:
+            dataset_size, sample_size, num_iters_completed, data_units_iter_based, \
+                data_units_epoch_based, model_params, trainable_params = self._get_mixpanel_pricing_metrics()
+
+            tracking.send_training_completed(
+                self._user_email,
+                self._model_id,
+                self._graph_spec,
+                self._training_time,
+                dataset_size,
+                sample_size,
+                num_iters_completed,
+                self.num_epochs_completed,
+                self.batch_size,
+                data_units_iter_based,
+                data_units_epoch_based,
+                model_params,
+                trainable_params,
+                peak_memory_usage,
+                self.get_output_stats_summaries()
+            )
         else:
             logger.info(
                 f"Training ended before completion. Total duration: {round(self._training_time, 3)} s")
@@ -471,6 +487,25 @@ class Trainer:
         if value not in ['Waiting', 'Paused', 'Training', 'Validation', 'Finished', 'Stopped']:
             raise ValueError(f"Cannot set status to '{value}'")
         self._status = value
+    
+    def _get_mixpanel_pricing_metrics(self):
+            sample_size = sys.getsizeof(self._data_loader.get_sample(partition='training'))
+
+            training_size = self._data_loader.get_dataset_size(partition='training')
+            validation_size = self._data_loader.get_dataset_size(partition='validation')
+            test_size = self._data_loader.get_dataset_size(partition='test')
+
+            dataset_size = training_size + validation_size + test_size
+            
+            num_iters_completed = self._num_batches_completed_all_epochs
+            data_units_iter_based = sample_size * num_iters_completed * self._batch_size
+            data_units_epoch_based = sample_size * dataset_size * self._num_epochs_completed
+
+            model_params = self._training_model.count_params()
+            trainable_params = int(np.sum([K.count_params(w) for w in self._training_model.trainable_weights]))
+            
+            return dataset_size, sample_size, num_iters_completed, data_units_iter_based,\
+                data_units_epoch_based, model_params, trainable_params
 
     @property
     def status(self):
@@ -491,6 +526,11 @@ class Trainer:
 
     @property
     def num_batches_completed_all_epochs(self):
+        """ The number of batches completed is equivelant to the number of iterations completed 
+            as it refers to the number of batches that have completed a forward/backward pass. 
+            We call it a "batch" in this context because 'iterations' is a bit ambiguous in larger 
+            software settings.
+        """
         return self._num_batches_completed_all_epochs
 
     @property
@@ -503,6 +543,11 @@ class Trainer:
 
     @property
     def num_batches_completed_this_epoch(self):
+        """ The number of batches completed is equivelant to the number of iterations completed 
+            as it refers to the number of batches that have completed a forward/backward pass. 
+            We call it a "batch" in this context because 'iterations' is a bit ambiguous in larger 
+            software settings.
+        """
         return self.num_training_batches_completed_this_epoch + self.num_validation_batches_completed_this_epoch
 
     @property
@@ -553,11 +598,22 @@ class Trainer:
         self._set_status('Stopped')
 
         if self._user_email:
+            dataset_size, sample_size, num_iters_completed, data_units_iter_based, \
+                data_units_epoch_based, model_params, trainable_params = self._get_mixpanel_pricing_metrics() 
             tracking.send_training_stopped(
                 self._user_email,
                 self._model_id,
                 self._graph_spec,
                 self._training_time,
+                dataset_size,
+                sample_size,
+                num_iters_completed,
+                self.num_epochs_completed,
+                self.batch_size,
+                data_units_iter_based,
+                data_units_epoch_based,
+                model_params,
+                trainable_params,
                 self.progress,
                 self.get_output_stats_summaries()
             )
