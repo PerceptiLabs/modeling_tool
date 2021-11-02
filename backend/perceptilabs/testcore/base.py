@@ -12,6 +12,7 @@ from perceptilabs.createDataObject import createDataObject, subsample
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.testcore.strategies.modelstrategies import LoadInferenceModel
 from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable, OutputVisualization
+from perceptilabs.utils import KernelError
 import perceptilabs.tracking as tracking
 import perceptilabs.utils as utils
 
@@ -20,11 +21,10 @@ user_logger = logging.getLogger(USER_LOGGER)
 
 
 class TestCore():
-    def __init__(self, testing_session_id, model_ids, models_info, tests, issue_handler, user_email=None):
+    def __init__(self, testing_session_id, model_ids, models_info, tests, user_email=None):
         self._testing_session_id = testing_session_id
         self._status = None
         self.set_status('Initializing')
-        self._issue_handler = issue_handler
         self._model_ids = model_ids
         self._models_info = models_info
         self._tests = tests
@@ -70,11 +70,9 @@ class TestCore():
                 training_session_id, graph_spec, self._data_loaders[model_id])
             logger.info("model %s loaded successfully.", model_id)
         except Exception as e:
-            self._found_error(
-                f"Unable to load the {self._current_model_name} using checkpoint from training session {training_session_id}")
-            with self._issue_handler.create_issue('Error while loading model', e) as issue:
-                raise Exception(issue.frontend_message)
-
+            raise KernelError.from_exception(
+                e, message=f"Unable to load the {self._current_model_name} using checkpoint from training session {training_session_id}")
+            
     def load_data(self, data_loader, model_id):
         """
         Loads data using DataLoader.
@@ -146,12 +144,9 @@ class TestCore():
                     tracking.send_testing_completed(
                         self._user_email, model_id, test)
                 return results
-            else:
-                self._found_error(
-                    f"{test} test is not supported yet by {self._current_model_name} model.")
-                raise Exception(
-                    f"{test} test is not supported yet by {self._current_model_name} model.")
 
+            else:
+                raise KernelError(f"{test} test is not supported yet by {self._current_model_name} model.")
     def _compute_model_outputs(self):
         model_id = self._current_model_id
         data_iterator = self._get_data_generator(model_id)
@@ -165,12 +160,11 @@ class TestCore():
             # TODO(mukund): support inner layer outputs
             if not self._stopped:
                 logger.info("Outputs generated for model %s.", model_id)
-        except Exception as e:
-            self._found_error(
-                f"Error while running inference on {self._current_model_name} model.")
-            with self._issue_handler.create_issue('Error while loading model', e) as issue:
-                raise Exception(issue.frontend_message)
 
+        except Exception as e:
+            raise KernelError.from_exception(
+                e, message=f"Error while running inference on {self._current_model_name} model.")
+            
     def get_compatible_layers_for_tests(self):
         compatible_layers = {}
         for test in self._tests:
@@ -196,8 +190,7 @@ class TestCore():
         try:
             required_layer_info = compatibility_table[test]
         except:
-            self._found_error(f"The test {test} is not yet supported.")
-            raise Exception(f'The test {test} is not yet supported.')
+            raise KernelError(f"The test {test} is not yet supported.")
 
         # TODO(mukund): add support for checking encoders and decoders properly.
         for layer_type in required_layer_info:
@@ -245,10 +238,6 @@ class TestCore():
         for model_id in self._models:
             self._models[model_id].stop()
         return 'Testing stopped.'
-
-    def _found_error(self, message=''):
-        self.set_status('Error')
-        self._error_message = message
 
     @property
     def num_models(self):
@@ -304,12 +293,6 @@ class TestCore():
                 'update_line_1': "",
                 'update_line_2': ""
             }
-        elif self._status == 'Error':
-            test_status = {
-            'status': self._status,
-            'update_line_1': self._error_message,
-            'update_line_2': ""
-        }
         else:
             test_status = {
                 'status': self._status,
@@ -346,7 +329,7 @@ class ProcessResults():
         elif self._test == 'outputs_visualization':
             return self._process_outputs_visualization_output()
         else:
-            raise Exception(f"{self._test} is not supported yet.")
+            raise KernelError(f"{self._test} is not supported yet.")
 
     def _process_confusionmatrix_output(self):
         for layer_name in self._results:

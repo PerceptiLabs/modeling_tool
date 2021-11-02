@@ -7,7 +7,6 @@ from concurrent.futures import ThreadPoolExecutor
 import perceptilabs.logconf
 import perceptilabs.utils as utils
 
-from perceptilabs.issues import IssueHandler
 from perceptilabs.caching.utils import get_preview_cache, get_data_metadata_cache
 
 
@@ -33,10 +32,8 @@ def main():
     import perceptilabs.session.utils as session_utils
     
     args = get_input_args()
-    issue_handler = IssueHandler()
 
     perceptilabs.logconf.setup_application_logger(log_level=args.log_level)
-    perceptilabs.logconf.setup_console_logger(queue=issue_handler._logs)
 
     logger = logging.getLogger(perceptilabs.logconf.APPLICATION_LOGGER)
 

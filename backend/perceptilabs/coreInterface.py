@@ -5,9 +5,10 @@ from queue import Empty
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.trainer import Trainer
 from perceptilabs.exporter.base import Exporter
-
+from perceptilabs.utils import KernelError
 
 logger = logging.getLogger(APPLICATION_LOGGER)
+
 
 class TrainingSessionInterface:
     def __init__(self, message_broker, model_access, epochs_access, results_access):
@@ -19,9 +20,44 @@ class TrainingSessionInterface:
     def run(self, *args, **kwargs):
         for _ in self.run_stepwise(*args, **kwargs):
             pass
-        
+
     def run_stepwise(self, data_loader, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email, results_interval=None, is_retry=False):
-        self._clean_old_status(training_session_id)
+        try:
+            self._clean_old_status(training_session_id)
+        
+            trainer = self._setup_trainer(
+                data_loader, model_id, graph_spec_dict, training_session_id, training_settings,
+                use_checkpoint=(load_checkpoint or is_retry), user_email=user_email
+            )
+            with self._message_broker.subscription() as queue:
+                yield from self._main_loop(queue, trainer, results_interval, training_session_id)
+                
+        except Exception as e:
+            error = KernelError.from_exception(e, message="Error during training!")            
+            self._results_access.store(training_session_id, {'error': error.to_dict()})
+
+            # TODO: Sentry capture here???? probably on original exception...            
+            logger.exception("Exception in training session interface!")
+
+    def _main_loop(self, queue, trainer, results_interval, training_session_id):
+        training_step = trainer.run_stepwise()
+        training_sentinel = object()        
+
+        last_update = -1
+        is_running = True
+
+        while is_running:
+            self._maybe_handle_messages(queue, trainer)
+
+            training_step_result = next(training_step, training_sentinel)
+            is_running = training_step_result is not training_sentinel
+                
+            last_update = self._maybe_write_results(
+                results_interval, last_update, trainer, training_session_id, is_running)
+
+            yield            
+
+    def _setup_trainer(self, data_loader, model_id, graph_spec_dict, training_session_id, training_settings, use_checkpoint, user_email):
         graph_spec = self._model_access.get_graph_spec(graph_spec_dict)
         
         epoch_id = self._epochs_access.get_latest(
@@ -32,7 +68,7 @@ class TrainingSessionInterface:
 
         initial_state = None
         checkpoint_path = None        
-        if load_checkpoint or is_retry:
+        if use_checkpoint:
             checkpoint_path = self._epochs_access.get_checkpoint_path(
                 training_session_id=training_session_id,
                 epoch_id=epoch_id
@@ -56,24 +92,9 @@ class TrainingSessionInterface:
             user_email=user_email,
             initial_state=initial_state
         )
+        return trainer
 
-        training_step = trainer.run_stepwise()
-        training_sentinel = object()        
-
-        last_update = -1
-        is_running = True
-        with self._message_broker.subscription() as queue:
-            
-            while is_running:
-                self._maybe_handle_messages(queue, trainer)
-
-                training_step_result = next(training_step, training_sentinel)
-                is_running = training_step_result is not training_sentinel
-                
-                last_update = self._maybe_write_results(
-                    results_interval, last_update, trainer, training_session_id, is_running)
-
-                yield
+    
                 
     def _maybe_write_results(self, results_interval, last_update, trainer, training_session_id, is_running):
         time_since_update = time.time() - last_update

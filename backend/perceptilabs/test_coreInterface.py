@@ -355,3 +355,41 @@ def test_ignores_stopping_for_different_interface(model_id, session_id, expect_f
         assert progress < 1.0
 
         
+def test_errors_are_stored(monkeypatch, message_broker, data_loader, graph_spec, training_model, training_settings):
+    error_message = "sdijasdisaj"
+    
+    def fake_call(*args, **kwargs):
+        raise ValueError(error_message)
+    
+    monkeypatch.setattr(TrainingModel, '__call__', fake_call, raising=True)
+    
+    model_access = MagicMock()
+    model_access.get_training_model.return_value = training_model
+    model_access.get_graph_spec.return_value = graph_spec
+
+    epochs_access = MagicMock()
+    results_access = MagicMock()
+    
+    interface = TrainingSessionInterface(
+        message_broker,
+        model_access=model_access,
+        epochs_access=epochs_access,
+        results_access=results_access
+    )
+    
+    interface.run(
+        data_loader,
+        model_id='456',
+        graph_spec_dict=graph_spec.to_dict(),        
+        training_session_id=make_session_id('789'),
+        training_settings=training_settings,
+        load_checkpoint=False,
+        user_email='a@b.com'
+    )
+    
+    assert results_access.store.call_count > 0
+    assert results_access.store.call_args[0][1]['error']['message']
+    assert error_message in results_access.store.call_args[0][1]['error']['details']
+
+    
+        

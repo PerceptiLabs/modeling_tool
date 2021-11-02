@@ -16,7 +16,7 @@ from threading import Lock
 import pkg_resources
 from abc import ABC, abstractmethod
 from contextlib import contextmanager, closing
-
+import traceback
 
 import numpy as np
 import pandas as pd
@@ -24,6 +24,32 @@ from sys import getsizeof
 from typing import Set, Any
 
 
+class KernelError(Exception):
+    def __init__(self, message, details=""):
+        self.message = message
+        self.details = details
+
+    def to_dict(self):
+        return {
+            'message': self.message,
+            'details': self.details
+        }
+
+    @classmethod
+    def from_exception(cls, exception, message=None):
+        if isinstance(exception, cls):
+            return exception
+        
+        if message is None:
+            message = repr(exception)
+            
+        tb_obj = traceback.TracebackException(
+            exception.__class__,
+            exception,
+            exception.__traceback__
+        )
+        return cls(message=message, details="".join(tb_obj.format()))
+    
 
 def get_memory_usage():
     """ Return the fraction of memory used """

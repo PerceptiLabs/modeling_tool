@@ -12,7 +12,6 @@ from tempfile import NamedTemporaryFile
 from typing import Tuple, Dict, List
 
 from perceptilabs.utils import stringify, add_line_numbering, Timer
-from perceptilabs.issues import UserlandError
 from perceptilabs.graph.splitter import GraphSplitter
 from perceptilabs.script import ScriptFactory
 from perceptilabs.layers.helper import LayerHelper
@@ -36,8 +35,7 @@ def print_result_errors(layer_spec, results):
 
 
 class LightweightCore:
-    def __init__(self, data_loader, issue_handler=None, cache=NullCache()):
-        self._issue_handler = issue_handler
+    def __init__(self, data_loader, cache=NullCache()):
         self._cache = cache.for_compound_keys()
         self._script_factory = ScriptFactory()
         self._data_loader = data_loader
@@ -119,7 +117,6 @@ class LightweightCore:
             from_id: all_results[from_id]
             for (from_id, to_id) in graph_spec.edges_by_id if to_id == layer_spec.id_
         }
-
         strategy = self._get_layer_strategy(layer_spec, data_batch, self._script_factory)
 
         try:

@@ -13,7 +13,6 @@ from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.exporter.base import Exporter
 from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable, OutputVisualization
-from perceptilabs.issues import IssueHandler
 from perceptilabs.resources.files import FileAccess
 
 

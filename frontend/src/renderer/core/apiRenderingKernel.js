@@ -258,7 +258,7 @@ export const renderingKernel = {
   async stopTraining(modelId, trainingSessionId) {
     return whenRenderingKernelReady
       .then(rk => rk.put(`/models/${modelId}/training/${trainingSessionId}/stop`))
-0      .then(res => {
+      .then(res => {
         if (res.status !== 200) {
           throw new Error('Failed to pause training');
         }

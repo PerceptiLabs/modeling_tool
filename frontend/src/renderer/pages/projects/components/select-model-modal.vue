@@ -556,10 +556,10 @@ export default {
         runStatistics
       )   
       .then(res => {
-        if ("errorMessage" in res) {
+        if (res.error) {
           this.deleteModelWithErrorPopup(
             apiMeta.model_id,
-            "Couldn't get model recommendation because the Kernel responded with an error: " + res["errorMessage"]
+	    res.error.message + "\n\n" + res.error.details
           );
         }
         return res;
@@ -827,10 +827,8 @@ export default {
 
         this.dataSetTypes = await renderingKernel.getDataTypes(getFileContentPath, this.userEmail)
         .then(res => {
-          if ("errorMessage" in res) {
-            this.showErrorPopup(
-              "Couldn't get data types because the Kernel responded with an error: " + res["errorMessage"]
-            );
+          if (res.error) {
+            this.showErrorPopup(res.error.message + "\n\n" + res.error.details);
             this.showLoadingSpinner = false;
           }
           return res;

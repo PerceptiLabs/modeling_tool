@@ -42,14 +42,15 @@ class ModelsInterface:
 
         if results_dict:
             result = {
-                "Status": results_dict["trainingStatus"],
-                "Iterations": results_dict["iter"],
-                "Epoch": results_dict["epoch"],
-                "Progress": results_dict["progress"],
-                "CPU": results_dict["cpu_usage"],
-                "GPU": results_dict["gpu_usage"],
-                "Memory": results_dict["mem_usage"],
-                "Training_Duration": results_dict["training_duration"],
+                "Status": results_dict.get("trainingStatus"),
+                "Iterations": results_dict.get("iter"),
+                "Epoch": results_dict.get("epoch"),
+                "Progress": results_dict.get("progress"),
+                "CPU": results_dict.get("cpu_usage"),
+                "GPU": results_dict.get("gpu_usage"),
+                "Memory": results_dict.get("mem_usage"),
+                "Training_Duration": results_dict.get("training_duration"),
+                "error": results_dict.get("error"),                
             }
             return result
         else:
@@ -181,7 +182,9 @@ class ModelsInterface:
         results_dict = self._testing_results_access.get_latest(testing_session_id)
 
         if results_dict:
-            return results_dict['status']
+            results = results_dict.get('status', {})
+            results['error'] = results_dict.get('error')
+            return results
         else:
             return {}
 

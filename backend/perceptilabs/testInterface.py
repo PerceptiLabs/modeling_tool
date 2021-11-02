@@ -3,9 +3,10 @@ import logging
 from queue import Empty
 
 import perceptilabs.utils as utils
-from perceptilabs.issues import IssueHandler
 from perceptilabs.testcore import TestCore, ProcessResults
 from perceptilabs.logconf import APPLICATION_LOGGER
+from perceptilabs.utils import KernelError
+
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -24,34 +25,47 @@ class TestingSessionInterface():
             pass
 
     def run_stepwise(self, testing_session_id, models, tests, user_email, results_interval=None):
-        issue_handler = IssueHandler()
-        
+        try:
+            test_core = self._setup_test_core(testing_session_id, models, tests, user_email)
+
+            with self._message_broker.subscription() as queue:
+                yield from self._main_loop(queue, test_core, results_interval, testing_session_id)
+                
+        except Exception as e:
+            error = KernelError.from_exception(e, "Error during testing!")            
+            self._results_access.store(testing_session_id, {'error': error.to_dict()})
+
+            # TODO: Sentry capture here???? probably on original exception...            
+            logger.exception("Exception in training session interface!")
+
+    def _main_loop(self, queue, core, results_interval, testing_session_id):            
+        testing_step = core.run_stepwise()
+        testing_sentinel = object()
+            
+        last_update = -1
+        is_running = True
+
+        while is_running:
+            self._maybe_handle_messages(queue, core)
+
+            testing_step_result = next(testing_step, testing_sentinel)
+            is_running = testing_step_result is not testing_sentinel
+            
+            last_update = self._maybe_write_results(
+                results_interval, last_update, core, testing_session_id, is_running)
+
+            yield
+
+    def _setup_test_core(self, testing_session_id, models, tests, user_email):
         core = TestCore(
             testing_session_id,
             list(models.keys()),
             models,
             tests,
-            issue_handler,
             user_email=user_email,
         )
-
-        testing_step = core.run_stepwise()
-        testing_sentinel = object()
-
-        last_update = -1
-        is_running = True
-        with self._message_broker.subscription() as queue:
+        return core
             
-            while is_running:
-                self._maybe_handle_messages(queue, core)
-
-                testing_step_result = next(testing_step, testing_sentinel)
-                is_running = testing_step_result is not testing_sentinel
-
-                last_update = self._maybe_write_results(
-                    results_interval, last_update, core, testing_session_id, is_running)
-
-                yield
                 
     def _maybe_write_results(self, results_interval, last_update, core, testing_session_id, is_running):
         time_since_update = time.time() - last_update

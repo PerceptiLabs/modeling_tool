@@ -14,7 +14,6 @@ from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.exporter.base import Exporter
 from perceptilabs.testcore.base import TestCore, ProcessResults
-from perceptilabs.issues import IssueHandler
 from perceptilabs.resources.files import FileAccess
 
 
@@ -110,7 +109,7 @@ def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader, trai
         },
     }
     tests = []
-    testcore = TestCore(training_session_id, [1], models_info, tests, IssueHandler())
+    testcore = TestCore(training_session_id, [1], models_info, tests)
     testcore.load_models_and_data()
     yield testcore
 

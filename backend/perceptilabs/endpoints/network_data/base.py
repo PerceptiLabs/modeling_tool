@@ -8,6 +8,7 @@ from perceptilabs.endpoints.base_view import BaseView
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.lwcore import LightweightCore
 from perceptilabs.logconf import APPLICATION_LOGGER
+from perceptilabs.utils import KernelError
 import perceptilabs.tracking as tracking
 import perceptilabs.automation.utils as automation_utils
 from perceptilabs.createDataObject import subsample_data
@@ -25,7 +26,14 @@ class NetworkData(BaseView):
         self._preview_cache = preview_cache
 
     def dispatch_request(self):
-        json_data = request.get_json()
+        try:
+            json_data = request.get_json()
+            return self._dispatch_request_internal(json_data)
+        except Exception as e:
+            raise KernelError.from_exception(e, message=f'Failed getting previews')            
+        
+    def _dispatch_request_internal(self, json_data):        
+
         graph_spec = self._model_access.get_graph_spec(model_id=json_data['network']) #TODO: F/E should send an ID        
         data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))
 
@@ -105,9 +113,8 @@ class NetworkData(BaseView):
                 if type_list:
                     preview_content['type_list']= type_list
 
-            except:
-                logger.exception(f'Failed getting preview for layer {layer_spec}')
-
+            except Exception as e:
+                raise KernelError.from_exception(e, message=f'Failed getting preview for layer {layer_spec}')
         return dim_content, preview_content, layer_sample_data_points
 
     def _maybe_apply_autosettings(self, graph_spec, settings_engine):
@@ -146,22 +153,25 @@ class Previews(BaseView):  # TODO: this endpoint should replace network_data
         self._preview_cache = preview_cache
 
     def dispatch_request(self, layer_id):
-        json_data = request.get_json()
-        graph_spec = self._model_access.get_graph_spec(model_id=json_data['network']) #TODO: F/E should send an ID                
-        data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))
-        lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
-        lw_results = lw_core.run(graph_spec)
+        try:
+            json_data = request.get_json()
+            graph_spec = self._model_access.get_graph_spec(model_id=json_data['network']) #TODO: F/E should send an ID                
+            data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))
+            lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
+            lw_results = lw_core.run(graph_spec)
 
-        if layer_id is not None:
-            layer_spec = graph_spec[layer_id]
-            content = self._get_layer_content(layer_spec, lw_results)
-        else:
-            content = {
-                layer_spec.id_: self._get_layer_content(layer_spec, lw_results)
-                for layer_spec in graph_spec.layers
-            }            
-        
-        return content
+            if layer_id is not None:
+                layer_spec = graph_spec[layer_id]
+                content = self._get_layer_content(layer_spec, lw_results)
+            else:
+                content = {
+                    layer_spec.id_: self._get_layer_content(layer_spec, lw_results)
+                    for layer_spec in graph_spec.layers
+                }            
+            return content
+        except Exception as e:
+            raise KernelError.from_exception(e, message=f'Failed getting previews')            
+    
 
     def _get_lw_results(self):
         json_data = request.get_json()

@@ -3,7 +3,7 @@ from flask.views import View
 
 import perceptilabs.tracking as tracking
 from perceptilabs.data.type_inference import TypeInferrer
-
+from perceptilabs.utils import KernelError
 
 class TypeInference(View):
     def dispatch_request(self):
@@ -15,7 +15,8 @@ class TypeInference(View):
         try:
             datatypes = inferrer.get_valid_and_default_datatypes_for_csv(request.args['path'])
         except ValueError as e:
-            return jsonify({"errorMessage": str(e)})                        
+            raise KernelError.from_exception(
+                e, message="Couldn't get data types because the Kernel responded with an error")
         else:
             if 'user_email' in request.args:
                 tracking.send_data_selected(

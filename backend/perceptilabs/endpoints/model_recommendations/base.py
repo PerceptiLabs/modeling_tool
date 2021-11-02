@@ -5,6 +5,7 @@ from flask import request, jsonify
 
 from perceptilabs.endpoints.base_view import BaseView
 from perceptilabs.logconf import APPLICATION_LOGGER
+from perceptilabs.utils import KernelError
 import perceptilabs.tracking as tracking
 import perceptilabs.automation.utils as automation_utils
 import perceptilabs.utils as utils
@@ -27,10 +28,8 @@ class ModelRecommendations(BaseView):
             graph_spec, training_settings = automation_utils.get_model_recommendation(data_loader)
             response = graph_spec.to_dict()
         except Exception as e:
-            if utils.is_prod():
-                sentry_sdk.capture_exception(e)
-            
-            return jsonify({"errorMessage": str(e)})            
+            raise KernelError.from_exception(e, message="Couldn't get model recommendations because the Kernel responded with an error")
+        
         else:
             self._maybe_send_tracking(json_data, data_loader, graph_spec, json_data['datasetSettings'])
             return jsonify(response)

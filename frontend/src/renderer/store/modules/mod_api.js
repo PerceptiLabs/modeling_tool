@@ -357,9 +357,9 @@ const actions = {
       const delay = responseDuration >= 1000 ? 0 : 1000 - responseDuration;
       if (data.status === 'Completed') {
         dispatch('API_getTestResults');
-      } else if (data.status === 'Error') {
+      } else if (data.error) {
         dispatch('API_closeTest');
-        dispatch('globalView/GP_errorPopup', data.update_line_1, {root: true});
+        dispatch('globalView/GP_errorPopup', data.error.message + "\n\n" + data.error.details, {root: true});
       } else {
         setTimeout(() => {
           dispatch('API_getTestStatus');
@@ -546,6 +546,10 @@ const actions = {
 
     return renderingKernel.getPreviews(net, datasetSettings, userEmail)
       .then((data)=> {
+	if (data.error) {
+          dispatch('globalView/GP_errorPopup', res.error.message + "\n\n" + res.error.details, {root: true});
+	}
+	
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
       })
       .catch((err)=> {
@@ -678,6 +682,13 @@ const actions = {
         if (!data) return;
         
         dispatch('mod_workspace/SET_statusNetworkCoreDynamically', {modelId: networkId, ...data}, {root: true})
+	if (data.error) {
+          dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
+          commit('mod_empty-navigation/set_emptyScreenMode', 0, {root: true});
+          dispatch("mod_workspace/setViewType", 'model', {root: true});
+          dispatch("mod_workspace/SET_statisticsAndTestToClosed", { networkId: networkId }, { root: true });
+          dispatch('globalView/GP_errorPopup', data.error.message + "\n\n" + data.error.details, {root: true});
+	}
 
         if (data.Status === 'Finished') {
           dispatch('mod_workspace/EVENT_stopRequest', { networkId }, {root: true});
@@ -785,6 +796,10 @@ const actions = {
         // );
         // console.log('previews', res.previews);
         // console.groupEnd();
+	if (res.error) {
+          dispatch('globalView/GP_errorPopup', res.error.message + "\n\n" + res.error.details, {root: true});
+	}
+	
         if(res.newNetwork && Object.keys(res.newNetwork).length > 0) {
           for( let ix in res.newNetwork) {
             const currentEl = networkList[ix];
@@ -878,6 +893,10 @@ const actions = {
         // );
         // console.log('previews', res.previews);
         // console.groupEnd();
+
+	if (res.error) {
+          dispatch('globalView/GP_errorPopup', res.error.message + "\n\n" + res.error.details, {root: true});
+	}
 
         if(res.outputDims) {
           dispatch('mod_workspace/SET_elementOutputDim', res.outputDims, {root: true});

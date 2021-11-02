@@ -225,10 +225,16 @@ def create_app(
         return response
 
     @app.errorhandler(Exception)
-    def handle_endpoint_error(e):
-        message = traceback_from_exception(e)
+    def handle_endpoint_error(error):
+        # TODO: Sentry capture here???? probably on original exception...
         logger.exception(f"Error in request '{request.url}'")
-        return make_response(message), 500
-
+        
+        if not isinstance(error, utils.KernelError):
+            error = utils.KernelError.from_exception(error)
+            
+        return jsonify({"error": error.to_dict()}), 200   
+            
     #print(app.url_map)
     return app
+
+
