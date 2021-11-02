@@ -18,7 +18,7 @@ from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.session.utils import Session
 from perceptilabs.caching.utils import get_data_metadata_cache
 from perceptilabs.logconf import APPLICATION_LOGGER
-
+from perceptilabs.utils import get_file_path
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -200,7 +200,7 @@ class GradioSession(Session):
 
         dataset_settings = DatasetSettings.from_dict(payload['datasetSettings'])
 
-        csv_path = payload['datasetSettings']['filePath']  # TODO: move one level up        
+        csv_path = get_file_path(payload['datasetSettings']) # TODO: move one level up        
         data_loader = self._get_data_loader(csv_path, dataset_settings, user_email)
         self._launcher.start(graph_spec, data_loader, training_session_id, model_name)
 

@@ -2,7 +2,7 @@ import logging
 import functools
 from abc import ABC, abstractmethod
 from perceptilabs.logconf import APPLICATION_LOGGER
-
+from perceptilabs.utils import get_file_path
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -48,7 +48,7 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
     epochs_access = EpochsAccess()
     results_access = TrainingResultsAccess()        
 
-    csv_file = dataset_settings_dict['filePath']  # TODO: move one level up        
+    csv_file = get_file_path(dataset_settings_dict)  # TODO: move one level up        
     num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
@@ -106,7 +106,7 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
     models = {}
     for model_id in models_info.keys():
         dataset_settings_dict = models_info[model_id]['datasetSettings']
-        csv_file = dataset_settings_dict['filePath']  # TODO: move one level up
+        csv_file = get_file_path(dataset_settings_dict)  # TODO: move one level up
         num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
         dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
