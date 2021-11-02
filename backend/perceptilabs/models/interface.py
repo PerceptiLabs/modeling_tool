@@ -22,8 +22,8 @@ class ModelsInterface:
         self._testing_results_access = testing_results_access        
         self._data_metadata_cache = data_metadata_cache
 
-    def start_training(self, dataset_settings_dict, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email):
-        self._task_executor.enqueue('training_task', dataset_settings_dict, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email)
+    def start_training(self, dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email):
+        self._task_executor.enqueue('training_task', dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email)
 
     def stop_training(self, model_id, training_session_id):
         self._message_broker.publish(
