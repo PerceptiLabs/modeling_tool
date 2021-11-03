@@ -4,7 +4,7 @@ from perceptilabs.tracking.utils import get_layer_counts, get_preprocessing_coun
 
 @silence_exceptions
 def send_model_recommended(
-        user_email, model_id, skipped_workspace, dataset_settings_dict, dataset_size_bytes, graph_spec, is_tutorial_data
+        user_email, model_id, skipped_workspace, dataset_settings_dict, dataset_size_bytes, graph_spec, is_tutorial_data, is_perceptilabs_sourced, dataset_id
 ):
     """ Sends a MixPanel event describing the model recommendation """
     payload = {
@@ -12,6 +12,8 @@ def send_model_recommended(
         'model_id': model_id,
         'dataset_size_bytes': dataset_size_bytes,
         'is_tutorial_data': is_tutorial_data,
+        'is_perceptilabs_sourced': is_perceptilabs_sourced,
+        'dataset_id': dataset_id,
         'skipped_workspace': skipped_workspace,
         'version': get_tool_version()
     }

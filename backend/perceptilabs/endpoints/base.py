@@ -15,6 +15,7 @@ from perceptilabs.messaging.base import get_message_broker
 from perceptilabs.tasks.utils import get_task_executor
 from perceptilabs.resources.training_results import TrainingResultsAccess
 from perceptilabs.resources.testing_results import TestingResultsAccess
+from perceptilabs.resources.datasets import DatasetAccess
 from perceptilabs.resources.serving_results import ServingResultsAccess
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.resources.epochs import EpochsAccess
@@ -65,6 +66,7 @@ def create_app(
         message_broker = get_message_broker(),            
         models_access = ModelAccess(),        
         epochs_access = EpochsAccess(),
+        dataset_access = DatasetAccess(),
         training_results_access = TrainingResultsAccess(),
         testing_results_access = TestingResultsAccess(),
         serving_results_access = ServingResultsAccess()                        
@@ -110,7 +112,8 @@ def create_app(
     app.add_url_rule(
         '/model_recommendations',
         methods=['POST'],
-        view_func=ModelRecommendations.as_view('model_recommendations', data_metadata_cache=data_metadata_cache)
+        view_func=ModelRecommendations.as_view(
+            'model_recommendations', dataset_access, data_metadata_cache=data_metadata_cache)
     )
 
     app.add_url_rule(
@@ -137,7 +140,7 @@ def create_app(
     app.add_url_rule(
         '/type_inference',
         methods=['GET'],
-        view_func=TypeInference.as_view('type_inference')
+        view_func=TypeInference.as_view('type_inference', dataset_access)
     )
 
     app.add_url_rule(

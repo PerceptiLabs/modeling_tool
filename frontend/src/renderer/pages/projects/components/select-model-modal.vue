@@ -541,7 +541,8 @@ export default {
         partitions: this.datasetSettings.partitions,
         featureSpecs: formatCSVTypesIntoKernelFormat(this.csvData),
         filePath: this.datasetPath,
-        randomSeed: this.datasetSettings.randomSeed
+        randomSeed: this.datasetSettings.randomSeed,
+        datasetId: this.createdFromDatasetId
       };
       const userEmail = this.userEmail;
       
@@ -825,7 +826,7 @@ export default {
         const getFileContentPath = this.isEnterpriseMode ? `${ENTERPRISE_DATASET_FOLDER_PREFIX}${dataPath[0]}` : dataPath[0]
         const fileContents = await rygg_getFileContent(getFileContentPath);
 
-        this.dataSetTypes = await renderingKernel.getDataTypes(getFileContentPath, this.userEmail)
+        this.dataSetTypes = await renderingKernel.getDataTypes(getFileContentPath, this.createdFromDatasetId, this.userEmail)
         .then(res => {
           if (res.error) {
             this.showErrorPopup(res.error.message + "\n\n" + res.error.details);

@@ -6,6 +6,9 @@ from perceptilabs.data.type_inference import TypeInferrer
 from perceptilabs.utils import KernelError
 
 class TypeInference(View):
+    def __init__(self, dataset_access):
+        self._dataset_access = dataset_access
+    
     def dispatch_request(self):
         """ Sent when the users selects a data file """        
         inferrer = TypeInferrer(
@@ -19,8 +22,13 @@ class TypeInference(View):
                 e, message="Couldn't get data types because the Kernel responded with an error")
         else:
             if 'user_email' in request.args:
+                is_plabs_sourced = self._dataset_access.is_perceptilabs_sourced(
+                    request.args['dataset_id'])
+            
                 tracking.send_data_selected(
                     request.args['user_email'],
-                    request.args['path']
+                    request.args['path'],
+                    is_plabs_sourced,
+                    request.args['dataset_id']                    
                 )
             return jsonify(datatypes)

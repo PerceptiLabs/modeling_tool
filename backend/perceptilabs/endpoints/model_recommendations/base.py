@@ -15,7 +15,8 @@ import perceptilabs.data.utils as data_utils
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 class ModelRecommendations(BaseView):
-    def __init__(self, data_metadata_cache=None):
+    def __init__(self, dataset_access, data_metadata_cache=None):
+        self._dataset_access = dataset_access
         self._data_metadata_cache = data_metadata_cache
 
     def dispatch_request(self):
@@ -43,6 +44,9 @@ class ModelRecommendations(BaseView):
             sample_size_bytes = sys.getsizeof(data_loader.get_sample(partition='training'))
             dataset_size_bytes = (training_size + validation_size + test_size) * sample_size_bytes
 
+            is_plabs_sourced = self._dataset_access.is_perceptilabs_sourced(
+                data_loader.settings.dataset_id)
+
             tracking.send_model_recommended(
                 json_data.get('user_email'),
                 json_data.get('model_id'),
@@ -50,5 +54,7 @@ class ModelRecommendations(BaseView):
                 settings_dict,
                 dataset_size_bytes,
                 graph_spec,
-                is_tutorial_data=is_tutorial_data
+                is_tutorial_data=is_tutorial_data,
+                is_perceptilabs_sourced=is_plabs_sourced,
+                dataset_id=data_loader.settings.dataset_id
             )
