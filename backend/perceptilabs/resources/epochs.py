@@ -10,10 +10,8 @@ class EpochsAccess:
             return None
 
         epochs = self._get_epochs(training_session_id)
-
         current_id = None
         current_modification = -1
-        
         for epoch_id in epochs.keys():
             checkpoint_modified = epochs[epoch_id].get('checkpoint_modified')
             state_modified = epochs[epoch_id].get('state_modified')
@@ -79,10 +77,11 @@ class EpochsAccess:
 
     def _get_epochs(self, training_session_id):
         directory = self._resolve_directory_path(training_session_id)
-
         if not os.path.isdir(directory):
             return {}        
-
+        
+        self._resolve_checkpoint_filenames(directory)
+        
         def resolve_epoch_and_type(file_name):
             match = re.fullmatch('checkpoint-([0-9]*).ckpt.index', file_name)
             if match:
@@ -91,29 +90,38 @@ class EpochsAccess:
             match = re.fullmatch('state-([0-9]*).pkl', file_name)
             if match:
                 return int(match.group(1)), 'state'
-            
+
             return None, None
         
         epochs = {}
         for file_name in os.listdir(directory):
             epoch_id, file_type = resolve_epoch_and_type(file_name)
-
             if epoch_id is not None:
                 if epoch_id not in epochs:
                     epochs[epoch_id] = {'checkpoint_modified': None, 'state_modified': None}
 
                 file_path = os.path.join(directory, file_name)
                 epochs[epoch_id][file_type + '_modified'] = os.path.getmtime(file_path)
-                
         return epochs
     
     
-    
-
-    
-    
-        
-        
+    def _resolve_checkpoint_filenames(self, directory):
+            for file in os.listdir(directory):
+                if 'checkpoint.ckpt' in file:
+                    try:
+                        src = os.path.join(directory, file)
+                        dst = os.path.join(directory, file.replace('checkpoint.ckpt', 'checkpoint-0000.ckpt'))
+                        os.rename(src, dst)
+                    except:
+                        pass
+                if 'state.pkl' in file:
+                    try:
+                        src = os.path.join(directory, file)
+                        dst = os.path.join(directory, file.replace('state.pkl', 'state-0000.pkl'))
+                        os.rename(src, dst)
+                    except:
+                        pass
+            return
 
         
 
