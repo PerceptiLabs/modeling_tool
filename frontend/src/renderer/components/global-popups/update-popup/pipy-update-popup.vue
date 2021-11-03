@@ -9,7 +9,6 @@
           p.message-content Enter 
             span "pip install  --upgrade perceptilabs" into the Terminal
           p.message-content 
-            span Note: if you are upgrading to 0.12 for the first time there are some larger changes, click here to view them: 
             a.link(href="https://perceptilabs.com/docs/changelog" target="_blank") More info...
         .buttons-group
           button.copy(type="button"
@@ -52,15 +51,17 @@ export default {
     position: absolute;
     width: 440px;
     height: 110px;
-    top: 56px;
-    right: 36px;
+    top: 68px;
+    right: 20px;
     z-index: 12;
     animation-name: move;
     animation-duration: 2s;
   }
 
   .content {
-    background-image: url(../../../../../static/img/update-bg.png);
+    background-color: theme-var($neutral-7);
+    // background-image: none;
+    border: $border-1;
     background-size: cover;
     width: 440px;
     height: 110px;
@@ -84,6 +85,7 @@ export default {
       display: flex;
       flex-direction: column;
       justify-content: center;
+      border-right: $border-1;
 
       p, a {
         font-family: Nunito Sans;
@@ -91,7 +93,7 @@ export default {
         font-weight: normal;
         font-size: 12px;
         line-height: 15px;
-        color: #B6C7FB;
+        color: theme-var($neutral-1);
         margin-bottom: 3px;
       }
       .header {
@@ -103,7 +105,7 @@ export default {
       }
 
       a {
-        color: #8697aB;
+        color: #6185EE;
         font-weight: bold;
       }
     }
@@ -115,12 +117,13 @@ export default {
       height: 55px;
       top: 0;
       right: 0;
-      color: #B6C7FB;
+      color: theme-var($neutral-1);
 
       &:hover {
         background: #6185EE;
         color: white;
       }
+      border-bottom: $border-1;
     }
 
     .dismiss {
@@ -130,7 +133,7 @@ export default {
       height: 55px;
       bottom: 0;
       right: 0;
-      color: #B6C7FB;
+      color: theme-var($neutral-1);
 
       &:hover {
         background: #6185EE;
@@ -175,10 +178,10 @@ export default {
   }
 
   @keyframes move {
-    0%   { right: -350px; top: 56px;}
-    50%   { right: -350px; top: 56px;}
-    80%   { right: 80px; top: 56px;}
-    100% { right: 36px; top: 56px;}
+    0%   { right: -440px; top: 68px;}
+    50%   { right: -440px; top: 68px;}
+    80%   { right: 74px; top: 68px;}
+    100% { right: 20px; top: 68px;}
   }
 </style>
 
