@@ -5,6 +5,7 @@
         .form_label Number of Inputs
         .form_input
           input(
+            :class="{'invalid': isNumberOfInputsValid}"
             type="number"
             v-model="settings.InputsCount"
             @focus="setIsSettingInputFocused(true)"
@@ -52,6 +53,7 @@ export default {
         Merge_dim: '-1',
         InputsCount: 2,
       },
+      isNumberOfInputsValid: false,
       interactiveInfo: {
         operation: {
           title: 'Operation',
@@ -125,10 +127,11 @@ export default {
         
         const currentValue = parseInt(current, 10);
         const isLessThenMin = currentValue < 2;
+        
         if(isLessThenMin) {
-          this.settings.InputsCount = 2;
-        }
-        if (current >= 2) {
+          this.isNumberOfInputsValid = true;
+        } else {
+          this.isNumberOfInputsValid = false;
           this.handleInputNumberChanged(this.settings.InputsCount)
         }
       }
