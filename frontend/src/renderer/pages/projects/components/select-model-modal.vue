@@ -1308,6 +1308,7 @@ span.error {
 .guide-link {
   cursor: pointer;
   color: $color-6;
+  text-decoration: underline;
 }
 .image-format-message {
   margin-right: 10px;
