@@ -3,7 +3,7 @@
       div(v-if="statusData.Status === 'Finished'").d-flex.align-items-center
         img(src="./../../../../static/img/model-status-complete-white.svg")
         span.training-complete-text Training Complete
-      div(v-if="statusData.Status === 'Stopped'").d-flex.align-items-center
+      div(v-else-if="statusData.Status === 'Stopped'").d-flex.align-items-center
         img(src="./../../../../static/img/model-status-complete-white.svg")
         span.training-complete-text Training Stopped
       div(
@@ -75,6 +75,7 @@ export default {
     }
   },
   created(){
+    console.log('this', this.coreError, this.statusData);
     this.getProgress();
   },
   methods: {
