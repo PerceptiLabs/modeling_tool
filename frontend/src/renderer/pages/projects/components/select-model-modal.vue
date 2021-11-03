@@ -2,6 +2,7 @@
 div
   base-global-popup.select-model(
     :title="getModalTitle"
+    :closeOnOutside="!isCreateModelLoading"
     titleAlign="text-center"
     @closePopup="() => closeModal(true)"
   )

@@ -1,6 +1,6 @@
 <template lang="pug">
   .popup-global.base-global-popup
-    .popup-global_overlay(@click="closePopup()")
+    .popup-global_overlay(@click="closeOnOutside && closePopup()")
     section.popup(:class="popupClass")
       .popup-close(@click="closePopup()")
         svg(width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg")
@@ -41,6 +41,10 @@ import { mapActions } from 'vuex';
 export default {
   name: "BaseGlobalPopup",
   props: {
+    closeOnOutside: {
+      type: Boolean,
+      default: true
+    },
     title: {
       type: String,
       default: ''

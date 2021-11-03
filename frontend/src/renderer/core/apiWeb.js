@@ -19,6 +19,7 @@ const kernelUrlPromise = Promise.all([whenUrlIsResolved(KERNEL_URL_CONFIG_PATH, 
 
 function coreRequest(data, path, no, name) {
   console.error("coreRequest is Deprecated!")
+  return Promise.resolve();
 }
 
 const openWS = null;
