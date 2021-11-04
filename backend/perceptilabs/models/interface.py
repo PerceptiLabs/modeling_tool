@@ -172,9 +172,9 @@ class ModelsInterface:
 
         return data_loader
 
-    def start_serving(self, serving_type, dataset_settings_dict, graph_spec_dict, training_session_id, model_name, user_email):
+    def start_serving(self, serving_type, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email):
         serving_session_id = self._serving_results_access.new_id()
-        self._task_executor.enqueue('serving_task', serving_type, dataset_settings_dict, graph_spec_dict, training_session_id, model_name, user_email, serving_session_id)
+        self._task_executor.enqueue('serving_task', serving_type, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email, serving_session_id)
         return serving_session_id
 
     def get_serving_status(self, serving_session_id):

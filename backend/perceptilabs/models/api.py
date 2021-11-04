@@ -109,6 +109,7 @@ def create_blueprint(
             json_data['type'],
             json_data['datasetSettings'],
             json_data['network'],
+            model_id,
             request.args.get('training_session_id'),            
             json_data['modelName'],
             json_data['userEmail']

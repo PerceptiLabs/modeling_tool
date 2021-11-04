@@ -149,7 +149,7 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
      
 
 @log_exceptions    
-def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, training_session_id, model_name, user_email, serving_session_id, is_retry=False):
+def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email, serving_session_id, is_retry=False):
     
     import perceptilabs.settings as settings    
     from perceptilabs.serving.interface import ServingSessionInterface
@@ -195,6 +195,7 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, training_
     interface.run(
         data_loader,
         graph_spec_dict,
+        model_id,
         training_session_id,
         serving_session_id,
         model_name,

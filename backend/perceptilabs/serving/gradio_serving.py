@@ -41,12 +41,19 @@ class GradioLauncher:
     def get_url(self):
         return self._url_dict['url']
 
-    def start(self, graph_spec, data_loader, training_session_id, model_name):
+    def start(self, graph_spec, data_loader, training_session_id, model_name, on_serving_started=None):
         #if utils.is_debug():
         #    raise NotImplementedError("Cannot run Gradio in debug mode!")  # Flask development servers interfere
         self._thread = threading.Thread(
             target=self._worker,
-            args=(graph_spec, data_loader, training_session_id, model_name, self._url_dict),
+            args=(
+                graph_spec,
+                data_loader,
+                training_session_id,
+                model_name,
+                self._url_dict,
+                on_serving_started
+            ),
             daemon=True
         )
         self._thread.start()
@@ -61,15 +68,15 @@ class GradioLauncher:
         self._stop_event.set()
         self._thread.join()
         
-    def _worker(self, graph_spec, data_loader, training_session_id, model_name, url_dict):
+    def _worker(self, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started):
         try:
             return self._worker_internal(
-                graph_spec, data_loader, training_session_id, model_name, url_dict)
+                graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started)
         except:
             logger.exception("Error in worker")
             raise
         
-    def _worker_internal(self, graph_spec, data_loader, training_session_id, model_name, url_dict):        
+    def _worker_internal(self, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started):        
         inference_model = self._get_inference_model(
             graph_spec, data_loader, training_session_id)
 
@@ -114,6 +121,9 @@ class GradioLauncher:
             interface.launch(share=False, prevent_thread_lock=True)  # Warning: Gradio conflicts with our Flask development server. URL is only valid when we run the kernel with debug == False
 
         url_dict['url'] = path_to_local_server
+
+        if on_serving_started:
+            on_serving_started()
 
         while not self._stop_event.is_set():
             time.sleep(0.5)
