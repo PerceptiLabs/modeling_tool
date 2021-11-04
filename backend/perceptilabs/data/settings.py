@@ -200,7 +200,7 @@ class DatasetSettings(MyPydanticBaseModel):
 
     @classmethod
     def from_dict(cls, dict_):
-        dataset_id = dict_.get('datasetId', '')        
+        dataset_id = str(dict_.get('datasetId', ''))        
         name = dict_.get('filePath', '')
         feature_specs = {
             feature_name: FeatureSpec.from_dict(feature_dict)
