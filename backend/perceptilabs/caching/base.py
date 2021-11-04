@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+# REMOVE COMPOUND AND FORMAT...?
 
 def _format_compound_key(parameters):
     key = ':'.join(

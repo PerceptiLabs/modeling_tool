@@ -36,24 +36,26 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.files import FileAccess
     from perceptilabs.resources.training_results import TrainingResultsAccess
+    from perceptilabs.resources.wrangling_results import WranglingResultsAccess    
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     import perceptilabs.utils as utils
     import os
 
     message_broker = get_message_broker()
-    data_metadata_cache = get_data_metadata_cache().for_compound_keys()
     
     model_access = ModelAccess(ScriptFactory())
     epochs_access = EpochsAccess()
-    results_access = TrainingResultsAccess()        
+    training_results_access = TrainingResultsAccess()
+    wrangling_results_access = WranglingResultsAccess(get_data_metadata_cache())            
 
+    # TODO: all this data setup should be moved into the coreInteraface!!!
+    
     csv_file = get_file_path(dataset_settings_dict)  # TODO: move one level up        
     num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
-    key = ['pipelines', user_email, csv_file, dataset_settings.compute_hash()]
-    data_metadata = data_metadata_cache.get(key)
+    data_metadata = wrangling_results_access.get_metadata(dataset_settings.compute_hash())
 
     file_access = FileAccess(os.path.dirname(csv_file))        
     data_loader = DataLoader.from_csv(
@@ -65,7 +67,7 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
     )
     
     interface = TrainingSessionInterface(
-        message_broker, model_access, epochs_access, results_access)
+        message_broker, model_access, epochs_access, training_results_access)
     
     interface.run(
         data_loader,
@@ -90,7 +92,8 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
     from perceptilabs.resources.models import ModelAccess
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.files import FileAccess
-    from perceptilabs.resources.testing_results import TestingResultsAccess 
+    from perceptilabs.resources.testing_results import TestingResultsAccess
+    from perceptilabs.resources.wrangling_results import WranglingResultsAccess        
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     import perceptilabs.utils as utils
@@ -101,8 +104,11 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
     
     model_access = ModelAccess(ScriptFactory())
     epochs_access = EpochsAccess()
-    results_access = TestingResultsAccess()
+    testing_results_access = TestingResultsAccess()
+    wrangling_results_access = WranglingResultsAccess(get_data_metadata_cache())                
 
+
+    # TODO: all this data loader etup should be moved into the test interface!!!
     models = {}
     for model_id in models_info.keys():
         dataset_settings_dict = models_info[model_id]['datasetSettings']
@@ -110,8 +116,7 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
         num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
         dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
-        key = ['pipelines', user_email, csv_file, dataset_settings.compute_hash()]
-        data_metadata = data_metadata_cache.get(key)
+        data_metadata = wrangling_results_access.get_metadata(dataset_settings.compute_hash())
 
         file_access = FileAccess(os.path.dirname(csv_file))        
         data_loader = DataLoader.from_csv(
@@ -132,7 +137,7 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
         }
 
     interface = TestingSessionInterface(
-        message_broker, model_access, epochs_access, results_access)
+        message_broker, model_access, epochs_access, testing_results_access)
 
     interface.run(
         testing_session_id,
@@ -154,6 +159,7 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, training_
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.files import FileAccess
     from perceptilabs.resources.serving_results import ServingResultsAccess
+    from perceptilabs.resources.wrangling_results import WranglingResultsAccess        
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     from perceptilabs.messaging.base import get_message_broker    
@@ -165,14 +171,14 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, training_
     
     model_access = ModelAccess(ScriptFactory())
     epochs_access = EpochsAccess()
-    results_access = ServingResultsAccess()        
+    serving_results_access = ServingResultsAccess()
+    wrangling_results_access = WranglingResultsAccess(get_data_metadata_cache())                
 
     csv_file = dataset_settings_dict['filePath']  # TODO: move one level up        
     num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
-    key = ['pipelines', user_email, csv_file, dataset_settings.compute_hash()]
-    data_metadata = data_metadata_cache.get(key)
+    data_metadata = wrangling_results_access.get_metadata(dataset_settings.compute_hash())    
 
     file_access = FileAccess(os.path.dirname(csv_file))        
     data_loader = DataLoader.from_csv(
@@ -184,7 +190,7 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, training_
     )
     
     interface = ServingSessionInterface(
-        message_broker, model_access, epochs_access, results_access)
+        message_broker, model_access, epochs_access, serving_results_access)
 
     interface.run(
         data_loader,

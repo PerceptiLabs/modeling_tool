@@ -10,13 +10,15 @@ import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
-from perceptilabs.caching.utils import get_preview_cache, get_data_metadata_cache, NullCache
+from perceptilabs.caching.utils import get_preview_cache, get_data_metadata_cache, NullCache, DictCache
 from perceptilabs.messaging.base import get_message_broker
 from perceptilabs.tasks.utils import get_task_executor
+from perceptilabs.data.datasets import DatasetsInterface
 from perceptilabs.resources.training_results import TrainingResultsAccess
 from perceptilabs.resources.testing_results import TestingResultsAccess
 from perceptilabs.resources.datasets import DatasetAccess
 from perceptilabs.resources.serving_results import ServingResultsAccess
+from perceptilabs.resources.wrangling_results import WranglingResultsAccess
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.script import ScriptFactory
@@ -59,7 +61,6 @@ class MyJSONEncoder(JSONEncoder):
 
     
 def create_app(
-        data_metadata_cache = NullCache(),
         preview_cache = NullCache(),
         data_executor = utils.DummyExecutor(),
         task_executor = get_task_executor(),
@@ -69,7 +70,8 @@ def create_app(
         dataset_access = DatasetAccess(),
         training_results_access = TrainingResultsAccess(),
         testing_results_access = TestingResultsAccess(),
-        serving_results_access = ServingResultsAccess()                        
+        serving_results_access = ServingResultsAccess(),
+        wrangling_results_access = WranglingResultsAccess(get_data_metadata_cache())
 ):
     app = Flask(__name__)
     app.json_encoder = MyJSONEncoder
@@ -79,6 +81,9 @@ def create_app(
     compress = Compress()
     compress.init_app(app)
 
+    datasets_interface = DatasetsInterface(
+        data_executor, wrangling_results_access)  # TODO: replace w/ task_executor
+
     models = create_models_blueprint(
         task_executor,
         message_broker,
@@ -87,7 +92,7 @@ def create_app(
         training_results_access,
         testing_results_access,
         serving_results_access,                
-        data_metadata_cache        
+        wrangling_results_access
     )
     app.register_blueprint(models)
 
@@ -100,20 +105,20 @@ def create_app(
     app.add_url_rule(
         '/data',
         methods=['PUT'],
-        view_func=PutData.as_view('put_data', data_executor, data_metadata_cache=data_metadata_cache)
+        view_func=PutData.as_view('put_data', datasets_interface)
     )
 
     app.add_url_rule(
         '/data',
         methods=['GET'],
-        view_func=IsDataReady.as_view('is_data_ready', data_metadata_cache=data_metadata_cache)
+        view_func=IsDataReady.as_view('is_data_ready', datasets_interface)
     )
 
     app.add_url_rule(
         '/model_recommendations',
         methods=['POST'],
         view_func=ModelRecommendations.as_view(
-            'model_recommendations', dataset_access, data_metadata_cache=data_metadata_cache)
+            'model_recommendations', dataset_access, wrangling_results_access)           
     )
 
     app.add_url_rule(
@@ -122,14 +127,14 @@ def create_app(
         view_func=NetworkData.as_view(
             'network_data',
             models_access,
-            data_metadata_cache=data_metadata_cache, preview_cache=preview_cache
+            wrangling_results_access, preview_cache=preview_cache          
         )
     )
 
     previews_view = Previews.as_view(
         'previews',
         models_access,
-        data_metadata_cache=data_metadata_cache,
+        wrangling_results_access,
         preview_cache=preview_cache
     )
     app.add_url_rule(

@@ -34,11 +34,7 @@ def client(request, celery_worker):
     else:
         raise ValueError
         
-    app = create_app(
-        data_metadata_cache=DictCache(),
-        task_executor=task_executor
-    )
-    
+    app = create_app(task_executor=task_executor)
     app.config['TESTING'] = True
     with app.test_client() as client:
         yield client

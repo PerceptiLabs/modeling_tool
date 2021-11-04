@@ -41,14 +41,12 @@ def main():
         app = create_app(
             data_executor=utils.DummyExecutor(),
             preview_cache=get_preview_cache(),                                
-            data_metadata_cache=get_data_metadata_cache()
         )            
         app.run(port=PORT_RENDERING_KERNEL, debug=True)
     else:
         app = create_app(
             data_executor=ThreadPoolExecutor(),                
             preview_cache=get_preview_cache(),                
-            data_metadata_cache=get_data_metadata_cache()
         )
         serve(
             app,

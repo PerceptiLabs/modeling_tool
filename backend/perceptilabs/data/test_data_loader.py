@@ -1125,3 +1125,43 @@ def test_get_dataframe_partition_matches_loader_partition(random_partitions):
         )
 
 
+def test_compute_metadata_calls_on_status_updated(temp_path):
+    image_paths = []
+    for _ in range(20):
+        path, data = random_image((32, 32, 3), temp_path, '.png')
+        image_paths.append(path)
+
+    data = [[img, 0] for img in image_paths]  # Image, label
+    df = pd.DataFrame(data, columns=['x', 'y'])
+
+    feature_specs = {
+        'x': FeatureSpec(
+            datatype='image',
+            iotype='input',
+            preprocessing=ImagePreprocessingSpec(
+                random_flip=True,
+                random_flip_mode='horizontal',
+                random_flip_seed=123
+            )
+        ),
+        'y': FeatureSpec(datatype='numerical', iotype='target')
+    }
+    dataset_settings = DatasetSettings(feature_specs=feature_specs)
+
+    status_updates = []
+    def on_status_updated(*args, **kwargs):
+        status_updates.append((args, kwargs))
+    
+    dl1 = DataLoader(df, dataset_settings)
+    metadata = DataLoader.compute_metadata(
+        df, dataset_settings, on_status_updated=on_status_updated)
+
+    expected = [
+        (('loader', 'x', 3, 1), {}),
+        (('augmenter', 'x', 3, 2), {}),
+        (('preprocessing', 'x', 3, 3), {}),
+        (('loader', 'y', 2, 1), {}),
+        (('preprocessing', 'y', 2, 2), {})
+    ]
+
+    assert status_updates == expected

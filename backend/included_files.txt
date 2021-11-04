@@ -220,6 +220,7 @@ perceptilabs/lwcore/strategies/tf2x.py
 perceptilabs/data/__init__.py
 perceptilabs/data/base.py
 perceptilabs/data/settings.py
+perceptilabs/data/datasets.py
 perceptilabs/data/type_inference.py
 
 # backend/perceptilabs/data/utils/
@@ -378,4 +379,5 @@ perceptilabs/resources/files.py
 perceptilabs/resources/training_results.py
 perceptilabs/resources/testing_results.py
 perceptilabs/resources/serving_results.py
+perceptilabs/resources/wrangling_results.py
 

@@ -224,7 +224,7 @@ export const renderingKernel = {
           cb(res.message);
         }
         await new Promise(resolve => {
-          setTimeout(resolve, 1000);
+          setTimeout(resolve, 100);
         });
       }
     })();

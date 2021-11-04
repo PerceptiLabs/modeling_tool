@@ -20,9 +20,9 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class NetworkData(BaseView):
-    def __init__(self, model_access, data_metadata_cache=NullCache(), preview_cache=NullCache()):
+    def __init__(self, model_access, wrangling_results_access, preview_cache=NullCache()):
         self._model_access = model_access        
-        self._data_metadata_cache = data_metadata_cache
+        self._wrangling_results_access = wrangling_results_access
         self._preview_cache = preview_cache
 
     def dispatch_request(self):
@@ -147,9 +147,9 @@ class NetworkData(BaseView):
 
 
 class Previews(BaseView):  # TODO: this endpoint should replace network_data         
-    def __init__(self, model_access, data_metadata_cache=NullCache(), preview_cache=NullCache()):
+    def __init__(self, model_access, wrangling_results_access, preview_cache=NullCache()):
         self._model_access = model_access
-        self._data_metadata_cache = data_metadata_cache
+        self._wrangling_results_access = wrangling_results_access
         self._preview_cache = preview_cache
 
     def dispatch_request(self, layer_id):

@@ -14,7 +14,7 @@ def create_blueprint(
         training_results_access,
         testing_results_access,
         serving_results_access,        
-        data_metadata_cache        
+        wrangling_results_access
 ):    
     models_interface = ModelsInterface(
         task_executor,
@@ -24,7 +24,7 @@ def create_blueprint(
         training_results_access,
         testing_results_access,
         serving_results_access,
-        data_metadata_cache
+        wrangling_results_access
     )
     
     bp = Blueprint('models', __name__)
