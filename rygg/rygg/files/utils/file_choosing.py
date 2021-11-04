@@ -45,27 +45,41 @@ else:
     def _toplevel_window():
         # Make a top-level instance and hide since it is ugly and big.
         root = Tk()
-        root.withdraw()
+
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        root.geometry(f"{screen_width}x{screen_height}")
+
 
         if SYS_NAME.startswith("darwin"):
+            # OSX-dependent from https://stackoverflow.com/questions/19080499/transparent-background-in-a-tkinter-window
+            # Turn off the window shadow
+            root.wm_attributes("-transparent", True)
+            # Set the root window background color to a transparent color
+            root.config(bg='systemTransparent')
+
+            # Cocoa-based incantation to raise the app window to the top
             import os
             from Cocoa import NSRunningApplication, NSApplicationActivateIgnoringOtherApps
-
             app = NSRunningApplication.runningApplicationWithProcessIdentifier_(os.getpid())
             app.activateWithOptions_(NSApplicationActivateIgnoringOtherApps)
-        else:
-            # Make it almost invisible - no decorations, 0 size, top left corner.
-            root.overrideredirect(True)
-            root.geometry('0x0+0+0')
+        elif SYS_NAME.startswith('linux'):
+            root.wait_visibility(root)
 
-            # Show window again and lift it to top so it can get focus,
-            # otherwise dialogs will end up behind the terminal.
-            root.deiconify()
-            root.lift()
-            root.attributes('-topmost',True)
-            root.after_idle(root.attributes,'-topmost',False)
-            root.focus_force()
+        root.wm_attributes("-alpha", 0.01)
+
+        root.overrideredirect(True)
+
+        # Show window again and lift it to top so it can get focus,
+        # otherwise dialogs will end up behind the terminal.
+        root.deiconify()
+        root.lift()
+        root.attributes('-topmost',True)
+        root.after_idle(root.attributes,'-topmost',False)
+        root.focus_force()
+
         yield root
+
         root.destroy()
 
     def _open_file_dialog(fn, initial_dir=os.path.expanduser('~'), title = None, file_types=None):
