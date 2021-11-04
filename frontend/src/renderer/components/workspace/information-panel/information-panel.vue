@@ -1,20 +1,7 @@
 <template lang="pug">
   .information-panel-container
     .information-panel-header
-      div.information-panel-header-wrapper
-        .btn.btn--small(
-          @click="onTabClick('ErrorInfoPanel')"
-          :class="getNotificationWindowSelectedTab === 'ErrorInfoPanel' ? 'btn--primary' : 'btn--secondary'"
-          :style={marginRight: '20px', fontSize: '14px'}
-        )
-          span Problems
-          span.count-label {{workspaceErrors}}
-        .btn.btn--small(
-          @click="onTabClick('ConsoleInfoPanel')"
-          :class="getNotificationWindowSelectedTab === 'ConsoleInfoPanel' ? 'btn--primary' : 'btn--secondary'"
-          :style={fontSize: '14px'}
-        )
-          span() Console
+      div.information-panel-header-wrapper {{renderTabName}}
       div 
         error-cta.small(v-if="workspaceErrors")
         i(
@@ -54,6 +41,18 @@ export default {
     workspaceErrors() {
       return this.$store.getters['mod_workspace-notifications/getErrors'](this.workspace[this.currentNetworkIndex].networkID).length;
     },
+    renderTabName() {
+      let panelName = '';
+      switch(this.getNotificationWindowSelectedTab) {
+        case 'ConsoleInfoPanel': 
+          panelName = 'Console';
+          break;
+        case 'ErrorInfoPanel':
+          panelName = 'Problems';
+          break;
+      };
+      return panelName
+    }
   },
   methods: {
     onTabClick(tabName) {
@@ -164,6 +163,6 @@ export default {
   }
   .information-panel-header-wrapper {
     padding: 10px;
-    display: none;
+    font-size: 14px;
   }
 </style>

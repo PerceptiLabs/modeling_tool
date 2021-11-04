@@ -114,14 +114,14 @@ export default {
 
       h5 {
         display: block;
-        font-size: 11px;
+        font-size: 14px;
         padding-left: 1rem;
         margin-right: auto;
         margin-bottom: 0px;
         font-family: Nunito Sans;
         font-style: normal;
         font-weight: 600;
-        line-height: 2.8rem;
+        line-height: 3rem;
       }
     }
   }

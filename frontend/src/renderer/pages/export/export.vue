@@ -7,7 +7,7 @@
       
         .section-select-model
           .section-title
-            .middle-text 1. Select trained models
+            .middle-text.bold 1. Select trained models
           .divider
           div.search-input
             img(src="../../../../static/img/search-models.svg")
@@ -47,7 +47,7 @@
         .export-where-to-grid-parent
           .export-options
             .section-title
-              .middle-text 2. Select export Option
+              .middle-text.bold 2. Select export Option
             .divider
             div.d-flex
               .export-button(
@@ -395,7 +395,7 @@ export default {
 .section-title {
   display: flex;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 10px;
 
   & .step {
     // width: 42px;

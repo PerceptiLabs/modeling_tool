@@ -28,6 +28,8 @@ export default {
 }
 .svg-wrapper {
   position: relative;
+  display: flex;
+  justify-content: center;
   margin-right: 5px;
 }
 svg {

@@ -108,14 +108,15 @@ div
                 :validate-sum="100",
                 :withLabels="true"
               )
-            div(style="display:flex")
+            div(style="display:flex; align-itmes:center")
+              info-tooltip(
+                text="Select random samples to place in each partition, good practice if your dataset is ordered"
+              )
               base-checkbox(
                 style="font-size: 14px; white-space:nowrap;"
                 v-model="datasetSettings.randomizedPartitions"
               ) Randomize partition
-              info-tooltip(
-                text="Select random samples to place in each partition, good practice if your dataset is ordered"
-              )
+              
             div.randome-seed-input-wrapper.form_row
               h5.default-text Seed:
               input.random-seed-input(type="text" v-model="datasetSettings.randomSeed")

@@ -87,4 +87,15 @@ export default {
   width: 200px;
   margin: 0 auto;
 }
+
+.find-out-message {
+  font-size: 14px;
+  line-height: 21px;
+  margin-top: 20px;
+}
+.guide-link {
+  cursor: pointer;
+  color: $color-6;
+  text-decoration: underline;
+}
 </style>

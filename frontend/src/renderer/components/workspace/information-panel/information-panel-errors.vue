@@ -134,8 +134,8 @@ export default {
   $information-panel-font-size: 1.2rem;
 
   svg {
-    height: 0.8rem;
-    width: 0.8rem;
+    height: 1.5rem;
+    width: 1.5rem;
   }
 
   .clickable-icon {

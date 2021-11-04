@@ -47,14 +47,14 @@
               :validate-sum="100",
               :withLabels="true"
             )
-          div(style="display:flex")
+          div(style="display:flex;")
+            info-tooltip(
+              text="Select random samples to place in each partition, good practice if your dataset is ordered"
+            )
             base-checkbox(
               style="font-size: 14px; white-space:nowrap;"
               v-model="datasetSettings.randomizedPartitions"
             ) Randomize partition
-            info-tooltip(
-              text="Select random samples to place in each partition, good practice if your dataset is ordered"
-            )
 
     template(slot="action" v-if="!isLoadingDataset")
       button.btn.btn--primary.btn--disabled(

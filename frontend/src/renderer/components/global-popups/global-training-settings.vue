@@ -209,7 +209,7 @@
   
   .settings-layer_section > .form_row .form_label {
       flex: 0 0 40%;
-      max-width: 20%;
+      // max-width: 100%;
   }
 </style>
 <!--//Epochs: 100,-->

@@ -17,7 +17,7 @@ div.container
         )
           div.cell(:style="{ width: '250px' }") 
             strong {{ dataset['Name'] }}
-          div.cell.text-right.font-small(:style="{ width: '100px' }")  {{ dataset['Size'] }}
+          div.cell.font-small(:style="{ width: '100px' }")  {{ dataset['Size'] }}
           div.cell.font-small(:style="{ width: '150px' }")  {{ dataset['Industry'] }}
           div.cell.font-small(:style="{ width: '150px' }")  {{ dataset['Category'] }}
           div.cell(:style="{ width: '100px' }")  
@@ -292,9 +292,6 @@ export default {
   height: 14px;
 }
 
-.text-right {
-  text-align: right;
-}
 .font-small {
   font-size: 0.8em;
 }

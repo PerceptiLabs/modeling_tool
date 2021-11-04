@@ -61,8 +61,7 @@
             section.network_info-section.the-network-field(
               ref="networkWindow"
               )
-              .info-section_head(v-if="statisticsIsOpen")
-                h3 Map
+              .info-section_head(v-if="statisticsIsOpen") Map
               .spinner-container(v-if="showTrainingSpinner && isStatisticsOrTestOpened")
                 chart-spinner
               perfect-scrollbar.info-section_main.js-info-section_main(
