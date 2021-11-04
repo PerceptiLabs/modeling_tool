@@ -36,7 +36,7 @@
       div.d-flex.justify-content-between.w-100
         .error-cta-container
           error-cta(v-if="!isInfo")
-        button.btn-info-popup(type="button" @click="closePopup") Ok
+        button.btn.btn--secondary(type="button" @click="closePopup") Ok
 
 </template>
 

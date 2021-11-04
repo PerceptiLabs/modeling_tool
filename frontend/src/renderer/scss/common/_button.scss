@@ -335,25 +335,6 @@
   color: $color-1;
 }
 
-.btn-info-popup {
-  background: #6185EE;
-  border: none;
-  box-sizing: border-box;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  border-radius: 2px;
-  font-family: Nunito Sans;
-  font-style: normal;
-  font-weight: 600;
-  font-size: 12px;
-  line-height: 16px;
-  text-align: center;
-  color: theme-var($neutral-8);
-  padding: 1px 23px;
-  &.dark {
-    background: #363E51;
-  }
-}
-
 .btn-menu-bar {
   padding: 4px 8px;
   background: #3F4C70;
