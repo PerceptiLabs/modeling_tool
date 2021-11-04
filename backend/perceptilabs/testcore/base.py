@@ -334,6 +334,7 @@ class ProcessResults():
     def _process_confusionmatrix_output(self):
         for layer_name in self._results:
             result = self._results[layer_name].numpy()
+            result = result/result.astype(np.float).sum(axis=0)   #normalizing the matrix
             data_object = createDataObject(
                 data_list=[result], type_list=['heatmap'])
             self._results[layer_name] = data_object
