@@ -1,11 +1,12 @@
 import json
+import pprint
 import logging
 import threading
+import redis
 from abc import abstractmethod, ABC
 from urllib.parse import urlparse
 from queue import Queue
 from contextlib import contextmanager
-import redis
 
 from perceptilabs.logconf import APPLICATION_LOGGER
 import perceptilabs.settings as settings
@@ -64,11 +65,15 @@ class RedisBroker(BaseBroker):
         pubsub.subscribe(self.CHANNEL)
 
         for raw_message in pubsub.listen():
+            if raw_message.get('type') != 'message':  # Only handle messages
+                continue
+
             try:
                 data = raw_message['data'].decode()
                 message = json.loads(data)
             except:
-                logger.exception("Exception in Redis broker")
+                logger.exception(
+                    "Exception in Redis broker. Raw message: " + pprint.pformat(raw_message))
             else:
                 self._broadcast_internal(message)
 
