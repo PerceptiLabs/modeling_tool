@@ -16,7 +16,7 @@ class TextEncoderBlueprint(EncoderBlueprint):
         """
         id1 = builder.add_layer(
             'IoInput',
-            settings={'feature_name': feature_name, 'datatype': feature_spec.datatype}
+            settings={'name':feature_name, 'feature_name': feature_name, 'datatype': feature_spec.datatype}
         )
         id2 = builder.add_layer(
             'DeepLearningFC',
