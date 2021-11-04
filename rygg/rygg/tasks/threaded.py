@@ -1,7 +1,7 @@
 from threading import Event, Thread
 import uuid
 
-from rygg.tasks.util import observe_work
+from rygg.tasks.util import to_status_percent
 
 class LocalTasks():
     tasks = {}
@@ -37,39 +37,56 @@ class LocalTasks():
         info = entry["info"]
         info["state"] = "SUCCESS"
 
-    def failed(task_id):
+    def failed(task_id, exception=None):
         entry = LocalTasks.tasks[task_id]
         entry["cancel_token"] = None
         info = entry["info"]
         info["state"] = "FAILED"
+        info["exception"] = str(exception)
+
+def curry(fn, arg):
+    def inner(*args, **kwargs):
+        return fn(arg, *args, **kwargs)
+
+    return inner
 
 
 def work_in_thread(fn, *args, **kwargs):
-    def update_status(expected, so_far, message):
-        state = "STARTED"
-        if expected == so_far:
+    def update_status(expected, so_far, message, exception=None):
+        if exception:
+            state = "FAILED"
+        elif expected == so_far:
             state = "SUCCESS"
+        else:
+            state = "STARTED"
+
+        meta={
+            'expected': expected,
+            'so_far': so_far,
+            'message': message,
+        }
+        if exception:
+            meta['exception'] = str(exception)
 
         LocalTasks.update_state(
             task_id,
             state=state,
-            meta={
-                'expected': expected,
-                'so_far': so_far,
-                'message': message,
-            }
+            meta=meta,
         )
+
 
     cancel_token = Event()
     task_id = str(uuid.uuid4())
+    callback = curry(to_status_percent, update_status)
 
     def go():
         try:
-            status_seq = fn(cancel_token, *args, **kwargs)
-            observe_work(status_seq, update_status)
+            fn(cancel_token, callback, *args, **kwargs)
+            update_status(100, 100, "complete")
             LocalTasks.completed(task_id)
-        except:
-            LocalTasks.failed(task_id)
+        except Exception as e:
+            update_status(100, to_status_percent.total_percent, str(e), exception=e)
+            LocalTasks.failed(task_id, exception=e)
 
     t = Thread(target=go)
     task_id = LocalTasks.add(task_id, t, cancel_token)
@@ -80,7 +97,8 @@ def work_in_thread(fn, *args, **kwargs):
 def get_threaded_task_status(task_id):
     internal = LocalTasks.get(task_id)
     meta = internal.get("meta") or {}
-    return {
+    ret = {
         "state": internal.get("state"),
         **meta,
     }
+    return ret

@@ -18,22 +18,33 @@ def assert_workingdir(rest):
         assert os.path.isdir(rest.upload_dir)
 
 
-def assert_task_starts(rest, task_id):
+def assert_task_starts(rest, task):
     def progress_is_midway():
-        resp = rest.get(f"/tasks/{task_id}/")
-        assert resp
-        return resp.get("state") == "STARTED" \
-                and resp.get("so_far") > 1
+        try:
+            task.refresh()
+            return task.is_started
+        except Exception as e:
+            raise e
 
     # poll frequently to try to catch it in the midway state
     assert_eventually(progress_is_midway, stop_max_delay=10000, wait_fixed=50)
 
-def assert_task_completes(rest, task_id):
+def assert_task_progresses(rest, task):
+    def progress_is_midway():
+        try:
+            task.refresh()
+            return task.so_far > 0
+        except Exception as e:
+            raise e
+
+    # poll frequently to try to catch it in the midway state
+    assert_eventually(progress_is_midway, stop_max_delay=60000, wait_fixed=1000)
+
+def assert_task_completes(rest, task):
     def state_is_completed():
-        resp = rest.get(f"/tasks/{task_id}/")
-        assert resp
-        return resp.get("state") == "SUCCESS" \
-                and resp.get("so_far") == resp.get("expected")
+        task.refresh()
+        ret = task.is_completed
+        return ret
 
     assert_eventually(state_is_completed, stop_max_delay=10000, wait_fixed=1000)
 
@@ -62,40 +73,67 @@ def test_delete_dataset_in_downloading(rest, tmpdir, tmp_project):
         dest = tmpdir
 
 
-    def is_started(task_id):
-        resp = rest.get(f"/tasks/{task_id}/")
-        return resp.get("state") == "STARTED" \
-                and resp.get("so_far") > 1
-
-
-        # poll frequently to try to catch it in the midway state
-        assert_eventually(progress_is_midway, stop_max_delay=10000, wait_fixed=50)
-
-
-    # make a remote dataset from a large dataset
-    big_dataset_name = get_medium_remote_record(rest)["UniqueName"]
-    glob_pattern = os.path.join(dest, big_dataset_name)
+    # make a remote dataset from a medium dataset
+    medium_dataset_name = get_medium_remote_record(rest)["UniqueName"]
+    glob_pattern = os.path.join(dest, medium_dataset_name)
     def is_zip_removed():
         found_files = glob.glob(glob_pattern, recursive=True)
         return not found_files
 
-    resp = rest.post('/datasets/create_from_remote/', {}, id=big_dataset_name, destination=tmpdir, project_id=tmp_project.id)
-    task_id = resp["task_id"]
-    with DatasetClient(rest, resp["dataset_id"]) as dataset:
+
+    task, dataset = DatasetClient.create_from_remote(rest, tmp_project, medium_dataset_name, tmpdir)
+
+    with dataset:
 
         # wait for it to start unzipping
-        assert_task_starts(rest, task_id)
+        assert_task_starts(rest, task)
 
         # cancel the download by leaving the context and deleting the dataset
 
-    # Make sure the dataset is gone
-    with pytest.raises(Exception):
-        DatasetClient(rest, resp["dataset_id"]).fetch()
 
+
+    # Make sure the dataset is gone
+    assert not dataset.exists
 
     # make sure the destination directory and zip is deleted
     # Make sure the zip is deleted
     assert_eventually(is_zip_removed, stop_max_delay=10000, wait_fixed=100)
+
+@pytest.mark.timeout(10)
+def test_cancel_download_task(rest, tmpdir, tmp_project):
+    if rest.is_enterprise:
+        dest = rest.upload_dir
+    else:
+        dest = tmpdir
+
+    # make a remote dataset from a large dataset
+    medium_dataset_name = get_medium_remote_record(rest)["UniqueName"]
+    glob_pattern = os.path.join(dest, medium_dataset_name)
+    def is_zip_removed():
+        found_files = glob.glob(glob_pattern, recursive=True)
+        return not found_files
+
+    # find a large dataset
+    big_dataaset_name = get_large_remote_record(rest)['UniqueName']
+
+    # create a large dataset from remote
+    task, dataset = DatasetClient.create_from_remote(rest, tmp_project, big_dataaset_name, tmpdir)
+    with task:
+        # Cancel it while it's downloading
+        assert_task_starts(rest, task)
+        assert_task_progresses(rest, task)
+
+    # watch to see the dataset deleted
+    assert_eventually(lambda: not dataset.exists, stop_max_delay=2000, wait_fixed=100)
+
+    # Make sure the zip is deleted
+    assert_eventually(is_zip_removed, stop_max_delay=10000, wait_fixed=100)
+
+    # try to create a new dataset from the same remote. It should succeed
+    task, dataset = DatasetClient.create_from_remote(rest, tmp_project, big_dataaset_name, tmpdir)
+
+    with task, dataset:
+        pass
 
 
 @pytest.mark.timeout(1)
@@ -280,7 +318,7 @@ def test_remote_list(rest):
 
 @pytest.mark.timeout(1)
 def get_small_remote_record(rest):
-    for dataset,sz in get_datasets_with_size(rest):
+    for dataset,sz in get_available_remote_datasets(rest):
         if sz <= SMALL_DATASET_SIZE:
             return dataset
     return None
@@ -288,16 +326,23 @@ def get_small_remote_record(rest):
 @pytest.mark.timeout(1)
 def get_medium_remote_record(rest):
     # find a dataset between SMALL_DATASET_SIZE and LARGE_DATASET_SIZE
-    for dataset,sz in get_datasets_with_size(rest):
-        if sz >= LARGE_DATASET_SIZE or sz <= SMALL_DATASET_SIZE:
+    for dataset,sz in get_available_remote_datasets(rest):
+        if sz <= LARGE_DATASET_SIZE and sz >= SMALL_DATASET_SIZE:
             return dataset
     return None
 
 @pytest.mark.timeout(1)
-def get_datasets_with_size(rest):
+def get_large_remote_record(rest):
+    # find a dataset between SMALL_DATASET_SIZE and LARGE_DATASET_SIZE
+    for dataset,sz in get_available_remote_datasets(rest):
+        if sz >= LARGE_DATASET_SIZE:
+            return dataset
+    return None
+
+@pytest.mark.timeout(1)
+def get_available_remote_datasets(rest):
     resp = rest.get("/datasets/remote_with_categories")
 
-    # find a dataset over LARGE_DATASET_SIZE
     for dataset in resp["datasets"]:
         if not "SizeBytes" in dataset:
             continue
@@ -346,18 +391,13 @@ def test_create_dataset_from_remote(rest, tmpdir, tmp_project):
     test_record = get_small_remote_record(rest)
     assert test_record
 
-    resp = rest.post('/datasets/create_from_remote/', {}, id=test_record["UniqueName"], destination=tmpdir, project_id=tmp_project.id)
-    assert "task_id" in resp
-    assert "dataset_id" in resp
+    task, dataset = DatasetClient.create_from_remote(rest, tmp_project, test_record["UniqueName"], tmpdir)
 
-    task_id = resp["task_id"]
-    dataset_id = resp["dataset_id"]
-
-    assert_task_starts(rest, task_id)
-    assert_task_completes(rest, task_id)
+    # make sure the task acts as expected
+    assert_task_starts(rest, task)
+    assert_task_completes(rest, task)
 
     # re-fetch the dataset by id
-    dataset = DatasetClient(rest, dataset_id)
     assert dataset.status == "uploaded"
     assert dataset.is_perceptilabs_sourced == True
 
@@ -395,9 +435,9 @@ def test_create_dataset_from_remote(rest, tmpdir, tmp_project):
     test_record = remotes[0]
 
     # check that remote datasets response now points to the new dataset
-    for remote,_ in get_datasets_with_size(rest):
+    for remote,_ in get_available_remote_datasets(rest):
         if remote["UniqueName"] == test_record["UniqueName"]:
-            assert test_record["localDatasetID"] == dataset_id
+            assert test_record["localDatasetID"] == dataset.id
             break
 
     # check that deleting the local copy makes exists_on_disk change to false

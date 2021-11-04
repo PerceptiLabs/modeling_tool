@@ -111,11 +111,6 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
                            ("project", "location"))
 
 
-    def destroy(self, request, *args, **kwargs):
-        # TODO: block request when the dataset is still downloading
-        raise HTTPExceptions.BAD_REQUEST.with_content("Nope")
-        super().destroy(request, *args, **kwargs)
-
     @classmethod
     def create_from_remote(cls, project_id, name, remote_name, destination):
         if IS_CONTAINERIZED:

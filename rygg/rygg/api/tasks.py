@@ -4,6 +4,7 @@ import shutil
 
 from rygg.tasks import run_async
 from rygg.settings import FILE_UPLOAD_DIR, IS_CONTAINERIZED
+from rygg.tasks.celery import work_in_celery
 
 import logging
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ def is_subdir(child, parent):
 
     return True
 
-def delete_path(path):
+def delete_path(cancel_token, status_callback, path):
     if _rm_rf(path):
         logger.info(f"Removed dataset at {path}")
 
@@ -38,11 +39,10 @@ def delete_path_async(path):
     if not os.path.exists(path):
         return;
 
-
     # only allow deleting from inside the upload dir
     if IS_CONTAINERIZED:
         full = os.path.abspath(path)
-        if not is_subdir(full, FILE_UPLOAD_DIR):
+        if not full or not is_subdir(full, FILE_UPLOAD_DIR):
             raise Exception(f"'{path}' isn't available for deletion")
 
     run_async("delete_path", delete_path, path)
@@ -52,4 +52,4 @@ def delete_path_async(path):
     bind=True,
 )
 def delete_path_task(self, path):
-    delete_path(path)
+    work_in_celery(self, delete_path, path)

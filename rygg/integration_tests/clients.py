@@ -33,7 +33,18 @@ class ClientBase:
         self._as_dict = None
 
     def fetch(self):
-        return self._rest.get(self.url)
+        self._as_dict = self._rest.get(self.url)
+        return self._as_dict
+
+    @property
+    def exists(self):
+        try:
+            self.fetch()
+            return True
+        except Exception as e:
+            if "404" in str(e):
+                return False
+            raise e
 
     def update(self, **kwargs):
         self._rest.patch(self.url, **kwargs)
@@ -108,6 +119,10 @@ class DatasetClient(ClientBase):
     ENDPOINT = "/datasets/"
     ID_FIELD = "dataset_id"
 
+    def create_from_remote(rest, project, remote_name, destination_dir):
+        resp = rest.post('/datasets/create_from_remote/', {}, id=remote_name, destination=destination_dir, project_id=project.id)
+        return TaskClient(rest, resp['task_id']), DatasetClient(rest, resp['dataset_id'])
+
     @property
     def name(self):
         return self.as_dict["name"]
@@ -145,3 +160,22 @@ class DatasetClient(ClientBase):
 
     def remove_models(self, model_ids):
         return self.remove_nested("models", ids=model_ids)
+
+class TaskClient(ClientBase):
+    ENDPOINT = "/tasks/"
+
+    @property
+    def so_far(self):
+        return self.as_dict.get('so_far', 0)
+
+    @property
+    def state(self):
+        return self.as_dict['state']
+
+    @property
+    def is_completed(self):
+        return self.state == "SUCCESS"
+
+    @property
+    def is_started(self):
+        return self.state == "STARTED"

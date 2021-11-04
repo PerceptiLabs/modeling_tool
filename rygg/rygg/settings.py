@@ -206,6 +206,7 @@ GITHUB_API_ENDPOINT = os.environ.get('GITHUB_API_ENDPOINT', '')
 EXTERNAL_IP_RESOLVER_ENDPOINT = 'https://api.ipify.org'
 
 IS_SERVING = "runserver" in sys.argv
+IS_WORKER = "celery" in " ".join(sys.argv)
 
 # Enforcement of the token
 API_TOKEN = os.getenv("PL_FILE_SERVING_TOKEN")
@@ -225,7 +226,7 @@ def assert_dir_writable(dir, msg):
 
 # Make sure FILE_UPLOAD_DIR is set
 FILE_UPLOAD_DIR=None
-if IS_CONTAINERIZED and IS_SERVING:
+if IS_CONTAINERIZED and (IS_SERVING or IS_WORKER):
     FILE_UPLOAD_DIR = os.getenv("PL_FILE_UPLOAD_DIR")
     if not FILE_UPLOAD_DIR:
         raise Exception("Required environment variable PL_FILE_UPLOAD_DIR is not set.")

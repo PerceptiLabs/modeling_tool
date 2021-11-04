@@ -9,15 +9,13 @@ def test_project_delete(rest):
     with ProjectClient.make(rest, name="test project") as project:
         pass
 
-    with pytest.raises(Exception, match="404"):
-        project.fetch()
+    assert not project.exists
 
 def test_project_delete_also_deletes_model(rest):
     with ProjectClient.make(rest, name="test project") as project:
         model = ModelClient.make(rest, project=project.id, name="model name")
 
-    with pytest.raises(Exception, match="404"):
-        model.fetch()
+    assert not model.exists
 
 def test_project_delete_also_deletes_dataset(rest, tmp_text_file):
     if rest.is_enterprise:
@@ -28,15 +26,13 @@ def test_project_delete_also_deletes_dataset(rest, tmp_text_file):
     with ProjectClient.make(rest, name="test project") as project:
         dataset = DatasetClient.make(rest, name="some file", location=filename, project=project.id, models=[])
 
-    with pytest.raises(Exception, match="404"):
-        dataset.fetch()
+    assert not dataset.exists
 
 def test_project_delete_also_deletes_notebook(rest):
     with ProjectClient.make(rest, name="test project") as project:
         notebook = NotebookClient.make(rest, project=project.id, name="notebook1")
 
-    with pytest.raises(Exception, match="404"):
-        notebook.fetch()
+    assert not notebook.exists
 
 def test_notebook_project_link(rest, tmp_project):
     with NotebookClient.make(rest, project=tmp_project.id, name="notebook1") as notebook:

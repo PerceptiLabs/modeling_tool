@@ -19,7 +19,10 @@ class UnzipTaskTest(TestCase):
     @timeout(0.1)
     def test_unzip_fails_on_missing_file(self):
         def run():
-            statuses = target.unzip(None, "nonexistent")
+            def noop(*args, **kwargs):
+                pass
+
+            statuses = target.unzip(None, noop, "nonexistent")
             # consume the statuses
             unzipped = list(list(statuses)[-1])
 
