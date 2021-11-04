@@ -1,6 +1,7 @@
 import re
 import os
 import pickle
+from filelock import FileLock
 
 from perceptilabs.utils import b64decode_and_sanitize
 
@@ -58,9 +59,10 @@ class EpochsAccess:
         
         path = self._get_state_path(training_session_id, epoch_id)        
         
-        with open(path, 'rb') as f:
-            state_dict = pickle.load(f)
-            return state_dict
+        with FileLock(path+'.lock'):
+            with open(path, 'rb') as f:
+                state_dict = pickle.load(f)
+                return state_dict
 
     def save_state_dict(self, training_session_id, epoch_id, state_dict):
         if training_session_id is None or epoch_id is None or state_dict is None:
@@ -68,8 +70,9 @@ class EpochsAccess:
         
         path = self._get_state_path(training_session_id, epoch_id)
         
-        with open(path, 'wb') as f:
-            pickle.dump(state_dict, f)
+        with FileLock(path+'.lock'):
+            with open(path, 'wb') as f:
+                pickle.dump(state_dict, f)
 
     def _resolve_directory_path(self, training_session_id):
         directory = b64decode_and_sanitize(training_session_id)  # For now it's just a base64 path

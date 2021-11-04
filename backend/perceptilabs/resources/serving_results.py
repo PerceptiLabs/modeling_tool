@@ -2,6 +2,7 @@ import base64
 import pickle
 import tempfile
 import os
+from filelock import FileLock
 
 from perceptilabs.utils import b64decode_and_sanitize
 from perceptilabs.utils import sanitize_path
@@ -20,8 +21,9 @@ class ServingResultsAccess:
             return None
 
         path = self._get_path(serving_session_id)
-        with open(path, 'wb') as f:
-            pickle.dump(results, f)
+        with FileLock(path+'.lock'):
+            with open(path, 'wb') as f:
+                pickle.dump(results, f)
 
     def get_latest(self, serving_session_id):
         if serving_session_id is None:
@@ -31,9 +33,10 @@ class ServingResultsAccess:
         if not os.path.isfile(path):
             return None
         
-        with open(path, 'rb') as f:
-            results_dict = pickle.load(f)
-            return results_dict        
+        with FileLock(path+'.lock'):
+            with open(path, 'rb') as f:
+                results_dict = pickle.load(f)
+                return results_dict        
 
     def _get_path(self, testing_session_id):
         directory = b64decode_and_sanitize(testing_session_id)  # For now it's just a base64 path
