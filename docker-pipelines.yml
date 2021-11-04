@@ -15,6 +15,8 @@ variables:
 jobs:
   - job: startvm
     displayName: Start Worker
+    pool:
+      vmImage: ubuntu-latest
     steps:
     - task: AWSShellScript@1
       inputs:
