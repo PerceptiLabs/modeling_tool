@@ -171,6 +171,8 @@ jobs:
 
   - job: stopvm
     dependsOn: pushfiles
+    pool:
+      vmImage: ubuntu-latest
     displayName: Stop the build machine
     steps:
     - task: AWSShellScript@1
