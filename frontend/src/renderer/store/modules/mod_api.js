@@ -748,7 +748,6 @@ const actions = {
 	trainingSessionId: base64url(checkpointDirectory)
       }
     };
-    console.log('API_updateResults')
     return coreRequest(theData)
       .then((data)=> {
         return data;

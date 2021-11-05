@@ -3,7 +3,6 @@ from django.test import TestCase
 import unittest
 from rygg.files.models.directory import (
         get_folder_content,
-        resolve_dir,
         get_tutorial_data,
         get_drives,
         )
@@ -68,14 +67,6 @@ class GetDrivesTests(TestCase):
     def test_posix(self):
         resolved = get_drives()
         self.assertIsNone(resolved)
-
-class ResolveDirTests(TestCase):
-    @unittest.skipIf(platform.system() == "Windows", "Skipping non-windows test")
-    @timeout(0.1)
-    def test_posix(self):
-        resolved = resolve_dir("~/some/dir")
-        self.assertTrue(resolved.endswith("/some/dir"))
-        self.assertNotIn("~",  resolved)
 
 class TutorialDataTests(TestCase):
     @timeout(0.1)

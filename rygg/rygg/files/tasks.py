@@ -4,7 +4,6 @@ import os
 from rygg.files.utils.download_data import download
 from rygg.files.utils.subprocesses import CanceledError
 from rygg.files.utils.zip import unzipped_files
-from rygg.settings import IS_CONTAINERIZED
 from rygg.tasks import run_async
 
 # TODO: get this behind the tasks api
@@ -47,7 +46,10 @@ def download_task(self, dataset_id):
 def download_unzip(cancel_token, status_callback, dataset_id):
     from rygg.api.models import Dataset
 
-    dataset = Dataset.objects.get(dataset_id=dataset_id)
+    try:
+        dataset = Dataset.objects.get(dataset_id=dataset_id)
+    except Dataset.DoesNotExist:
+        return
     dataset.status = "uploading"
     dataset.save()
 

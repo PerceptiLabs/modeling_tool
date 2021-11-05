@@ -1,26 +1,18 @@
-from collections.abc import  Iterable
-from rygg.files.interfaces.github_export import RepoExporterAPI
-from rygg.files.interfaces.github_issue import CreateIssueAPI
-from rest_framework.decorators import api_view
-from rygg.files.exceptions import UserError
-from rygg.files.models.github import export_repo_basic, import_repo, create_issue, export_repo_advanced
-from rygg.files.views.util import (
-        get_required_param,
-        get_path_param,
-        request_as_dict,
-        get_required_body_param,
-        get_full_path,
-        )
 from django_http_exceptions import HTTPExceptions
-from django.http import HttpResponse
-import json
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+import os
 
-def connect_to_repo(token, repo_name):
-    return RepoExporterAPI(token, repo_name)
+from rygg.files.exceptions import UserError
+from rygg.files.interfaces.github_issue import CreateIssueAPI
+from rygg.files.views.util import get_required_param, request_as_dict, get_required_body_param
+import rygg.files.paths
+import rygg.files.views.util
 
 @api_view(['POST'])
 def github_export(request):
-    full_path = get_path_param(request)
+    full_path = rygg.files.views.util.get_path_param(request)
+    project_id = rygg.files.views.util.get_project_id_from_request(request)
     as_dict = request_as_dict(request)
 
     # required
@@ -33,24 +25,24 @@ def github_export(request):
     include_trained = bool(as_dict.get("include_trained_model"))
     raw_data_paths = list(as_dict.get("data_path"))
 
-    data_paths = [get_full_path(data_path) for data_path in raw_data_paths]
+    resolve_path = lambda data_path: rygg.files.paths.translate_path_from_user(data_path, project_id)
+
+    data_paths = [resolve_path(data_path) for data_path in raw_data_paths]
 
     try:
         if export_type == "basic":
-            api = connect_to_repo(github_token, repo_name)
-            sha_and_url = export_repo_basic(api, full_path, include_trained, data_paths, commit_message=commit_message)
-        
+            sha_and_url = rygg.files.models.github.export_repo_basic(github_token, repo_name, full_path, include_trained, data_paths, commit_message=commit_message)
+
         elif export_type == "advanced":
             tensorfiles_list = list(as_dict.get("tensorfiles"))
             datafiles_list = list(as_dict.get("datafiles"))
-            api = connect_to_repo(github_token, repo_name)
-            sha_and_url = export_repo_advanced(api, full_path, tensorfiles_list, datafiles_list, data_paths, commit_message=commit_message)
-        
+            sha_and_url = rygg.files.models.github.export_repo_advanced(github_token, repo_name, full_path, tensorfiles_list, datafiles_list, data_paths, commit_message=commit_message)
+
         else:
             raise HTTPExceptions.BAD_REQUEST.with_content("Invaild github export type")
 
         response = {"sha": sha_and_url[0], "URL": sha_and_url[1]}
-        return HttpResponse(json.dumps(response), content_type="application/json")
+        return Response(response, content_type="application/json")
     except ValueError as e:
         raise HTTPExceptions.BAD_REQUEST.with_content(e)
     except UserError as e:
@@ -60,7 +52,7 @@ def github_export(request):
 
 @api_view(['POST'])
 def github_import(request):
-    path = get_required_param(request, "path")
+    path = rygg.files.views.util.get_path_param(request)
     url = get_required_param(request, "url")
     try:
         overwrite = request.query_params.get("overwrite")
@@ -69,9 +61,9 @@ def github_import(request):
         raise HTTPExceptions.BAD_REQUEST.with_content("Overwrite isn't valid")
 
     try:
-        import_repo(path, url, overwrite=overwrite)
+        rygg.files.models.github.import_repo(path, url, overwrite=overwrite)
         response = {"path": path}
-        return HttpResponse(json.dumps(response), content_type="application/json")
+        return Response(response, content_type="application/json")
     except ValueError as e:
         raise HTTPExceptions.BAD_REQUEST.with_content(e)
     except UserError as e:
@@ -82,19 +74,16 @@ def github_import(request):
 
 @api_view(['POST'])
 def github_issue(request):
-    
     as_dict = request_as_dict(request)
-
     github_token = get_required_body_param("github_token", as_dict)
     issue_type = get_required_body_param("issue_type", as_dict)
     title = as_dict.get("title")
     body = as_dict.get("body")
 
     try:
-        api = CreateIssueAPI(github_token,issue_type)
-        number = create_issue(api, title, body)
+        number = rygg.files.models.github.create_issue(github_token, issue_type, title, body)
 
         response = {"Issue Number": number}
-        return HttpResponse(json.dumps(response), content_type="application/json")
+        return Response(response, content_type="application/json")
     except ValueError as e:
         raise HTTPExceptions.BAD_REQUEST.with_content(e)

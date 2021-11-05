@@ -35,12 +35,12 @@ def get_folder_content(full_path):
         path = get_tutorial_data()
 
         if path and os.path.exists(path):
-            full_path = path    
+            full_path = path
         else:
             full_path = os.path.abspath('')
 
     drives = []
-    if full_path == '.' and platform.system() == 'Windows':            
+    if full_path == '.' and platform.system() == 'Windows':
         import win32api
         drives = win32api.GetLogicalDriveStrings()
         drives = drives.split('\000')[:-1]
@@ -68,36 +68,6 @@ def get_folder_content(full_path):
             "platform": platform.system(),
         }
 
-
-def resolve_dir(path_to_resolve):
-    def resolve_windows_path(input_path):
-        if '~/Documents' in input_path or "~\\Documents" in input_path:
-            # get My Documents regardless of localization
-            import ctypes.wintypes
-
-            buf= ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
-            _ = ctypes.windll.shell32.SHGetFolderPathW(0, 5, 0, 5, buf)
-
-            return input_path.replace('~/Documents', buf.value)
-
-        elif '~/' in input_path or "~\\" in input_path:
-            return os.path.expanduser(input_path)
-
-        else:
-            return input_path
-
-
-    try:
-        import platform
-
-        if platform.system() == 'Windows':
-            resolved_path = resolve_windows_path(path_to_resolve)
-            return os.path.normpath(resolved_path)
-        else:
-            return os.path.expanduser(path_to_resolve)
-
-    except Exception as e:
-        return ''
 
 def get_root_path():
     td = get_tutorial_data()

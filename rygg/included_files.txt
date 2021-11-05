@@ -34,6 +34,7 @@ rygg/files/models/__init__.py
 rygg/files/models/directory.py
 rygg/files/models/github.py
 rygg/files/models/model_directory.py
+rygg/files/paths.py
 rygg/files/tasks.py
 rygg/files/tests/__init__.py
 rygg/files/utils/__init__.py

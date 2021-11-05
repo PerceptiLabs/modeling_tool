@@ -224,10 +224,7 @@ const actions = {
       }
     }
 
-    // setting to -1 and then removing because the project.vue component isn't recreated here
-    // this means that selecting the same project won't make it fetch models
-    commit('mod_project/selectProject', -1, {root: true});
-    localStorage.removeItem('targetProject');
+    commit('mod_project/removeProjectIdInLocalStorage');
     localStorage.removeItem('currentUser');
     dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});

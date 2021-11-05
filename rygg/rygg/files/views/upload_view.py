@@ -1,19 +1,22 @@
 from datetime import datetime
-from django.http import HttpResponseNotFound
 from django.http import HttpResponse
+from django.http import HttpResponseNotFound
 from django_http_exceptions import HTTPExceptions
-from rygg import settings
-from rygg.files.exceptions import UserError
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer, FileField, CharField, BooleanField
 from rest_framework.views import APIView
 import json
+import os
+import shutil
 import time
-import os, shutil
-from rygg.api.models import Dataset
+
+from rygg.api.models import Dataset, Project
+from rygg.files.exceptions import UserError
 from rygg.files.tasks import unzip_async
-from rest_framework.decorators import api_view
-from rygg.files.views.util import json_response
+from rygg.files.views.util import json_response, get_project_id_from_request, get_required_param
+from rygg.settings import file_upload_dir, is_upload_allowed
+import rygg.settings
 
 class UploadSerializer(Serializer):
     file_uploaded = FileField()
@@ -35,29 +38,26 @@ def _get_file_info(filename):
         'modified': iso_from_utc_timestamp(stat.st_mtime),
     }
 
-def abs_upload_dir():
-    ret = os.path.abspath(settings.FILE_UPLOAD_DIR)
-    if not os.path.isdir(ret):
-        raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content("File upload base directory isn't configured correctly")
-    return ret
 
 @api_view(["GET"])
 def get_upload_dir(request):
-    return json_response({"path": abs_upload_dir()})
+    project_id = get_project_id_from_request(request)
+    project = Project.available_objects.get(pk=project_id)
+    return json_response({"path": project.base_directory})
 
 class UploadView(APIView):
     serializer_class = UploadSerializer
 
 
     def get(self, request):
-        if not settings.FILE_UPLOAD_DIR:
+        if not is_upload_allowed():
             return HttpResponseNotFound("This server isn't configured to allow uploads")
 
-        filename = request.GET.get("filename")
-        if not filename:
-            raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content("Parameter 'filename' is required")
+        filename = get_required_param(request, "filename")
+        project_id = get_project_id_from_request(request)
+        project = Project.available_objects.get(pk=project_id)
 
-        file_path = os.path.join(abs_upload_dir(), filename)
+        file_path = os.path.join(project.base_directory, filename)
         try:
             response = _get_file_info(file_path)
             return Response(response)
@@ -65,8 +65,11 @@ class UploadView(APIView):
             raise HTTPExceptions.NOT_FOUND(f"{file_path} doesn't exist")
 
     def post(self, request):
-        if not settings.FILE_UPLOAD_DIR:
+        if not is_upload_allowed():
             return HttpResponseNotFound("This server isn't configured to allow uploads")
+
+        project_id = get_project_id_from_request(request)
+        project = Project.available_objects.get(pk=project_id)
 
         file_uploaded = request.FILES.get('file_uploaded')
         if not file_uploaded:
@@ -90,7 +93,7 @@ class UploadView(APIView):
 
         overwrite = request.POST.get('overwrite') in ['true', 'True', 1]
 
-        dest_file = os.path.join(abs_upload_dir(), dest_file_name)
+        dest_file = os.path.join(project.base_directory, dest_file_name)
         if os.path.exists(dest_file) and not bool(overwrite):
             raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content(f"File {dest_file_name} exists and overwrite is false")
 

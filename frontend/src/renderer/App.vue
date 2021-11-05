@@ -6,7 +6,7 @@
     div.d-flex.app-page
       sidebar-menu
       router-view.flex-1
-    update-popup(v-if="isElectron") 
+    update-popup(v-if="isElectron")
     the-info-popup(v-if="showPopup")
     confirm-popup
     delete-confirm-popup
@@ -30,7 +30,7 @@
   import CreateIssuePopup         from '@/components/global-popups/create-issues-popup.vue';
   import TutorialsChecklist       from '@/components/tutorial/tutorial-checklist.vue';
   import TutorialNotification from "@/components/different/tutorial-notification.vue";
-  import { 
+  import {
     getModelJson as rygg_getModelJson,
     createDataset as rygg_createDataset,
     attachModelsToDataset as rygg_attachModelsToDataset,
@@ -43,7 +43,7 @@
   import SidebarMenu            from '@/pages/layout/sidebar-menu.vue';
   import AppHeader              from '@/components/app-header/app-header.vue';
   import UpdatePopup            from '@/components/global-popups/update-popup/update-popup.vue'
-  import PiPyPopupUpdate        from "@/components/global-popups/update-popup/pipy-update-popup.vue";  
+  import PiPyPopupUpdate        from "@/components/global-popups/update-popup/pipy-update-popup.vue";
   import TheInfoPopup           from "@/components/global-popups/the-info-popup.vue";
   import ConfirmPopup           from "@/components/global-popups/confirm-popup.vue";
   import DeleteConfirmPopup     from "@/components/global-popups/delete-confirm-popup.vue";
@@ -53,7 +53,7 @@
   import { MODAL_PAGE_PROJECT, MODAL_PAGE_QUESTIONNAIRE } from '@/core/constants.js';
   import { isUrlReachable, isEnterpriseApp } from '@/core/apiRygg.js';
   import { keyCloak } from '@/core/apiKeyCloak.js';
-  
+
 
   export default {
     name: 'TheApp',
@@ -70,30 +70,29 @@
     },
     async created() {
       if(!isBrowserChromeOrFirefox()) {
-        this.$store.dispatch('globalView/GP_infoPopup', 'PerceptiLabs works best in FireFox and Chrome, we suggest you use the tool there instead for the best experience.'); 
+        this.$store.dispatch('globalView/GP_infoPopup', 'PerceptiLabs works best in FireFox and Chrome, we suggest you use the tool there instead for the best experience.');
       }
       window.addEventListener("beforeunload", (e) => {
         let networksHaveChanges = this.networksWithChanges.some(id=> this.getWorkspacesIds.includes(id));
-        if(networksHaveChanges) { 
+        if(networksHaveChanges) {
           const confirmationMessage = 'It looks like you have edited model.';
-          
+
           (e || window.event).returnValue = confirmationMessage; //Gecko + IE
 
           return confirmationMessage; //Gecko + Webkit, Safari, Chrome etc.
         }
-    });
+      });
       window.addEventListener('online',  this.updateOnlineStatus);
       window.addEventListener('offline', this.updateOnlineStatus);
       this.trackerInit();
       this.readUserInfo();
       this.checkRyggAvailability();
-      
+
       this.$store.commit('mod_project/setIsDefaultProjectMode');
       await isEnterpriseApp()
         .then(isEnterpriseAppValue => {
           return this.$store.commit('globalView/set_isEnterpriseApp', isEnterpriseAppValue);
         });
-      await this.$store.dispatch('mod_datasets/getDatasets');
     },
     mounted() {
       this.$intercom.boot({
@@ -102,25 +101,24 @@
 
       this.getPyPiUpdate();
 
-      if (this.isDefaultProjectMode) { 
+      if (this.isDefaultProjectMode) {
         // in the free version, the user is locked to a single project
-        this.getDefaultModeProject().then((defaultProject) => {
-          this.fetchNetworkMetas(defaultProject);
-        });
-      }
-      else if(localStorage.hasOwnProperty('targetProject')) {
-        const targetProjectId = parseInt(localStorage.getItem('targetProject'));
-        
-        // this.loadProjectFromLocalStorage(targetProjectId)
-        this.getProjects()
-          .then(({data: { results: projects }}) => {
-            if(targetProjectId) {
-              const targetProject = projects.find(project => project.project_id === targetProjectId);
-              if (targetProject) {
-                console.log('targetProject', targetProject);
-                this.fetchNetworkMetas(targetProject);
-              }
-              // this.reset_network();
+        this.getDefaultModeProject()
+          .then(defaultProject => {
+            let project_id = defaultProject.project_id;
+            this.$store.dispatch('mod_datasets/getDatasets', {}, project_id);
+            return defaultProject
+          })
+          .then((defaultProject) => {
+            this.fetchNetworkMetas(defaultProject)
+          })
+      } else if(this.isProjectSelected) {
+        const currentProjectId = this.$store.state.mod_project.currentProject;
+
+        this.getProject(currentProjectId)
+          .then(currentProject => {
+            if (currentProject) {
+              this.fetchNetworkMetas(currentProject);
             }
           })
       } else {
@@ -129,11 +127,14 @@
           this.setActivePageAction(MODAL_PAGE_PROJECT);
         }
       }
+
+      this.$store.dispatch('mod_datasets/getDatasets');
+
       if(localStorage.hasOwnProperty(localStorageGridKey)) {
         const gridValue = localStorage.getItem(localStorageGridKey) === 'true';
         this.$store.commit('globalView/setGridStateMutation', gridValue);
-      }      
-      
+      }
+
       this.$store.commit('mod_workspace-changes/get_workspaceChangesInLocalStorage');
 
       this.$store.dispatch('mod_tutorials/loadTutorialProgress')
@@ -141,14 +142,14 @@
           if (this.isUserFirstLogin) {
             // if (!process.env.NO_KC && keyCloak.isReachable()){
               // this.setActivePageAction(MODAL_PAGE_QUESTIONNAIRE);
-            // }
+              // }
 
           } else if (!this.getHasShownWhatsNew) {
             // this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
           } else {
             this.initTutorialView();
           }
-        });      
+        });
 
       this.$store.dispatch('mod_tutorials/activateNotification');
       this.$store.dispatch('mod_api/checkCoreVersions', null, {root: true});
@@ -158,7 +159,7 @@
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // document.body.style.overflow = 'hidden';
       document.addEventListener('keydown', this.disableHotKeys);
-     
+
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
 
       if(!this.user) this.cloud_userGetProfile();
@@ -188,6 +189,7 @@
         email:                  'mod_user/GET_userEmail',
         isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode',
         currentProject:         'mod_project/GET_project',
+        isProjectSelected:      'mod_project/GET_isProjectSelected',
         viewType:               'mod_workspace/GET_viewType',
         currentModelIndex:      'mod_workspace/GET_currentModelIndex',
         currentStatsIndex:      'mod_workspace/GET_currentStatsIndex',
@@ -198,7 +200,7 @@
         getIsTutorialMode:      'mod_tutorials/getIsTutorialMode',
         getShowChecklist:       'mod_tutorials/getShowChecklist',
         getShowTutorialTips:    'mod_tutorials/getShowTutorialTips',
-        getHasShownWhatsNew:    'mod_tutorials/getHasShownWhatsNew', 
+        getHasShownWhatsNew:    'mod_tutorials/getHasShownWhatsNew',
         emptyNavigationMode:    'mod_empty-navigation/getEmptyScreenMode',
         allModelsDatasets:      'mod_datasets/GET_datasets',
       }),
@@ -229,7 +231,7 @@
       },
       showPopup() {
         return this.errorPopup.length || (this.infoPopup && this.infoPopup.length);
-      },      
+      },
       showMenuBar() {
         const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
         return GET_userIsLogin && ['home', 'app', 'projects', 'main-page', 'settings', 'test', 'export', 'pricing'].includes(this.$route.name);
@@ -243,7 +245,7 @@
       showTutorialChecklist() {
         if (!this.getIsTutorialMode) { return false; }
         if (!this.getShowChecklist) { return false; }
-        
+
         if (this.hasModalsOpenInWorkspace) { return false; }
 
         if (!this.currentPage) {
@@ -305,7 +307,7 @@
             this.$route.name !== 'settings' &&
             this.emptyNavigationMode === 0 &&
             !this.showNewModelPopup) {
-          
+
           bottomValueRm += 2; // the-workspace
           bottomValueRm += 1; // scrollbars
 
@@ -330,7 +332,7 @@
           }
         }
 
-        return { 
+        return {
           right: `${rightValueRm}rem`,
           bottom: `${bottomValueRm}rem`
         };
@@ -387,14 +389,14 @@
         setActivePageAction:    'modal_pages/setActivePageAction',
 
         getProjects :           'mod_project/getProjects',
-        createProject:          'mod_project/createProject',
+        getProject :            'mod_project/getProject',
         getDefaultModeProject:  'mod_project/getDefaultModeProject',
         getModelMeta:           'mod_project/getModel',
-        
+
         API_getModelStatus:     'mod_api/API_getModelStatus',
 
         cloud_userGetProfile:   'mod_apiCloud/CloudAPI_userGetProfile',
-        
+
         reset_network:            'mod_workspace/RESET_network',
         addNetwork:               'mod_workspace/ADD_network',
         chartRequestIfNeeded:     'mod_workspace/SET_chartsRequestsIfNeeded',
@@ -420,8 +422,8 @@
       },
       disableHotKeys(event) {
         const isHotkey = isOsMacintosh() ? event.metaKey : event.ctrlKey;
-        if (!isHotkey) { 
-          return; 
+        if (!isHotkey) {
+          return;
         }
 
         switch (event.code) {
@@ -436,7 +438,7 @@
       async fetchNetworkMetas(currentProject) {
         if (!currentProject || !currentProject.models || !currentProject.models.length) { return; }
 
-        const promiseArray = 
+        const promiseArray =
           currentProject.models
             .map(x => this.getModelMeta(x));
 
@@ -447,7 +449,6 @@
           });
       },
       fetchAllNetworkJsons(modelMetas) {
-        
         if (!modelMetas) { return; }
 
         const promiseArray = []
@@ -458,10 +459,10 @@
         for (const fm of filteredMetas) {
           promiseArray.push(rygg_getModelJson(fm.location + '/model.json'));
         }
-        
+
         // console.log('fetchAllNetworkJsons filteredMetas', filteredMetas);
         Promise.all(promiseArray)
-          .then(async (models) => {  
+          .then(async (models) => {
             this.addNetworksToWorkspace(models, modelMetas);
             models.forEach(model => {
               if (model) {
@@ -500,7 +501,7 @@
         notExistingDatasets.map(async (data) => {
           // creating datasets
           await rygg_createDataset({
-            project: 1,
+            project: this.currentProjectId,
             name: data.datasetPath,
             location: data.datasetPath,
           });
@@ -526,7 +527,7 @@
           const modelJson = await rygg_getModelJson(model.location + '/model.json');
           if(!modelJson) {
             unparsedModels.push(model);
-            
+
             // Doing these removes explicitly because the data can be loaded from webstorage
             // The effect is that the same network can appear doubled in the Model Hub
             // Remove from workspace content
@@ -538,7 +539,7 @@
       },
       addNetworksToWorkspace(models, modelsApiData) {
         for(const [index, model] of models.entries()) {
-          if(model) { 
+          if(model) {
             if (this.unparsedModels.includes(model.networkID)) { return; }
 
             // update apiMeta wiht rygg meta.
@@ -553,10 +554,10 @@
 
            }
         }
-        
+
         this.$store.commit('mod_workspace/get_lastActiveTabFromLocalStorage');
       },
-    
+
       initTutorialView() {
         const viewType = localStorage.getItem(LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY);
 
@@ -564,7 +565,7 @@
         this.setViewTypeMutation(viewType);
 
         // for the tutorial
-        if (this.$route.name === 'projects') { 
+        if (this.$route.name === 'projects') {
         } else if (viewType === 'model') {
           this.setCurrentView('tutorial-workspace-view');
         } else if (viewType === 'statistic') {
@@ -609,10 +610,10 @@
     grid-area: page;
     overflow: hidden;
   }
-  
+
   .flex-1 {
     flex: 1;
-    
+
     background-color: theme-var($neutral-7);
     border-radius: 15px 0px 0px 0px;
   }

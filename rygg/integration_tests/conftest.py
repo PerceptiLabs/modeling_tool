@@ -23,15 +23,9 @@ def host(request):
 
 @pytest.fixture(scope='session')
 def rest(host):
-    ret = RyggRest(f"http://{host}:8000", "12312")
-    assert_eventually(ret.check, stop_max_delay=60000, wait_fixed=1000)
-    return ret
-
-
-@pytest.fixture(scope='session')
-def working_dir(rest):
-    assert isinstance(rest, RyggRest)
-    return rest.get("/directories/resolved_dir", path="~/Documents/Perceptilabs")["path"]
+    with RyggRest(f"http://{host}:8000", "12312") as ret:
+        assert_eventually(ret.check, stop_max_delay=60000, wait_fixed=1000)
+        yield ret
 
 
 @pytest.fixture
@@ -84,3 +78,23 @@ def tmp_dataset(tmp_text_file, rest, tmp_project):
         filename = tmp_text_file
     with DatasetClient.make(rest, name=filename, location=filename, project=tmp_project.id) as dataset:
         yield dataset
+
+
+@pytest.fixture(scope='module')
+def localhost_only(host):
+    if host not in ["localhost", "127.0.0.1"]:
+        pytest.skip()
+
+
+@pytest.fixture(scope='module')
+def pip_only(rest):
+    if rest.is_enterprise:
+        pytest.skip("local-only")
+
+
+@pytest.fixture(scope='module')
+def enterprise_only(rest):
+    if not rest.is_enterprise:
+        pytest.skip("enterprise-only")
+
+

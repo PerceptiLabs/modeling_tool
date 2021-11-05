@@ -1,4 +1,5 @@
 from rest_framework import viewsets
+
 from rygg.api.models import Project
 from rygg.api.serializers import ProjectSerializer
 from rygg.api.views.models import ModelViewSet

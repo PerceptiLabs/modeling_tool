@@ -15,14 +15,14 @@ def subdict(d, *keys):
 def assert_is_subdict(l, r, *keys):
     assert subdict(l, *r.keys()) == r
 
-def has_expected_files(rest, expected, root):
-    assert rest.upload_dir
+def has_expected_files(rest, project_id, expected, root):
+    path = rest.get_upload_dir(project_id)
+    assert path
 
-    path = rest.upload_dir
     if root:
         path = os.path.join(path, root)
 
-    got = rest.get("/directories/get_folder_content", path=path)
+    got = rest.get("/directories/get_folder_content", path=path, project_id=project_id)
     return set(expected) <= set(got["files"])
 
 def task_is_complete(rest, task_id):

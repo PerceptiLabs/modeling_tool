@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
+import rygg.files.views.util
 from rygg.files.views.util import (
-        get_path_param,
         request_as_dict,
         make_path_response,
         json_response,
@@ -9,9 +9,12 @@ import json
 import os
 from django_http_exceptions import HTTPExceptions
 
+
 class JsonModelView(APIView):
+    # Clients can ask for the model by directory instead of the full path to the json file
+    # resolve directories to full file paths
     def model_path(self, request):
-        requested_path = get_path_param(request)
+        requested_path = rygg.files.views.util.get_path_param(request)
         if requested_path.lower().endswith(".json"):
             return requested_path
         else:
@@ -20,7 +23,6 @@ class JsonModelView(APIView):
     @staticmethod
     def load_json(full_path):
         with open(full_path, "r") as f:
-            done = False
             try:
                 return json.load(f)
             except json.decoder.JSONDecodeError:
@@ -29,7 +31,7 @@ class JsonModelView(APIView):
     def get(self, request, format=None):
         full_path = self.model_path(request)
         if not os.path.isfile(full_path):
-            raise HTTPExceptions.NO_CONTENT
+            raise HTTPExceptions.NOT_FOUND
 
         response_body = {
             "path": full_path,
@@ -44,7 +46,11 @@ class JsonModelView(APIView):
 
         model_dir = os.path.dirname(full_path)
         if not os.path.exists(model_dir):
-            os.makedirs(model_dir, exist_ok=True)
+            try:
+                os.makedirs(model_dir, exist_ok=True)
+            except PermissionError:
+                raise HTTPExceptions.BAD_REQUEST.with_content(f"not writable: {model_dir}")
+
 
         if not os.path.isdir(model_dir):
             raise HTTPExceptions.BAD_REQUEST.with_content(f"not a directory: {model_dir}")
@@ -56,5 +62,3 @@ class JsonModelView(APIView):
             json.dump(model_dict, f)
 
         return make_path_response(full_path)
-
-

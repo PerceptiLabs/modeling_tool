@@ -1,6 +1,6 @@
 import { whenInEnterprise } from '@/core/isEnterprise';
 
-// for fileserver we need to create a token param with the urlpath: {url}?token={FILESERVER_TOKEN}
+// for rygg we need to create a token param with the urlpath: {url}?token={FILESERVER_TOKEN}
 
 export const whenVersionIsResolved = (urlPath) => {
     return new Promise((resolve, reject) => {

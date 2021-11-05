@@ -10,7 +10,11 @@ import urllib.request
 from rygg.api.models import Dataset, Model
 from rygg.api.serializers import DatasetSerializer, ModelSerializer
 from rygg.files.views.util import request_as_dict, get_required_param, get_optional_param
+import rygg.files.views.util
 from rygg.settings import IS_CONTAINERIZED
+
+def request_path(request):
+    return rygg.files.views.util.get_path_param(request)
 
 def lines_from_url(url):
     with urllib.request.urlopen(url) as res:
@@ -29,6 +33,18 @@ def csv_lines_to_dict(lines):
 class DatasetViewSet(viewsets.ModelViewSet):
     queryset = Dataset.available_objects.filter(project__is_removed=False).order_by("-dataset_id")
     serializer_class = DatasetSerializer
+
+    def alias_project_id(self, request):
+        # copy over project_id to project for backward compatibility
+        if not "project" in request.data:
+            if not "project_id" in request.data:
+                raise HTTPExceptions.BAD_REQUEST()
+
+            request.data["project"] = request.data["project_id"]
+
+    def create(self, request):
+        self.alias_project_id(request)
+        return super().create(request)
 
     @action(methods=['GET', 'POST', 'PATCH', 'PUT', 'DELETE'], detail=True)
     def models(self, request, pk):
@@ -113,7 +129,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
         name = get_optional_param(request, "name", f"New Dataset")
         remote_id = get_required_param(request, "id")
         project_id = get_required_param(request, "project_id")
-        destination = None if IS_CONTAINERIZED else get_required_param(request, "destination")
+        destination = None if IS_CONTAINERIZED else request_path(request)
 
         task_id, dataset = Dataset.create_from_remote(
             project_id,

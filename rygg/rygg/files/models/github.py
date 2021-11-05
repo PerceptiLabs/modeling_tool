@@ -1,4 +1,6 @@
-from rygg.files.interfaces.github_import import RepoImporterAPI
+import rygg.files.interfaces.github_import
+import rygg.files.interfaces.github_export
+import rygg.files.interfaces.github_issue
 from rygg.files.exceptions import UserError
 import os, requests
 from send2trash import send2trash
@@ -118,7 +120,8 @@ def build_advanced_export_dict(tensorpath, datapaths=[], tensorfiles=[], datafil
     return to_export
 
 def export_repo_basic(
-    exporter_api,
+    github_token,
+    repo_name,
     tensorpath : str,
     add_training_files : bool,
     datapaths: list,
@@ -129,22 +132,25 @@ def export_repo_basic(
     call to export the files
 
     Arguments:
-        exporter_api       : An object that responds to add_files(path, file_list, commit_message)
+        github_token       : The token for github access
+        repo_name          :
         tensorpath         : Path to the tensor-files directory
         add_training_files : Whether to add training files to the commit
         commit_message     : commit message from User
         datapath           : Path to the data-files directory
     """
 
+    exporter_api = rygg.files.interfaces.github_export.RepoExporterAPI(github_token, repo_name)
     _create_README(tensorpath)
     to_export = build_export_dict(tensorpath, add_training_files, datapaths=datapaths)
     return exporter_api.add_files(to_export, commit_message)
 
 
 def export_repo_advanced(
-    exporter_api,
+    github_token,
+    repo_name,
     tensorpath : str,
-    tensorfiles: list, 
+    tensorfiles: list,
     datafiles: list,
     datapaths: list,
     commit_message="New commit from PerceptiLabs",
@@ -154,13 +160,15 @@ def export_repo_advanced(
     call to export the files
 
     Arguments:
-        exporter_api       : An object that responds to add_files(path, file_list, commit_message)
+        github_token       : The token for github access
+        repo_name          :
         tensorpath         : Path to the tensor-files directory
         add_training_files : Whether to add training files to the commit
         commit_message     : commit message from User
         datapath           : Path to the data-files directory
     """
 
+    exporter_api = rygg.files.interfaces.github_export.RepoExporterAPI(github_token, repo_name)
     _create_README(tensorpath)
     to_export = build_advanced_export_dict(tensorpath, datapaths=datapaths, tensorfiles=tensorfiles, datafiles=datafiles)
     return exporter_api.add_files(to_export, commit_message)
@@ -209,7 +217,7 @@ def import_repo(path, url, overwrite=False):
 
         return url[last_slash + 1 : last_suffix]
 
-    api = RepoImporterAPI(url)
+    api = rygg.files.interfaces.github_import.RepoImporterAPI(url)
     if not api.is_public():
         raise UserError("Invalid URL")
 
@@ -234,8 +242,9 @@ def import_repo(path, url, overwrite=False):
 
     api.clone_to(dest_path)
 
-def create_issue(api, title, body):
-    
+def create_issue(github_token, issue_type, title, body):
+
+    api = rygg.files.interfaces.github_issue.CreateIssueAPI(github_token, issue_type)
     if api.issue_type == "invalid":
         raise UserError("Invalid Issue type")
 

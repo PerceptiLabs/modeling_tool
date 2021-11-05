@@ -12,10 +12,10 @@ class GitHubService():
         """
         Sends request to create GitHub issue
 
-        Arguments: 
+        Arguments:
             title:  title of issue
             body:   body of issue
-            
+
         Returns:
             URL to the created issue
         """
@@ -36,4 +36,4 @@ class GitHubService():
 
         return r
 
-        
+

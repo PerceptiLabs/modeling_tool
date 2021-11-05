@@ -224,17 +224,28 @@ def assert_dir_writable(dir, msg):
 
     os.remove(test_file)
 
-# Make sure FILE_UPLOAD_DIR is set
-FILE_UPLOAD_DIR=None
+# Make sure BASE_UPLOAD_DIR is set
+BASE_UPLOAD_DIR=None
 if IS_CONTAINERIZED and (IS_SERVING or IS_WORKER):
-    FILE_UPLOAD_DIR = os.getenv("PL_FILE_UPLOAD_DIR")
-    if not FILE_UPLOAD_DIR:
+    BASE_UPLOAD_DIR = os.path.abspath(os.getenv("PL_FILE_UPLOAD_DIR"))
+    if not BASE_UPLOAD_DIR:
         raise Exception("Required environment variable PL_FILE_UPLOAD_DIR is not set.")
 
-    if not os.path.isdir(FILE_UPLOAD_DIR):
-        raise Exception(f"PL_FILE_UPLOAD_DIR is set to '{FILE_UPLOAD_DIR}' but that directory doesn't exist")
+    if not os.path.isdir(BASE_UPLOAD_DIR):
+        raise Exception(f"PL_FILE_UPLOAD_DIR is set to '{BASE_UPLOAD_DIR}' but that directory doesn't exist")
 
-    assert_dir_writable(FILE_UPLOAD_DIR, f"PL_FILE_UPLOAD_DIR is set to '{dir}' but that directory isn't writable")
+    assert_dir_writable(BASE_UPLOAD_DIR, f"PL_FILE_UPLOAD_DIR is set to '{dir}' but that directory isn't writable")
+
+def is_upload_allowed():
+    return not not BASE_UPLOAD_DIR
+
+def file_upload_dir(project_id):
+    if not BASE_UPLOAD_DIR:
+        raise Exception("PL_FILE_UPLOAD_DIR hasn't been set")
+    if not os.path.isdir(BASE_UPLOAD_DIR):
+        raise FileNotFoundError(BASE_UPLOAD_DIR)
+
+    return os.path.join(BASE_UPLOAD_DIR, str(project_id))
 
 
 FILE_UPLOAD_HANDLERS = [
@@ -244,6 +255,8 @@ FILE_UPLOAD_HANDLERS = [
 ]
 
 FILE_UPLOAD_PERMISSIONS = 0o444
+# since we're accepting uploads from large files, turn off the check for upload size
+DATA_UPLOAD_MAX_MEMORY_SIZE = None
 
 CELERY_BROKER_URL = os.environ.get("PL_REDIS_URL", "redis://127.0.0.1:6379")
 CELERY_RESULT_BACKEND = os.environ.get("PL_REDIS_URL", "redis://127.0.0.1:6379")

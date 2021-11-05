@@ -35,16 +35,16 @@
               .list-name-name Name
               .list-last-opened Last Opened
             div.main-list-item(
-              v-for="project in projectsList.filter(pr => pr.name.indexOf(searchValue) !== -1)" 
+              v-for="project in projectsList.filter(pr => pr.name.indexOf(searchValue) !== -1)"
               @dblclick="onProjectSelect(project)"
               @contextmenu.prevent.stop="openContext($event, project.project_id)"
-            ) 
+            )
               input.rename-project-input(
                 type="text",
                 v-model="renameData.projectFieldValue"
                 v-show="renameData.projectId === project.project_id && renameData.isProjectFieldActive"
                 @keyup.enter="saveProjectName()"
-              
+
               )
               span(v-show="!(renameData.projectId === project.project_id && renameData.isProjectFieldActive)").main-list-name.fz-16 {{project.name | trimText}}
               span.main-list-date.fz-16 {{project.created.toString().substring(0, 16).replace("T", " ")}}
@@ -54,22 +54,26 @@
     )
       .header Set Project Name
       .content
-        .set-project-text-label Project name
-        input.set-project-text-input(
-          type="text"
-          v-model="newProjectName"
-          @keyup.enter="createNewProject"
-          )
-        .set-project-text-label Project directory
-        input.set-project-text-input(
-          readonly
-          type="text"
-          v-model="newProjectLocation"
-          @click="openProjectPathFilePicker"
-          )
+        div.project-name-group
+          .set-project-text-label Project name
+          input.set-project-text-input(
+            type="text"
+            v-model="newProjectName"
+            @keyup.enter="createNewProject"
+            )
+        div.project-directory-group(
+          v-if="!isEnterprise"
+        )
+          .set-project-text-label Project directory
+          input.set-project-text-input(
+            readonly
+            type="text"
+            v-model="newProjectLocation"
+            @click="openProjectPathFilePicker"
+            )
         div.project-name-action-wrapper
           button.project-name-btn.create(
-            :class="{'disabled': !newProjectName || !newProjectLocation}"
+            :class="{'disabled': !canSave}"
             @click="createNewProject"
           ) Create Project
           button.project-name-btn.cancel(
@@ -86,9 +90,9 @@
   import cloneDeep from 'lodash.clonedeep';
   import { getFolderContent as rygg_getFolderContent } from '@/core/apiRygg';
   import { getModelJson as rygg_getModelJson } from '@/core/apiRygg';
-  import { createFolder as rygg_createFolder } from '@/core/apiRygg';
   import { pickFile as rygg_pickFile } from '@/core/apiRygg';
   import { pickDirectory as rygg_pickDirectory } from '@/core/apiRygg';
+  import { isEnterpriseApp as rygg_isEnterpriseApp } from '@/core/apiRygg';
 
   export default {
     name: 'CreateSelectProject',
@@ -107,10 +111,14 @@
           projectFieldValue: '',
           projectId: null,
         },
+        isEnterprise: true,
       }
     },
     created() {
       document.addEventListener('keyup', this.closeModalByEvent);
+    },
+    async mounted() {
+      this.isEnterprise = await rygg_isEnterpriseApp()
     },
     beforeDestroy() {
       document.removeEventListener('click', this.closeContext);
@@ -126,9 +134,13 @@
       projectsList() {
         return this.$store.state.mod_project.projectsList;
       },
+      canSave() {
+        return this.newProjectName && (this.newProjectLocation || this.isEnterprise);
+      },
       ...mapGetters({
-        networksWithChanges:  'mod_workspace-changes/get_networksWithChanges',
-        GET_isProjectWithThisDirectoryExist:          'mod_project/GET_isProjectWithThisDirectoryExist'
+        networksWithChanges:                  'mod_workspace-changes/get_networksWithChanges',
+        GET_isProjectWithThisDirectoryExist:  'mod_project/GET_isProjectWithThisDirectoryExist',
+        GET_isProjectSelected:                'mod_project/GET_isProjectSelected'
       })
     },
     methods: {
@@ -152,16 +164,15 @@
         setStatisticsAvailability:'mod_workspace/setStatisticsAvailability',
         setCheckpointAvailability:'mod_workspace/setCheckpointAvailability',
         clearNetworkChanges:      'mod_workspace-changes/clearNetworkChanges',
-        
+
       }),
       onProjectWrapperClick(e){
-        const hasTargetProject = localStorage.hasOwnProperty('targetProject');
-        if(e.target.id === 'pr-wrapper' && hasTargetProject) {
+        if(e.target.id === 'pr-wrapper' && this.GET_isProjectSelected) {
           this.closePageAction();
         }
       },
       closeModalByEvent(e){
-        const hasTargetProject = localStorage.hasOwnProperty('targetProject');
+        const hasTargetProject = this.GET_isProjectSelected;
         const isEscKey = e.keyCode === 27;
         if(hasTargetProject && isEscKey) {
           this.closePageAction();
@@ -178,17 +189,17 @@
               this.closePageAction();
             },
             ok: () => {
-              this.clearNetworkChanges(); 
+              this.clearNetworkChanges();
             }
-          }); 
+          });
         } else {
           this.goToProject(projectId);
         }
       },
       goToProject(projectId) {
-        // Setting the projectId to something nonsensical so the watcher 
-        // can be triggered. This is because everything is now done in the 
-        // project components now. 
+        // Setting the projectId to something nonsensical so the watcher
+        // can be triggered. This is because everything is now done in the
+        // project components now.
         this.selectProject(-1);
         this.selectProject(projectId);
         this.closePageAction();
@@ -224,34 +235,19 @@
         this.newProjectLocation = filepath && filepath[0] ? filepath[0] : ''
       },
       createNewProject() {
-        if(!this.newProjectName || !this.newProjectLocation) {
+        if(!this.canSave) {
           return;
         }
 
         const newFolderPath = this.newProjectLocation + '/' + this.newProjectName
-
-        rygg_createFolder(newFolderPath)
-        .then(createFolderRes => {
-          if (createFolderRes !== '') {
-            let createProjectReq = {
-              name: this.newProjectName,
-              default_directory: createFolderRes
-            };
-
-            return this.createProject(createProjectReq);
-          } else {
-            this.showInfoPopup('A problem occurred when creating the project directory');
-            throw new Error('Problem creating project directory');
-          }
-        })
+        this.createProject({ name: this.newProjectName, default_directory: newFolderPath })
         .then(createProjectRes => {
           this.getProjects();
           this.onProjectSelect(createProjectRes);
-          const projectName = `project_${createProjectRes.project_id}`; 
           this.newProjectName = '';
         })
         .catch(error => {
-          // console.error(error);
+          console.error(error);
         })
         .finally(_ =>{
           this.isProjectNameModalOpen = false;
@@ -291,7 +287,7 @@
                     this.deleteNetworkById(id);
                   }
                   this.getProjects();
-                })             
+                })
             },
           })
           return;
@@ -301,14 +297,14 @@
         }
       },
       renameProject() {
-    
+
         const { contextTargetProject } = this;
         const theProject = this.projectsList.filter(project => project.project_id === contextTargetProject)[0];
 
           this.renameData.isProjectFieldActive = true;
           this.renameData.projectFieldValue = theProject.name;
           this.renameData.projectId = theProject.project_id;
-      },      
+      },
       closeContext() {
         document.removeEventListener('click', this.closeContext);
         this.contextTargetProject = null;
@@ -341,10 +337,10 @@
         } else {
           projectName = processedFilePath.substring(processedFilePath.lastIndexOf('/') + 1);
         }
-        
+
         const createProjectReq = {
-          name: projectName,
-          default_directory: processedFilePath
+            name: projectName,
+            default_directory: processedFilePath
         };
 
         if(this.GET_isProjectWithThisDirectoryExist(processedFilePath)) {
@@ -364,14 +360,14 @@
             this.closePageAction();
 
           } else {
-                      
+
             const createdProject = await this.createProject(createProjectReq);
-            
+
             const modelPaths = dirs.map(dirPath => current_path + '/' + dirPath);
-          
-            const promiseArray = 
+
+            const promiseArray =
               modelPaths.map(modelPath => rygg_getModelJson(modelPath + '/model.json'));
-            
+
             let localModelsData = await Promise.all(promiseArray);
             localModelsData = localModelsData.filter(model => model);
             const atLeastOneFolderHaveModelsJsonFile = localModelsData.length !== 0;
@@ -389,7 +385,7 @@
 
 
               const modelCreatinResponses = await Promise.all(modelCreationPromises);
-              
+
               for(let index in modelCreatinResponses) {
                 const apiMeta = modelCreatinResponses[index];
                 const modelJson = localModelsData[index];
@@ -405,13 +401,13 @@
             this.clearNetworkChanges();
             this.selectProject(createdProject.project_id);
             this.closePageAction();
-            
+
           }
-          
-        
+
+
         } catch(e) {
           return false;
-        } 
+        }
       }
     },
     filters: {
@@ -496,7 +492,7 @@
   .content {
     display: flex;
     padding: 23px 0;
-    
+
   }
   /* Sidebar */
   .sidebar {
@@ -568,8 +564,8 @@
     width: auto;
     width: 75%;
     margin-right: 30px;
-  
-    
+
+
     img {
       cursor: pointer;
       position: absolute;
@@ -588,7 +584,7 @@
     }
   }
   .main-list {
-    
+
   }
   .main-list-header {
     display: flex;
@@ -657,11 +653,11 @@
     font-weight: 600;
     font-size: 14px;
     line-height: 19px;
-    color: theme-var($neutral-8);
+    color: theme-var($neutral-1);
 
     + .set-project-text-label {
       margin-top: 2rem;
-    }    
+    }
   }
   .project-name-action-wrapper {
     display: flex;
@@ -680,7 +676,7 @@
     font-weight: 600;
     font-size: 14px;
     line-height: 19px;
-    color: theme-var($neutral-8);
+    color: theme-var($neutral-1);
     &.disabled {
       opacity: 0.5;
     }

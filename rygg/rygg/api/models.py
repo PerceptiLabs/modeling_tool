@@ -5,18 +5,19 @@ from django.dispatch import receiver
 from django_http_exceptions import HTTPExceptions
 from model_utils import Choices
 from model_utils.models import SoftDeletableModel, StatusModel, TimeStampedModel
-import glob
 import os
 import shutil
 import uuid
 
 from rygg.api.tasks import delete_path_async
 from rygg.files.tasks import download_async
-from rygg.settings import IS_CONTAINERIZED, FILE_UPLOAD_DIR, IS_SERVING, DATA_BLOB
+from rygg.settings import IS_CONTAINERIZED, file_upload_dir, IS_SERVING, DATA_BLOB
+
 
 class FileLink(dj_models.Model):
     filelink_id = dj_models.AutoField(primary_key=True)
     resource_locator = dj_models.CharField(max_length=1000, blank=False)
+
 
 class Project(SoftDeletableModel):
     project_id = dj_models.AutoField(primary_key=True)
@@ -28,9 +29,32 @@ class Project(SoftDeletableModel):
     def __str__(self):
         return f"{self.name} ({self.project_id})"
 
+    @property
+    def base_directory(self):
+        if IS_CONTAINERIZED:
+            return file_upload_dir(self.project_id)
+        else:
+            return self.default_directory
+
+@receiver(post_save, sender=Project)
+def project_created_post(created, instance, **kwargs):
+    # we only manage the project dirs in docker
+    if not IS_CONTAINERIZED:
+        return
+
+    dir = instance.base_directory
+
+    if created:
+        os.makedirs(dir, exist_ok=True)
+    elif instance.is_removed:
+        delete_path_async(instance.project_id, dir)
+
+
 class Model(SoftDeletableModel):
     project = dj_models.ForeignKey(
-        Project, related_name="models", on_delete=dj_models.PROTECT
+        Project,
+        related_name="models",
+        on_delete=dj_models.PROTECT
     )
     model_id = dj_models.AutoField(primary_key=True)
     name = dj_models.CharField(max_length=1000, blank=False)
@@ -40,12 +64,18 @@ class Model(SoftDeletableModel):
     saved_by = dj_models.CharField(max_length=100, blank=True)
     saved_version_location = dj_models.CharField(max_length=100, blank=True)
 
+
 class Notebook(SoftDeletableModel):
     project = dj_models.ForeignKey(
-        Project, related_name="notebooks", on_delete=dj_models.PROTECT
+        Project,
+        related_name="notebooks",
+        on_delete=dj_models.PROTECT
     )
     filelink = dj_models.ForeignKey(
-        FileLink, related_name="notebook", on_delete=dj_models.SET_NULL, null=True
+        FileLink,
+        related_name="notebook",
+        on_delete=dj_models.SET_NULL,
+        null=True
     )
     notebook_id = dj_models.AutoField(primary_key=True)
     name = dj_models.CharField(max_length=1000, blank=False)
@@ -54,6 +84,7 @@ class Notebook(SoftDeletableModel):
 
     def __str__(self):
         return f"{self.name} ({self.notebook_id})"
+
 
 def validate_file_name(location):
     # in local mode, we need to save the file's exact location
@@ -70,6 +101,7 @@ def validate_file_exists(location):
 
     if not os.path.isfile(location):
         raise ValidationError(f"File {location} isn't a file.", code=400)
+
 
 class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
     # On enterprise, the client is expected to upload the file afterward so the default status is "new".
@@ -114,7 +146,8 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
     @classmethod
     def create_from_remote(cls, project_id, name, remote_name, destination):
         if IS_CONTAINERIZED:
-            dest_path = os.path.join(FILE_UPLOAD_DIR, f"dataset-{uuid.uuid4()}")
+            upload_dir = file_upload_dir(project_id)
+            dest_path = os.path.join(upload_dir, f"dataset-{uuid.uuid4()}")
         else:
             dest_path = destination
 
@@ -175,4 +208,4 @@ def dataset_deleted_post(sender, **kwargs):
         # It's not there. Bail out.
         return
 
-    delete_path_async(full_path)
+    delete_path_async(ds.project.project_id, full_path)

@@ -15,8 +15,8 @@ div
               .title.bold {{type.title}}
               p.desc {{type.description}}
 
-          div.text-center.find-out-message If you do not have your own dataset, 
-            span.guide-link(@click="openPLVideoTutorialPage") click here 
+          div.text-center.find-out-message If you do not have your own dataset,
+            span.guide-link(@click="openPLVideoTutorialPage") click here
             | to use a prepared dataset
 
       div.w-100(v-else)
@@ -33,11 +33,11 @@ div
                 img.icon(src="/static/img/circle-plus.svg")
                 span Add Images
           .create-class-new
-            .create-class-divider 
+            .create-class-divider
             button.btn.btn--secondary(@click="onAddClass")
               img.icon(src="/static/img/circle-plus.svg" class="svg-icon")
               span Add Class
-        
+
         div(v-show="onStep === STEP.LOADCSV")
           load-dataset(
             v-if="isPublicDatasetEnabled"
@@ -85,7 +85,7 @@ div
               :dataSetTypes="dataSetTypes"
               @update="handleCSVDataTypeUpdates"
             )
-            
+
             data-column-option-sidebar(
                 :key="index"
                 v-for="index in csvData && csvData.dataTypes.length"
@@ -131,7 +131,7 @@ div
       button.btn.btn--primary(@click="gotoTrainingSettings" :class="{'btn--disabled' : isDisableCreateAction() }")
         span Next
         img.icon.rotate-180(src="/static/img/back.svg")
-    
+
     template(slot="action" v-if="onStep === STEP.PARTITION && !showLoadingSpinner && !isCreateModelLoading")
       button.link.reload-dataset-btn(@click="toPrevStep")
         img(src='/static/img/back-arrow.svg')
@@ -195,8 +195,8 @@ import LoadDataset from './load-dataset.vue'
 const STEP = {
   LOADCSV: 1,
   PARTITION: 2,
-  TRAINING: 3,  
-  PUBLIC_LIST: 4,  
+  TRAINING: 3,
+  PUBLIC_LIST: 4,
   TYPE: 5,
   CLASS: 6,
 }
@@ -241,21 +241,21 @@ export default {
         {
           id: 1,
           title: "Image Classification",
-          description: "Train your model to classify images",          
+          description: "Train your model to classify images",
           imgPath: "./static/img/project-page/upload-class.jpg",
           onClick: this.gotoClassStep,
         },
         {
           id: 2,
           title: "Segment Images",
-          description: "Train your model to segment things in images",          
+          description: "Train your model to segment things in images",
           imgPath: "./static/img/project-page/upload-segment.jpg",
           onClick: () => {},
         },
         {
           id: 3,
           title: "Multi-Modal",
-          description: "Combined data types, inputs and targets for more complex problems",          
+          description: "Combined data types, inputs and targets for more complex problems",
           imgPath: "./static/img/project-page/upload-multi.jpg",
           onClick: () => {},
         }
@@ -352,13 +352,14 @@ export default {
         case STEP.TRAINING: return 'Training settings'; break;
         case STEP.PUBLIC_LIST: return 'Load dataset'; break;
         case STEP.TYPE: return 'What do you want to do?'; break;
-        case STEP.CLASS: return 'Add one class for each type of image you want to tell apart.'; break;        
+        case STEP.CLASS: return 'Add one class for each type of image you want to tell apart.'; break;
       }
     }
 
   },
   mounted() {
     this.modelPath = this.projectPath;
+
 
     this.debouncedCreateModelFunction = debounce(_ => {
       this.createModel();
@@ -376,6 +377,7 @@ export default {
     ...mapActions({
       addNetwork: "mod_workspace/ADD_network",
       closeStatsTestViews: "mod_workspace/SET_statisticsAndTestToClosed",
+      currentProjectModels: "mod_project/getProjectModels",
       createProjectModel: "mod_project/createProjectModel",
       getModelMeta: "mod_project/getModel",
       getProjects: "mod_project/getProjects",
@@ -426,7 +428,6 @@ export default {
         namePrefix = "Model";
       }
 
-      console.log("autoPopulateName3")
       const highestSuffix = dirContents.dirs
         .filter(d => d.startsWith(namePrefix))
         .map(d => d.replace(`${namePrefix} `, ""))
@@ -512,7 +513,7 @@ export default {
       const watchTimerId = setTimeout(() => {
         this.isShowCTA = true;
       }, 3 * 60 * 1000);
-      
+
       // Check validity
       if (!(await this.isValidModelName(modelName))) {
         // TODO: showErrorPopup closes all popups, need to change this logic for UX
@@ -547,17 +548,17 @@ export default {
         datasetId: this.createdFromDatasetId
       };
       const userEmail = this.userEmail;
-      
+
       await renderingKernel.waitForDataReady(datasetSettings, userEmail, (message) => {
         this.buildingPreProcessingStatus = message;
       });
-        
+
       const modelRecommendation = await renderingKernel.getModelRecommendation(
         datasetSettings,
         this.userEmail,
         apiMeta.model_id,
         runStatistics
-      )   
+      )
       .then(res => {
         if (res.error) {
           this.deleteModelWithErrorPopup(
@@ -572,8 +573,8 @@ export default {
          apiMeta.model_id,
          "Couldn't get model recommendation due to an exception: " + err
        );
-      });         
-        
+      });
+
       const inputData = convertModelRecommendationToVisNodeEdgeList(
         modelRecommendation
       );
@@ -599,12 +600,12 @@ export default {
       newNetwork.networkMeta.trainingSettings = deepCopy(this.settings);
       await this.$store.dispatch('mod_workspace/setViewType', 'model');
       await this.addNetwork({ network: newNetwork, apiMeta }).then(() => {
-        if (runStatistics) {
-          setTimeout(() => {
-            this.$store.dispatch("mod_events/EVENT_set_eventRunStatistic");
-          }, 0);
-        }
-      });
+          if (runStatistics) {
+            setTimeout(() => {
+              this.$store.dispatch("mod_events/EVENT_set_eventRunStatistic");
+            }, 0);
+          }
+        });
 
       // Swapping view so that the newly created model is shown
       // TODO: break apart this views
@@ -747,7 +748,7 @@ export default {
           this.updateModelPath([selectedDirectory.path]);
         }
       }
-    
+
     },
     validDirPath(url) {
       if ((url.length > 3 && url.slice(-1) === "/") || url.slice(-1) === "\\") {
@@ -802,29 +803,26 @@ export default {
           this.$store.dispatch("mod_datasetSettings/setStartupFolder", ENTERPRISE_DATASET_FOLDER_PREFIX);
         } else {
           this.$store.dispatch(
-          "mod_datasetSettings/setStartupFolder",
-          dataPath[0].match(/(.*)[\/\\]/)[1] || ""
-        );
+            "mod_datasetSettings/setStartupFolder",
+            dataPath[0].match(/(.*)[\/\\]/)[1] || ""
+          );
         }
-        
-        
+
         // create Dataset or User existing one
         await this.$store.dispatch('mod_datasets/getDatasets');
         const allDatasets = this.$store.getters['mod_datasets/GET_datasets'];
         const datasetIndex = allDatasets.map(x => x.location).indexOf(dataPath[0]);
         if (datasetIndex !== -1) {
-          console.log(allDatasets[datasetIndex].dataset_id);
           this.createdFromDatasetId = allDatasets[datasetIndex].dataset_id;
         } else {
           const createDataset = await rygg_createDataset({
-            project: 1,
-            name: dataPath[0],
-            location: dataPath[0],
-          });
+              name: dataPath[0],
+              location: dataPath[0],
+            });
           this.$store.dispatch('mod_datasets/getDatasets');
           this.createdFromDatasetId = createDataset.data.dataset_id;
-        } 
-        
+        }
+
         const getFileContentPath = this.isEnterpriseMode ? `${ENTERPRISE_DATASET_FOLDER_PREFIX}${dataPath[0]}` : dataPath[0]
         const fileContents = await rygg_getFileContent(getFileContentPath);
 
@@ -864,10 +862,7 @@ export default {
         return;
       }
 
-      const promiseArray = this.currentProject.models.map(x =>
-        this.getModelMeta(x)
-      );
-      const modelMeta = await Promise.all(promiseArray);
+      const modelMeta = await this.currentProjectModels();
       const modelNames = modelMeta.map(x => x.name);
 
       // Making sure name is not already in the list
@@ -889,18 +884,18 @@ export default {
     },
     toPrevStep() {
       this.onStep -= 1;
-    },    
+    },
     gotoTypeStep() {
       this.onStep = STEP.TYPE;
     },
     gotoClassStep() {
       this.onStep = STEP.CLASS;
-    },    
+    },
     goToPublicDatasets() {
       this.onStep = STEP.PUBLIC_LIST;
     },
     gotoTrainingSettings() {
-      // if (!this.isDisableCreateAction()) 
+      // if (!this.isDisableCreateAction())
       {
         this.onStep = STEP.TRAINING;
       }
@@ -961,11 +956,11 @@ span.error {
     border-radius: 4px;
     padding: 30px;
   }
-  &-contents {  
+  &-contents {
     display: flex;
     justify-content: space-between;
   }
-  &-item {    
+  &-item {
     width: 200px;
     height: 240px;
     padding: 15px;

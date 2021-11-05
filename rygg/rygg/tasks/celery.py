@@ -29,19 +29,18 @@ def start_canceler(task_id):
     cancel_token = Event()
 
     def is_canceled():
-        return celery_app.backend.client.exists(f"task_cancel:{task_id}") != 0
+        with celery_app.backend.client as c:
+            return c.exists(f"task_cancel:{task_id}") != 0
 
     def poll_for_cancellation():
         while not is_canceled() and not cancel_token.is_set() and is_running(task_id):
-            sleep(1)
+            #TODO: reset to 1 second
+            sleep(0.1)
 
         cancel_token.set()
 
-    t = Thread(target=poll_for_cancellation)
-    t.daemon = True
-    t.start()
+    Thread(target=poll_for_cancellation, daemon=True).start()
     return cancel_token
-
 
 
 def work_in_celery(task, fn, *args, **kwargs):
@@ -96,7 +95,8 @@ def get_celery_task_status(task_id):
         return None
 
 def set_cancel_flag(task_id):
-    celery_app.backend.client.setex(f"task_cancel:{task_id}", 1800, "1")
+    with celery_app.backend.client as c:
+        c.setex(f"task_cancel:{task_id}", 1800, "1")
 
 def cancel_celery_task(task_id):
     # stop any workers from picking up the task

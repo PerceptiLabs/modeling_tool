@@ -3,7 +3,6 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from rygg.celery import app as celery_app
-from rygg.settings import IS_CONTAINERIZED
 from rygg.tasks import get_task_status, cancel_task
 
 class TaskViewSet(viewsets.GenericViewSet):

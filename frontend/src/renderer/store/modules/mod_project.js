@@ -1,11 +1,15 @@
 import { requestCloudApi } from "@/core/apiCloud";
-import {generateID} from "@/core/helpers";
+import { generateID } from "@/core/helpers";
 import { createFolder as rygg_createFolder } from '@/core/apiRygg';
+import { createProjectWithDefaultDir as rygg_createProjectWithDefaultDir } from '@/core/apiRygg';
 import { rygg } from '@/core/apiRygg.js';
+import { LOCAL_STORAGE_CURRENT_PROJECT } from "@/core/constants";
 const namespaced = true;
+const DEFAULT_PROJECT_NAME = 'Default';
+const DEFAULT_PROJECT_DIR = '~/Documents/Perceptilabs/Default';
 
 const state = {
-  currentProject: parseInt(localStorage.getItem('targetProject')) || null, // maybe we should copy all project object instead id and did modification in this one in case it wouldn't save changes.
+  currentProject: parseInt(localStorage.getItem(LOCAL_STORAGE_CURRENT_PROJECT)) || null, // maybe we should copy all project object instead id and did modification in this one in case it wouldn't save changes.
   projectsList: [],
   isDefaultProjectMode: false
 };
@@ -15,7 +19,8 @@ const getters = {
     return state.projectsList.filter(project => (project.project_id === state.currentProject))[0];
   },
   GET_projectPath(state, getters) {
-    return getters['GET_project'] && getters['GET_project'].default_directory || '';
+    const proj = getters['GET_project'];
+    return proj && proj.default_directory || '';
   },
   GET_projectModelIds(state){
    return state.projectsList.filter(project => (project.project_id === state.currentProject))[0].models;
@@ -28,7 +33,14 @@ const getters = {
   },
   GET_isDefaultProjectMode(state) {
     return state.isDefaultProjectMode;
-  }
+  },
+  GET_isProjectSelected(state) {
+    if (!localStorage.hasOwnProperty(LOCAL_STORAGE_CURRENT_PROJECT)){
+      return false
+    }
+    const proj = localStorage.getItem(LOCAL_STORAGE_CURRENT_PROJECT)
+    return proj === parseInt(proj) && proj > 0;
+  },
 }
 
 const mutations = {
@@ -36,15 +48,18 @@ const mutations = {
     state.projectsList = payload;
   },
   selectProject(state, projectId) {
-    localStorage.setItem('targetProject', projectId);
+    if (projectId !== parseInt(projectId, 10)){
+      throw new Error(`Invalid ${LOCAL_STORAGE_CURRENT_PROJECT}`);
+    }
+    localStorage.setItem(LOCAL_STORAGE_CURRENT_PROJECT, projectId);
     state.currentProject = projectId;
   },
-  createProject(state, payload) {
+  addProjectToList(state, payload) {
     state.projectsList.push(payload);
   },
-  removeProjectIdInLocalStorage(state, projectId) {
-    if (localStorage.getItem('targetProject') == projectId) {
-      localStorage.removeItem('targetProject');
+  removeProjectIdInLocalStorage(state) {
+    if (localStorage.getItem(LOCAL_STORAGE_CURRENT_PROJECT) == projectId) {
+      localStorage.removeItem(LOCAL_STORAGE_CURRENT_PROJECT);
     }
   },
   setIsDefaultProjectMode(state) {
@@ -56,6 +71,13 @@ const mutations = {
 };
 
 const actions = {
+  getProject(ctx, project_id) {
+    return rygg.get(`/projects/${project_id}/`)
+      .then((res) => res)
+      .catch((error)=> {
+        console.error(error);
+      })
+    },
   getProjects(ctx) {
     return rygg.get(`/projects/`)
       .then((res) => {
@@ -63,16 +85,9 @@ const actions = {
         return res;
       })
       .catch((error)=> {
-        console.error(error); 
+        console.error(error);
       })
     },
-  createProject(ctx, payload) {
-    return rygg.post(`/projects/`, payload)
-      .then(res => {
-        ctx.commit('createProject', res.data); 
-        return res.data;
-      })
-  },
   updateProject(ctx, payload) {
     const {projectId, ...postData} = payload;
     return rygg.patch(`/projects/${projectId}/`, postData)
@@ -84,9 +99,9 @@ const actions = {
   deleteProject(ctx, payload) {
     return rygg.delete(`/projects/${payload.projectId}/`)
       .then(res => {
-        ctx.commit('removeProjectIdInLocalStorage', payload.projectId);
+        ctx.commit('removeProjectIdInLocalStorage');
         ctx.dispatch('getProjects');
-      })  
+      })
       .catch(e => console.log(e));
   },
   getModel(ctx, modelId) {
@@ -116,7 +131,7 @@ const actions = {
   },
   deleteModel(ctx, payload) {
     const { model_id, project } = payload;
-    
+
     return rygg.delete(`/models/${model_id}/`)
       .then(res => {
         ctx.dispatch('getProjects');
@@ -127,34 +142,30 @@ const actions = {
   getDefaultModeProject(ctx) {
     return ctx.dispatch('getProjects')
       .then(({data: { results: projects }}) => {
-
-        const defaultProject = projects.find(p => p.name === 'Default');
+        // TODO: this won't scale in enterprise. Only do O(n) call to find() in local mode.
+        const defaultProject = projects.find(p => p.name === DEFAULT_PROJECT_NAME);
         if (!defaultProject) {
-          // create project called "Default" if it doesn't exist
-          return ctx.dispatch('prepareDefaultProjectDirectory');
+          return ctx.dispatch('createProject', { name: DEFAULT_PROJECT_NAME, default_directory: DEFAULT_PROJECT_DIR });
         }
-        
-        return defaultProject;    
+        return defaultProject;
       })
       .then(defaultProjectMeta => {
         ctx.commit('selectProject', defaultProjectMeta.project_id);
-        // console.log('defaultProjectMeta', defaultProjectMeta);
         return defaultProjectMeta;
       })
-      .catch(error => reject(error));
+      .catch(error => console.error(error));
   },
-  prepareDefaultProjectDirectory(ctx) {
-    return rygg_createFolder('~/Documents/Perceptilabs/Default')
-      .then(createFolderRes => {
-        if (!createFolderRes) { throw new Error('Problem while creating project directory'); }
+  createProject(ctx, { name, default_directory }) {
+    if (default_directory === null || default_directory.length == 0){
+      throw new Error("missing default_directory");
+    }
+    return rygg_createProjectWithDefaultDir(name, default_directory)
+      .then(createProjectRes => {
+        if (!createProjectRes) { throw new Error('Problem while creating project directory'); }
+        ctx.commit("addProjectToList", createProjectRes.data)
 
-        let createProjectReq = {
-          name: 'Default',
-          default_directory: createFolderRes
-        };
-        return ctx.dispatch('createProject', createProjectReq);
+        return createProjectRes.data
       })
-      .then(createProjectRes => createProjectRes)
       .catch(error => {
         console.error(error)
       });

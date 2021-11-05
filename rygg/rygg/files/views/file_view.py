@@ -1,45 +1,77 @@
+from contextlib import contextmanager
 from django_http_exceptions import HTTPExceptions
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
+from rest_framework.generics import RetrieveDestroyAPIView
 from rest_framework.response import Response
+import chardet
+import os
+
+from rygg.files.utils.file_choosing import open_file_dialog, open_saveas_dialog
+
+from rygg.files.paths import PathNotAvailable
+from rygg.files.utils.file_choosing import open_file_dialog
 from rygg.files.views.util import (
     get_path_param,
     get_required_param,
     get_optional_param,
+    json_response,
     make_path_response,
-    make_file_content_response
 )
-from rygg.files.utils.file_choosing import open_file_dialog, open_saveas_dialog
-import os
 from rygg.settings import IS_CONTAINERIZED
+import rygg.files.views.util
 
-class FileView(APIView):
+
+def full_path(request):
+    try:
+        # using the full name to allow for easy mocking
+        ret = rygg.files.views.util.get_path_param(request)
+        if not os.path.isfile(ret):
+            raise HTTPExceptions.NOT_FOUND
+        return ret
+    except PathNotAvailable as e:
+        raise HTTPExceptions.NOT_FOUND.with_content(e)
+
+class FileView(RetrieveDestroyAPIView):
     def get(self, request, format=None):
-        full_path = get_path_param(request)
-        if not os.path.isfile(full_path):
-            raise HTTPExceptions.NO_CONTENT
-        return make_path_response(full_path)
+        path = full_path(request)
+        return make_path_response(path)
 
     def delete(self, request, format=None):
-        full_path = get_path_param(request)
-        if not os.path.isfile(full_path):
-            raise HTTPExceptions.NO_CONTENT
-        os.remove(full_path)
-        return make_path_response(full_path)
+        path = full_path(request)
+        os.remove(path)
+        return make_path_response(path)
 
 @api_view(["GET"])
 def get_file_content(request):
-    full_path = get_required_param(request, "path")
+    path = full_path(request)
+    num_rows = get_optional_param(request, "num_rows", 4) #5 rows, 0 indexed
+    return make_file_content_response(num_rows, path)
 
-    if not os.path.isfile(full_path):
-        raise HTTPExceptions.NO_CONTENT
 
-    results = make_file_content_response(request, full_path)
+def make_file_content_response(num_rows, file_path):
 
-    if results:
-        return results
+    row_count = 0
+    row_contents = []
+    encoding=get_encoding(file_path)
 
-    raise HTTPExceptions.NO_CONTENT
+    try:
+        with open(file_path, 'r', encoding=encoding, errors='backslashreplace') as reader:
+            line = reader.readline()
+            while line != '' and row_count < num_rows:
+                row_contents.append(line)
+                line = reader.readline()
+                row_count += 1
+    except Exception as err:
+        raise Exception('Error when reading file contents')
+
+    return json_response({"file_contents": row_contents})
+
+def get_encoding(file_path):
+    with open(file_path, 'rb') as file:
+        raw = file.read(32) # at most 32 bytes are returned
+        return chardet.detect(raw)['encoding']
+
 
 import json
 def get_file_types_from_request(request):
@@ -87,4 +119,3 @@ def saveas_file(request):
 
     path = open_saveas_dialog(initial_dir=initial_dir, file_types=file_types, title=title)
     return Response({"path": path})
-
