@@ -50,6 +50,9 @@ variables:
   ${{ if not(and(eq( variables['Build.Reason'], 'BuildCompletion'), eq( variables['Build.TriggeredBy.DefinitionId'], 16))) }}:
     value: ${{ parameters.versionid }}
 
+pool:
+  vmImage: ubuntu-latest
+
 steps:
 
 - task: UsePythonVersion@0
