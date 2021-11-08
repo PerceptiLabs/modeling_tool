@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import get_file_path
 
+
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
@@ -36,7 +37,7 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.files import FileAccess
     from perceptilabs.resources.training_results import TrainingResultsAccess
-    from perceptilabs.resources.wrangling_results import WranglingResultsAccess    
+    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess    
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     import perceptilabs.utils as utils
@@ -47,7 +48,7 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
     model_access = ModelAccess(ScriptFactory())
     epochs_access = EpochsAccess()
     training_results_access = TrainingResultsAccess()
-    wrangling_results_access = WranglingResultsAccess(get_data_metadata_cache())            
+    preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())            
 
     # TODO: all this data setup should be moved into the coreInteraface!!!
     
@@ -55,7 +56,7 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
     num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
-    data_metadata = wrangling_results_access.get_metadata(dataset_settings.compute_hash())
+    data_metadata = preprocessing_results_access.get_metadata(dataset_settings.compute_hash())
 
     file_access = FileAccess(os.path.dirname(csv_file))        
     data_loader = DataLoader.from_csv(
@@ -93,7 +94,7 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.files import FileAccess
     from perceptilabs.resources.testing_results import TestingResultsAccess
-    from perceptilabs.resources.wrangling_results import WranglingResultsAccess        
+    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess        
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     import perceptilabs.utils as utils
@@ -105,7 +106,7 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
     model_access = ModelAccess(ScriptFactory())
     epochs_access = EpochsAccess()
     testing_results_access = TestingResultsAccess()
-    wrangling_results_access = WranglingResultsAccess(get_data_metadata_cache())                
+    preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())                
 
 
     # TODO: all this data loader etup should be moved into the test interface!!!
@@ -116,7 +117,7 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
         num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
         dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
-        data_metadata = wrangling_results_access.get_metadata(dataset_settings.compute_hash())
+        data_metadata = preprocessing_results_access.get_metadata(dataset_settings.compute_hash())
 
         file_access = FileAccess(os.path.dirname(csv_file))        
         data_loader = DataLoader.from_csv(
@@ -159,7 +160,7 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id,
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.files import FileAccess
     from perceptilabs.resources.serving_results import ServingResultsAccess
-    from perceptilabs.resources.wrangling_results import WranglingResultsAccess        
+    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess        
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     from perceptilabs.messaging.base import get_message_broker    
@@ -172,13 +173,13 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id,
     model_access = ModelAccess(ScriptFactory())
     epochs_access = EpochsAccess()
     serving_results_access = ServingResultsAccess()
-    wrangling_results_access = WranglingResultsAccess(get_data_metadata_cache())                
+    preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())                
 
     csv_file = get_file_path(dataset_settings_dict)  # TODO: move one level up        
     num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
-    data_metadata = wrangling_results_access.get_metadata(dataset_settings.compute_hash())    
+    data_metadata = preprocessing_results_access.get_metadata(dataset_settings.compute_hash())    
 
     file_access = FileAccess(os.path.dirname(csv_file))        
     data_loader = DataLoader.from_csv(
@@ -203,4 +204,18 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id,
         results_interval=settings.SERVING_RESULTS_REFRESH_INTERVAL,
         is_retry=is_retry
     )
+    
+
+@log_exceptions    
+def preprocessing_task(dataset_settings_dict, preprocessing_session_id):
+    from perceptilabs.data.preprocessing_interface import PreprocessingSessionInterface  # TODO: should preprocessing_interface have a better name??
+    from perceptilabs.caching.utils import get_data_metadata_cache    
+    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess        
+    from perceptilabs.messaging.base import get_message_broker    
+
+    preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
+    interface = PreprocessingSessionInterface(preprocessing_results_access)
+
+    interface.run(dataset_settings_dict, preprocessing_session_id)
+    
     

@@ -8,7 +8,8 @@ from perceptilabs.tasks.base import (
     TaskExecutor,
     training_task,
     testing_task,
-    serving_task    
+    serving_task,
+    preprocessing_task        
 )
 
 
@@ -23,7 +24,8 @@ CELERY_APP = Celery(
     task_routes={
         'training_task': {'queue': 'training'},
         'testing_task': {'queue': 'training'},
-        'serving_task': {'queue': 'training'}        
+        'serving_task': {'queue': 'training'},
+        'preprocessing_task': {'queue': 'training'}                
     }
 )
 
@@ -66,6 +68,17 @@ def testing_task_wrapper(self, *args, **kwargs):
 )
 def serving_task_wrapper(self, *args, **kwargs):
     serving_task(*args, **kwargs)
+
+
+@shared_task(
+    bind=True,
+    name="preprocessing_task",
+    autoretry_for=(Exception,),
+    default_retry_delay=5,
+    max_retries=3,
+)
+def preprocessing_task_wrapper(self, *args, **kwargs):
+    preprocessing_task(*args, **kwargs)
     
     
 class CeleryTaskExecutor(TaskExecutor):

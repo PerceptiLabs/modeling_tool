@@ -2,12 +2,11 @@ import os
 import logging
 import argparse
 from waitress import serve
-from concurrent.futures import ThreadPoolExecutor
 
 import perceptilabs.logconf
 import perceptilabs.utils as utils
 
-from perceptilabs.caching.utils import get_preview_cache, get_data_metadata_cache
+from perceptilabs.caching.utils import get_preview_cache
 
 
 PORT_RENDERING_KERNEL = 5001
@@ -39,13 +38,11 @@ def main():
     # utils.disable_gpus()  # Rendering and training kernels will compete for resources when running on the same machine. 
     if args.debug:
         app = create_app(
-            data_executor=utils.DummyExecutor(),
             preview_cache=get_preview_cache(),                                
         )            
         app.run(port=PORT_RENDERING_KERNEL, debug=True)
     else:
         app = create_app(
-            data_executor=ThreadPoolExecutor(),                
             preview_cache=get_preview_cache(),                
         )
         serve(

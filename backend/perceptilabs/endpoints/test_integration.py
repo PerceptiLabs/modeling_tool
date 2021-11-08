@@ -162,15 +162,15 @@ def assert_data(client, dataset_settings):
     # Start preprocessing the dataset
     res = client.put('/data', json={'datasetSettings': dataset_settings})
     assert res.status_code == 200
-    assert 'datasetHash' in res.json
+    assert 'preprocessingSessionId' in res.json
 
-    dataset_hash = res.json['datasetHash']
+    preprocessing_session_id = res.json['preprocessingSessionId']
 
     @retry(stop_max_attempt_number=10, wait_fixed=1000)
     def wait_for_data():
-        res = client.get(f"/data?dataset_hash={dataset_hash}")
+        res = client.get(f"/data?preprocessing_session_id={preprocessing_session_id}")
         assert res.status_code == 200    
-        assert res.json == {'is_complete': True, 'message': "Build status: 'complete'"}
+        assert res.json == {'is_complete': True, 'message': "Build status: 'complete'", 'error': None}
         
     wait_for_data()        
 
@@ -344,6 +344,32 @@ def test_endpoint_error_handling_automatically_adds_fields(client):
     assert res.json['error']['message']
     assert res.json['error']['details']
 
+
+@pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)    
+def test_preprocessing_error(monkeypatch, client, tmp_path, dataset_settings, training_settings):
+    error_message = 'some-random-error-message'
+    
+    def fake_call(*args, **kwargs):
+        raise ValueError(error_message)
+    
+    from perceptilabs.data.base import DataLoader    
+    monkeypatch.setattr(DataLoader, 'compute_metadata', fake_call, raising=True)
+    
+    res = client.put('/data', json={'datasetSettings': dataset_settings})
+    assert res.status_code == 200
+    assert 'preprocessingSessionId' in res.json
+
+    preprocessing_session_id = res.json['preprocessingSessionId']
+
+    @retry(stop_max_attempt_number=10, wait_fixed=1000)
+    def wait_for_data_error():
+        res = client.get(f"/data?preprocessing_session_id={preprocessing_session_id}")
+        assert res.status_code == 200
+        assert res.json['error']['message']
+        assert error_message in res.json['error']['details']
+        
+    wait_for_data_error()        
+    
 
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)    
 def test_training_error(monkeypatch, client, tmp_path, dataset_settings, training_settings):

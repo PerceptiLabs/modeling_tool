@@ -15,9 +15,9 @@ import perceptilabs.data.utils as data_utils
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 class ModelRecommendations(BaseView):
-    def __init__(self, dataset_access, wrangling_results_access):
+    def __init__(self, dataset_access, preprocessing_results_access):
         self._dataset_access = dataset_access
-        self._wrangling_results_access = wrangling_results_access
+        self._preprocessing_results_access = preprocessing_results_access
 
     def dispatch_request(self):
         """ Loads the data and invokes the model recommender to return a graph spec. Also triggers a MixPanel event """    

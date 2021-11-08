@@ -1,9 +1,9 @@
-class WranglingResultsAccess:
+class PreprocessingResultsAccess:
     def __init__(self, cache):
         self._cache = cache
 
-    def set_results(self, session_id, status, metadata=None):
-        self._cache.put(session_id, {'metadata': metadata, 'status': status})
+    def set_results(self, session_id, status, metadata=None, error=None):
+        self._cache.put(session_id, {'metadata': metadata, 'status': status, 'error': error})
 
     def get_results(self, session_id):
         if session_id in self._cache:

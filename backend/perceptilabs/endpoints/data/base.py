@@ -26,10 +26,10 @@ class PutData(View):
         settings_dict = json_data['datasetSettings']
         user_email = json_data.get('userEmail')
 
-        dataset_hash = self._datasets_interface.start_wrangling(
+        session_id = self._datasets_interface.start_preprocessing(
             settings_dict, user_email)
 
-        return jsonify({"datasetHash": dataset_hash})
+        return jsonify({"preprocessingSessionId": session_id})
 
 
 class IsDataReady(View):
@@ -37,15 +37,14 @@ class IsDataReady(View):
         self._datasets_interface = datasets_interface
 
     def dispatch_request(self):
-        dataset_hash = request.args['dataset_hash']
-
-        message, is_present, is_complete = self._datasets_interface.get_wrangling_status(
-            dataset_hash)
+        message, is_present, is_complete, error = self._datasets_interface.get_preprocessing_status(
+            request.args['preprocessing_session_id'])
 
         if is_present:
             response = {
                 'message': f"Build status: '{message}'",
-                'is_complete': is_complete 
+                'is_complete': is_complete,
+                'error': error
             }
         
             return jsonify(response)

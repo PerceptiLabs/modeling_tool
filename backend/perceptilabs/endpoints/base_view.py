@@ -16,7 +16,7 @@ class BaseView(View):
         dataset_settings = DatasetSettings.from_dict(settings_dict)
         csv_path = get_file_path(settings_dict)  # TODO: move one level up
 
-        data_metadata = self._wrangling_results_access.get_metadata(
+        data_metadata = self._preprocessing_results_access.get_metadata(
             dataset_settings.compute_hash())
         
         file_access = FileAccess(os.path.dirname(csv_path))          

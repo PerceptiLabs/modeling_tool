@@ -13,7 +13,7 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class ModelsInterface:
-    def __init__(self, task_executor, message_broker, model_access, epochs_access, training_results_access, testing_results_access, serving_results_access, wrangling_results_access):
+    def __init__(self, task_executor, message_broker, model_access, epochs_access, training_results_access, testing_results_access, serving_results_access, preprocessing_results_access):
         self._task_executor = task_executor
         self._message_broker = message_broker
         self._model_access = model_access        
@@ -21,7 +21,7 @@ class ModelsInterface:
         self._training_results_access = training_results_access
         self._testing_results_access = testing_results_access
         self._serving_results_access = serving_results_access                
-        self._wrangling_results_access = wrangling_results_access
+        self._preprocessing_results_access = preprocessing_results_access
 
     def start_training(self, dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email):
         self._task_executor.enqueue('training_task', dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email)
@@ -163,7 +163,7 @@ class ModelsInterface:
         dataset_settings = DatasetSettings.from_dict(settings_dict)
         csv_path = get_file_path(settings_dict)  # TODO: move one level up
         
-        data_metadata = self._wrangling_results_access.get_metadata(
+        data_metadata = self._preprocessing_results_access.get_metadata(
             dataset_settings.compute_hash())
         
         file_access = FileAccess(os.path.dirname(csv_path))          

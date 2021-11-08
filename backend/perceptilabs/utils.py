@@ -539,6 +539,7 @@ def b64decode_and_sanitize(input_):
     
 
 def get_file_path(dataset_settings_dict):
+    """ To support older models """
     if 'filePath' in list(dataset_settings_dict.keys()):
         csv_path = dataset_settings_dict['filePath']
     else:

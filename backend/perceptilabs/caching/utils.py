@@ -80,25 +80,41 @@ class NullCache(BaseCache):
         return 0
 
 
-def get_data_metadata_cache():
-    redis_url = settings.CACHE_REDIS_URL
+_DATA_METADATA_CACHE = None
 
-    if redis_url is not None:
-        logger.info("Using 'Redis' cache for pipeline metadata...")
-        return RedisCache(redis_url)
-    else:
-        logger.info("Using 'Dict' cache for pipeline metadata...")
-        return DictCache()
+
+def get_data_metadata_cache():
+    global _DATA_METADATA_CACHE
+
+    if _DATA_METADATA_CACHE is None:    
+        redis_url = settings.CACHE_REDIS_URL
+
+        if redis_url is not None:
+            logger.info("Using 'Redis' cache for pipeline metadata...")
+            _DATA_METADATA_CACHE = RedisCache(redis_url)
+        else:
+            logger.info("Using 'Dict' cache for pipeline metadata...")
+            _DATA_METADATA_CACHE = DictCache()
+
+    return _DATA_METADATA_CACHE
+
+
+_PREVIEW_CACHE = None
 
     
 def get_preview_cache():
-    redis_url = settings.CACHE_REDIS_URL
 
-    if redis_url is not None:
-        logger.info("Using 'Redis' cache for previews...")
-        return RedisCache(redis_url)
-    else:
-        logger.info("Using 'Lightweight' cache for previews...")
-        return LightweightCache(max_size=25)
+    global _PREVIEW_CACHE
 
+    if _PREVIEW_CACHE is None:    
+    
+        redis_url = settings.CACHE_REDIS_URL
 
+        if redis_url is not None:
+            logger.info("Using 'Redis' cache for previews...")
+            _PREVIEW_CACHE = RedisCache(redis_url)
+        else:
+            logger.info("Using 'Lightweight' cache for previews...")
+            _PREVIEW_CACHE = LightweightCache(max_size=25)
+
+    return _PREVIEW_CACHE

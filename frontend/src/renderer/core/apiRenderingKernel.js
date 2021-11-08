@@ -174,7 +174,7 @@ export const renderingKernel = {
     return whenRenderingKernelReady
       .then(rk => rk.put('/data', payload))
       .then(res => {
-        return (res.status === 200) ? res.data["datasetHash"] : null;
+        return (res.status === 200) ? res.data["preprocessingSessionId"] : null;
       })
   }, 
      
@@ -186,9 +186,9 @@ export const renderingKernel = {
       })
   },
 
-  async isDataReady(datasetHash, userEmail) {
+  async isDataReady(preprocessingSessionId, userEmail) {
     return whenRenderingKernelReady
-    .then(rk => rk.get(`/data?dataset_hash=${datasetHash}&user_email=${userEmail}`))
+    .then(rk => rk.get(`/data?preprocessing_session_id=${preprocessingSessionId}&user_email=${userEmail}`))
     .then(res => {
       return (res.status === 200) ? res.data : false;
     }).catch((err) => {
@@ -212,11 +212,11 @@ export const renderingKernel = {
   },
   
   async waitForDataReady(datasetSettings, userEmail, cb) {
-    const datasetHash = await renderingKernel.putData(datasetSettings, userEmail);
+    const preprocessingSessionId = await renderingKernel.putData(datasetSettings, userEmail);
 	
     await (async function () {
       while(1) {
-        const res = await renderingKernel.isDataReady(datasetHash, userEmail);
+        const res = await renderingKernel.isDataReady(preprocessingSessionId, userEmail);
         if (res && res.is_complete) {
           break;
         }

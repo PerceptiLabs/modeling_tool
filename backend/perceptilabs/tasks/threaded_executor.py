@@ -4,7 +4,8 @@ from perceptilabs.tasks.base import (
     TaskExecutor,
     training_task,
     testing_task,
-    serving_task,    
+    serving_task,
+    preprocessing_task
 )
 
 
@@ -13,7 +14,8 @@ class ThreadedTaskExecutor:
         self._tasks = {
             'training_task': training_task,
             'testing_task': testing_task,
-            'serving_task': serving_task                        
+            'serving_task': serving_task,
+            'preprocessing_task': preprocessing_task
         }        
         self._pool = ThreadPoolExecutor()
 
