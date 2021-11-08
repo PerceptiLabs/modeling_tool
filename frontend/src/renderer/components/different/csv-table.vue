@@ -76,6 +76,11 @@
     //- .delimiter-section
     //-   span Delimiters: 
     //-   input(v-model="delimiters")
+    div.warning-section(v-if="hasMetaDataType")
+      svg(width="20" height="20" viewBox="0 0 11 10" fill="none" xmlns="http://www.w3.org/2000/svg")
+        path(d="M4.60311 0.52108C4.9924 -0.173694 6.0076 -0.173693 6.39689 0.521081L10.8714 8.50661C11.2475 9.1779 10.7538 10 9.97446 10H1.02554C0.246238 10 -0.247494 9.1779 0.128646 8.50661L4.60311 0.52108Z" fill="#FECF73")
+        path(d="M5 3.3335L6 3.33979L5.74675 6.44335H5.25325L5 3.3335ZM5.95455 6.9092V7.77794H5.04545V6.9092H5.95455Z" fill="#23252A")
+      span The Mask datatype automatically resizes to 224x224 (standard size for pre-trained UNets), you may want to resize the Image Input to the same if you have not already.
 </template>
 
 <script>
@@ -165,6 +170,9 @@ export default {
     },
     datasetFields() {
       return this.delimitedDataSet[0].map((s) => s.trim());
+    },
+    hasMetaDataType() {
+      return this.formattedDataset.dataTypes.find((dataType) => dataType === 'mask');
     }
   },
   methods: {
@@ -342,6 +350,20 @@ export default {
   
   .table-column {
     height: 50px;
+  }
+
+  .warning-section {
+    margin-top: 10px;
+    max-width: 100%;
+    font-size: 14px;
+    line-height: 18px;
+
+    display: flex;
+    align-items: center;
+
+    span {
+      margin-left: 10px;
+    }
   }
 
 </style>
