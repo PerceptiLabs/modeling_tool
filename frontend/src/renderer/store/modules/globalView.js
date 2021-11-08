@@ -1,5 +1,5 @@
 const namespaced = true;
-import { localStorageGridKey, localStorageThemeKey, THEME_LIGHT } from '@/core/constants.js';
+import { localStorageGridKey, localStorageThemeKey, THEME_DARK } from '@/core/constants.js';
 
 const savedTheme = localStorage.getItem(localStorageThemeKey)
 
@@ -46,7 +46,7 @@ const state = {
   isMiniMapNavigatorOpened: false,
   isEnterpriseApp: false,
   shouldCloseAllGlobalPopups: false,
-  theme: savedTheme ? savedTheme : THEME_LIGHT // 'light' or 'dark'
+  theme: savedTheme ? savedTheme : THEME_DARK // 'light' or 'dark'
 };
 const getters = {
   GET_appPath(state) {
