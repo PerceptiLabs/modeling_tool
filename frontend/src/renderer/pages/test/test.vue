@@ -50,17 +50,17 @@
                   )
             template(v-else)
               template(v-for="(testFeature, chartId) in testTypes")
-                div.chart-container.w-50(
+                template(
                   v-for="(feature, featureName) in testFeature"
                 )
-                  chart-switch(
-                    v-if="key === 'confusion_matrix'"
-                    :disableHeader="false"
-                    :key="featureName"
-                    :chart-label="`${modelName(chartId) } - ${featureName} ${TestTypes[key].text}`"
-                    :chart-data="feature"
-                    :styles="chartStyles"
-                  )
+                  .chart-container.w-50(v-if="key === 'confusion_matrix'")
+                    chart-switch(
+                      :disableHeader="false"
+                      :key="featureName"
+                      :chart-label="`${modelName(chartId) } - ${featureName} ${TestTypes[key].text}`"
+                      :chart-data="feature"
+                      :styles="chartStyles"
+                    )
       .no-test-view(v-else)
         p.bold There are no tests running at the moment.
         button.btn.btn--primary.run-test-button(type="button" @click="runTest()") Run Test
