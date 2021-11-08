@@ -174,7 +174,7 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id,
     serving_results_access = ServingResultsAccess()
     wrangling_results_access = WranglingResultsAccess(get_data_metadata_cache())                
 
-    csv_file = dataset_settings_dict['filePath']  # TODO: move one level up        
+    csv_file = get_file_path(dataset_settings_dict)  # TODO: move one level up        
     num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
