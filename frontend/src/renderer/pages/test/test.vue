@@ -257,8 +257,7 @@ export default {
 	bottom: 0;
 	left: $w-sidemenu;
 	border-radius: 15px 0px 0px 0px;
-	// background-color: theme-var($neutral-7);
-	background-color: rgba(35, 37, 42, 100);
+	background-color: theme-var($neutral-7);
   z-index: 101;
   display: flex;
   align-items: center;
@@ -267,7 +266,7 @@ export default {
 
   p {
     font-size: 16px;
-    color: white;
+    color: theme-var($neutral-1);
   }
 }
 .spinner {
