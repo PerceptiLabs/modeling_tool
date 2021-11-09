@@ -79,13 +79,14 @@ div
                   :data-tutorial-target="'tutorial-create-model-model-path'"
                 )
                 button.btn.btn--primary.normalize-button(type="button" @click="openFilePicker") Browse
-            csv-table(
-              v-if="dataset"
-              :dataSet="dataset",
-              :dataSetTypes="dataSetTypes"
-              @update="handleCSVDataTypeUpdates"
-            )
-
+            perfect-scrollbar(style="padding-bottom: 180px;").fix-for-scroll-bar-place
+              csv-table(
+                v-if="dataset"
+                :dataSet="dataset",
+                :dataSetTypes="dataSetTypes"
+                @update="handleCSVDataTypeUpdates"
+              )
+            
             data-column-option-sidebar(
                 :key="index"
                 v-for="index in csvData && csvData.dataTypes.length"
@@ -94,32 +95,33 @@ div
                 @handleChange="updatePreprocessingTypes"
                 :elementIndex="index - 1"
               )
-            span.default-text.error(v-if="isAllIOTypesFilled() && !hasInputAndTarget()") Make sure to have at least one input and one target to proceed
-            span.default-text.error(v-else-if="isAllIOTypesFilled() && !hasOneTarget()") Make sure to have only one target to proceed
-            
-            .data-partition-wrapper
-              h5.default-text Data partition:
-              triple-input(
-                style-type="darken"
-                v-model="datasetSettings.partitions",
-                separate-sign="%",
-                :validate-min="1",
-                :validate-max="98",
-                :validate-sum="100",
-                :withLabels="true"
-              )
-            div(style="display:flex; align-itmes:center")
-              info-tooltip(
-                text="Select random samples to place in each partition, good practice if your dataset is ordered"
-              )
-              base-checkbox(
-                style="font-size: 14px; white-space:nowrap;"
-                v-model="datasetSettings.randomizedPartitions"
-              ) Randomize partition
+            div(style="margin-top: -180px;")
+              span.default-text.error(v-if="isAllIOTypesFilled() && !hasInputAndTarget()") Make sure to have at least one input and one target to proceed
+              span.default-text.error(v-else-if="isAllIOTypesFilled() && !hasOneTarget()") Make sure to have only one target to proceed
               
-            div.randome-seed-input-wrapper.form_row
-              h5.default-text Seed:
-              input.random-seed-input(type="text" v-model="datasetSettings.randomSeed")
+              .data-partition-wrapper
+                h5.default-text Data partition:
+                triple-input(
+                  style-type="darken"
+                  v-model="datasetSettings.partitions",
+                  separate-sign="%",
+                  :validate-min="1",
+                  :validate-max="98",
+                  :validate-sum="100",
+                  :withLabels="true"
+                )
+              div(style="display:flex; align-itmes:center")
+                info-tooltip(
+                  text="Select random samples to place in each partition, good practice if your dataset is ordered"
+                )
+                base-checkbox(
+                  style="font-size: 14px; white-space:nowrap;"
+                  v-model="datasetSettings.randomizedPartitions"
+                ) Randomize partition
+                
+              div.randome-seed-input-wrapper.form_row.relative
+                h5.default-text Seed:
+                input.random-seed-input(type="text" v-model="datasetSettings.randomSeed")
       //- div.d-flex.justify-content-center(v-show="onStep === STEP.TRAINING")
         //-   template(v-if="isCreateModelLoading")
         //-     chart-spinner(text="Building preprocessing pipelines...")
@@ -940,7 +942,6 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-
 .main-wrapper {
   display: flex;
 }

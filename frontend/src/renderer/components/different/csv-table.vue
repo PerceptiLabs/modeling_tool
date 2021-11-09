@@ -2,9 +2,8 @@
   .component-wrapper(
     @blur="clearSelectedColumns"
     tabindex="0"
-    :class="{'isAnySelectOpened': isAnySelectOpened}"
     )
-    perfect-scrollbar.csv-table-scrollbar-wrapper
+    .csv-table-scrollbar-wrapper
       table.table-wrapper(v-if="delimitedDataSet")
         thead.bold
           tr(:data-tutorial-target="'tutorial-data-wizard-csv-explanation'")
@@ -55,7 +54,6 @@
                 :select-options="ioOptions"
                 :value="formattedDataset.ioTypes[numColumn - 1]"
                 @input="setIOSelection($event, numColumn)"
-                @isOpen="handleSelectIsOpen"
               )
               div.text-center(v-else) {{ elementToFeatures[datasetFields[numColumn - 1]].layerName }}
           tr.table-row(:data-tutorial-target="'tutorial-data-wizard-io-explanation'")
@@ -71,7 +69,6 @@
                 :select-options="formattedDataset.columnOptions[numColumn - 1]"
                 :value="formattedDataset.dataTypes[numColumn - 1]"
                 @input="setTypeSelection($event, numColumn)"
-                @isOpen="handleSelectIsOpen"
               )
     //- .delimiter-section
     //-   span Delimiters: 
@@ -120,7 +117,6 @@ export default {
         columnOptions: [],
         preprocessingTypes: [],
       },
-      isAnySelectOpened: false,
     }
   },
   computed: {
@@ -202,9 +198,6 @@ export default {
     clearSelectedColumns() {
       this.selectedColumns = [];
     },
-    handleSelectIsOpen(isSelectOpened) {
-      this.isAnySelectOpened = isSelectOpened;
-    },
     handleColumnPreprocessingChange(numColumn, value){
       this.formattedDataset.preprocessingTypes.splice(numColumn, 1, value);
       this.emitEvent();
@@ -245,12 +238,6 @@ export default {
 
   .component-wrapper {
     width: 100%;
-
-    &.isAnySelectOpened {
-      .ps {
-        overflow: visible !important;
-      }
-    }
   }
   .csv-table-scrollbar-wrapper {
     padding: 0 5px;

@@ -10,7 +10,7 @@
       i.icon.icon-shevron.icon--open(v-if="!disabled")
       
     perfect-scrollbar(tag="ul").custom-select_option-list.action-list(
-      :class="{'open': isOpenList}"
+      :class="{'open': isOpenList, 'custom-select_option-list-top': displayOnTop}"
       v-show="isOpenList"
       )
       template(v-if="selectMultiple")
@@ -96,6 +96,10 @@ export default {
     disabled: {
       type: Boolean,
       default: false,
+    },
+    displayOnTop: {
+      type: Boolean,
+      default: false,
     }
   },
   created() {
@@ -161,7 +165,6 @@ export default {
     },
     isOpenList(newVal, oldVal) {
       if(oldVal === null) return;
-      this.$emit('isOpen', newVal);
     }
   },
   methods: {
@@ -319,7 +322,7 @@ export default {
   }
   .custom-select_option-list {
     position: absolute;
-    z-index: 3;
+    z-index: 7;
     top: 100%;
     left: 0;
     max-height: 13.5rem;
@@ -330,6 +333,11 @@ export default {
     border-style: solid;
     border-color: theme-var($border-color);
     border-width: 0 1px 1px 1px;
+    &.custom-select_option-list-top {
+      top: 0;
+      transform: translateY(-100%);
+      border-width: 1px 1px 0px 1px;
+    }
   }
   .custom-select_separator {
     border-top: 1px solid;
