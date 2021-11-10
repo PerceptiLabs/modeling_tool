@@ -305,7 +305,6 @@
         // console.log("StatsIndex", this.GET_currentStatsIndex);
         // console.log("TestsIndex", this.GET_currentTestIndex);
         // console.groupEnd();
-
         const item = this.workspaceModels[this.GET_currentStatsIndex];
         if (item && typeof item.networkMeta.openStatistics !== 'boolean') {
           // This block is triggered when there is a crash

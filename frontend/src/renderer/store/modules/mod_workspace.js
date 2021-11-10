@@ -2089,7 +2089,7 @@ const actions = {
             const setStatisticsPromise = dispatch('SET_openStatisticsByNetworkId', 
             {
               networkId: r.receiver,
-              value: r.result && r.result.content ? r.result.content : false
+              value: r.result || null
             });
   
             setStatisticsPromises.push(setStatisticsPromise);
