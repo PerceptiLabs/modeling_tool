@@ -60,6 +60,7 @@
                       :chart-label="`${modelName(chartId) } - ${featureName} ${TestTypes[key].text}`"
                       :chart-data="feature"
                       :styles="chartStyles"
+                      :chartOptions="handleConfusionMatrixOptions(feature)"
                     )
       .no-test-view(v-else)
         p.bold There are no tests running at the moment.
@@ -92,6 +93,7 @@ import ChartSpinner from "@/components/charts/chart-spinner";
 import MetricTestTable from "./components/metric-test-table";
 import { TestTypes } from "@/core/constants";
 import { getFirstElementFromObject } from "@/core/helpers";
+import cloneDeep from 'lodash.clonedeep';
 
 const chartStyles = {
   main: {
@@ -187,7 +189,37 @@ export default {
     },
     getImageIndex(testName, modelId) {
       return this.imageChartImages[testName][modelId] || 0;
-    }
+    },
+    handleConfusionMatrixOptions(payload) {
+      let data = cloneDeep(payload);
+      data = replaceKey(data, 'x_axis', 'xAxis');
+      data = replaceKey(data, 'y_axis', 'yAxis');
+      data = addAdditionalProperties(data);
+      delete data.series;
+      
+      return data;
+
+      function replaceKey(data, from, to) {
+        data[to] = {};
+        data[to] = data[from];
+        delete data[from];
+        return data;
+      };
+      function addAdditionalProperties(payload) {
+        payload.grid = {
+          top: '50px',
+          right: '75px',
+          containLabel: true,
+        };
+        payload.xAxis.boundaryGap = true;
+        payload.yAxis.boundaryGap = true;
+        payload.visualMap = {};
+        payload.visualMap.show = false;
+
+
+        return payload;
+      }
+    },
   }
 };
 </script>

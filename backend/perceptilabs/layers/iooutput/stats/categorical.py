@@ -7,7 +7,7 @@ from perceptilabs.stats.loss import LossStatsTracker
 from perceptilabs.stats.multiclass_matrix import MultiClassMatrixStatsTracker
 from perceptilabs.createDataObject import create_data_object
 from perceptilabs.data.base import FeatureSpec, DataLoader
-
+from perceptilabs.utils import get_categories_from_postprocessing
 
 class CategoricalOutputStats(OutputStats):
     def __init__(
@@ -269,19 +269,7 @@ class CategoricalOutputStatsTracker(TrainingStatsTracker):
         self._categories = self._get_categories(kwargs['postprocessing'])
 
     def _get_categories(self, postprocessing):
-        num_categories = postprocessing.n_categories
-        indices = postprocessing(np.eye(num_categories)).numpy()
-        decoded_categories = list()
-
-        def _categories_need_decoding():
-            if isinstance(indices[-1], bytes):
-                return True
-            return False
-
-        if _categories_need_decoding():
-            for index in indices:
-                decoded_categories.append(index.decode("utf-8"))
-
+        decoded_categories = get_categories_from_postprocessing(postprocessing)
         return decoded_categories
 
     def save(self):

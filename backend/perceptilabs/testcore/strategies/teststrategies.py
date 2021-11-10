@@ -13,7 +13,7 @@ class BaseStrategy(ABC):
 
 class ConfusionMatrix(BaseStrategy):
 
-    def run(self, model_outputs, compatible_output_layers):
+    def run(self, model_outputs, compatible_output_layers, categories):
         confusion_matrices = {}
         for layer in compatible_output_layers:
             labels = [x[layer].numpy() for x in model_outputs['targets']]
@@ -23,7 +23,7 @@ class ConfusionMatrix(BaseStrategy):
             num_classes = np.asarray(labels).shape[2]  # TODO: get class names
             confusion_matrix = tf.math.confusion_matrix(
                 targets, predictions, num_classes=num_classes)
-            confusion_matrices[layer] = confusion_matrix
+            confusion_matrices[layer] = {'data':confusion_matrix, 'categories':categories[layer]}
         return confusion_matrices
 
 

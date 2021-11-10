@@ -165,22 +165,49 @@ def line(data_vec: np.ndarray, ratio: int = 1):
     '''Subsamples n-dimensional array into line format'''
     x_data, y_data = subsample(data_vec, ratio)
     data = convertToList(y_data)
-
     obj = {"x_data": x_data, "data": data}
     return obj
 
 
-def heatmap(data_vec: np.ndarray, ratio: int = 1):
+def heatmap(data_vec: np.ndarray, name_list: list = [], ratio: int = 1, **kwargs):
     '''Subsamples n-dimensional array into heatmap format'''
     x_data, y_data = subsample(data_vec, ratio)
     data = convertToList(y_data)
+    show_data = kwargs.get("show_data", False)
     new_data = []
     for i in range(len(data)):
         for j in range(len(data[0])):
             new_point = [i, j, data[i][j]]
             new_data.append(new_point)
-
-    obj = {"x_data": x_data, "data": new_data}
+    x_axis = {
+        'type': 'category',
+        'name': 'Prediction',
+        'data': name_list,
+        'splitArea': {
+            'show': True
+        }
+    }
+    y_axis = {
+        'type': 'category',
+        'name': 'Actual',
+        'data': name_list,
+        'splitArea': {
+            'show': True
+        }
+    }
+    
+    series = [
+        {
+            'name': '',
+            'type': 'heatmap',
+            'data': new_data,
+            'label': {
+                'show': show_data
+                }
+        }
+    ]
+    
+    obj = {"series": series, 'x_axis':x_axis, 'y_axis':y_axis}
     return obj
 
 
@@ -276,7 +303,7 @@ def getType(data_vec: np.ndarray, type_: str = None):
         return TYPE_SCATTER
 
 
-def create_type_object(data_vec: np.ndarray, type_: str, name_list: list, normalize: bool = True, subsample_ratio: int = 1):
+def create_type_object(data_vec: np.ndarray, type_: str, name_list: list, normalize: bool = True, subsample_ratio: int = 1, **kwargs):
     '''Create data object based on type
 
     Args:
@@ -301,7 +328,7 @@ def create_type_object(data_vec: np.ndarray, type_: str, name_list: list, normal
     elif type_ == TYPE_GRAYSCALE:
         type_object = grayscale(data_vec, ratio=subsample_ratio)
     elif type_ == TYPE_HEATMAP:
-        type_object = heatmap(data_vec, ratio=subsample_ratio)
+        type_object = heatmap(data_vec, name_list, ratio=subsample_ratio, **kwargs)
     elif type_ == TYPE_SCATTER:
         type_object = scatter(data_vec, ratio=subsample_ratio)
     elif type_ == TYPE_PIE:
@@ -316,7 +343,7 @@ def create_type_object(data_vec: np.ndarray, type_: str, name_list: list, normal
 
 def create_data_object(
         data_list: list, type_list: list = None, style_list: list = None,
-        name_list: list = None, normalize: bool = True, subsample_ratio: int = 1
+        name_list: list = None, normalize: bool = True, subsample_ratio: int = 1, **kwargs
 ):
     '''Create a data object to be utilized by frontend. If applicable, normalize and
        subsample the incoming n-dimensional array
@@ -363,7 +390,7 @@ def create_data_object(
         if data_vec is None:
             break
 
-        type_object = create_type_object(data_vec, type_, name_list, normalize, subsample_ratio)
+        type_object = create_type_object(data_vec, type_, name_list, normalize, subsample_ratio, **kwargs)
         series_entry = dict(type=type_)
 
         if name:
@@ -382,6 +409,10 @@ def create_data_object(
         data_object["xLength"] = len(data_list[0])
         data_object["series"] = type_object["data"]
         data_object["nameList"] = name_list
+    elif 'heatmap' in type_list:
+        data_object["series"] = type_object["series"]
+        data_object["x_axis"] = type_object['x_axis']
+        data_object["y_axis"] = type_object['y_axis']
     else:
         data_object["xLength"] = data_list[0].size
         data_object["series"]  = series_list
@@ -420,12 +451,12 @@ def subsample_data(subsample_data_info: dict, total_num_layer_components: int, t
 
 def createDataObject(
         data_list: list, type_list: list = None, style_list: list = None,
-        name_list: list = None, normalize: bool = True, subsample_ratio: int = 1
-):
+        name_list: list = None, normalize: bool = True, subsample_ratio: int = 1, **kwargs
+        ):
     """Backwards compatibility alias for create_data_object. Don't use! """
     return create_data_object(
         data_list=data_list, type_list=type_list, style_list=style_list,
-        name_list=name_list, normalize=normalize, subsample_ratio=subsample_ratio
+        name_list=name_list, normalize=normalize, subsample_ratio=subsample_ratio, **kwargs
     )
 
 

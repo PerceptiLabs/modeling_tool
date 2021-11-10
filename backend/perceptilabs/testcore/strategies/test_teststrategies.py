@@ -78,9 +78,11 @@ def test_confusion_matrix_computation(data_loader):
         'targets': [{'y1': tf.constant(np.array([[0., 1.]]), dtype=tf.float32)}]
     }
     compatible_output_layers = ['y1']
-    confusion_matrix = ConfusionMatrix().run(model_outputs, compatible_output_layers)
-    assert (confusion_matrix['y1'].numpy()==np.array([[0, 0],[1, 0]], dtype=np.int32)).all()
-
+    categories = {'y1':[0,1]}
+    confusion_matrix = ConfusionMatrix().run(model_outputs, compatible_output_layers, categories)
+    assert (confusion_matrix['y1']['data'].numpy()==np.array([[0, 0],[1, 0]], dtype=np.int32)).all()
+    assert confusion_matrix['y1']['categories'] == [0,1]
+    
 def test_categorical_metrics_table_computation(data_loader):
     model_outputs = {
         'outputs': [{'y1': np.array([[0.9, 0.1]], dtype=np.float32)},

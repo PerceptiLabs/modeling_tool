@@ -36,6 +36,9 @@ ECharts.registerTheme('light', {
   },
   "categoryAxis": {
     "boundaryGap": false,
+    "nameTextStyle": {
+      color: '#5D5D64',
+    },
     "axisLine": {
       "show": true,
       "lineStyle": {
@@ -622,6 +625,9 @@ ECharts.registerTheme('dark', {
   },
   "categoryAxis": {
     "boundaryGap": false,
+    "nameTextStyle": {
+      color: '#FFFFFF',
+    },
     "axisLine": {
       "show": true,
       "lineStyle": {

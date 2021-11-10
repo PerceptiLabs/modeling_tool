@@ -132,7 +132,8 @@ class TestCore():
         if not self._stopped:
             if len(compatible_output_layers):
                 if test == 'confusion_matrix':
-                    results = ConfusionMatrix().run(model_outputs, compatible_output_layers)
+                    categories = self._get_categories(model_id, compatible_output_layers)
+                    results = ConfusionMatrix().run(model_outputs, compatible_output_layers, categories)
                 elif test == 'segmentation_metrics':
                     results = MetricsTable().run(model_outputs, compatible_output_layers)
                 elif test == 'classification_metrics':
@@ -307,6 +308,16 @@ class TestCore():
             return self._results
         else:
             return {}
+    
+    def _get_categories(self, model_id, compatible_layers):
+        categories = {}
+        data_loader = self._data_loaders[model_id]
+        graph_spec = self._models_info[model_id]['graph_spec']
+        for layer in compatible_layers:
+            postprocessing = data_loader.get_postprocessing_pipeline(layer)
+            decoded_categories = utils.get_categories_from_postprocessing(postprocessing)
+            categories[layer] = decoded_categories
+        return categories
 
     @property
     def models(self):
@@ -333,10 +344,13 @@ class ProcessResults():
 
     def _process_confusionmatrix_output(self):
         for layer_name in self._results:
-            result = self._results[layer_name].numpy()
+            result = self._results[layer_name]['data'].numpy()
+            categories = self._results[layer_name]['categories']
             result = result/result.astype(np.float).sum(axis=0)   #normalizing the matrix
+            result = np.around(result, 3)
+            show_data = True if len(categories)< 14 else False
             data_object = createDataObject(
-                data_list=[result], type_list=['heatmap'])
+                data_list=[result], type_list=['heatmap'], name_list=categories, show_data=show_data)
             self._results[layer_name] = data_object
         return self._results
 

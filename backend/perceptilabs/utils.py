@@ -548,3 +548,22 @@ def get_file_path(dataset_settings_dict):
             csv_path = feature_specs[key]['csv_path']
             break
     return csv_path
+    
+    
+
+def get_categories_from_postprocessing(postprocessing):
+    num_categories = postprocessing.n_categories
+    indices = postprocessing(np.eye(num_categories)).numpy()
+    decoded_categories = list()
+
+    def _categories_need_decoding():
+        if isinstance(indices[-1], bytes):
+            return True
+        return False
+
+    if _categories_need_decoding():
+        for index in indices:
+            decoded_categories.append(index.decode("utf-8"))
+    if decoded_categories == []:
+        decoded_categories = list(range(num_categories))
+    return decoded_categories

@@ -28,11 +28,12 @@ self.addEventListener('message', function(message) {
       // else {
       //
       // }
-      createAxis(model.xAxis.data, sizeX) ;
-      createAxis(model.yAxis.data, sizeY) ;
+      if(!model.xAxis.data.length) {
+        createAxis(model.xAxis.data, sizeX) ;
+        createAxis(model.yAxis.data, sizeY) ;
+      }
       model.visualMap.min = Math.min(...arrValue);
       model.visualMap.max = Math.max(...arrValue);
-
       postMessage(model);
 
     function createAxis(data, length) {
