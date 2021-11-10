@@ -12,7 +12,7 @@
         )
         
         .name.warn-color(v-if="showError()") Error
-        .name(v-else :class="{'warn-color': showError(), 'have-progress': !isNaN(parseInt(statusData.Progress * 100, 10))}") {{statusData.Status ? statusData.Status : 'Untrained'}}
+        .name(v-else :class="{'warn-color': showError(), 'have-progress': !isNaN(parseInt(statusData.Progress * 100, 10))}") {{statusData.Status === 'Waiting' ? 'Untrained' : statusData.Status}}
         
         div.d-flex.align-items-center(v-if="showProgress")
           .train-progress-wrapper
