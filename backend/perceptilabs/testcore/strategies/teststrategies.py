@@ -41,7 +41,7 @@ class MetricsTable(BaseStrategy):
     def _run_categorical_metrics(self, layer, model_outputs, metrics_tables):
         metrics = {
                 'categorical_accuracy': tf.keras.metrics.CategoricalAccuracy(),
-                'top_k_categorical_accuracy': tf.keras.metrics.TopKCategoricalAccuracy(k=5),
+                'top_5_categorical_accuracy': tf.keras.metrics.TopKCategoricalAccuracy(k=5),
                 'precision': tf.keras.metrics.Precision(),
                 'recall': tf.keras.metrics.Recall()
             }
@@ -55,7 +55,7 @@ class MetricsTable(BaseStrategy):
         predictions[np.arange(len(outputs)), outputs.argmax(1)] = 1
         targets = np.zeros_like(labels)
         targets[np.arange(len(labels)), labels.argmax(1)] = 1
-        for metric in ['categorical_accuracy', 'top_k_categorical_accuracy']:
+        for metric in ['categorical_accuracy', 'top_5_categorical_accuracy']:
             metrics[metric].update_state(labels, outputs)
             metrics_tables[layer][metric] = np.float(
                 metrics[metric].result().numpy())

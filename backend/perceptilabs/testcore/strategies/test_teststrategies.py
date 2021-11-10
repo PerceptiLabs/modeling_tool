@@ -94,7 +94,7 @@ def test_categorical_metrics_table_computation(data_loader):
     }
     compatible_output_layers = {'y1':'categorical'}
     metrics_table = MetricsTable().run(model_outputs, compatible_output_layers)
-    assert metrics_table == {'y1': {'categorical_accuracy': 0.75, 'top_k_categorical_accuracy': 1.0, 'precision': 0.75, 'recall': 0.75}}
+    assert metrics_table == {'y1': {'categorical_accuracy': 0.75, 'top_5_categorical_accuracy': 1.0, 'precision': 0.75, 'recall': 0.75}}
 
 def test_mask_metrics_table_computation():
     m1 = np.array([[[0.2412495 , 0.83666475],
