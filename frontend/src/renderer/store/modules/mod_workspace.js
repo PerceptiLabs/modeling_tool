@@ -398,13 +398,15 @@ const getters = {
   },
   GET_inputsAndOutputs: (state, getters) => {
     let net = deepCloneNetwork(getters.GET_currentNetworkElementList);
-    let IOComponents = Object.values(net).filter(el => {
-      return el.layerType === 'IoInput' || el.layerType === 'IoOutput';
-    })
+    
+    let Inputs = Object.values(net).filter(el => (el.layerType === 'IoInput'));
+    let Output = Object.values(net).filter(el => (el.layerType === 'IoOutput'))[0];
 
-    const elUsedForPerformance = IOComponents.find(el => el.layerType === 'IoOutput');
-    console.log('elUsedForPerformance', elUsedForPerformance);
-    let componentsTabs = IOComponents.map(el => ({
+    let componentsTabs = [];
+
+    // make inputs tabs
+    Inputs.forEach(el => {
+      componentsTabs.push({
         btnId: el.layerName,
         name: el.layerName ,
         layerId: el.layerId,
@@ -413,21 +415,36 @@ const getters = {
         btnInteractiveInfo: {
           title: el.layerName,
           text: 'View the global'
+        },
+      });
+    });
+    // make output overview tab
+    componentsTabs.push({
+      btnId: 'Overview',
+      name: 'Overview' ,
+      layerId: Output.layerId,
+      type: 'component',  // default | component
+      layerType: Output.layerType,
+      btnInteractiveInfo: {
+        title: 'Overview',
+        text: 'Overview'
       },
-    }))
-    if (elUsedForPerformance.layerSettings.DataType === 'categorical') {
+    })
+    // add performance tab for categorical output
+    if (Output.layerSettings.DataType === 'categorical') {
       componentsTabs.push({
         btnId: 'Performance',
         name:'Performance' ,
-        layerId: elUsedForPerformance.layerId,
+        layerId: Output.layerId,
         type: 'component',  // default | component
-        layerType: elUsedForPerformance.layerType,
+        layerType: Output.layerType,
         btnInteractiveInfo: {
           title: 'Performance',
           text: 'Performance'
         },
       });
     }
+    // add global loss tab.
     componentsTabs.push({
       btnId: "Global Loss",
       btnInteractiveInfo: {title: "Global Loss", text: "Global Loss"},
