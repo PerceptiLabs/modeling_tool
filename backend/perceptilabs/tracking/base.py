@@ -4,7 +4,7 @@ import logging
 import datetime
 import functools
 
-from perceptilabs.mixpanel_handler import MIXPANEL_TOKEN_DEV, MIXPANEL_TOKEN_PROD
+from perceptilabs.settings import MIXPANEL_TOKEN_DEV, MIXPANEL_TOKEN_PROD
 from perceptilabs.utils import is_dev
 from perceptilabs.logconf import APPLICATION_LOGGER
 

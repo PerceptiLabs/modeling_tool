@@ -41,6 +41,9 @@ def get_tutorial_data_files():
 
 def is_tutorial_data_file(path):
     """ Checks whether a file path matches the tutorial data directory"""
+    if path is None:
+        return False
+    
     path = os.path.abspath(path)
 
     for other in get_tutorial_data_files():

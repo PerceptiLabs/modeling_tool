@@ -5,14 +5,18 @@ perceptilabs/mainServer.py
 perceptilabs/settings.py
 perceptilabs/logconf.py
 perceptilabs/main_setup.py
-perceptilabs/coreInterface.py
 perceptilabs/createDataObject.py
 perceptilabs/utils.py
 perceptilabs/license_checker.py
 perceptilabs/issues.py
-perceptilabs/mixpanel_handler.py
-perceptilabs/testInterface.py
 perceptilabs/hardware.py
+perceptilabs/datasets_interface.py
+perceptilabs/models_interface.py
+perceptilabs/inference_interface.py
+perceptilabs/training_interface.py
+perceptilabs/testing_interface.py
+perceptilabs/serving_interface.py
+perceptilabs/preprocessing_interface.py
 
 # perceptilabs/script
 perceptilabs/script/__init__.py
@@ -220,8 +224,6 @@ perceptilabs/lwcore/strategies/tf2x.py
 perceptilabs/data/__init__.py
 perceptilabs/data/base.py
 perceptilabs/data/settings.py
-perceptilabs/data/datasets_interface.py
-perceptilabs/data/preprocessing_interface.py
 perceptilabs/data/type_inference.py
 
 # backend/perceptilabs/data/utils/
@@ -322,20 +324,13 @@ perceptilabs/tracking/testing_completed.py
 perceptilabs/tracking/data_selected.py
 perceptilabs/tracking/user_email_set.py
 
-# backend/perceptilabs/endpoints/
-perceptilabs/endpoints/base.py
-perceptilabs/endpoints/base_view.py
-perceptilabs/endpoints/__init__.py
+# backend/perceptilabs/api/
+perceptilabs/api/base.py
+perceptilabs/api/__init__.py
 
-# backend/perceptilabs/serving/
-perceptilabs/serving/__init__.py
-perceptilabs/serving/gradio_serving.py
-perceptilabs/serving/interface.py
-
-# backend/perceptilabs/models/
-perceptilabs/models/__init__.py
-perceptilabs/models/interface.py
-perceptilabs/models/api.py
+# backend/perceptilabs/gradio_serving/
+perceptilabs/gradio_serving/__init__.py
+perceptilabs/gradio_serving/base.py
 
 # backend/perceptilabs/tasks/
 perceptilabs/tasks/__init__.py
@@ -343,35 +338,6 @@ perceptilabs/tasks/base.py
 perceptilabs/tasks/celery_executor.py
 perceptilabs/tasks/threaded_executor.py
 perceptilabs/tasks/utils.py
-
-# backend/perceptilabs/endpoints/data/
-perceptilabs/endpoints/data/__init__.py
-perceptilabs/endpoints/data/base.py
-
-# backend/perceptilabs/endpoints/model_recommendations/
-perceptilabs/endpoints/model_recommendations/__init__.py
-perceptilabs/endpoints/model_recommendations/base.py
-
-# backend/perceptilabs/endpoints/network_data/
-perceptilabs/endpoints/network_data/__init__.py
-perceptilabs/endpoints/network_data/base.py
-
-# backend/perceptilabs/endpoints/type_inference/
-perceptilabs/endpoints/type_inference/__init__.py
-perceptilabs/endpoints/type_inference/base.py
-
-# backend/perceptilabs/endpoints/layer_code/
-perceptilabs/endpoints/layer_code/__init__.py
-perceptilabs/endpoints/layer_code/base.py
-
-# backend/perceptilabs/endpoints/version/
-perceptilabs/endpoints/version/__init__.py
-perceptilabs/endpoints/version/base.py
-
-# backend/perceptilabs/endpoints/set_user/
-perceptilabs/endpoints/set_user/__init__.py
-perceptilabs/endpoints/set_user/base.py
-
 
 # backend/perceptilabs/resources/
 perceptilabs/resources/models.py

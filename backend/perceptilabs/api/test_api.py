@@ -11,7 +11,7 @@ from celery.contrib.pytest import (
 
 
 from perceptilabs.caching.utils import DictCache
-from perceptilabs.endpoints.base import create_app
+from perceptilabs.api.base import create_app
 from perceptilabs.tasks.celery_executor import CeleryTaskExecutor
 from perceptilabs.tasks.threaded_executor import ThreadedTaskExecutor
 import perceptilabs.settings as settings
@@ -66,7 +66,7 @@ def dataset_settings():
             10
         ],
         "randomizedPartitions": True,
-        "filePath": "perceptilabs/endpoints/test_data.csv",
+        "filePath": "perceptilabs/api/test_data.csv",
         "randomSeed": 123      
     }
     return dict_
@@ -116,7 +116,7 @@ def assert_export(client, dataset_settings, network, user_email, model_id, train
 
 def assert_serving(client, dataset_settings, network, user_email, model_id, training_session_id):
     res = client.post(
-        f'/models/{model_id}/serve?training_session_id={training_session_id}', 
+        f'/inference/serving/{model_id}?training_session_id={training_session_id}', 
         json={
             'type': 'gradio',
             'network': network,
@@ -139,19 +139,19 @@ def assert_serving(client, dataset_settings, network, user_email, model_id, trai
     
     @retry(stop_max_attempt_number=10, wait_fixed=1000)
     def wait_for_serving_up():
-        res = client.get(f"/models/serving/{serving_session_id}/status")
+        res = client.get(f"/inference/serving/{serving_session_id}/status")
         assert res.status_code == 200
         assert 'url' in res.json
         assert not has_expired(res.json['last_update'])
 
     wait_for_serving_up()                    
 
-    res = client.post(f"/models/serving/{serving_session_id}/stop")
+    res = client.post(f"/inference/serving/{serving_session_id}/stop")
     assert res.status_code == 200
     
     @retry(stop_max_attempt_number=10, wait_fixed=1000)
     def wait_for_serving_down():
-        res = client.get(f"/models/serving/{serving_session_id}/status")
+        res = client.get(f"/inference/serving/{serving_session_id}/status")
         assert res.status_code == 200
         assert has_expired(res.json['last_update'])        
     
@@ -160,7 +160,7 @@ def assert_serving(client, dataset_settings, network, user_email, model_id, trai
     
 def assert_data(client, dataset_settings):
     # Start preprocessing the dataset
-    res = client.put('/data', json={'datasetSettings': dataset_settings})
+    res = client.put('/datasets/preprocessing', json={'datasetSettings': dataset_settings})
     assert res.status_code == 200
     assert 'preprocessingSessionId' in res.json
 
@@ -168,7 +168,7 @@ def assert_data(client, dataset_settings):
 
     @retry(stop_max_attempt_number=10, wait_fixed=1000)
     def wait_for_data():
-        res = client.get(f"/data?preprocessing_session_id={preprocessing_session_id}")
+        res = client.get(f"/datasets/preprocessing/{preprocessing_session_id}")  
         assert res.status_code == 200    
         assert res.json == {'is_complete': True, 'message': "Build status: 'complete'", 'error': None}
         
@@ -177,10 +177,84 @@ def assert_data(client, dataset_settings):
 
 def assert_model_recommendation(client, dataset_settings):
     # Get a model recommendation
-    res = client.post('/model_recommendations', json={'datasetSettings': dataset_settings})    
+    res = client.post('/models/recommendations', json={'datasetSettings': dataset_settings})    
     assert res.status_code == 200        
     network = res.json
     return network
+
+
+def assert_info(client, model_id, dataset_settings, network, user_email):
+    res = client.post(
+        f'/models/{model_id}/layers/info',
+        json={
+            'datasetSettings': dataset_settings,
+            'network': network,
+            'userEmail': user_email
+        }
+    )
+
+    for layer_id, layer_info in res.json.items():
+        assert 'inShape' in layer_info
+        assert 'outShape' in layer_info
+
+    for layer_id in ['0', '1', '2']:
+        res = client.post(
+            f'/models/{model_id}/layers/{layer_id}/info',
+            json={
+                'datasetSettings': dataset_settings,
+                'network': network,
+                'userEmail': user_email
+            }
+        )
+        assert 'inShape' in res.json
+        assert 'outShape' in res.json        
+
+
+def assert_previews(client, model_id, dataset_settings, network, user_email):
+    res = client.post(
+        f'/models/{model_id}/layers/previews',
+        json={
+            'datasetSettings': dataset_settings,
+            'network': network,
+            'userEmail': user_email
+        }
+    )
+    
+    assert res.status_code == 200
+    assert res.json['outputDims']['0'] == {'Dim': '1', 'Error': None}
+    assert res.json['outputDims']['1'] == {'Dim': '2', 'Error': None}
+    assert res.json['outputDims']['2'] == {'Dim': '2', 'Error': None}        
+
+    assert 'series' in res.json['previews']['0']
+    assert 'xLength' in res.json['previews']['0']
+
+    assert 'series' in res.json['previews']['1']
+    assert 'xLength' in res.json['previews']['1']
+    
+    assert 'series' in res.json['previews']['2']
+    assert 'xLength' in res.json['previews']['2']
+
+
+def assert_layer_code(client, model_id, network, user_email):
+    res = client.post(
+        f'/models/{model_id}/layers/1/code',
+        json={
+            'network': network,
+            'userEmail': user_email
+        }
+    )
+
+    def is_valid_syntax(code):
+        try:
+            import ast
+            ast.parse(code)
+        except SyntaxError:
+            return False
+        else:
+            return True
+    
+    assert res.status_code == 200
+    assert is_valid_syntax(res.json['Output'])
 
 
 def assert_training(client, model_id, network, dataset_settings, training_settings, training_session_id, user_email):
@@ -226,15 +300,20 @@ def assert_training(client, model_id, network, dataset_settings, training_settin
 def test_modeling_flow(client, deployment, tmp_path, dataset_settings, training_settings):
     assert_data(client, dataset_settings)
     network = assert_model_recommendation(client, dataset_settings)
-    
+
     user_email = 'a@b.com'
     model_id = '123'
     training_session_id = make_session_id(str(tmp_path))  # TODO: This should be generated by one of the endpoints....
 
+    assert_info(client, model_id, dataset_settings, network, user_email)    
+    assert_previews(client, model_id, dataset_settings, network, user_email)
+
+    assert_layer_code(client, model_id, network, user_email)
+    
     assert_training(client, model_id, network, dataset_settings, training_settings, training_session_id, user_email)
 
     res = client.post(
-        f'/models/testing',
+        f'/inference/testing',
         json={
             'modelsInfo': {
                 model_id: {
@@ -254,13 +333,13 @@ def test_modeling_flow(client, deployment, tmp_path, dataset_settings, training_
     @retry(stop_max_attempt_number=10, wait_fixed=1000)
     def wait_for_testing():
         res = client.get(
-            f'/models/testing/{testing_session_id}/status')
+            f'/inference/testing/{testing_session_id}/status')
         
         assert res.status_code == 200
         assert res.json['status'] == 'Completed'
 
         res = client.get(
-            f'/models/testing/{testing_session_id}/results')
+            f'/inference/testing/{testing_session_id}/results')
         
         assert res.status_code == 200    
         assert res.json['confusion_matrix'] != {}
@@ -345,6 +424,17 @@ def test_endpoint_error_handling_automatically_adds_fields(client):
     assert res.json['error']['details']
 
 
+def test_type_inference(client):
+    res = client.get('/datasets/type_inference?path=perceptilabs/api/test_data.csv')
+    assert res.status_code == 200
+
+    assert res.json == {
+        'x1': [['categorical', 'numerical'], 0],
+        'x2': [['categorical', 'numerical'], 0],        
+        'y1': [['categorical', 'text'], 0]
+    }
+    
+
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)    
 def test_preprocessing_error(monkeypatch, client, tmp_path, dataset_settings, training_settings):
     error_message = 'some-random-error-message'
@@ -355,7 +445,7 @@ def test_preprocessing_error(monkeypatch, client, tmp_path, dataset_settings, tr
     from perceptilabs.data.base import DataLoader    
     monkeypatch.setattr(DataLoader, 'compute_metadata', fake_call, raising=True)
     
-    res = client.put('/data', json={'datasetSettings': dataset_settings})
+    res = client.put('/datasets/preprocessing', json={'datasetSettings': dataset_settings})
     assert res.status_code == 200
     assert 'preprocessingSessionId' in res.json
 
@@ -363,7 +453,7 @@ def test_preprocessing_error(monkeypatch, client, tmp_path, dataset_settings, tr
 
     @retry(stop_max_attempt_number=10, wait_fixed=1000)
     def wait_for_data_error():
-        res = client.get(f"/data?preprocessing_session_id={preprocessing_session_id}")
+        res = client.get(f"/datasets/preprocessing/{preprocessing_session_id}")
         assert res.status_code == 200
         assert res.json['error']['message']
         assert error_message in res.json['error']['details']
@@ -426,7 +516,7 @@ def test_testing_error(monkeypatch, client, tmp_path, dataset_settings, training
 
 
     res = client.post(
-        f'/models/testing',
+        f'/inference/testing',
         json={
             'modelsInfo': {
                 model_id: {
@@ -448,7 +538,7 @@ def test_testing_error(monkeypatch, client, tmp_path, dataset_settings, training
     @retry(stop_max_attempt_number=10, wait_fixed=1000)
     def wait_for_testing_error():
         res = client.get(
-            f'/models/testing/{testing_session_id}/status')
+            f'/inference/testing/{testing_session_id}/status')
 
         assert res.status_code == 200
         assert res.json['error']['message']
@@ -461,6 +551,20 @@ def test_testing_error(monkeypatch, client, tmp_path, dataset_settings, training
     monkeypatch.setattr(TrainingModel, '__call__', fake_call, raising=True)
     
     wait_for_testing_error()
+    
 
+def test_set_user(client):
+    res = client.post('/user', json={'userEmail': "test@email.com"})    
+    assert res.status_code == 200
+    assert res.json == "User has been set to test@email.com"
+    
+    
+def test_get_version(client):
+    import sys
+    import tensorflow as tf
 
+    response = client.get("/version")
+    assert response.status_code == 200
+    assert response.json == {
+        'perceptilabs': 'development', 'python': sys.version, 'tensorflow': tf.__version__}
     

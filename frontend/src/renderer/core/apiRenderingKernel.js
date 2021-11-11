@@ -48,7 +48,7 @@ export const renderingKernel = {
       modelName: modelName,
     };
     return whenRenderingKernelReady
-      .then(rk => rk.post(`/models/${modelId}/serve?training_session_id=${trainingSessionId}`, payload))
+      .then(rk => rk.post(`/inference/serving/${modelId}?training_session_id=${trainingSessionId}`, payload))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
@@ -56,7 +56,7 @@ export const renderingKernel = {
 
   async isServedModelReady(servingSessionId) {
     return whenRenderingKernelReady
-    .then(rk => rk.get(`/models/serving/${servingSessionId}/status`))
+    .then(rk => rk.get(`/inference/serving/${servingSessionId}/status`))
     .then(res => {
       return res.data['url'];
     }).catch((err) => {
@@ -81,13 +81,12 @@ export const renderingKernel = {
     })();
   },
 
-  async getCode(network, layerId) {
+  async getCode(network, modelId, layerId) {
     const payload = {
-      network: network,
-      layer_id: layerId
+      network: network
     };
     return whenRenderingKernelReady
-      .then(rk => rk.post('/layer_code', payload))
+      .then(rk => rk.post(`/models/${modelId}/layers/${layerId}/code`, payload))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
@@ -95,33 +94,33 @@ export const renderingKernel = {
  
   async getDataTypes(path, datasetId, userEmail) {
     return whenRenderingKernelReady
-      .then(rk => rk.get(`/type_inference?path=${path}&dataset_id=${datasetId}&user_email=${userEmail}`))
+      .then(rk => rk.get(`/datasets/type_inference?path=${path}&dataset_id=${datasetId}&user_email=${userEmail}`))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
   },
 
-  async getPreviews(network, datasetSettings, userEmail) {
+  async getLayerInfoAll(modelId, network, datasetSettings, userEmail) {
     const payload = {
       network: network,
       datasetSettings: datasetSettings,
       userEmail: userEmail	
     };
     return whenRenderingKernelReady
-      .then(rk => rk.post('/previews', payload))
+      .then(rk => rk.post(`/models/${modelId}/layers/info`, payload))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
   },
 
-  async getPreview(network, datasetSettings, layerId, userEmail) {
+  async getLayerInfo(modelId, network, datasetSettings, layerId, userEmail) {
     const payload = {
       network: network,
       datasetSettings: datasetSettings,
       userEmail: userEmail	
     };
     return whenRenderingKernelReady
-      .then(rk => rk.post(`/previews/${layerId}`, payload))
+      .then(rk => rk.post(`/models/${modelId}/layers/${layerId}/info`, payload))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
@@ -152,15 +151,14 @@ export const renderingKernel = {
       })
   },  
 
-  async getNetworkData(network, datasetSettings, userEmail) {
-    // overlaps with getPreviews, but will eventually get deprecated
+  async getPreviews(modelId, network, datasetSettings, userEmail) {
     const payload = {
       network: network,
       datasetSettings: datasetSettings,
       userEmail: userEmail	
     };
     return whenRenderingKernelReady
-      .then(rk => rk.post('/network_data', payload))
+      .then(rk => rk.post(`/models/${modelId}/layers/previews`, payload))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
@@ -172,7 +170,7 @@ export const renderingKernel = {
       userEmail: userEmail	
     };
     return whenRenderingKernelReady
-      .then(rk => rk.put('/data', payload))
+      .then(rk => rk.put('/datasets/preprocessing', payload))
       .then(res => {
         return (res.status === 200) ? res.data["preprocessingSessionId"] : null;
       })
@@ -188,7 +186,7 @@ export const renderingKernel = {
 
   async isDataReady(preprocessingSessionId, userEmail) {
     return whenRenderingKernelReady
-    .then(rk => rk.get(`/data?preprocessing_session_id=${preprocessingSessionId}&user_email=${userEmail}`))
+    .then(rk => rk.get(`/datasets/preprocessing/${preprocessingSessionId}?user_email=${userEmail}`))
     .then(res => {
       return (res.status === 200) ? res.data : false;
     }).catch((err) => {
@@ -200,12 +198,12 @@ export const renderingKernel = {
   async getModelRecommendation(datasetSettings, userEmail, modelId, skippedWorkspace) {
     const payload = {
       datasetSettings: datasetSettings,
-      user_email: userEmail,
-      model_id: modelId,
-      skipped_workspace: skippedWorkspace
+      userEmail: userEmail,
+      modelId: modelId,
+      skippedWorkspace: skippedWorkspace
     };
     return whenRenderingKernelReady
-      .then(rk => rk.post('/model_recommendations', payload))
+      .then(rk => rk.post('/models/recommendations', payload))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
@@ -264,7 +262,7 @@ export const renderingKernel = {
       userEmail,
     };
     return whenRenderingKernelReady
-      .then(rk => rk.post(`/set_user`, payload));
+      .then(rk => rk.post(`/user`, payload));
   },
 
   async startTesting(modelsInfo, tests, userEmail) {
@@ -275,7 +273,7 @@ export const renderingKernel = {
     };
     
     return whenRenderingKernelReady
-      .then(rk => rk.post(`/models/testing`, payload))
+      .then(rk => rk.post(`/inference/testing`, payload))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
@@ -283,7 +281,7 @@ export const renderingKernel = {
 
   async getTestingStatus(testingSessionId) {
     return whenRenderingKernelReady
-      .then(rk => rk.get(`/models/testing/${testingSessionId}/status`))
+      .then(rk => rk.get(`/inference/testing/${testingSessionId}/status`))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
@@ -291,7 +289,7 @@ export const renderingKernel = {
 
   async getTestingResults(testingSessionId) {
     return whenRenderingKernelReady
-      .then(rk => rk.get(`/models/testing/${testingSessionId}/results`))
+      .then(rk => rk.get(`/inference/testing/${testingSessionId}/results`))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })

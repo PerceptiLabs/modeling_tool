@@ -27,7 +27,7 @@ def get_input_args():
 
 
 def main():
-    from perceptilabs.endpoints.base import create_app    
+    from perceptilabs.api.base import create_app    
     
     args = get_input_args()
 

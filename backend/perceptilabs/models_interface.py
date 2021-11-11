@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 
 from perceptilabs.stats.base import OutputStats
@@ -8,20 +9,29 @@ from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.data.base import DataLoader
 from perceptilabs.resources.files import FileAccess
 from perceptilabs.utils import get_file_path
+from perceptilabs.utils import KernelError
+from perceptilabs.lwcore import LightweightCore
+from perceptilabs.script import ScriptFactory
+import perceptilabs.lwcore.utils as lwcore_utils
+import perceptilabs.automation.utils as automation_utils
+import perceptilabs.data.utils as data_utils
+import perceptilabs.tracking as tracking
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class ModelsInterface:
-    def __init__(self, task_executor, message_broker, model_access, epochs_access, training_results_access, testing_results_access, serving_results_access, preprocessing_results_access):
+    def __init__(self, task_executor, message_broker, dataset_access, model_access, epochs_access, training_results_access, preprocessing_results_access, preview_cache):
         self._task_executor = task_executor
         self._message_broker = message_broker
+        self._dataset_access = dataset_access                
         self._model_access = model_access        
         self._epochs_access = epochs_access
         self._training_results_access = training_results_access
-        self._testing_results_access = testing_results_access
-        self._serving_results_access = serving_results_access                
         self._preprocessing_results_access = preprocessing_results_access
+        self._preview_cache = preview_cache
+
+        self._script_factory = ScriptFactory()        
 
     def start_training(self, dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email):
         self._task_executor.enqueue('training_task', dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email)
@@ -172,39 +182,89 @@ class ModelsInterface:
 
         return data_loader
 
-    def start_serving(self, serving_type, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email):
-        serving_session_id = self._serving_results_access.new_id()
-        self._task_executor.enqueue('serving_task', serving_type, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email, serving_session_id)
-        return serving_session_id
+    def get_layer_info(self, model_id, dataset_settings_dict, graph_spec_dict, user_email, layer_id=None):
+        try:
+            graph_spec = self._model_access.get_graph_spec(model_id=graph_spec_dict) #TODO: F/E should send an ID        
+            data_loader = self._get_data_loader(dataset_settings_dict, user_email)
+            lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
+            lw_results = lw_core.run(graph_spec)
 
-    def get_serving_status(self, serving_session_id):
-        status_dict = self._serving_results_access.get_latest(serving_session_id)
-        return status_dict
+            content = lwcore_utils.get_network_data(graph_spec, lw_results, skip_previews=True)
+            if layer_id is not None:
+                return content[layer_id]
+            else:
+                return content
+                    
+        except Exception as e:
+            raise KernelError.from_exception(e, message=f'Failed getting layer info')            
 
-    def stop_serving(self, serving_session_id):
-        self._message_broker.publish(
-            {'event': 'serving-stop', 'payload': {'serving_session_id': serving_session_id}})
+    def get_previews(self, model_id, graph_spec_dict, dataset_settings_dict, user_email):
+        try:
+            graph_spec = self._model_access.get_graph_spec(model_id=graph_spec_dict) #TODO: F/E should send an ID        
+            data_loader = self._get_data_loader(dataset_settings_dict, user_email)
+            lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
+            lw_results = lw_core.run(graph_spec)
 
-    def start_testing(self, models_info, tests, user_email):
-        testing_session_id = self._testing_results_access.new_id()
-        self._task_executor.enqueue('testing_task', testing_session_id, models_info, tests, user_email)
-        return testing_session_id
-    
-    def get_testing_status(self, testing_session_id):
-        results_dict = self._testing_results_access.get_latest(testing_session_id)
+            content = lwcore_utils.get_network_data(graph_spec, lw_results, skip_previews=False)
+            preview_content, dim_content = lwcore_utils.format_content(content)
 
-        if results_dict:
-            results = results_dict.get('status', {})
-            results['error'] = results_dict.get('error')
-            return results
-        else:
-            return {}
+            output = {
+                "previews": preview_content,  # TODO(anton.k): the best way to do this is probably to send file URLs w/ the images. That's a lot easier to debug. See: https://stackoverflow.com/questions/33279153/rest-api-file-ie-images-processing-best-practices  The problem is that the frontend expects ECharts
+                "outputDims": dim_content
+            }
 
-    def get_testing_results(self, testing_session_id):
-        results_dict = self._testing_results_access.get_latest(testing_session_id)
+            return output
+            
+        except Exception as e:
+            raise KernelError.from_exception(e, message=f'Failed getting previews')            
+            
+    def get_layer_code(self, model_id, layer_id, graph_spec_dict):
+        graph_spec = self._model_access.get_graph_spec(model_id=graph_spec_dict) #TODO: F/E should send an ID
+        layer_spec = graph_spec.nodes_by_id[layer_id]
 
-        if results_dict:
-            return results_dict['results']
-        else:
-            return {}
+        code = self._script_factory.render_layer_code(
+                layer_spec,
+                macro_kwargs={'layer_spec': layer_spec, 'graph_spec': graph_spec}
+        )
+        output = {'Output': code}
+        return output
+
+    def get_model_recommendation(self, model_id, skipped_workspace, settings_dict, user_email):
+        try:
+            data_loader = self._get_data_loader(settings_dict, user_email)
+            
+            graph_spec, training_settings = automation_utils.get_model_recommendation(data_loader)
+        except Exception as e:
+            raise KernelError.from_exception(e, message="Couldn't get model recommendations because the Kernel responded with an error")
         
+        else:
+            if user_email is not None:
+                self._track_model_recommended(
+                    model_id, user_email, skipped_workspace, data_loader, graph_spec, settings_dict)
+                
+            return graph_spec.to_dict()
+            
+    def _track_model_recommended(self, model_id, user_email, skipped_workspace, data_loader, graph_spec, settings_dict):
+        is_tutorial_data = data_utils.is_tutorial_data_file(settings_dict.get('filePath'))
+            
+        training_size = data_loader.get_dataset_size(partition='training')
+        validation_size = data_loader.get_dataset_size(partition='validation')
+        test_size = data_loader.get_dataset_size(partition='test')
+        sample_size_bytes = sys.getsizeof(data_loader.get_sample(partition='training'))
+        dataset_size_bytes = (training_size + validation_size + test_size) * sample_size_bytes
+        
+        is_plabs_sourced = self._dataset_access.is_perceptilabs_sourced(
+            data_loader.settings.dataset_id)
+
+        tracking.send_model_recommended(
+            user_email,
+            model_id,
+            skipped_workspace,            
+            settings_dict,
+            dataset_size_bytes,
+            graph_spec,
+            is_tutorial_data=is_tutorial_data,
+            is_perceptilabs_sourced=is_plabs_sourced,
+            dataset_id=data_loader.settings.dataset_id
+        )
+    

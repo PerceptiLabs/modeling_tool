@@ -20,4 +20,6 @@ RYGG_FILE_SERVING_TOKEN = os.getenv("PL_FILE_SERVING_TOKEN")
 RYGG_BASE_URL = "http://localhost:8000"
 
 
+MIXPANEL_TOKEN_PROD = '1480b2244fdd4d821227a29e2637f922'  # TODO: should be env var..!
+MIXPANEL_TOKEN_DEV = '8312db76002e43f8a9dc9acf9a12c1fc'  # TODO: should be env var..!
 

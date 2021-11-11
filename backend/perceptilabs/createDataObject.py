@@ -422,33 +422,6 @@ def create_data_object(
 
     return data_object
 
-def subsample_data(subsample_data_info: dict, total_num_layer_components: int, total_data_points: int):
-    '''Given total data points, subsample each layer component equally according to max threshold
-
-    Args:
-        subsample_data_info (dict): Dictionary containing layer information
-        total_num_layer_components (int): Total number of layer components on the modeling view
-        total_data_points (int): Total number of data points across all layers
-
-    Return:
-        preview_content (dict): Dictionary of data objects
-    '''
-    preview_content = {}
-    ratio = None
-
-    if total_data_points <= MAX_DATA_POINTS:
-        ratio = 1
-    else:
-        ratio = round(total_data_points / MAX_DATA_POINTS)
-
-    for layer_id, preview in subsample_data_info.items():
-        sample_data = preview.get('data', None)
-        type_list = preview.get('type_list', None)
-        preview_content[layer_id] = create_data_object(sample_data, type_list=type_list, subsample_ratio=ratio)
-
-    return preview_content
-
-
 def createDataObject(
         data_list: list, type_list: list = None, style_list: list = None,
         name_list: list = None, normalize: bool = True, subsample_ratio: int = 1, **kwargs

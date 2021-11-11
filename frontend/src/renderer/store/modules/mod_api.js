@@ -25,6 +25,9 @@ const getters = {
   GET_coreNetworkElementList(state, getters, rootState, rootGetters) {
     return rootGetters['mod_workspace/GET_currentNetworkElementList'];
   },
+  GET_coreNetworkId(state, getters, rootState, rootGetters) {
+    return rootGetters['mod_workspace/GET_currentNetworkId'];
+  },
   GET_coreNetwork(state, getters, rootState, rootGetters) {
     const network = rootGetters['mod_workspace/GET_currentNetwork'];
     let layers = {};
@@ -543,8 +546,9 @@ const actions = {
     const net = getters.GET_coreNetwork;
     const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];
     const userEmail = rootGetters['mod_user/GET_userEmail'];    
-
-    return renderingKernel.getPreviews(net, datasetSettings, userEmail)
+    const modelId = rootGetters['mod_workspace/GET_currentNetworkId'];
+    
+    return renderingKernel.getLayerInfoAll(modelId, net, datasetSettings, userEmail)
       .then((data)=> {
 	if (data.error) {
           dispatch('globalView/GP_errorPopup', res.error.message + "\n\n" + res.error.details, {root: true});
@@ -572,7 +576,7 @@ const actions = {
     const userEmail = rootGetters['mod_user/GET_userEmail'];    
 
     // console.log('getPreviewVariableList Request', theData);
-    return renderingKernel.getPreview(net, datasetSettings, layerId, userEmail)    
+    return renderingKernel.getLayerInfo(net, datasetSettings, layerId, userEmail)    
       .then((data)=> {
         return data
       })
@@ -583,10 +587,11 @@ const actions = {
 
   API_getCode({dispatch, getters, rootGetters}, {layerId, settings}) {
     const net = getters.GET_coreNetwork;
+    const modelId = getters.GET_coreNetworkId;    
     if(settings) net[layerId].Properties = settings;
 
      // console.log('getCode - layerId', layerId);
-     return renderingKernel.getCode(net, layerId)
+      return renderingKernel.getCode(net, modelId, layerId)
       .then((data)=> {
         // console.log('getCode - response', data);
         // console.log('getCode - layerId', layerId);
@@ -785,7 +790,7 @@ const actions = {
     
     dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: true, networkId } , { root: true });
 
-    return renderingKernel.getNetworkData(net, datasetSettings, userEmail)     
+    return renderingKernel.getPreviews(networkId, net, datasetSettings, userEmail)     
       .then(res => {
         // console.group('getNetworkData');
         // console.log(
@@ -882,7 +887,7 @@ const actions = {
     }
     const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];      
     
-    return renderingKernel.getNetworkData(net, datasetSettings, userEmail)
+    return renderingKernel.getPreviews(networkId, net, datasetSettings, userEmail)
       .then(res => {
         // console.group('API_getBatchPreviewSampleForElementDescendants');
         // console.log(

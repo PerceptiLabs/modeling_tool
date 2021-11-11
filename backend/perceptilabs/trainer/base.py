@@ -630,7 +630,7 @@ class Trainer:
         self.stop()
 
     def get_results(self):
-        """ Return a dict for the coreInterface to derive plots from """
+        """ Return a dict for to derive plots from """
         t0 = time.perf_counter()
         dict_ = {
             'iter': self.num_batches_completed_this_epoch,

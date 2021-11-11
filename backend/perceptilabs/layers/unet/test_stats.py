@@ -9,8 +9,7 @@ def test_unet_preview_content():
     preview_content = UnetPreviewStats().get_preview_content(sample)
     assert preview_content[0] == [sample]
     assert preview_content[1] == (224, 224,11)
-    assert preview_content[2] == 551936
-    assert preview_content[3] == ['mask']
+    assert preview_content[2] == ['mask']
 
 def test_stats_objects_are_equal_when_args_are_equal():
     outputs1 = np.array([0.5,0.4])

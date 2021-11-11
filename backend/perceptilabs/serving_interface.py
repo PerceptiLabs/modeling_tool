@@ -4,7 +4,7 @@ from queue import Empty
 from datetime import datetime
 
 from perceptilabs.logconf import APPLICATION_LOGGER
-from perceptilabs.serving.gradio_serving import GradioLauncher
+from perceptilabs.gradio_serving.base import GradioLauncher
 import perceptilabs.tracking as tracking
 
 logger = logging.getLogger(APPLICATION_LOGGER)

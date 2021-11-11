@@ -25,7 +25,7 @@ from gradio.inputs import InputComponent
 from gradio.outputs import OutputComponent
 from gradio.processing_utils import encode_file_to_base64
 
-from perceptilabs.serving.gradio_serving import GradioLauncher
+from perceptilabs.gradio_serving.base import GradioLauncher
 
 
 @retry(stop_max_attempt_number=5, wait_fixed=2000)

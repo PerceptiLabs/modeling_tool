@@ -6,7 +6,7 @@ import tensorflow as tf
 
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.data.utils.builder import DatasetBuilder
-from perceptilabs.coreInterface import TrainingSessionInterface
+from perceptilabs.training_interface import TrainingSessionInterface
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.script.base import ScriptFactory
 from perceptilabs.resources.epochs import EpochsAccess
