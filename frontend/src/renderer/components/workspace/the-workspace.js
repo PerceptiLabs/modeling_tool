@@ -173,7 +173,7 @@ export default {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
     coreStatus() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus || {}
     },
     statusLocalCore() {
       return this.$store.state.mod_api.statusLocalCore;
@@ -584,15 +584,15 @@ export default {
       this.set_openTest(true);
     },
     trainingFinished(index) {
-      let networkStatus = this.workspace[index].networkMeta.coreStatus.Status;
+      let networkStatus = this.workspace[index].networkMeta.coreStatus?.Status;
       return networkStatus === 'Finished' || networkStatus === 'Testing';
     },
     trainingInProcess(index) {
-      let networkStatus = this.workspace[index].networkMeta.coreStatus.Status;
+      let networkStatus = this.workspace[index].networkMeta.coreStatus?.Status;
       return networkStatus === 'Training' || networkStatus === 'Validation';
     },
     trainingWaiting(index) {
-      return this.workspace[index].networkMeta.coreStatus.Status === 'Waiting';
+      return this.workspace[index].networkMeta.coreStatus?.Status === 'Waiting';
     },
     set_networkName(text) {
       this.setNetworkNameAction(text);

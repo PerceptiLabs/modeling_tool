@@ -260,9 +260,6 @@ const actions = {
         }
       });
   },
-  API_runServer({state, dispatch, commit, rootGetters}) {
-    dispatch('coreStatusWatcher');
-  },
 
   API_closeCore(context, receiver) {
     const theData = {
@@ -463,8 +460,12 @@ const actions = {
       .then((data)=> {
         dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
         dispatch('mod_workspace/saveCurrentModelAction', null, {root: true});
-        dispatch('API_getStatus');
         dispatch('mod_tracker/EVENT_trainingCompleted', 'User stopped', {root: true});
+
+        // It takes time to stop training on kernel side
+        setTimeout(() => {
+          dispatch('API_getStatus');
+        }, 1000);
       })
       .catch((err)=> {
         console.error(err);
@@ -687,15 +688,16 @@ const actions = {
         if (!data) return;
         
         dispatch('mod_workspace/SET_statusNetworkCoreDynamically', {modelId: networkId, ...data}, {root: true})
-	if (data.error) {
+
+	      if (data.error) {
           dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
           commit('mod_empty-navigation/set_emptyScreenMode', 0, {root: true});
           dispatch("mod_workspace/setViewType", 'model', {root: true});
           dispatch("mod_workspace/SET_statisticsAndTestToClosed", { networkId: networkId }, { root: true });
           dispatch('globalView/GP_errorPopup', data.error.message + "\n\n" + data.error.details, {root: true});
-	}
+	      }
 
-        if (data.Status === 'Finished') {
+        if (data.Status === 'Finished' || data.Status === 'Stopped') {
           dispatch('mod_workspace/EVENT_stopRequest', { networkId }, {root: true});
         }
       })

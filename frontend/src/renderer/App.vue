@@ -156,7 +156,6 @@
 
       this.updateOnlineStatus();
       this.SET_appVersion(process.env.PACKAGE_VERSION);
-      this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // document.body.style.overflow = 'hidden';
       document.addEventListener('keydown', this.disableHotKeys);
 
@@ -466,10 +465,7 @@
             this.addNetworksToWorkspace(models, modelMetas);
             models.forEach(model => {
               if (model) {
-                const coreStatus = model.networkMeta.coreStatus.Status;
-                if (coreStatus === 'Training' || coreStatus === "Validation") {
-                  this.chartRequestIfNeeded(model.networkID);
-                }
+                this.chartRequestIfNeeded(model.networkID);
                 this.API_getModelStatus(model.networkID);
               }
             });

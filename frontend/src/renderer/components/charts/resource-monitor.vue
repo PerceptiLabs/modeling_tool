@@ -56,9 +56,9 @@
           this.optionChart.dataZoom[0].endValue = lastX;
           this.optionChart.dataZoom[0].startValue = lastX - xAxisMax;
         };
-        const nextVal1 = newVal['Memory'] || 0;
-        const nextVal2 = newVal['CPU'] || 0;
-        const nextVal3 = newVal['GPU'] || 0;
+        const nextVal1 = (newVal && newVal['Memory']) || 0;
+        const nextVal2 = (newVal && newVal['CPU']) || 0;
+        const nextVal3 = (newVal && newVal['GPU']) || 0;
 
         this.optionChart.series[0].data.push(nextVal1);
         this.optionChart.series[1].data.push(nextVal2);
