@@ -80,10 +80,15 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
         {% endcall %}
 
         {% call indented_if(layer_spec.include_top == False) %}
-            self.kernel = self.mobilenetv2.layers[-3].weights
-            self.bias = self.mobilenetv2.layers[-3].bias
+            {% call indented_if(layer_spec.pooling == 'None') %}
+                self.kernel = self.mobilenetv2.layers[-3].weights
+                self.bias = self.mobilenetv2.layers[-3].bias
+            {% endcall %}
+            {% call indented_if(layer_spec.pooling != 'None') %}
+                self.kernel = self.mobilenetv2.layers[-4].weights
+                self.bias = self.mobilenetv2.layers[-4].bias
+            {% endcall %}
         {% endcall %}
-
 
 
     def get_config(self):

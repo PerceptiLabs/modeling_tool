@@ -27,14 +27,15 @@ def test_mobilenetv2_instantiation(script_factory):
     layer = LayerHelper(script_factory, layer_spec).get_instance()
     assert layer is not None
 
-
-def test_mobilenetv2_can_run(script_factory):
+@pytest.mark.parametrize("pooling", ['None', 'max', 'avg'])
+def test_mobilenetv2_can_run(script_factory, pooling):
     layer_spec = PreTrainedMobileNetV2Spec(
         id_='layer_id',
         name='layer_name',
         include_top=False,
         alpha=1.0,
         weights='None',
+        pooling=pooling,
         trainable=False,
         backward_connections=(LayerConnection(dst_var='input'),)
     )
@@ -46,10 +47,13 @@ def test_mobilenetv2_can_run(script_factory):
 
     # To get this final output shape
     # please refer to research paper here: https://arxiv.org/pdf/1801.04381.pdf -- Page 5
-
-    assert y['output'].shape == (10, 7, 7, 1280)
-    
-
+    if pooling is None:
+        assert y['output'].shape == (10, 7, 7, 1280)
+    if pooling == 'max':
+        assert y['output'].shape == (10, 1280)
+    if pooling == 'avg':
+        assert y['output'].shape == (10, 1280)
+        
 def test_mobilenetv2_output_changes_in_training_mode_with_training_argument(script_factory):
     layer_spec = PreTrainedMobileNetV2Spec(
         id_='layer_id',
