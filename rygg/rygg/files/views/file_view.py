@@ -102,9 +102,11 @@ def pick_file(request):
     file_types = get_file_types_from_request(request)
     title = get_optional_param(request, "title", None)
 
-
-    path = open_file_dialog(initial_dir=initial_dir, file_types=file_types, title=title)
-    return Response({"path": path})
+    try:
+        path = open_file_dialog(initial_dir=initial_dir, file_types=file_types, title=title)
+        return Response({"path": path})
+    except Exception as e:
+        raise HTTPExceptions.INTERNAL_SERVER_ERROR.with_content(e.args)
 
 
 @api_view(["GET"])
@@ -117,5 +119,8 @@ def saveas_file(request):
     title = get_optional_param(request, "title", None)
 
 
-    path = open_saveas_dialog(initial_dir=initial_dir, file_types=file_types, title=title)
-    return Response({"path": path})
+    try:
+        path = open_saveas_dialog(initial_dir=initial_dir, file_types=file_types, title=title)
+        return Response({"path": path})
+    except Exception as e:
+        raise HTTPExceptions.INTERNAL_SERVER_ERROR.with_content(e.args)

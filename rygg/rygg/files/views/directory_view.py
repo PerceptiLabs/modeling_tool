@@ -102,6 +102,8 @@ def pick_directory(request):
     title = get_optional_param(request, "title", None)
 
 
-    path = open_directory_dialog(initial_dir=initial_dir, title=title)
-    return Response({"path": path})
-
+    try:
+        path = open_directory_dialog(initial_dir=initial_dir, title=title)
+        return Response({"path": path})
+    except Exception as e:
+        raise HTTPExceptions.INTERNAL_SERVER_ERROR.with_content(e.args)

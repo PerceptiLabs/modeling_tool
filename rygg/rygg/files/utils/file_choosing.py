@@ -68,8 +68,6 @@ else:
 
         root.wm_attributes("-alpha", 0.01)
 
-        root.overrideredirect(True)
-
         # Show window again and lift it to top so it can get focus,
         # otherwise dialogs will end up behind the terminal.
         root.deiconify()
