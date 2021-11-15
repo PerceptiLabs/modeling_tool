@@ -1,12 +1,21 @@
 import os
+import sys
 import logging
 import argparse
 from waitress import serve
 
-import perceptilabs.logconf
 import perceptilabs.utils as utils
 
 from perceptilabs.caching.utils import get_preview_cache
+
+
+logging.basicConfig(
+    stream=sys.stdout,
+    format='%(asctime)s - %(levelname)s - %(name)s:%(lineno)d - %(message)s',
+    level=logging.INFO
+)
+
+logger = logging.getLogger(__name__)
 
 
 PORT_RENDERING_KERNEL = 5001
@@ -28,12 +37,8 @@ def get_input_args():
 
 def main():
     from perceptilabs.api.base import create_app    
-    
     args = get_input_args()
 
-    perceptilabs.logconf.setup_application_logger(log_level=args.log_level)
-
-    logger = logging.getLogger(perceptilabs.logconf.APPLICATION_LOGGER)
 
     # utils.disable_gpus()  # Rendering and training kernels will compete for resources when running on the same machine. 
     if args.debug:

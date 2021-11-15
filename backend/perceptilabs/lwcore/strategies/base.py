@@ -7,13 +7,12 @@ import numpy as np
 
 from perceptilabs.lwcore.utils import exception_to_error
 from perceptilabs.lwcore.results import LayerResults
-from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.layers.helper import LayerHelper
 from perceptilabs.lwcore.utils import exception_to_error, format_exception
 from perceptilabs.issues import UserlandError
 from perceptilabs.utils import stringify
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class BaseStrategy(ABC):

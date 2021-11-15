@@ -6,9 +6,8 @@ import functools
 
 from perceptilabs.settings import MIXPANEL_TOKEN_DEV, MIXPANEL_TOKEN_PROD
 from perceptilabs.utils import is_dev
-from perceptilabs.logconf import APPLICATION_LOGGER
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 _DEFAULT_TOKEN = MIXPANEL_TOKEN_DEV if is_dev() else MIXPANEL_TOKEN_PROD
 _TOKEN = os.getenv("PL_MIXPANEL_TOKEN", _DEFAULT_TOKEN)

@@ -7,9 +7,6 @@ from flask_compress import Compress
 from flask import Flask, request, g, jsonify, abort, make_response, json
 from flask.json import JSONEncoder
 from werkzeug.exceptions import HTTPException
-import sentry_sdk
-from sentry_sdk.integrations.flask import FlaskIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
 import tensorflow as tf
 
 from perceptilabs.caching.utils import get_preview_cache, get_data_metadata_cache, NullCache, DictCache
@@ -26,32 +23,15 @@ from perceptilabs.resources.preprocessing_results import PreprocessingResultsAcc
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.script import ScriptFactory
-from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.issues import traceback_from_exception
 from perceptilabs import __version__
 import perceptilabs.utils as utils
 import perceptilabs.tracking as tracking
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
-if utils.is_prod() and not utils.is_pytest():
-    sentry_logging = LoggingIntegration(
-        level=logging.INFO,        # Capture info and above as breadcrumbs
-        event_level=logging.ERROR  # Send errors as events
-    )
-
-    SENTRY_ENVIRONMENT = "production" if utils.is_prod() else "development"
-    SENTRY_RELEASE = utils.get_version() if utils.is_prod() else sentry_sdk.utils.get_default_release()
-
-    sentry_sdk.init(
-        dsn="https://095ae2c447ec4da8809174aa9ce55906@o283802.ingest.sentry.io/5838672",
-        integrations=[FlaskIntegration(), sentry_logging],
-        environment=SENTRY_ENVIRONMENT,
-        release=SENTRY_RELEASE
-    )
-    logger.info(f"Initialized sentry for environment '{SENTRY_ENVIRONMENT}' and release '{SENTRY_RELEASE}'")
 
 class MyJSONEncoder(JSONEncoder):
     def default(self, obj):

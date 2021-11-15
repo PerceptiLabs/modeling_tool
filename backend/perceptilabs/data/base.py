@@ -16,10 +16,9 @@ import perceptilabs.data.utils as utils
 from perceptilabs.data.pipelines.base import IdentityPipeline
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.data.settings import FeatureSpec
-from perceptilabs.logconf import APPLICATION_LOGGER
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 def validate_pipeline_arg(arg):

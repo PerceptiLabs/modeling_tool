@@ -5,9 +5,8 @@ import sentry_sdk
 from sentry_sdk import utils
 
 import perceptilabs.utils as utils
-from perceptilabs.logconf import APPLICATION_LOGGER
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 def setup_sentry(commit_id=None):
     def strip_unimportant_errors(event, hint):

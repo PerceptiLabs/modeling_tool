@@ -16,7 +16,6 @@ from perceptilabs.graph.splitter import GraphSplitter
 from perceptilabs.script import ScriptFactory
 from perceptilabs.layers.helper import LayerHelper
 from perceptilabs.layers.specbase import InnerLayerSpec, IoLayerSpec
-from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.lwcore.utils import exception_to_error, format_exception
 from perceptilabs.caching.lightweight_cache import LightweightCache
 from perceptilabs.lwcore.strategies import DefaultStrategy, Tf2xInnerStrategy, IoLayerStrategy
@@ -24,7 +23,7 @@ from perceptilabs.lwcore.results import LayerResults
 from perceptilabs.caching.utils import NullCache
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 def print_result_errors(layer_spec, results):

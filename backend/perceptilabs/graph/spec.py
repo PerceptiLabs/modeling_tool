@@ -6,12 +6,11 @@ import hashlib
 
 
 from perceptilabs.graph import AbstractGraphSpec
-from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.layers.specbase import LayerSpec
 from perceptilabs.layers.utils import get_layer_definition
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class GraphSpec(AbstractGraphSpec):

@@ -8,11 +8,9 @@ import hashlib
 from pydantic import BaseModel, validator
 
 from perceptilabs.utils import stringify, MyPydanticBaseModel
-from perceptilabs.logconf import APPLICATION_LOGGER
-import perceptilabs.layers.specutils as specutils
 from perceptilabs.graph import AbstractGraphSpec
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 def sanitize_name(name):

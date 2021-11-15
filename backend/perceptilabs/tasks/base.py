@@ -1,11 +1,10 @@
 import logging
 import functools
 from abc import ABC, abstractmethod
-from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import get_file_path
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 def log_exceptions(function):

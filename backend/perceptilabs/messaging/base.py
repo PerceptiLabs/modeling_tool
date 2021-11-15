@@ -8,11 +8,10 @@ from urllib.parse import urlparse
 from queue import Queue
 from contextlib import contextmanager
 
-from perceptilabs.logconf import APPLICATION_LOGGER
 import perceptilabs.settings as settings
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class BaseBroker(ABC):

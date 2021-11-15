@@ -3,10 +3,9 @@ import logging
 import importlib
 
 from perceptilabs.utils import add_line_numbering
-from perceptilabs.logconf import APPLICATION_LOGGER
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 RENDERED_CODE_FILE_NAME = '<rendered-code>'

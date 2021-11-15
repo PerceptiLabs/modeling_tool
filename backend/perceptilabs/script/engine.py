@@ -2,10 +2,9 @@ import jinja2
 import logging
 
 from perceptilabs.utils import add_line_numbering
-from perceptilabs.logconf import APPLICATION_LOGGER
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 

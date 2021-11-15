@@ -7,9 +7,8 @@ import json
 from datetime import datetime
 import dateutil.parser
 
-from perceptilabs.logconf import APPLICATION_LOGGER
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 pl_key = "eZkaBCdeBg87CQyy6MI6WR0hpgL7-jT30tjM7T-nRZA=".encode("ascii")

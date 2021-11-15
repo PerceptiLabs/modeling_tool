@@ -8,11 +8,10 @@ from abc import ABC, abstractmethod
 import perceptilabs.settings as settings
 
 from perceptilabs.caching.lightweight_cache import LightweightCache
-from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.caching.base import BaseCache
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class DictCache(BaseCache):

@@ -13,7 +13,6 @@ from perceptilabs.utils import stringify
 from perceptilabs.utils import add_line_numbering
 from perceptilabs.script.engine import J2Engine
 from perceptilabs.layers.utils import get_layer_definition
-from perceptilabs.logconf import APPLICATION_LOGGER
 
 
 
@@ -37,7 +36,7 @@ TOP_LEVEL_IMPORTS = {
     ]
 }
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class ScriptBuildError(Exception):

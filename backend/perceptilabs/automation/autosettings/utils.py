@@ -7,10 +7,9 @@ from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.layers.specbase import DummySpec
 from perceptilabs.layers import get_layer_builder
 from perceptilabs.lwcore import LightweightCore
-from perceptilabs.logconf import APPLICATION_LOGGER
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 def setup_engine(lw_core):

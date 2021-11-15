@@ -15,11 +15,10 @@ from perceptilabs.script import ScriptFactory
 from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.utils import sanitize_path
-from perceptilabs.logconf import APPLICATION_LOGGER
 import perceptilabs.exporter.fastapi_utils as fastapi_utils
 import perceptilabs.tracking as tracking
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class CompatibilityError(Exception):

@@ -3,7 +3,6 @@ perceptilabs/__main__.py
 perceptilabs/app_variables.json
 perceptilabs/mainServer.py
 perceptilabs/settings.py
-perceptilabs/logconf.py
 perceptilabs/main_setup.py
 perceptilabs/createDataObject.py
 perceptilabs/utils.py
@@ -58,7 +57,6 @@ perceptilabs/layers/utils.py
 perceptilabs/layers/legacy.py
 perceptilabs/layers/helper.py
 perceptilabs/layers/specbase.py
-perceptilabs/layers/specutils.py
 perceptilabs/layers/definitions.py
 perceptilabs/layers/mixins.py
 perceptilabs/layers/visualizer.py

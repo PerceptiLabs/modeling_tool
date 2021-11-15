@@ -1,10 +1,9 @@
 import logging
-from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.script import ScriptFactory
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class ModelAccess:

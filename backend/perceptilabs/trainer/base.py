@@ -12,7 +12,6 @@ import json
 import time
 import logging
 
-from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.layers.visualizer import PerceptiLabsVisualizer
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, GlobalStatsTracker, TrainingStatsTracker
@@ -23,7 +22,6 @@ from perceptilabs.layers.ioinput.stats import InputStatsTracker
 
 
 from perceptilabs.trainer.losses import weighted_crossentropy, dice
-from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import get_memory_usage, sanitize_path
 from perceptilabs.hardware import HardwareStats
 import perceptilabs.tracking as tracking
@@ -31,7 +29,7 @@ import perceptilabs.utils as utils
 import perceptilabs.settings as settings
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class Trainer:

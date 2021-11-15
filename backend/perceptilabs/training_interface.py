@@ -2,12 +2,11 @@ import time
 import logging
 from queue import Empty
 
-from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.trainer import Trainer
 from perceptilabs.exporter.base import Exporter
 from perceptilabs.utils import KernelError
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class TrainingSessionInterface:

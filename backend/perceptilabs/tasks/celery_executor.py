@@ -3,7 +3,6 @@ from celery import Celery, shared_task
 
 
 import perceptilabs.settings as settings
-from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.tasks.base import (
     TaskExecutor,
     training_task,
@@ -13,7 +12,7 @@ from perceptilabs.tasks.base import (
 )
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 CELERY_APP = Celery(

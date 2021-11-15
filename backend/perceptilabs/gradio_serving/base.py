@@ -16,10 +16,9 @@ from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.caching.utils import get_data_metadata_cache
-from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import get_file_path
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 def is_file_type(obj):

@@ -6,14 +6,13 @@ import perceptilabs.settings as settings
 from perceptilabs.resources.files import FileAccess
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings
-from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.resources.files import FileAccess
 from perceptilabs.utils import KernelError
 import perceptilabs.data.utils as data_utils
 import perceptilabs.utils as utils
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class PreprocessingSessionInterface:

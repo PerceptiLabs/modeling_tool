@@ -1,10 +1,7 @@
 import os
 import logging
 
-from perceptilabs.logconf import APPLICATION_LOGGER
-
-
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 def get_layer_definition(type_: str):

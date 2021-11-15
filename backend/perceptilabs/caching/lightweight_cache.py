@@ -1,7 +1,6 @@
 import logging
 
 from perceptilabs.caching.base import BaseCache
-from perceptilabs.logconf import APPLICATION_LOGGER
 
 
 #def print_order(l, d):
@@ -16,7 +15,7 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 #    print('-- -- --')
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class ListEntry:

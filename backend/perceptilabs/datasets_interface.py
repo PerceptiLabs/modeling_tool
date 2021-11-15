@@ -4,7 +4,6 @@ import pandas as pd
 
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings
-from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.resources.files import FileAccess
 from perceptilabs.data.type_inference import TypeInferrer
 from perceptilabs.utils import KernelError
@@ -13,7 +12,7 @@ import perceptilabs.utils as utils
 import perceptilabs.data.utils as data_utils
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class DatasetsInterface:

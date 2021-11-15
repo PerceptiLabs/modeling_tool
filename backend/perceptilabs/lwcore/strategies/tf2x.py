@@ -7,10 +7,9 @@ from perceptilabs.lwcore.results import LayerResults
 from perceptilabs.lwcore.strategies.base import JinjaLayerStrategy
 from perceptilabs.lwcore.utils import exception_to_error
 
-from perceptilabs.logconf import APPLICATION_LOGGER
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class Tf2xInnerStrategy(JinjaLayerStrategy):

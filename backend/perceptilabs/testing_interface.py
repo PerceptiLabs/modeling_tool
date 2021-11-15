@@ -4,11 +4,10 @@ from queue import Empty
 
 import perceptilabs.utils as utils
 from perceptilabs.testcore import TestCore, ProcessResults
-from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import KernelError
 
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class TestingSessionInterface():

@@ -8,9 +8,8 @@ from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.lwcore import LayerResults
 from perceptilabs.layers.specbase import LayerSpec, DummySpec
 from perceptilabs.layers.utils import get_layer_definition
-from perceptilabs.logconf import APPLICATION_LOGGER
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 class InferenceRule(ABC):

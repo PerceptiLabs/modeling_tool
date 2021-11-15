@@ -4,9 +4,8 @@ import time
 import tensorflow as tf
 import logging
 import codecs
-from perceptilabs.logconf import APPLICATION_LOGGER
 
-logger = logging.getLogger(APPLICATION_LOGGER)
+logger = logging.getLogger(__name__)
 
 
 def serialize(obj):
