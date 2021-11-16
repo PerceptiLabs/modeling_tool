@@ -378,6 +378,11 @@ const actions = {
     const sessionId = rootGetters['mod_test/GET_testSessionId'];
     
     return renderingKernel.getTestingResults(sessionId).then((data)=> {
+      // 
+      if (typeof data === 'string') {
+        data = JSON.parse(data.replace(/NaN/g, '0'))
+      }
+      console.log('data', data);
       dispatch('API_closeTest');
       dispatch('mod_test/setTestData', data, {root: true});
       dispatch('mod_test/setTestMessage', null, {root: true});

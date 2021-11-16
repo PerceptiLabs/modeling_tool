@@ -1,6 +1,6 @@
 <template lang="pug">
   div.wrapper
-    div.head {{testFeature}} {{name}}
+    div.head {{name}}
     div.body
       table
         thead
@@ -9,7 +9,7 @@
         tbody
           tr(v-for="(data, modelId) in testData")
             td {{modelName(modelId)}}
-            td(:title="value")(v-for="value in data[testFeature]") {{ (value).toFixed(4) }}
+            td(:title="value")(v-for="value in getFirstElementFromObject(data)") {{ (value).toFixed(4) }}
 </template>
 <script>
 import { getFirstElementFromObject } from "@/core/helpers";
@@ -37,10 +37,6 @@ export default {
       type: Object,
       default: {}
     },
-    testFeature: {
-      type: String,
-      default: '',
-    },
     name: {
       type: String,
       default: '',
@@ -60,6 +56,11 @@ export default {
     modelName(id){
       return this.$store.getters['mod_workspace/GET_modelName'](id);
     },
+    getFirstElementFromObject(data) {
+      return getFirstElementFromObject(data);
+    }
+  },
+  computed: {
   }
 }
 </script>

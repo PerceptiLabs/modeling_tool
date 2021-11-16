@@ -344,8 +344,12 @@ class ProcessResults():
         for layer_name in self._results:
             result = self._results[layer_name]['data'].numpy()
             categories = self._results[layer_name]['categories']
-            result = result/result.astype(np.float).sum(axis=0)   #normalizing the matrix
+
+            # normalize the matrix and purge nans
+            result = result/result.astype(np.float).sum(axis=0)
+            result = np.nan_to_num(result)
             result = np.around(result, 3)
+
             show_data = True if len(categories)< 14 else False
             data_object = createDataObject(
                 data_list=[result], type_list=['heatmap'], name_list=categories, show_data=show_data)

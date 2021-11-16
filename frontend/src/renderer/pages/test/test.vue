@@ -23,9 +23,8 @@
             template(
               v-if="key === 'classification_metrics'"
             )
-              template(v-for="(testFeature) in getMetricTableFeatures(testTypes)")
+              template
                 metric-test-table.chart-container(
-                  :testFeature="testFeature"
                   :testData="testTypes"
                   name="Classification Metrics Table"
                 )
@@ -110,7 +109,8 @@ export default {
   },
   created() {
     this.$store.dispatch("mod_webstorage/getTestStatistic").then(res => {
-      this.$store.dispatch("mod_test/setTestData", res, { root: true });
+      console.log('testdata', res);
+      this.$store.dispatch("mod_test/setTestData", JSON.parse(res), { root: true });
     });
   },
   data() {
@@ -175,8 +175,8 @@ export default {
       return this.$store.getters["mod_workspace/GET_modelName"](id);
     },
     getMetricTableFeatures(data) {
-      const chartData = getFirstElementFromObject(data);
-      return chartData ? Object.keys(chartData) : [];
+      const chartData = Object.keys(data).map((key) => data[key]).map((d) => Object.keys(d)[0])
+      return chartData || []
     },
     reset() {
       this.$store.dispatch("mod_test/reset", null, { root: true });
