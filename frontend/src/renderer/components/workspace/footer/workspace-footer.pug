@@ -16,7 +16,7 @@
   base-checkbox( v-model="isGridEnabled") Grid
 .workspace-meta-box
   model-status(
-    v-if="(currentNetwork.networkMeta.coreStatus && currentNetwork.networkMeta.coreStatus.Status !== 'Waiting') && !statisticsIsOpen"
+    v-if="(currentNetwork.networkMeta.coreStatus.Status !== 'Waiting') && !statisticsIsOpen"
     :options="{styleInlineLabel: true}"
     :statusData="currentNetwork && currentNetwork.networkMeta.coreStatus"
   )

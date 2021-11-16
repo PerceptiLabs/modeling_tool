@@ -32,13 +32,11 @@ const workspaceScale = {
     }),
     calcScaleMap() {
       this.$nextTick(()=> {
-        const net = this.$refs.networkField && this.$refs.networkField[0].$refs.network;
-        if (net) {
-          const scaleH = net.offsetHeight/net.scrollHeight;
-          const scaleW = net.offsetWidth/net.scrollWidth;
-          const maxScale = scaleH < scaleW ? scaleH : scaleW;
-          this.scaleNet = +maxScale.toFixed(1) * 100;
-        }
+        const net = this.$refs.networkField[0].$refs.network;
+        const scaleH = net.offsetHeight/net.scrollHeight;
+        const scaleW = net.offsetWidth/net.scrollWidth;
+        const maxScale = scaleH < scaleW ? scaleH : scaleW;
+        this.scaleNet = +maxScale.toFixed(1) * 100;
       })
     },
     scaleScroll(event) {

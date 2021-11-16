@@ -113,13 +113,13 @@
         return currentItemNetwork.networkMeta.openStatistics === true || currentItemNetwork.networkMeta.openTest === true;
       },
       firstItemWithTextIndex() {
-        return this.workspaceModels.findIndex(model => model.networkMeta.openTest !== null && model.networkMeta.coreStatus && model.networkMeta.coreStatus.Status === 'Finished');
+        return this.workspaceModels.findIndex(model => model.networkMeta.openTest !== null && model.networkMeta.coreStatus.Status === 'Finished');
       },
       hasStatistics() {
         return this.workspaceModels.some(model => model.networkMeta.openStatistics !== null);
       },
       hasTest() {
-        return this.workspaceModels.some(model => model.networkMeta.openTest !== null && model.networkMeta.coreStatus && model.networkMeta.coreStatus.Status === 'Finished');
+        return this.workspaceModels.some(model => model.networkMeta.openTest !== null && model.networkMeta.coreStatus.Status === 'Finished');
       },
       currentOrFirstStatisticsIdx() {
         const idx = this.workspaceModels.findIndex(model => model.networkMeta.openStatistics !== null);
@@ -132,7 +132,7 @@
         if (typeof this.testIsOpen === 'boolean') {
           idx = this.currentNetworkIndex;
         } else {
-          idx = this.workspaceModels.findIndex(model => model.networkMeta.openTest !== null && model.networkMeta.coreStatus && model.networkMeta.coreStatus.Status === 'Finished');
+          idx = this.workspaceModels.findIndex(model => model.networkMeta.openTest !== null && model.networkMeta.coreStatus.Status === 'Finished');
         }
 
         return idx;
@@ -256,7 +256,7 @@
         }
       },
       handleTestState(models) {
-        const firstItemWithTextIndex = models.findIndex(model => model.networkMeta.openTest !== null && model.networkMeta.coreStatus && model.networkMeta.coreStatus.Status !== 'Finished');
+        const firstItemWithTextIndex = models.findIndex(model => model.networkMeta.openTest !== null && model.networkMeta.coreStatus.Status !== 'Finished');
         // console.log('handleTestState', firstItemWithTextIndex);
 
         if(firstItemWithTextIndex !== -1) {
