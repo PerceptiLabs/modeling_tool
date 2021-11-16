@@ -1,20 +1,28 @@
 import logging
 import functools
 from abc import ABC, abstractmethod
-from perceptilabs.utils import get_file_path
 
+import sentry_sdk
+
+from perceptilabs.utils import get_file_path, setup_sentry
 
 logger = logging.getLogger(__name__)
 
 
-def log_exceptions(function):
+def handle_exceptions(function):
     @functools.wraps(function)
     def func(*args, **kwargs):
         try:
+            setup_sentry()  # Ensures sentry is configured in a multiprocessing environment
             return function(*args, **kwargs)
         except Exception as e:
             logger.exception("Exception in task")
+
+            sentry_sdk.capture_exception(e)
+            sentry_sdk.flush()            
+            
             raise
+        
     return func
 
 
@@ -24,7 +32,7 @@ class TaskExecutor(ABC):
         raise NotImplementedError
     
 
-@log_exceptions    
+@handle_exceptions    
 def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email, is_retry=False):
     
     import perceptilabs.settings as settings    
@@ -82,7 +90,7 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
     )
     
 
-@log_exceptions    
+@handle_exceptions    
 def testing_task(testing_session_id, models_info, tests, user_email, is_retry=False):
     import perceptilabs.settings as settings        
     from perceptilabs.testing_interface import TestingSessionInterface
@@ -148,7 +156,7 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
     )
      
 
-@log_exceptions    
+@handle_exceptions    
 def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email, serving_session_id, is_retry=False):
     
     import perceptilabs.settings as settings    
@@ -205,7 +213,7 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id,
     )
     
 
-@log_exceptions    
+@handle_exceptions    
 def preprocessing_task(dataset_settings_dict, preprocessing_session_id):
     from perceptilabs.preprocessing_interface import PreprocessingSessionInterface  # TODO: should preprocessing_interface have a better name??
     from perceptilabs.caching.utils import get_data_metadata_cache    

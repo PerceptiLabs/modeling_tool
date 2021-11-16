@@ -8,6 +8,7 @@ from flask import Flask, request, g, jsonify, abort, make_response, json
 from flask.json import JSONEncoder
 from werkzeug.exceptions import HTTPException
 import tensorflow as tf
+import sentry_sdk
 
 from perceptilabs.caching.utils import get_preview_cache, get_data_metadata_cache, NullCache, DictCache
 from perceptilabs.messaging.base import get_message_broker
@@ -312,14 +313,21 @@ def create_app(
         return response
 
     @app.errorhandler(Exception)
-    def handle_endpoint_error(error):
-        # TODO: Sentry capture here???? probably on original exception...
+    def handle_endpoint_error(original_error):        
         logger.exception(f"Error in request '{request.url}'")
         
-        if not isinstance(error, utils.KernelError):
-            error = utils.KernelError.from_exception(error)
+        if not isinstance(original_error, utils.KernelError):
+            error = utils.KernelError.from_exception(original_error)
+
+        response = {"error": error.to_dict()}
+
+        with sentry_sdk.push_scope() as scope:
+            scope.set_extra('url', request.url)            
+            scope.set_extra('request', request.json)
+            scope.set_extra('response', response)            
+            sentry_sdk.capture_exception(original_error)
             
-        return jsonify({"error": error.to_dict()}), 200   
+        return jsonify(response), 200   
             
     #print(app.url_map)
     return app

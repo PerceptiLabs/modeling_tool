@@ -567,3 +567,44 @@ def get_categories_from_postprocessing(postprocessing):
     if decoded_categories == []:
         decoded_categories = list(range(num_categories))
     return decoded_categories
+
+
+def setup_sentry():
+    import logging
+    import sentry_sdk
+    from sentry_sdk.integrations.logging import LoggingIntegration
+    import perceptilabs.settings as settings
+    
+    logger = logging.getLogger(__name__)
+    
+    if is_pytest():
+        return
+
+    if is_prod() and not settings.SENTRY_ENABLED_PROD:
+        return
+
+    if is_dev() and not settings.SENTRY_ENABLED_DEV:
+        return    
+
+    if is_prod():
+        environment = "prod"
+        release = get_version()
+    else:
+        environment = "dev"
+        release = sentry_sdk.utils.get_default_release()
+    
+    integrations = [
+        LoggingIntegration(
+            level=logging.INFO,        # Capture info and above as breadcrumbs
+            event_level=None           # Don't send logs as events. Instead, focus on unhandled errors and send handled errors manually
+        )
+    ]
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        integrations=integrations,
+        environment=environment,
+        release=release
+    )
+    logger.info(f"Initialized sentry for environment '{environment}' and release '{release}'")
+
+    

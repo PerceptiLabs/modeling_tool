@@ -2,6 +2,8 @@ import time
 import logging
 from queue import Empty
 
+import sentry_sdk
+
 from perceptilabs.trainer import Trainer
 from perceptilabs.exporter.base import Exporter
 from perceptilabs.utils import KernelError
@@ -30,13 +32,24 @@ class TrainingSessionInterface:
             )
             with self._message_broker.subscription() as queue:
                 yield from self._main_loop(queue, trainer, results_interval, training_session_id)
-                
-        except Exception as e:
-            error = KernelError.from_exception(e, message="Error during training!")            
-            self._results_access.store(training_session_id, {'error': error.to_dict()})
 
-            # TODO: Sentry capture here???? probably on original exception...            
-            logger.exception("Exception in training session interface!")
+        except Exception as e:
+            self._handle_error(e, model_id, graph_spec_dict, training_session_id, training_settings, user_email)
+
+    def _handle_error(self, e, model_id, graph_spec_dict, training_session_id, training_settings, user_email):
+        error = KernelError.from_exception(e, message="Error during training!")
+        self._results_access.store(training_session_id, {'error': error.to_dict()})
+        logger.exception("Exception in training session interface!")
+
+        with sentry_sdk.push_scope() as scope:
+            scope.set_extra('model_id', model_id)
+            scope.set_extra('graph_spec', graph_spec_dict)
+            scope.set_extra('training_session_id', training_session_id)
+            scope.set_extra('training_settings', training_settings)
+            scope.set_extra('user_email', user_email)
+            
+            sentry_sdk.capture_exception(e)
+            sentry_sdk.flush()            
 
     def _main_loop(self, queue, trainer, results_interval, training_session_id):
         training_step = trainer.run_stepwise()

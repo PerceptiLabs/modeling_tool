@@ -33,9 +33,9 @@ class TestingSessionInterface():
         except Exception as e:
             error = KernelError.from_exception(e, "Error during testing!")            
             self._results_access.store(testing_session_id, {'error': error.to_dict()})
-
-            # TODO: Sentry capture here???? probably on original exception...            
             logger.exception("Exception in training session interface!")
+
+            raise  # Send it up to sentry. If these are common, we can add the same mechanism as for training here.
 
     def _main_loop(self, queue, core, results_interval, testing_session_id):            
         testing_step = core.run_stepwise()

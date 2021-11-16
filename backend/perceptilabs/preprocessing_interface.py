@@ -29,6 +29,8 @@ class PreprocessingSessionInterface:
             self._results_access.set_results(
                 preprocessing_session_id, 'failed', error=error.to_dict())
 
+            raise  # Send it up to sentry. If these are common, we can add the same mechanism as for training here.            
+
     def _run_internal(self, dataset_settings_dict, preprocessing_session_id):
         dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
         csv_file = utils.get_file_path(dataset_settings_dict)  # TODO. move one level up
