@@ -11,7 +11,6 @@ from perceptilabs.lwcore.utils import exception_to_error
 
 logger = logging.getLogger(__name__)
 
-
 class Tf2xInnerStrategy(JinjaLayerStrategy):
     def _run_internal(self, layer_spec, graph_spec, layer_class, input_results, line_offset=None):
         """ Returns a LayerResults obj. containing shapes and previews for a layer
@@ -41,8 +40,9 @@ class Tf2xInnerStrategy(JinjaLayerStrategy):
     def _make_results(self, layer_instance, input_tensors, layer_name):
         """ Evaluate the tensors of a layer and put them in the results struct """
         try:
-            _ = layer_instance(input_tensors) # Note: we use the SAMPLE tensors and NOT the actual OUTPUT tensors
+            _ = layer_instance(input_tensors) # Note: we use the SAMPLE tensors and NOT the actual OUTPUT tensors 
             sample_tensors = layer_instance.get_sample()
+
             outputs = {
                 key: tensor.numpy()[0] # Drop batch dimension
                 for key, tensor in sample_tensors.items()
@@ -53,7 +53,7 @@ class Tf2xInnerStrategy(JinjaLayerStrategy):
             raise
         else:
             shapes = {name: np.atleast_1d(value).shape for name, value in outputs.items()}
-        
+
             results = LayerResults(
                 sample=outputs,
                 out_shape=shapes,
@@ -95,4 +95,8 @@ class Tf2xInnerStrategy(JinjaLayerStrategy):
             raise
         else:
             return layer_instance
+    
+                
+                
+                
             

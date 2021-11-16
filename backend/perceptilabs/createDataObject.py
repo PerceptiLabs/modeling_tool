@@ -3,10 +3,12 @@ import itertools
 
 DEFAULT_IMAGE_SUBSAMPLE_SIZE = 100
 DEFAULT_SUBSAMPLE_SIZE = 200
+DEFAULT_SUBSAMPLE_RATIO = 1
 BAR_LINE_THRESHOLD = 25
 
 MAX_DATA_POINTS = 1000000
 MIN_IMAGE_SIZE = 10
+MAX_IMAGE_SIZE = 2000
 MIN_1D_SIZE = 1000
 
 TYPE_BAR       = "bar"
@@ -18,6 +20,13 @@ TYPE_HEATMAP   = "heatmap"
 TYPE_SCATTER   = "scatter"
 TYPE_PIE       = "pie"
 TYPE_MASK      = "mask"
+
+
+def needs_compression(image: np.ndarray) -> bool:
+    if (image.shape[0] >= MAX_IMAGE_SIZE or image.shape[1] >= MAX_IMAGE_SIZE):
+        return True  
+    else: 
+        return False
 
 def normalization(image, from_min, from_max, to_min, to_max):
 
@@ -41,8 +50,9 @@ def RGB2RGBa(data: np.ndarray, normalize: bool):
         newData[:, :, 0:3] = denormalizedData
 
     newData[:,:,3] = 255
-    flatData = np.reshape(newData,-1)
 
+    flatData = np.reshape(newData, -1)
+    
     return flatData
 
 
@@ -66,7 +76,7 @@ def grayscale2RGBA(data: np.ndarray):
 
     return flatData
 
-def subsample(sample: np.ndarray, ratio: int = 1):
+def subsample(sample: np.ndarray, ratio: int = DEFAULT_SUBSAMPLE_RATIO):
     """ Subsamples a n-dimensional array according to ratio
 
     Args:
@@ -112,7 +122,7 @@ def convertToList(npy: np.ndarray):
     return npy
 
 
-def bar(data_vec: np.ndarray, ratio: int = 1):
+def bar(data_vec: np.ndarray, ratio: int = DEFAULT_SUBSAMPLE_RATIO):
     '''Subsamples n-dimensional array into bar format'''
     x_data, y_data = subsample(data_vec, ratio)
     data = convertToList(y_data)
@@ -120,7 +130,7 @@ def bar(data_vec: np.ndarray, ratio: int = 1):
     obj = {"x_data": x_data, "data": data}
     return obj
 
-def bar_detailed(data_vec: np.ndarray, name_list: list = None, ratio: int = 1):
+def bar_detailed(data_vec: np.ndarray, name_list: list = None, ratio: int = DEFAULT_SUBSAMPLE_RATIO):
     '''Subsamples n-dimensional array into bar format'''
     _, y_data = subsample(data_vec, ratio)
     x_data = list(range(len(y_data)))
@@ -161,7 +171,7 @@ def bar_detailed(data_vec: np.ndarray, name_list: list = None, ratio: int = 1):
 
     return obj
 
-def line(data_vec: np.ndarray, ratio: int = 1):
+def line(data_vec: np.ndarray, ratio: int = DEFAULT_SUBSAMPLE_RATIO):
     '''Subsamples n-dimensional array into line format'''
     x_data, y_data = subsample(data_vec, ratio)
     data = convertToList(y_data)
@@ -169,7 +179,7 @@ def line(data_vec: np.ndarray, ratio: int = 1):
     return obj
 
 
-def heatmap(data_vec: np.ndarray, name_list: list = [], ratio: int = 1, **kwargs):
+def heatmap(data_vec: np.ndarray, name_list: list = [], ratio: int = DEFAULT_SUBSAMPLE_RATIO, **kwargs):
     '''Subsamples n-dimensional array into heatmap format'''
     x_data, y_data = subsample(data_vec, ratio)
     data = convertToList(y_data)
@@ -211,7 +221,7 @@ def heatmap(data_vec: np.ndarray, name_list: list = [], ratio: int = 1, **kwargs
     return obj
 
 
-def grayscale(data_vec: np.ndarray, ratio: int = 1):
+def grayscale(data_vec: np.ndarray, ratio: int = DEFAULT_SUBSAMPLE_RATIO):
     '''Subsamples n-dimensional array into greyscale format'''
     x_data, y_data = subsample(data_vec, ratio)
     height, width = y_data.shape[0:2]
@@ -228,12 +238,14 @@ def grayscale(data_vec: np.ndarray, ratio: int = 1):
     return obj
 
 
-def rgb(data_vec: np.ndarray, normalize: bool, ratio: int = 1):
+def rgb(data_vec: np.ndarray, normalize: bool, ratio: int = DEFAULT_SUBSAMPLE_RATIO):
     '''Subsamples n-dimensional array into RGB format'''
+    if needs_compression(data_vec) and ratio == 1:
+        ratio *= 2
+
     x_data, y_data = subsample(data_vec, ratio)
     height, width = y_data.shape[0:2]
     y_data = RGB2RGBa(y_data, normalize)
-
     obj = {
         "x_data": x_data,
         "data": convertToList(y_data),
@@ -245,7 +257,7 @@ def rgb(data_vec: np.ndarray, normalize: bool, ratio: int = 1):
     return obj
 
 
-def scatter(data_vec: np.ndarray, ratio: int = 1):
+def scatter(data_vec: np.ndarray, ratio: int = DEFAULT_SUBSAMPLE_RATIO):
     '''Subsamples n-dimensional array into scatter format'''
     x_data, y_data = subsample(data_vec, ratio)
     data = convertToList(y_data)
@@ -263,7 +275,7 @@ def pie(data_vec: np.ndarray):
     output = {"data": list_}
     return output
 
-def mask(data_vec: np.ndarray, ratio: int = 1):
+def mask(data_vec: np.ndarray, ratio: int = DEFAULT_SUBSAMPLE_RATIO):
     #TODO(mukund): generate color images instead of greyscale
     if len(data_vec.shape) == 3:
         data_vec = np.argmax(data_vec, axis=2) #getting class values
@@ -303,7 +315,7 @@ def getType(data_vec: np.ndarray, type_: str = None):
         return TYPE_SCATTER
 
 
-def create_type_object(data_vec: np.ndarray, type_: str, name_list: list, normalize: bool = True, subsample_ratio: int = 1, **kwargs):
+def create_type_object(data_vec: np.ndarray, type_: str, name_list: list, normalize: bool = True, subsample_ratio: int = DEFAULT_SUBSAMPLE_RATIO, **kwargs):
     '''Create data object based on type
 
     Args:
@@ -343,7 +355,7 @@ def create_type_object(data_vec: np.ndarray, type_: str, name_list: list, normal
 
 def create_data_object(
         data_list: list, type_list: list = None, style_list: list = None,
-        name_list: list = None, normalize: bool = True, subsample_ratio: int = 1, **kwargs
+        name_list: list = None, normalize: bool = True, subsample_ratio: int = DEFAULT_SUBSAMPLE_RATIO, **kwargs
 ):
     '''Create a data object to be utilized by frontend. If applicable, normalize and
        subsample the incoming n-dimensional array
@@ -424,8 +436,8 @@ def create_data_object(
 
 def createDataObject(
         data_list: list, type_list: list = None, style_list: list = None,
-        name_list: list = None, normalize: bool = True, subsample_ratio: int = 1, **kwargs
-        ):
+        name_list: list = None, normalize: bool = True, subsample_ratio: int = DEFAULT_SUBSAMPLE_RATIO, **kwargs
+):
     """Backwards compatibility alias for create_data_object. Don't use! """
     return create_data_object(
         data_list=data_list, type_list=type_list, style_list=style_list,
