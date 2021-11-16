@@ -27,8 +27,12 @@ def all_string_values(d):
             q.extend(v)
 
 def json_file_to_dict(json_file):
-    with open(json_file, "r") as f:
-        return json.load(f)
+    try:
+        with open(json_file, "r") as f:
+            return json.load(f)
+    except json.decoder.JSONDecodeError as e:
+        logger.error(f"Error while attempting to load json file {json_file}. It will not be usable in PerceptiLabs modeling")
+        raise e
 
 def csv_strings_from_model_json(json_file):
     d = json_file_to_dict(json_file)
@@ -55,7 +59,11 @@ def populate_existing_datasets(app, schema_editor):
             m.save()
             continue
 
-        csv_files = csv_files_from_model_json(json_file)
+        try:
+            csv_files = csv_files_from_model_json(json_file)
+        except json.decoder.JSONDecodeError:
+            continue
+
         logger.debug(f"Got csv files: {csv_files}")
 
         # upsert dataset records for the csv files in the model's project
