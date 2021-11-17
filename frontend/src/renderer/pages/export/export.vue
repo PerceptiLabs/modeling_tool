@@ -280,7 +280,10 @@ export default {
           this.loadingMessage = `Deploying model: ${modelToExport.networkName}..`;
           const retMessage = await this.$store.dispatch('mod_api/API_exportData', exportPayload);
           const gradioUrl = retMessage.substring(retMessage.indexOf('http'));
-          window.open(gradioUrl, '_blank');
+          const popup = window.open(gradioUrl, '_blank');
+          if (!popup) {
+            this.$store.dispatch('globalView/GP_infoPopup', `Open <a href="${gradioUrl}" target="_blank" style="color: #6185EE;">${gradioUrl}</a> to run Gradio`, {root: true});
+          }
           this.loadingMessage = '';
         },
       });

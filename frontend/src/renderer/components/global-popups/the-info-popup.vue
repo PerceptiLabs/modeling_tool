@@ -26,7 +26,7 @@
                 a.btn.btn--link.text-primary(target="_blank" href="https://perceptilabs.com/docs/installation") https://perceptilabs.com/docs/installation
             ul.w-100(v-else)
                 div(v-for="(text, i) in popupText" :key="i") 
-                  p(style="white-space: break-spaces") {{ text }}
+                  p(style="white-space: break-spaces" v-html="text") 
 
           .popup_clipboard(v-if="!coreNotFoundPopup")
             button.btn.btn--icon.icon.icon-clipboard-add(type="button"
