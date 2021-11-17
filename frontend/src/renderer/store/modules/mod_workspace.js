@@ -936,22 +936,38 @@ const mutations = {
   },
   set_networkSnapshot(state, {dispatch, getters}) {
     const network = cloneDeep(getters.GET_currentNetwork);
-    
+    let zoomFrom = network.networkMeta.zoom;
+    let zoomTo = getters.GET_currentNetwork.networkMeta.zoomSnapshot;
     let clonedNetworkElementList = network.networkElementList;
-    const zoomValue = network.networkMeta.zoom * 100;
-
-    if(getters.GET_currentNetwork.networkMeta.hasOwnProperty('zoomSnapshot')) {
-      getters.GET_currentNetwork.networkMeta.zoomSnapshot = 1;
-    }
+    let was = [];
     Object.keys(clonedNetworkElementList).map(elId => {
-      clonedNetworkElementList[elId].layerMeta.position.top = (clonedNetworkElementList[elId].layerMeta.position.top / zoomValue) * 100;
-      clonedNetworkElementList[elId].layerMeta.position.left = (clonedNetworkElementList[elId].layerMeta.position.left / zoomValue) * 100;
-    })
+      was[elId] = {
+        top: clonedNetworkElementList[elId].layerMeta.position.top,
+        left: clonedNetworkElementList[elId].layerMeta.position.left,
+      };
+    });
+    
+    Object.keys(clonedNetworkElementList).map(elId => {
+      clonedNetworkElementList[elId].layerMeta.position.top = (clonedNetworkElementList[elId].layerMeta.position.top / zoomFrom) * zoomTo;
+      clonedNetworkElementList[elId].layerMeta.position.left = (clonedNetworkElementList[elId].layerMeta.position.left / zoomFrom) * zoomTo;
+    });
 
     if (!getters.GET_currentNetwork.networkSnapshots) {
       Vue.set(getters.GET_currentNetwork, 'networkSnapshots', []);
     }
-
+    let is = [];
+    Object.keys(clonedNetworkElementList).map(elId => {
+      is[elId] = {
+        top: clonedNetworkElementList[elId].layerMeta.position.top,
+        left: clonedNetworkElementList[elId].layerMeta.position.left,
+      };
+    });
+    console.log({
+      zoomFrom,
+      zoomTo,
+      was,
+      is,
+    });
     getters.GET_currentNetwork.networkSnapshots.splice(0, 1, clonedNetworkElementList);
   },
   set_statusNetworkCore(state, {getters, value}) {
@@ -2557,11 +2573,13 @@ const actions = {
       const decreasePercent = Math.min(hPercent, wPercent);
   
       const zoom =  (1 - ((100 - decreasePercent ) / 100)).toFixed(2);
-  
-      console.log({ zoom, offsetWidth,scrollWidth, offsetHeight, scrollHeight, wCoefficient, wPercent, hCoefficient, hPercent});
-     
-      dispatch('updateNetworkElementPositions', { zoom } )
-      dispatch('SET_statusNetworkZoom', zoom  )
+      
+      const shouldZoomOut = zoom !== '1.00';
+
+      if (shouldZoomOut) { 
+        dispatch('updateNetworkElementPositions', { zoom } );
+        dispatch('SET_statusNetworkZoom', zoom  );
+      }
   },
   setNetworkElementDefaultSetting({ commit, getters }, { layerId }) {
     commit('setNetworkElementDefaultSettingMutation', { layerId, getters });
