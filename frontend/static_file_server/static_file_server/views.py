@@ -122,5 +122,5 @@ def kernel_version(request):
 
 @api_view(["GET"])
 def is_enterprise(request):
-    return Response(json.dumps({"is_enterprise": IS_CONTAINERIZED}), content_type="application/json")
+    return Response({"is_enterprise": IS_CONTAINERIZED}, content_type="application/json")
 

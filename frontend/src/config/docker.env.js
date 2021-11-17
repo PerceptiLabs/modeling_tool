@@ -10,5 +10,6 @@ module.exports = {
   GITHUB_CLIENT_ID: '"094271b0edb47c75dc24"',
   PL_FILE_SERVING_TOKEN: '"thetoken"',
   ENABLE_DATAWIZARD: '"true"',
+  ENABLE_PUBLIC_DATASET: '"true"',
   INTERCOM_ID: '"ujvkp2qi"',
 }
