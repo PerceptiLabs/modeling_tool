@@ -58,7 +58,7 @@ function currentProject() {
 
 export const ryggAvailability = () => {
   return whenHaveFileservingToken()
-    .then(requestor => requestor.get("/app/version"))
+    .then(requestor => requestor.get("/app/version/"))
     .then(
       res => {
         return res.status === 200 ? "AVAILABLE" : "UNAVAILABLE";
@@ -193,7 +193,7 @@ export const doesFileExist = path => {
 
 export const getDatasetContent = async datasetId => {
   let fs = await whenHaveFileservingToken();
-  let res = await fs.get(`/datasets/${datasetId}/content`);
+  let res = await fs.get(`/datasets/${datasetId}/content/`);
   console.log('res', res)
   return res.status === 200 ?
     res.data.file_contents :
@@ -290,14 +290,14 @@ export const deleteFolder = path => {
 
 export const getPublicDatasets = () => {
   return whenHaveFileservingToken()
-    .then(fs => fs.get("/datasets/remote"))
+    .then(fs => fs.get("/datasets/remote/"))
     .then(res => res.data);
 };
 
 export const getPublicDatasetCategories = () => {
   return whenHaveFileservingToken()
-  .then(fs => fs.get("/datasets/remote_categories"))
-  .then(res => res.data);
+    .then(fs => fs.get("/datasets/remote_categories/"))
+    .then(res => res.data);
 }
 
 export const downloadDataset = ({ id, name, projectId, path }) => {
