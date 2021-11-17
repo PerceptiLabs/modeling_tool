@@ -490,7 +490,7 @@ const actions = {
   },
 
   API_getResultInfo({rootGetters}) {
-    const networkId = rootGetters['mod_workspace/GET_currentNetworkId']; // Shouldn't it be current network for GET_currentNetworIdForKernelRequests?
+    const networkId = rootGetters['mod_workspace/GET_currentNetworkId']; // Shouldn't it be current network for GET_currentNetworkIdForKernelRequests?
     const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](networkId);    
     const trainingSessionId = base64url(checkpointDirectory);
     
@@ -681,24 +681,23 @@ const actions = {
   API_getStatus({rootGetters, rootState, dispatch, commit}, payload) {
     const networkId = payload && payload.networkIndex !== undefined 
           ? rootState.mod_workspace.workspaceContent[payload.networkIndex].networkID
-          : rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'];
+          : rootGetters['mod_workspace/GET_currentNetworkIdForKernelRequests'];
 
     const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](networkId);
 
     const trainingSessionId = base64url(checkpointDirectory);
     renderingKernel.getTrainingStatus(networkId, trainingSessionId)
       .then((data)=> {
-        console.log('[DBG][END]->getStatus', JSON.parse(JSON.stringify(data)));
         if (!data) return;
         
         dispatch('mod_workspace/SET_statusNetworkCoreDynamically', {modelId: networkId, ...data}, {root: true})
-	if (data.error) {
+	      if (data.error) {
           dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
           commit('mod_empty-navigation/set_emptyScreenMode', 0, {root: true});
           dispatch("mod_workspace/setViewType", 'model', {root: true});
           dispatch("mod_workspace/SET_statisticsAndTestToClosed", { networkId: networkId }, { root: true });
           dispatch('globalView/GP_errorPopup', data.error.message + "\n\n" + data.error.details, {root: true});
-	}
+	      }
 
         if (data.Status === 'Finished') {
           dispatch('mod_workspace/EVENT_stopRequest', { networkId }, {root: true});
@@ -716,7 +715,6 @@ const actions = {
     const trainingSessionId = base64url(checkpointDirectory);
     renderingKernel.getTrainingStatus(modelId, trainingSessionId)
       .then((data)=> {
-        console.log('getStatusRes:', data);
         dispatch('mod_workspace/SET_statusNetworkCoreDynamically', {
           ...data,
           modelId: modelId,
@@ -747,7 +745,7 @@ const actions = {
   API_updateResults({rootGetters, dispatch, commit, rootState}, payload) {
     const networkId = payload && payload.networkIndex !== undefined 
           ? rootState.mod_workspace.workspaceContent[payload.networkIndex].networkID
-          : rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'];
+          : rootGetters['mod_workspace/GET_currentNetworkIdForKernelRequests'];
     
     const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](networkId);
     

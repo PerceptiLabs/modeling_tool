@@ -38,11 +38,11 @@ const viewBoxMixin = {
     currentNetworkID() {
       return this.$store.getters['mod_workspace/GET_currentNetworkId']
     },
-    currentNetworIdForKernelRequests() {
-      return this.$store.getters['mod_workspace/GET_currentNetworIdForKernelRequests']
+    currentNetworkIdForKernelRequests() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkIdForKernelRequests']
     },
     currentTrainingSessionId() {
-      const networkId = this.currentNetworIdForKernelRequests;
+      const networkId = this.currentNetworkIdForKernelRequests;
       const directory = this.$store.getters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](networkId)
       return base64url(directory)  // URL safe base64
     },
@@ -81,7 +81,7 @@ const viewBoxMixin = {
     chartGlobalRequest() {
       this.startRequest = new Date();
 
-      const modelId = this.currentNetworIdForKernelRequests;
+      const modelId = this.currentNetworkIdForKernelRequests;
       const trainingSessionId = this.currentTrainingSessionId
       
       renderingKernel.getTrainingResults(modelId, trainingSessionId, 'global-results')      
@@ -110,7 +110,7 @@ const viewBoxMixin = {
     chartRequest(layerId, layerType, view) {
       this.startRequest = new Date();
 
-      const modelId = this.currentNetworIdForKernelRequests;
+      const modelId = this.currentNetworkIdForKernelRequests;
       const trainingSessionId = this.currentTrainingSessionId;
       
       renderingKernel.getTrainingResults(modelId, trainingSessionId, 'layer-results', layerId, view)

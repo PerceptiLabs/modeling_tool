@@ -75,7 +75,6 @@ export default {
     }
   },
   created(){
-    console.log('this', this.coreError, this.statusData);
     this.getProgress();
   },
   methods: {

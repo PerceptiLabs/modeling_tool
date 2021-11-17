@@ -588,7 +588,6 @@
     grid-template-areas: 'header' 'page';
     grid-template-rows: auto 1fr;
     grid-template-columns: 1fr;
-    overflow: hidden;
     background: $bg-window;
     position: relative;
   }
@@ -603,7 +602,6 @@
   }
   .app-page {
     grid-area: page;
-    overflow: hidden;
   }
 
   .flex-1 {

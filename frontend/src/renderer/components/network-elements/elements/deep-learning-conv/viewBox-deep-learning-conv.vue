@@ -2,18 +2,17 @@
   .statistics-box
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Output'")
       .statistics-box_row
-        .statistics-box_col(v-if="!testIsOpen")
-          chart-switch(
-            key="1"
-            chart-label="Weights"
-            :chart-data="chartData['WeightsOutput'].Weights"
-            )
-        .statistics-box_col
-          chart-switch(
-            key="2"
-            chart-label="Output"
-            :chart-data="chartData['WeightsOutput'].Output"
-            )
+        chart-switch(
+          v-if="!testIsOpen"
+          key="1"
+          chart-label="Weights"
+          :chart-data="chartData['WeightsOutput'].Weights"
+          )
+        chart-switch(
+          key="2"
+          chart-label="Output"
+          :chart-data="chartData['WeightsOutput'].Output"
+          )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Bias'")
       .statistics-box_row
         chart-switch(

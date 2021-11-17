@@ -145,7 +145,7 @@ const getters = {
       ? state.workspaceContent[state.currentNetwork].networkID
       : 0
   },
-  GET_currentNetworIdForKernelRequests(state, getters) {
+  GET_currentNetworkIdForKernelRequests(state, getters) {
     if (!getters.GET_networkIsNotEmpty) { return 0; }
 
     if (getters.GET_testIsOpen) {

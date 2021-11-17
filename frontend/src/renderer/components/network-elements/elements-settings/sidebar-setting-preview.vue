@@ -97,7 +97,6 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-
   .preview-handler {
     display: flex;
     justify-content: space-between;

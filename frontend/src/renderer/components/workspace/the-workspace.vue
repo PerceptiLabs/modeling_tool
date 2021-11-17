@@ -32,11 +32,11 @@
           span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
 
 
-    .workspace-frame(:class="{'border':emptyNavigationMode==0}")
-      component.blue-left-border(:is="toolbarType" v-if="emptyNavigationMode==0")    
+    .workspace-frame(:class="{'border':emptyNavigationMode == 0}")
+      component.blue-left-border(:is="toolbarType" v-if="emptyNavigationMode == 0")    
       .workspace_content_wrapper
         .workspace_content.bookmark_content.js-workspace.blue-border(
-          v-show="emptyNavigationMode==0"  
+          v-show="emptyNavigationMode == 0"  
           ref="workspaceNet"
           :class="{'workspace-relative' : showTrainingSpinner, 'open-statistics': statisticsIsOpen, 'is-drag-active': getIsWorkspaceDragEvent}"
           )
@@ -170,7 +170,6 @@
   .page_workspace {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
     width: 100%;
     height: 100%;
     border-radius: 15px 0 0 0;
@@ -206,7 +205,6 @@
   .workspace_content {
     display: flex;
     flex: 1 1 100%;
-    overflow: hidden;
     &.is-drag-active {
       cursor: grab;
     }
@@ -276,7 +274,6 @@
   .network_info-section {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
     background: $bg-workspace-3;
 
     > .info-section_head {
@@ -384,7 +381,6 @@
   }
   .workspace_content_wrapper {
     display: flex;
-    overflow: hidden;
   }
   
   .action_tab {
