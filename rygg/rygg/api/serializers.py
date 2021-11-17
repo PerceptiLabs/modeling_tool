@@ -1,6 +1,6 @@
-from rygg.api.models import Project, Model, Notebook, FileLink, Dataset
 from rest_framework import serializers
 
+from rygg.api.models import Project, Model, Notebook, FileLink, Dataset
 
 class NotebookSerializer(serializers.ModelSerializer):
     project = serializers.PrimaryKeyRelatedField(queryset=Project.available_objects.all())
@@ -64,6 +64,7 @@ class ProjectSerializer(serializers.ModelSerializer):
                   "models",
                   "notebooks"]
 
+
 class DatasetSerializer(serializers.ModelSerializer):
     project = serializers.PrimaryKeyRelatedField(queryset=Project.available_objects.all())
     models = serializers.PrimaryKeyRelatedField(queryset=Model.available_objects.all(), required=False, many=True)
@@ -83,6 +84,7 @@ class DatasetSerializer(serializers.ModelSerializer):
                   "exists_on_disk",
                   "is_perceptilabs_sourced",
                   ]
+
 
 class ModelSerializer(serializers.ModelSerializer):
     project = serializers.PrimaryKeyRelatedField(queryset=Project.available_objects.all())

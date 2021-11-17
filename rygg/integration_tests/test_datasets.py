@@ -10,8 +10,11 @@ from assertions import (
     assert_eventually, \
 )
 
-SMALL_DATASET_SIZE = 10 * 1024 ** 2 # 10 MB
-LARGE_DATASET_SIZE = 100 * 1024 ** 2 # 100 MB
+MB = 1024 ** 2
+SMALL_DATASET_SIZE = 10 * MB
+LARGE_DATASET_SIZE = 50 * MB
+
+SPAM_CSV = os.path.join(os.path.dirname(__file__), "spam.zip")
 
 def assert_workingdir(rest, project_id):
     if rest.is_enterprise:
@@ -62,7 +65,7 @@ def test_deleting_model_removes_it_from_dataset_models_list(rest, tmp_project, t
     assert not tmp_dataset.models
 
 
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(10)
 def test_delete_dataset_in_downloading(rest, tmpdir, tmp_project):
     if rest.is_enterprise:
         dest = rest.get_upload_dir(tmp_project.id)
@@ -142,11 +145,20 @@ def test_cancel_download_task(rest, tmpdir, tmp_project):
         assert_eventually(lambda: not task.exists or task.is_completed, stop_max_delay=2000, wait_fixed=100)
 
 
+from contextlib import contextmanager
+@contextmanager
+def spam_dataset(rest, project, name):
+    _, dataset = DatasetClient.create_from_upload(rest, project, name, SPAM_CSV)
+    with dataset:
+        yield dataset
+
+@contextmanager
 @pytest.mark.timeout(5)
 @pytest.mark.usefixtures('enterprise_only')
 def test_dataset_model_association_after_create(rest, tmp_project, tmp_model):
-    with DatasetClient.make(rest, project=tmp_project.id, location="loc1", name="dataset1") as dataset1, \
-         DatasetClient.make(rest, project=tmp_project.id, location="loc2", name="dataset2") as dataset2:
+
+    with spam_dataset(rest, tmp_project, "dataset1") as dataset1, \
+         spam_dataset(rest, tmp_project, "dataset2") as dataset2:
 
         tmp_model.update(datasets = [dataset1.id])
         assert tmp_model.datasets == [dataset1.as_dict]
@@ -186,9 +198,9 @@ def test_model_dataset_association_after_create(rest, tmp_project, tmp_dataset):
 
 
 @pytest.mark.timeout(1)
-@pytest.mark.usefixtures('enterprise_only')
+@pytest.mark.usefixtures('pip_only')
 def test_dataset_rejects_slash_local(tmp_project, rest):
-    with pytest.raises(Exception, match="400.*char"):
+    with pytest.raises(Exception, match="400"):
         DatasetClient.make(rest, name="slash file", location="a_name_with/a_slash", project=tmp_project.id)
 
 
@@ -201,18 +213,10 @@ def test_local_dataset_is_already_uploaded(rest, tmp_text_file, tmp_dataset):
 
 @pytest.mark.timeout(1)
 @pytest.mark.usefixtures('enterprise_only')
-def test_that_upload_sets_dataset_completed(rest, tmp_text_file, tmp_dataset):
-    filename = os.path.basename(tmp_text_file)
-    ret=rest.post_file("/upload", tmp_text_file, tmp_dataset.location, dataset_id=tmp_dataset.id, project_id=tmp_dataset.project)
-    tmp_dataset.refresh()
-    assert tmp_dataset.status == "uploaded"
-
-    # Just for kicks, check that the upload worked
-    assert has_expected_files(rest, tmp_dataset.project, [filename], None)
-
-    # make sure we didn't delete too high in the directory tree
-    assert_workingdir(rest, tmp_dataset.project)
-
+def test_no_post_access_in_enterprise(rest, tmp_project, tmp_model, tmp_text_file):
+    name = f"data with {tmp_text_file}"
+    with pytest.raises(Exception, match="405"):
+        DatasetClient.make(rest, name=name, location=tmp_text_file, project=tmp_project.id, models=[tmp_model.id])
 
 @pytest.mark.timeout(1)
 @pytest.mark.usefixtures('pip_only')
@@ -227,19 +231,24 @@ def test_new_dataset_round_trips_fields_local(rest, tmp_project, tmp_model, tmp_
         assert refetched.location == tmp_text_file
         assert refetched.models == [tmp_model.as_dict]
 
+
 @pytest.mark.timeout(1)
 @pytest.mark.usefixtures('enterprise_only')
 def test_new_dataset_round_trips_fields(rest, tmp_project, tmp_model, tmp_text_file):
     filename = os.path.basename(tmp_text_file)
     name = f"data with {filename}"
-    with DatasetClient.make(rest, name=name, location=filename, project=tmp_project.id, models=[tmp_model.id]) as dataset:
+    _, dataset = DatasetClient.create_from_upload(rest, tmp_project, name, SPAM_CSV)
+    with dataset:
 
-        refetched = DatasetClient(rest, dataset.id)
-        # test that creating a dataset returns one that's waiting for an upload
-        assert refetched.status == "new"
-        assert refetched.name == name
-        assert refetched.location == filename
-        assert refetched.models == [tmp_model.as_dict]
+        def is_ready():
+            dataset.refresh()
+            # test that creating a dataset returns one that's waiting for an upload
+            assert dataset.name == name
+            assert dataset.location.endswith(".csv")
+            assert dataset.status == "uploaded"
+            return True
+
+        assert_eventually(is_ready, stop_max_delay=2000, wait_fixed=50)
 
 
 # #We can't actually support deleting datasets from uploads because we don't have the directory, just the csv
@@ -279,14 +288,6 @@ def test_new_dataset_round_trips_fields(rest, tmp_project, tmp_model, tmp_text_f
 #
 #     # make sure we didn't delete too high in the directory tree
 #     assert_workingdir(rest)
-
-
-@pytest.mark.timeout(1)
-@pytest.mark.usefixtures('enterprise_only')
-def test_cant_upload_to_filename_that_doesnt_match_dataset(rest, tmp_text_file, tmp_dataset):
-    filename = os.path.basename(tmp_text_file)
-    with pytest.raises(Exception, match="400.*location"):
-        rest.post_file("/upload", tmp_text_file, tmp_dataset.location+"_WRONG", tmp_dataset.project, dataset_id=tmp_dataset.id)
 
 
 @pytest.mark.timeout(1)
@@ -337,21 +338,19 @@ def get_available_remote_datasets(rest):
 
 
 @pytest.mark.timeout(1)
+@pytest.mark.usefixtures("pip_only")
 def test_deleting_allows_same_name(rest, tmpdir, tmp_project):
     assert os.path.isdir(tmpdir)
 
     # make a fake file
-    if rest.is_enterprise:
-        filename = "loc1"
-    else:
-        filename = os.path.join(tmpdir, "f")
-        open(filename, "w").write("text")
-        assert os.path.isfile(filename)
+    filename = os.path.join(tmpdir, "f")
+    open(filename, "w").write("text")
+    assert os.path.isfile(filename)
 
     common_params = {
         "project": tmp_project.id,
         "location": filename,
-        "name": "dataset"
+        "name": "dataset",
     }
 
     # create and then delete a dataset
@@ -381,14 +380,13 @@ def test_create_dataset_from_remote(rest, tmpdir, tmp_project):
     assert_task_completes(rest, task)
 
     # re-fetch the dataset by id
+    dataset.refresh()
     assert dataset.status == "uploaded"
     assert dataset.is_perceptilabs_sourced == True
 
     # Check the download. Since we currently only support csv, make sure it's the right file type
-    assert os.path.isfile(dataset.location)
-    assert dataset.location.endswith(".csv")
-    content = rest.get('/files/get_file_content', path=dataset.location, project_id=tmp_project.id)['file_contents']
-    assert len(content) > 0
+    content = dataset.get_content(num_rows=10)['file_contents']
+    assert len(content) == 10
     assert "," in content[0] # very rudimentary check that it's csv
 
     # check that the zip has been deleted
@@ -431,3 +429,64 @@ def test_create_dataset_from_remote(rest, tmpdir, tmp_project):
 
     # make sure we didn't delete too high in the directory tree
     assert_workingdir(rest, tmp_project.id)
+
+@pytest.mark.timeout(1)
+@pytest.mark.usefixtures('pip_only')
+def test_new_dataset_from_upload(rest, tmp_project):
+    # upload to local should fail.
+    with pytest.raises(Exception, match="404"):
+        rest.post_file('/datasets/create_from_upload/', {}, project_id=tmp_project.id)
+
+@pytest.mark.timeout(10)
+@pytest.mark.usefixtures('enterprise_only')
+def test_new_dataset_from_upload(rest, tmp_project):
+    DATASET_ZIP = os.path.join(os.path.dirname(__file__), "spam.zip")
+
+    # upload a dataset zip with dataset endpoint
+    task, dataset = DatasetClient.create_from_upload(rest, tmp_project, "new dataset", DATASET_ZIP)
+
+    # wait for dataset to be ready
+    assert_task_completes(rest, task)
+
+    # re-fetch the dataset by id
+    assert dataset.status == "uploaded"
+    assert dataset.is_perceptilabs_sourced == False
+    assert dataset.exists_on_disk == True
+
+    # get dataset's csv data
+    content = dataset.get_content(num_rows=10)['file_contents']
+    assert len(content) == 10
+    assert content[0] == "text,label" # very rudimentary check that it's csv
+    assert content[1].startswith('Go until')
+    assert content[1].endswith(',ham')
+
+
+@pytest.mark.timeout(10)
+@pytest.mark.usefixtures('enterprise_only')
+def test_new_dataset_from_csv_upload(rest, tmp_project):
+    DATASET_CSV = os.path.join(os.path.dirname(__file__), "spam.csv")
+
+    # upload a dataset csv with dataset endpoint
+    task, dataset = DatasetClient.create_from_upload(rest, tmp_project, "new dataset", DATASET_CSV)
+
+    # wait for dataset to be ready
+    assert_task_completes(rest, task)
+
+    # re-fetch the dataset by id
+    assert dataset.status == "uploaded"
+    assert dataset.is_perceptilabs_sourced == False
+    assert dataset.exists_on_disk == True
+
+    # get dataset's csv data
+    content = dataset.get_content(num_rows=10)['file_contents']
+    assert len(content) == 10
+    assert content[0] == "text,label" # very rudimentary check that it's csv
+    assert content[1].startswith('Go until')
+    assert content[1].endswith(',ham')
+
+@pytest.mark.timeout(10)
+@pytest.mark.usefixtures('enterprise_only')
+def test_dataset_location_read_only(rest, tmpdir, tmp_project):
+    with spam_dataset(rest, tmp_project, 'spam') as dataset:
+        with pytest.raises(Exception, match="400.*location"):
+            dataset.update(location=str(tmpdir))

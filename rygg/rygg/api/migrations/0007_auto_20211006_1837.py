@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='dataset',
             name='location',
-            field=models.TextField(blank=True, validators=[rygg.api.models.validate_file_name, rygg.api.models.validate_file_exists]),
+            field=models.TextField(blank=True, validators=[rygg.api.models.dataset.validate_file_name, rygg.api.models.dataset.validate_file_exists]),
         ),
     ]

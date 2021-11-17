@@ -70,14 +70,18 @@ def tmp_utf8_file(tmp_file):
         f.write(bytes)
     return tmp_file
 
+
 @pytest.fixture
 def tmp_dataset(tmp_text_file, rest, tmp_project):
     if rest.is_enterprise:
-        filename = os.path.basename(tmp_text_file)
+        filename = os.path.join(os.path.dirname(__file__), "spam.csv")
+        _, dataset = DatasetClient.create_from_upload(rest, tmp_project, "new dataset", filename)
+        with dataset:
+            yield dataset
     else:
         filename = tmp_text_file
-    with DatasetClient.make(rest, name=filename, location=filename, project=tmp_project.id) as dataset:
-        yield dataset
+        with DatasetClient.make(rest, name=filename, location=filename, project=tmp_project.id) as dataset:
+            yield dataset
 
 
 @pytest.fixture(scope='module')

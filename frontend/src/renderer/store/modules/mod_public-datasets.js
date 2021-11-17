@@ -3,7 +3,10 @@ import {
   rygg,
   downloadDataset,
   getPublicDatasets,
-  getPublicDatasetCategories
+  getPublicDatasetCategories,
+  getTaskStatus,
+  isTaskComplete,
+  TASK_SUCCEEDED_STATE,
 } from "@/core/apiRygg.js";
 import { AZURE_BLOB_PATH_PREIFX } from "@/core/constants.js";
 const namespaced = true;
@@ -81,7 +84,7 @@ const actions = {
               path: dataset.location,
               progress: 0,
               so_far: 100,
-              state: "SUCCESS",
+              state: TASK_SUCCEEDED_STATE,
               text: "",
               timerId: null
             }
@@ -127,14 +130,13 @@ const actions = {
     const dataset = getters.getDatasetByName(name);
 
     if (dataset) {
-      const res = await rygg
-        .get(`/tasks/${dataset.downloadStatus.downloadTaskId}/`)
-        .then(res => res.data);
+      const res = await getTaskStatus(dataset.downloadStatus.downloadTaskId);
       const newStatus = { ...dataset.downloadStatus, ...res };
 
-      if (res.state === "SUCCESS") {
+      if (isTaskComplete(res.state)) {
         clearInterval(newStatus.timerId);
         newStatus.timerId = null;
+        newStatus.so_far = newStatus.expected;
         dispatch("mod_datasets/getDatasets", null, { root: true });
         commit("changeDownloadingCount", false);
       }

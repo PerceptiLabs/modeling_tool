@@ -7,7 +7,12 @@ rygg/api/management/__init__.py
 rygg/api/management/commands/__init__.py
 rygg/api/management/commands/dev_celery_worker.py
 rygg/api/migrations
-rygg/api/models.py
+rygg/api/models/__init__.py
+rygg/api/models/dataset.py
+rygg/api/models/file_link.py
+rygg/api/models/model.py
+rygg/api/models/notebook.py
+rygg/api/models/project.py
 rygg/api/serializers.py
 rygg/api/services.py
 rygg/api/tasks.py
@@ -39,6 +44,7 @@ rygg/files/tasks.py
 rygg/files/tests/__init__.py
 rygg/files/utils/__init__.py
 rygg/files/utils/download_data.py
+rygg/files/utils/file.py
 rygg/files/utils/file_choosing.py
 rygg/files/utils/procs.py
 rygg/files/utils/sequences.py

@@ -13,7 +13,10 @@ def _rm_rf(path):
 
     # short-circuit
     if os.path.isdir(path):
-        shutil.rmtree(path)
+        try:
+            shutil.rmtree(path)
+        except FileNotFoundError:
+            pass
         return True
 
     elif os.path.isfile(path):

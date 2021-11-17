@@ -29,7 +29,9 @@ class LocalTasks():
         return LocalTasks.tasks[task_id]["info"]
 
     def cancel(task_id):
-        LocalTasks.tasks[task_id]["cancel_token"].set()
+        token = LocalTasks.tasks[task_id]["cancel_token"]
+        if token:
+            token.set()
 
     def completed(task_id):
         entry = LocalTasks.tasks[task_id]

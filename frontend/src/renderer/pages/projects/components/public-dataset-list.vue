@@ -47,6 +47,7 @@ div.container
 import { mapActions, mapState, mapGetters } from "vuex";
 import ChartSpinner from "@/components/charts/chart-spinner";
 import { AZURE_BLOB_PATH_PREIFX } from "@/core/constants.js";
+import { isTaskComplete as rygg_isTaskComplete } from '@/core/apiRygg';
 
 export default {
   components: { ChartSpinner },
@@ -114,7 +115,7 @@ export default {
     },
     isDatasetDownloading(dataset) {
       return (
-        dataset.downloadStatus && dataset.downloadStatus.state !== "SUCCESS"
+        dataset.downloadStatus && !rygg_isTaskComplete(dataset.downloadStatus.state)
       );
     }
   },

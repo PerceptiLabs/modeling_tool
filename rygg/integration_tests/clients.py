@@ -70,18 +70,22 @@ class ClientBase:
         resp = rest.post(cls.ENDPOINT, kwargs)
         return cls(rest, resp[cls.ID_FIELD])
 
+    def get_sub_resource(self, path):
+        return f"{self.url}{path}/"
 
     def get_nested_detail(self, path):
-        return self._rest.get(f"{self.url}{path}/")
-
+        url = self.get_sub_resource(path)
+        return self._rest.get(url)
 
     def add_nested(self, path, ids=[]):
-        return self._rest.patch(f"{self.url}{path}/", ids=ids)
+        url = self.get_sub_resource(path)
+        return self._rest.patch(url, ids=ids)
 
 
     def remove_nested(self, path, ids=[]):
+        url = self.get_sub_resource(path)
         ids_str = ','.join([str(x) for x in ids])
-        return self._rest.delete(f"{self.url}{path}/", ids=ids_str)
+        return self._rest.delete(url, ids=ids_str)
 
 
 class ProjectClient(ClientBase):
@@ -94,7 +98,7 @@ class ProjectClient(ClientBase):
 
         self._upload_dir = None
         try:
-            if self._rest.is_enterprise():
+            if self._rest.is_enterprise:
                 self._upload_dir = self._rest.get_upload_dir(self.id)
         except:
             pass
@@ -149,6 +153,10 @@ class ModelClient(ClientBase):
     def name(self):
         return self.as_dict["name"]
 
+    @property
+    def location(self):
+        return self.as_dict["location"]
+
 
     @property
     def datasets(self):
@@ -162,6 +170,18 @@ class ModelClient(ClientBase):
     def remove_datasets(self, dataset_ids):
         return self.remove_nested("datasets", ids=dataset_ids)
 
+    def save_json(self, as_dict):
+        url = self.get_sub_resource('save_json')
+        return self._rest.post(url, as_dict)
+
+    def get_json(self):
+        url = self.get_sub_resource('get_json')
+        return self._rest.get(url)
+
+    @classmethod
+    def get_next_name(cls, rest, project_id, prefix):
+        url = f"{cls.ENDPOINT}next_name/"
+        return rest.get(url, project_id=project_id, prefix=prefix)
 
 class NotebookClient(ClientBase):
     ENDPOINT = "/notebooks/"
@@ -174,6 +194,10 @@ class DatasetClient(ClientBase):
 
     def create_from_remote(rest, project, remote_name, destination_dir):
         resp = rest.post('/datasets/create_from_remote/', {}, id=remote_name, path=destination_dir, project_id=project.id)
+        return TaskClient(rest, resp['task_id']), DatasetClient(rest, resp['dataset_id'])
+
+    def create_from_upload(rest, project, name, upload_file_path):
+        resp = rest.post_file('/datasets/create_from_upload/', upload_file_path, "dataset.zip", project.id, name=name)
         return TaskClient(rest, resp['task_id']), DatasetClient(rest, resp['dataset_id'])
 
     @property
@@ -220,13 +244,16 @@ class DatasetClient(ClientBase):
     def models(self):
         return self.get_nested_detail("models")
 
-
     def add_models(self, model_ids):
         return self.add_nested("models", ids=model_ids)
 
-
     def remove_models(self, model_ids):
         return self.remove_nested("models", ids=model_ids)
+
+    def get_content(self, num_rows=4):
+        url = self.get_sub_resource('content')
+        return self._rest.get(url, num_rows=num_rows)
+
 
 class TaskClient(ClientBase):
     ENDPOINT = "/tasks/"

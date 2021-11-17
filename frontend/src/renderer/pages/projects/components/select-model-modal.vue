@@ -70,7 +70,7 @@ div
                   @keyup="onModelNameKeyup",
                   :data-tutorial-target="'tutorial-create-model-model-name'"
                 )
-            .form_row.relative.mb-15
+            .form_row.relative(v-if="isEnterpriseMode !== true").mb-15
               .form_label Model Path:
               .form_input.input_group.form_row
                 input.normalize-inputs(
@@ -178,19 +178,15 @@ import { debounce, deepCopy, isEnvDataWizardEnabled, isPublicDatasetEnabled }   
 import cloneDeep                                        from "lodash.clonedeep";
 
 import { doesDirExist as rygg_doesDirExist }              from "@/core/apiRygg";
-import { getFolderContent as rygg_getFolderContent }      from "@/core/apiRygg";
-import { getResolvedDir as rygg_getResolvedDir }          from "@/core/apiRygg";
-import { getRootFolder as rygg_getRootFolder }            from "@/core/apiRygg";
-import { getFileContent as rygg_getFileContent }          from "@/core/apiRygg";
+import { getDatasetContent as rygg_getDatasetContent }    from "@/core/apiRygg";
+import { getNextModelName as rygg_getNextModelName }      from "@/core/apiRygg";
 import { createDataset  as rygg_createDataset }           from "@/core/apiRygg";
 import { getDatasets  as rygg_getDataset }                from "@/core/apiRygg";
 import { uploadFile as rygg_uploadFile }                  from "@/core/apiRygg";
-import { getFile as rygg_getFile }                        from "@/core/apiRygg";
 import { pickFile as rygg_pickFile }                      from "@/core/apiRygg";
 import { pickDirectory as rygg_pickDirectory }            from "@/core/apiRygg";
 import { renderingKernel }              from "@/core/apiRenderingKernel";
 import { formatCSVTypesIntoKernelFormat } from "@/core/helpers/model-helper";
-import { ENTERPRISE_DATASET_FOLDER_PREFIX } from '@/core/constants.js';
 
 import LoadDataset from './load-dataset.vue'
 
@@ -360,6 +356,7 @@ export default {
 
   },
   mounted() {
+    document.addEventListener('keydown', this.keysNavigationHandler);
     this.modelPath = this.projectPath;
 
 
@@ -375,6 +372,9 @@ export default {
   },
   beforeDestroy() {
   },
+  destroyed() {
+    document.removeEventListener('keydown', this.keysNavigationHandler);
+  },
   methods: {
     ...mapActions({
       addNetwork: "mod_workspace/ADD_network",
@@ -389,8 +389,17 @@ export default {
       activateNotification: "mod_tutorials/activateNotification",
       setChecklistItemComplete: "mod_tutorials/setChecklistItemComplete",
     }),
+    keysNavigationHandler(event) {
+      event.stopPropagation();
+
+      const key = event.key;
+      if(key === 'Escape') {
+        this.closeModal();
+      }
+    },
     closeModal(triggerViewChange = false) {
       this.$store.dispatch("globalView/SET_newModelPopup", false);
+      // TODO: Need to stop any async tasks that are ongoing
 
       if (triggerViewChange) {
         this.setCurrentView("tutorial-model-hub-view");
@@ -406,37 +415,19 @@ export default {
       if (this.modelName && this.hasChangedModelName) {
         return;
       }
-      if (!this.modelPath) {
-        return;
-      }
 
-      const resolvedDir = await rygg_getResolvedDir(this.modelPath);
-      let dirContents = await rygg_getFolderContent(resolvedDir);
-      // In case that  default PL folder doesn't exist dirs will be empty sting.
-      if(typeof dirContents.dirs === 'string') {
-        dirContents.dirs = [];
-      }
       let namePrefix = "";
       if (
         this.chosenTemplate && // null case for TF2X models
         this.chosenTemplate >= 0 &&
         this.chosenTemplate <= this.basicTemplates.length - 1
       ) {
-        namePrefix = this.basicTemplates[this.chosenTemplate].title.replace(
-          " ",
-          ""
-        );
+        namePrefix = this.basicTemplates[this.chosenTemplate].title.replace( " ", "");
       } else {
         namePrefix = "Model";
       }
 
-      const highestSuffix = dirContents.dirs
-        .filter(d => d.startsWith(namePrefix))
-        .map(d => d.replace(`${namePrefix} `, ""))
-        .map(d => parseInt(d))
-        .filter(suffixNum => !isNaN(suffixNum))
-        .reduce((max, curr) => Math.max(max, curr), 0);
-      this.modelName = `${namePrefix} ${highestSuffix + 1}`;
+      this.modelName = await rygg_getNextModelName(namePrefix);
     },
     isAllIOTypesFilled() {
       if (this.isDataWizardEnabled) {
@@ -533,13 +524,18 @@ export default {
         return;
       }
 
-      // Creating the project/network entry in rygg
-      const apiMeta = await this.createProjectModel({
+      let newModelParams = {
         name: modelName,
         project: this.currentProjectId,
-        location: `${this.modelPath}/${modelName}`,
         datasets: [this.createdFromDatasetId],
-      });
+      };
+
+      if (!this.isEnterpriseMode) {
+        newModelParams.location = `${this.modelPath}/${modelName}`
+      }
+
+      // Creating the project/network entry in rygg
+      const apiMeta = await this.createProjectModel(newModelParams);
 
       const datasetSettings = {
         randomizedPartitions: this.datasetSettings.randomizedPartitions,
@@ -631,100 +627,6 @@ export default {
       clearTimeout(watchTimerId);
       this.closeModal(false);
     },
-    async createModelTF1X() {
-      const { chosenTemplate, modelName, basicTemplates } = this;
-      if (chosenTemplate === null || !modelName) return;
-
-      // TODO: test with isValidModelName
-      // check if models name already exists
-      const promiseArray = this.currentProject.models.map(x =>
-        this.getModelMeta(x)
-      );
-      const modelMeta = await Promise.all(promiseArray);
-      const rootPath = await rygg_getRootFolder();
-      const modelNames = modelMeta.map(x => x.name);
-      if (modelNames.indexOf(modelName) !== -1) {
-        this.showErrorPopup(`The model name "${modelName}" already exists.`);
-        this.isCreateModelLoading = false;
-        return;
-      }
-
-      // TODO: test with isValidDirName
-      const dirAlreadyExist = await rygg_doesDirExist(
-        `${this.modelPath}/${modelName}`
-      );
-      if (dirAlreadyExist) {
-        this.showErrorPopup(
-          `The "${modelName}" folder already exists at "${this.modelPath}".`
-        );
-        this.isCreateModelLoading = false;
-        return;
-      }
-
-      let modelType;
-      let newModelId;
-
-      this.createProjectModel({
-        name: modelName,
-        project: this.currentProjectId,
-        location: `${this.modelPath}/${modelName}`
-      })
-        .then(apiMeta => {
-          newModelId = apiMeta.model_id;
-
-          if (chosenTemplate === -1) {
-            const defaultTemplate = cloneDeep(this.defaultTemplate);
-            defaultTemplate.networkID = apiMeta.model_id;
-            defaultTemplate.networkName = modelName;
-
-            modelType = "Custom";
-
-            return this.addNetwork({ network: defaultTemplate, apiMeta });
-          } else {
-            let template = cloneDeep(
-              basicTemplates[chosenTemplate].template.network
-            );
-
-            const newRootPath = rootPath.replace(/\\/g, "/");
-            this.convertToAbsolutePath(
-              template.networkElementList,
-              newRootPath
-            );
-            template.networkName = modelName;
-            template.networkID = apiMeta.model_id;
-
-            modelType = basicTemplates[chosenTemplate].title;
-
-            return this.addNetwork({ network: template, apiMeta });
-          }
-        })
-        .then(_ => {
-          this.getProjects();
-          this.$store.dispatch("mod_tracker/EVENT_modelCreation", modelType, {
-            root: true
-          });
-
-          this.closeStatsTestViews({ networkId: this.currentNetworkId });
-
-          this.$store.dispatch(
-            "mod_workspace/SET_currentModelIndexByNetworkId",
-            newModelId
-          );
-          this.$store.dispatch("mod_workspace/setViewType", "model");
-
-          this.$store.commit("mod_empty-navigation/set_emptyScreenMode", 0);
-          this.setChecklistItemComplete({ itemId: "createModel" });
-
-          // closing model will invoke:
-          // setCurrentView('tutorial-model-hub-view');
-          // hence the next tick
-          this.$nextTick(() => {
-            this.setCurrentView("tutorial-workspace-view");
-          });
-
-          this.closeModal(false);
-        });
-    },
     async openFilePicker(openFilePickerReason) {
       if (openFilePickerReason === "setDataPath") {
         if (this.isEnterpriseMode) {
@@ -801,9 +703,7 @@ export default {
       try {
         this.showLoadingSpinner = true;
         this.toNextStep();
-        if(this.isEnterpriseMode) {
-          this.$store.dispatch("mod_datasetSettings/setStartupFolder", ENTERPRISE_DATASET_FOLDER_PREFIX);
-        } else {
+        if(!this.isEnterpriseMode) {
           this.$store.dispatch(
             "mod_datasetSettings/setStartupFolder",
             dataPath[0].match(/(.*)[\/\\]/)[1] || ""
@@ -825,10 +725,10 @@ export default {
           this.createdFromDatasetId = createDataset.data.dataset_id;
         }
 
-        const getFileContentPath = this.isEnterpriseMode ? `${ENTERPRISE_DATASET_FOLDER_PREFIX}${dataPath[0]}` : dataPath[0]
-        const fileContents = await rygg_getFileContent(getFileContentPath);
+        const datasetContentPath = dataPath[0]
+        const fileContents = await rygg_getDatasetContent(this.createdFromDatasetId);
 
-        this.dataSetTypes = await renderingKernel.getDataTypes(getFileContentPath, this.createdFromDatasetId, this.userEmail)
+        this.dataSetTypes = await renderingKernel.getDataTypes(datasetContentPath, this.createdFromDatasetId, this.userEmail)
         .then(res => {
           if (res.error) {
             this.showErrorPopup(res.error.message + "\n\n" + res.error.details);
@@ -842,9 +742,9 @@ export default {
           this.showLoadingSpinner = false;
         });           
 
-        if (fileContents && fileContents.file_contents) {
-          this.dataset = fileContents.file_contents;
-          this.datasetPath = getFileContentPath;
+        if (fileContents) {
+          this.dataset = fileContents;
+          this.datasetPath = datasetContentPath;
           this.autoPopulateName();
         }
       } catch (e) {
@@ -924,7 +824,6 @@ export default {
         fileInput.setAttribute('accept', '.csv,.zip');
         fileInput.addEventListener('change', (e) => {
           const file = e.target.files[0];
-          const location = `${ENTERPRISE_DATASET_FOLDER_PREFIX}${file.name}`;
           rygg_uploadFile(file, false)
             .then(async () => {
               this.handleDataPathUpdates([file.name]);

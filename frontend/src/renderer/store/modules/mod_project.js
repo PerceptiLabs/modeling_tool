@@ -1,12 +1,13 @@
 import { requestCloudApi } from "@/core/apiCloud";
 import { generateID } from "@/core/helpers";
 import { createFolder as rygg_createFolder } from '@/core/apiRygg';
+import { isEnterpriseApp as rygg_isEnterpriseApp } from '@/core/apiRygg';
 import { createProjectWithDefaultDir as rygg_createProjectWithDefaultDir } from '@/core/apiRygg';
 import { rygg } from '@/core/apiRygg.js';
 import { LOCAL_STORAGE_CURRENT_PROJECT } from "@/core/constants";
 const namespaced = true;
 const DEFAULT_PROJECT_NAME = 'Default';
-const DEFAULT_PROJECT_DIR = '~/Documents/Perceptilabs/Default';
+const DEFAULT_LOCAL_PROJECT_DIR = '~/Documents/Perceptilabs/Default';
 
 const state = {
   currentProject: parseInt(localStorage.getItem(LOCAL_STORAGE_CURRENT_PROJECT)) || null, // maybe we should copy all project object instead id and did modification in this one in case it wouldn't save changes.
@@ -139,36 +140,30 @@ const actions = {
         return res.data
       })
   },
-  getDefaultModeProject(ctx) {
-    return ctx.dispatch('getProjects')
-      .then(({data: { results: projects }}) => {
-        // TODO: this won't scale in enterprise. Only do O(n) call to find() in local mode.
-        const defaultProject = projects.find(p => p.name === DEFAULT_PROJECT_NAME);
-        if (!defaultProject) {
-          return ctx.dispatch('createProject', { name: DEFAULT_PROJECT_NAME, default_directory: DEFAULT_PROJECT_DIR });
-        }
-        return defaultProject;
-      })
-      .then(defaultProjectMeta => {
-        ctx.commit('selectProject', defaultProjectMeta.project_id);
-        return defaultProjectMeta;
-      })
-      .catch(error => console.error(error));
-  },
-  createProject(ctx, { name, default_directory }) {
-    if (default_directory === null || default_directory.length == 0){
-      throw new Error("missing default_directory");
-    }
-    return rygg_createProjectWithDefaultDir(name, default_directory)
-      .then(createProjectRes => {
-        if (!createProjectRes) { throw new Error('Problem while creating project directory'); }
-        ctx.commit("addProjectToList", createProjectRes.data)
+  async getDefaultModeProject(ctx) {
+    const {data: { results: projects }} = await ctx.dispatch('getProjects');
 
-        return createProjectRes.data
-      })
-      .catch(error => {
-        console.error(error)
-      });
+    // TODO: this won't scale in enterprise. Only do O(n) call to find() in local mode.
+    let defaultProject = projects.find(p => p.name === DEFAULT_PROJECT_NAME);
+
+    if (!defaultProject) {
+      let req = await rygg_isEnterpriseApp() ?
+        { name: DEFAULT_PROJECT_NAME } :
+        { name: DEFAULT_PROJECT_NAME, default_directory: DEFAULT_LOCAL_PROJECT_DIR };
+      defaultProject = await ctx.dispatch('createProject', req);
+    }
+
+    await ctx.commit('selectProject', defaultProject.project_id);
+    return defaultProject;
+  },
+  async createProject(ctx, { name, default_directory }) {
+    const createProjectRes = await rygg_createProjectWithDefaultDir(name, default_directory);
+    if (!createProjectRes) {
+      throw new Error('Problem while creating project.');
+    }
+    ctx.commit("addProjectToList", createProjectRes.data)
+
+    return createProjectRes.data
   },
 };
 

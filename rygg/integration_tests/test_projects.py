@@ -33,14 +33,18 @@ def test_project_delete_also_deletes_model(rest):
     assert not model.exists
 
 
+@pytest.mark.usefixtures('pip_only')
 def test_project_delete_also_deletes_dataset(rest, tmp_text_file):
-    if rest.is_enterprise:
-        filename = os.path.basename(tmp_text_file)
-    else:
-        filename = tmp_text_file
-
     with ProjectClient.make(rest, name="test project") as project:
-        dataset = DatasetClient.make(rest, name="some file", location=filename, project=project.id, models=[])
+        dataset = DatasetClient.make(rest, name="some file", location=tmp_text_file, project=project.id, models=[])
+
+    assert not dataset.exists
+
+
+@pytest.mark.usefixtures('pip_only')
+def test_project_delete_also_deletes_dataset(rest, tmp_text_file):
+    with ProjectClient.make(rest, name="test project") as project:
+        dataset = DatasetClient.make(rest, name="some file", project=project.id, models=[], location=str(tmp_text_file))
 
     assert not dataset.exists
 
@@ -73,21 +77,17 @@ def test_project_update(tmp_project):
     assert tmp_project.updated > tmp_project.created
     assert tmp_project.name == "this is a new name"
 
-# TODO: this will be reenabled when we don't use project_id as the directory name
-# @pytest.mark.usefixtures("enterprise_only")
-# def test_create_project_with_conflicting_id_path(rest, tmp_project):
-#     project_dir = rest.get_upload_dir(tmp_project.id)
-#     upload_root = os.path.dirname(project_dir)
-#
-#     # make a file <next project id> in the upload dir
-#     next_project_id = tmp_project.id + 1
-#     next_dir = os.path.join(upload_root, str(next_project_id))
-#
-#     open(next_dir, "w").write("some text")
-#
-#     # try to make a project. It should still succeed (how?)
-#     next_proj = ProjectClient.make(rest, name="next proj")
-#     with pytest.raises(Exception, match="500"):
-#         # TODO: uploading shouldn't be necessary
-#         # upload something so the directory is created
-#         rest.post_file("/upload", __file__, "testfile", next_proj.id)
+@pytest.mark.usefixtures('pip_only')
+def test_allows_default_directory_in_local(rest, tmpdir):
+    with ProjectClient.make(rest, name="name", default_directory=str(tmpdir)):
+        pass
+
+@pytest.mark.usefixtures('enterprise_only')
+def test_create_rejects_default_directory_in_enterprise(rest, tmpdir):
+    with pytest.raises(Exception, match="400.*default_directory"):
+        ProjectClient.make(rest, name="name", default_directory=str(tmpdir))
+
+@pytest.mark.usefixtures('enterprise_only')
+def test_update_rejects_default_directory_in_enterprise(rest, tmpdir, tmp_project):
+    with pytest.raises(Exception, match="400.*default_directory"):
+        tmp_project.update(default_directory=str(tmpdir))

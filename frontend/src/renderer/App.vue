@@ -31,7 +31,7 @@
   import TutorialsChecklist       from '@/components/tutorial/tutorial-checklist.vue';
   import TutorialNotification from "@/components/different/tutorial-notification.vue";
   import {
-    getModelJson as rygg_getModelJson,
+    getModelJsonById as rygg_getModelJsonById,
     createDataset as rygg_createDataset,
     attachModelsToDataset as rygg_attachModelsToDataset,
   } from '@/core/apiRygg';
@@ -51,7 +51,7 @@
   import AboutAppPopup          from "@/components/global-popups/about-app-popup.vue";
   import AddCardPopup           from "@/components/global-popups/add-card-popup.vue";
   import { MODAL_PAGE_PROJECT, MODAL_PAGE_QUESTIONNAIRE } from '@/core/constants.js';
-  import { isUrlReachable, isEnterpriseApp } from '@/core/apiRygg.js';
+  import { isEnterpriseApp } from '@/core/apiRygg.js';
   import { keyCloak } from '@/core/apiKeyCloak.js';
 
 
@@ -94,7 +94,7 @@
           return this.$store.commit('globalView/set_isEnterpriseApp', isEnterpriseAppValue);
         });
     },
-    mounted() {
+    async mounted() {
       this.$intercom.boot({
         hide_default_launcher: true
       });
@@ -103,26 +103,20 @@
 
       if (this.isDefaultProjectMode) {
         // in the free version, the user is locked to a single project
-        this.getDefaultModeProject()
-          .then(defaultProject => {
-            let project_id = defaultProject.project_id;
-            this.$store.dispatch('mod_datasets/getDatasets', {}, project_id);
-            return defaultProject
-          })
-          .then((defaultProject) => {
-            this.fetchNetworkMetas(defaultProject)
-          })
+        let defaultProject = await this.getDefaultModeProject()
+        let project_id = defaultProject.project_id;
+        this.$store.dispatch('mod_datasets/getDatasets', {}, project_id);
+        this.fetchNetworkMetas(defaultProject)
+
       } else if(this.isProjectSelected) {
         const currentProjectId = this.$store.state.mod_project.currentProject;
 
-        this.getProject(currentProjectId)
-          .then(currentProject => {
-            if (currentProject) {
-              this.fetchNetworkMetas(currentProject);
-            }
-          })
+        let currentProject = await this.getProject(currentProjectId)
+        if (currentProject) {
+          this.fetchNetworkMetas(currentProject);
+        }
       } else {
-        this.getProjects();
+        await this.getProjects();
         if(localStorage.hasOwnProperty('currentUser')) {
           this.setActivePageAction(MODAL_PAGE_PROJECT);
         }
@@ -457,7 +451,7 @@
             .filter(x => !this.networksWithChanges.includes(x.model_id));
 
         for (const fm of filteredMetas) {
-          promiseArray.push(rygg_getModelJson(fm.location + '/model.json'));
+          promiseArray.push(rygg_getModelJsonById(fm.model_id));
         }
 
         // console.log('fetchAllNetworkJsons filteredMetas', filteredMetas);
@@ -524,7 +518,8 @@
         let unparsedModels = [];
 
         modelMetas.forEach(async (model) => {
-          const modelJson = await rygg_getModelJson(model.location + '/model.json');
+          console.log('model', model)
+          const modelJson = await rygg_getModelJsonById(model.model_id);
           if(!modelJson) {
             unparsedModels.push(model);
 

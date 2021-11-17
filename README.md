@@ -75,13 +75,13 @@ cd build/docker/compose
 1. Rygg server
     ```
     cd rygg
-    PL_FILE_SERVING_TOKEN=12312 PL_TUTORIALS_DATA=$(git rev-parse --show-toplevel)/backend/perceptilabs/tutorial_data PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=xyz python -m django migrate --settings rygg.settings
-    PL_FILE_SERVING_TOKEN=12312 PL_TUTORIALS_DATA=$(git rev-parse --show-toplevel)/backend/perceptilabs/tutorial_data PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=xyz python -m django runserver 0.0.0.0:8000 --settings rygg.settings
+    PL_FILE_SERVING_TOKEN=12312 PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=xyz python -m django migrate --settings rygg.settings
+    PL_FILE_SERVING_TOKEN=12312 PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=xyz python -m django runserver 0.0.0.0:8000 --settings rygg.settings
     ```
 1. Rygg worker
     ```
     cd rygg
-    PL_FILE_SERVING_TOKEN=12312 PL_TUTORIALS_DATA=$(git rev-parse --show-toplevel)/backend/perceptilabs/tutorial_data PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=a celery -A rygg worker -l INFO --queues=rygg
+    PL_FILE_SERVING_TOKEN=12312 PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=a celery -A rygg worker -l INFO --queues=rygg
     ```
 1. Frontend
     ```
@@ -146,7 +146,7 @@ python main.py --mode=rendering --debug
 
 # run rygg
 cd $PL_ROOT/rygg
-PL_FILE_SERVING_TOKEN=12312 PL_TUTORIALS_DATA=$PL_ROOT/backend/perceptilabs/tutorial_data PL_FILE_UPLOAD_DIR=$(pwd) python manage.py runserver 0.0.0.0:8000
+PL_FILE_SERVING_TOKEN=12312 PL_FILE_UPLOAD_DIR=$(pwd) python manage.py runserver 0.0.0.0:8000
 
 
 # Set up and run the static_file_server

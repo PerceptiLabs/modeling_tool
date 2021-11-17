@@ -72,7 +72,7 @@
 import { mapState, mapGetters, mapActions } from "vuex";
 import cloneDeep from "lodash.clonedeep";
 
-import { getFileContent as rygg_getFileContent } from "@/core/apiRygg";
+import { getDatasetContent as rygg_getDatasetContent } from "@/core/apiRygg";
 import { pickFile as rygg_pickFile } from "@/core/apiRygg";
 
 import CsvTable from "@/components/different/csv-table.vue";
@@ -144,13 +144,15 @@ export default {
       this.$store.dispatch("globalView/SET_datasetSettingsPopupAction", false);
     },
     async loadDataset() {
+      const datasetId = this.datasetSettings.datasetId
+
       this.isLoadingDataset = true;
       this.$store.dispatch(
         "mod_datasetSettings/setStartupFolder",
         this.datasetPath.match(/(.*)[\/\\]/)[1] || ""
       );
 
-      const fileContents = await rygg_getFileContent(this.datasetPath);
+      const fileContents = await rygg_getDatasetContent(datasetId);
       this.dataSetTypes = await renderingKernel
         .getDataTypes(this.datasetPath, this.userEmail)
         .then(res => {

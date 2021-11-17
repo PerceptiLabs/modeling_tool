@@ -10,6 +10,9 @@ import { whenUrlIsResolved } from "@/core/urlResolver";
 import { whenVersionIsResolved } from "@/core/versionResolver";
 import { filePickerStorageKey } from "@/core/constants.js";
 
+export const TASK_SUCCEEDED_STATE = 'SUCCESS';
+export const TASK_COMPLETED_STATES = [TASK_SUCCEEDED_STATE, 'FAILED'];
+
 const whenRyggReady = Promise.all([
   whenUrlIsResolved(RYGG_URL_CONFIG_PATH, RYGG_BASE_URL),
   whenVersionIsResolved(RYGG_VERSION_CONFIG_PATH)
@@ -113,24 +116,6 @@ export const doesDirExist = path => {
     });
 };
 
-export const getFolderContent = path => {
-  // project ID 1 is hard-coded in anticipation of removing this function
-  console.error("getFolderContent is deprecated!")
-  return whenHaveFileservingToken()
-    .then(fs => fs.get(`/directories/get_folder_content?path=${path}&project_id=${currentProject()}`))
-    .then(res => {
-      return res.status === 200 ? res.data : null;
-    });
-};
-
-export const getRootFolder = () => {
-  return whenHaveFileservingToken()
-    .then(fs => fs.get(`/directories/root?project_id=${currentProject()}`))
-    .then(res => {
-      return res.status === 200 ? res.data.path : "/";
-    });
-};
-
 export const getResolvedDir = path => {
   return whenHaveFileservingToken()
     .then(fs => fs.get(`/directories/resolved_dir?path=${path}&project_id=${currentProject()}`))
@@ -142,23 +127,29 @@ export const getResolvedDir = path => {
     });
 };
 
-export const getModelJson = path => {
-  return whenHaveFileservingToken()
-    .then(fs => fs.get(`/json_models?path=${path}&project_id=${currentProject()}`))
-    .then(res => {
-      let ret = res.status === 200 ? res.data.model_body : null;
-      return ret;
-    })
-    .catch(err => {
-      return null;
-    });
+export const getModelJsonById = async model_id => {
+  try {
+    let fs = await whenHaveFileservingToken();
+    let res = await fs.get(`/models/${model_id}/get_json/`);
+    return res.status === 200 ? res.data.model_body : null;
+  } catch(e) {
+    return null;
+  }
 };
 
-export const saveModelJson = model => {
-  const path = `${model.apiMeta.location}`;
+export const saveModelJson = async model => {
+  const model_id = model.apiMeta.model_id;
+  if (!model_id) {
+    let msg = "missing model_id"
+    console.error(msg)
+    console.log('model', model)
+    throw new Error(msg);
+  }
   const modelAsString = stringifyNetworkObjects(model)
-  return whenHaveFileservingToken()
-    .then(fs => fs.post(`/json_models?path=${path}&project_id=${currentProject()}`, modelAsString))
+  const url = `/models/${model_id}/save_json/`
+
+  let fs = await  whenHaveFileservingToken();
+  return await fs.post(url, modelAsString)
 }
 
 export const updateModelMeta = async model => {
@@ -173,11 +164,20 @@ export const updateModelMeta = async model => {
     console.error(msg)
     throw new Error(msg);
   }
-  const path = model.apiMeta.location;
-  const updatedPcModel = await getModelJson(path);
-  updatedPcModel.networkMeta = model.networkMeta;
-  await saveModelJson(updatedPcModel, project_id);
+  let updatedPcModel = await getModelJsonById(model.apiMeta.model_id)
+  if (updatedPcModel) {
+    updatedPcModel.networkMeta = model.networkMeta;
+  } else {
+    updatedPcModel = {networkMeta: model.networkMeta};
+  }
+  await saveModelJson(updatedPcModel);
 };
+
+export const getNextModelName = async prefix => {
+  let fs = await whenHaveFileservingToken();
+  const resp = await fs.get(`/models/next_name/?project_id=${currentProject()}&prefix=${prefix}`);
+  return resp.data.next_name
+}
 
 export const doesFileExist = path => {
   return whenHaveFileservingToken()
@@ -191,12 +191,13 @@ export const doesFileExist = path => {
     });
 };
 
-export const getFileContent = path => {
-  return whenHaveFileservingToken()
-    .then(fs => fs.get(`/files/get_file_content?path=${path}&project_id=${currentProject()}`))
-    .then(res => {
-      return res.status === 200 ? res.data : null;
-    });
+export const getDatasetContent = async datasetId => {
+  let fs = await whenHaveFileservingToken();
+  let res = await fs.get(`/datasets/${datasetId}/content`);
+  console.log('res', res)
+  return res.status === 200 ?
+    res.data.file_contents :
+    null;
 };
 
 export const pickFile = (title, initialDir = null, fileTyps = null) => {
@@ -310,17 +311,6 @@ export const downloadDataset = ({ id, name, projectId, path }) => {
     .then(res => res.data && res.data.task_id);
 };
 
-export const isUrlReachable = async path => {
-  try {
-    const fs = await whenHaveFileservingToken();
-    const res = await fs.get(`/is_url_reachable?path=${path}`);
-    let ret = res.data.response_code === 200 ? true : false;
-    return ret;
-  } catch (err) {
-    return false;
-  }
-};
-
 export const uploadDatasetToFileserver = async (file, overwrite = false) => {
   try {
     const data = new FormData();
@@ -328,38 +318,33 @@ export const uploadDatasetToFileserver = async (file, overwrite = false) => {
     data.append('name', file.name);
     data.append('overwrite', overwrite ? 'true': 'false');
     const fs = await whenHaveFileservingToken();
-    return await fs.post(`/upload?project_id=${currentProject()}`, data);
+    const res = await fs.post(`/datasets/create_from_upload/?project_id=${currentProject()}`, data);
+    if (![200, 201].includes(res.status)) {
+      console.error("failed", res)
+      return null;
+    }
+    return res;
   } catch(e) {
     console.error(e);
   }
 }
 
-/**
- * @param file
- * @param {boolean} overwrite Overwrite the file
- * @returns {Promise<AxiosResponse<any>>}
- */
-export const uploadFile = async (file, overwrite = false) => {
-  try {
-    const data = new FormData();
-    data.append("file_uploaded", file);
-    data.append("name", file.name);
-    data.append("overwrite", overwrite ? "true" : "false");
-    const fs = await whenHaveFileservingToken();
-    return await fs.post(`/upload?project_id=${currentProject()}`, data);
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
+export const isTaskComplete = status => {
+  return TASK_COMPLETED_STATES.indexOf(status) >= 0;
+}
 
-export const getFile = async filename => {
-  try {
-    const fs = await whenHaveFileservingToken();
-    return await fs.get(`/upload?filename=${filename}&project_id=${currentProject()}`);
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
+export const getTaskStatus = async task_id => {
+  let fs = await whenHaveFileservingToken();
+  const res = await fs.get(`/tasks/${task_id}/`);
+  return res.data
+
+}
+
+export const cancelTask = async task_id => {
+  let fs = await whenHaveFileservingToken();
+
+  await fs.delete(`/tasks/${task_id}/`);
+}
 
 /**
  *
@@ -462,10 +447,13 @@ export const isEnterpriseApp = async () => {
  * @param {string} name (required)
  */
 export const createProjectWithDefaultDir = async (name, default_directory) => {
+  if (!await isEnterpriseApp() && (default_directory === null || default_directory.length == 0)){
+    throw new Error("missing default_directory");
+  }
   try {
     let fs = await whenHaveFileservingToken();
     let req = {name: name}
-    if (isEnterpriseApp()) {
+    if (!await isEnterpriseApp()) {
       req.default_directory = default_directory;
     }
 

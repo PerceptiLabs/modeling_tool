@@ -7,10 +7,10 @@
       button(@click="handleContextRemoveModel()") Delete
     div(v-show="!showNewModelPopup").project-wrapper
       div.header-controls
-        div.left-side        
+        div.left-side
           .button-container.mr-20(
             v-if="isEnterpriseMode"
-            )            
+            )
             button.btn.btn--primary(
               @click="loadDataset"
               :data-tutorial-target="'tutorial-model-hub-new-button'"
@@ -43,9 +43,9 @@
       // List
       div.models-list
         div.models-list-row.model-list-header.bold
-          div.column-1 
+          div.column-1
             div(@click="toggleSelectedItems()")
-              base-checkbox.btn-checkbox(:value="isAllItemsSelected()" :onClick="() => toggleSelectedItems()")            
+              base-checkbox.btn-checkbox(:value="isAllItemsSelected()" :onClick="() => toggleSelectedItems()")
             | All datasets
           div.column-2
           div.column-3 Training Status
@@ -53,13 +53,13 @@
           div.column-5 Test Available
           div.column-6 Last Modified
           div.column-7.d-flex.justify-content-between.justify-content-center
-            div 
+            div
             div.d-flex.flex-row-reverse.align-items-center
               .button-container(v-tooltip:bottom="'Delete'")
                 span.img-button(:class="{ 'disabledIconButton': !isAtLeastOneItemSelected() }" @click="removeItems()")
                   img(src="../../../../static/img/project-page/remove-red.svg")
-          
-        
+
+
         perfect-scrollbar.model-list-scrollbar
           div(v-for="dataset in allDatasets" :key="dataset.dataset_id")
             //-- DATASET ROW --//
@@ -71,12 +71,12 @@
                 )
                 svg.dataset-chevron(v-if="isDatasetOpened(dataset.dataset_id)" @click="toggleDataSetModels(dataset.dataset_id)" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg")
                   path(fill-rule="evenodd" clip-rule="evenodd" d="M1.85178 5.22678C1.90403 5.17439 1.9661 5.13283 2.03444 5.10448C2.10278 5.07612 2.17604 5.06152 2.25003 5.06152C2.32402 5.06152 2.39728 5.07612 2.46562 5.10448C2.53396 5.13283 2.59603 5.17439 2.64828 5.22678L9.00003 11.5797L15.3518 5.22678C15.4041 5.17448 15.4662 5.13299 15.5345 5.10469C15.6028 5.07639 15.6761 5.06182 15.75 5.06182C15.824 5.06182 15.8972 5.07639 15.9656 5.10469C16.0339 5.13299 16.096 5.17448 16.1483 5.22678C16.2006 5.27908 16.2421 5.34117 16.2704 5.4095C16.2987 5.47783 16.3132 5.55107 16.3132 5.62503C16.3132 5.69899 16.2987 5.77223 16.2704 5.84056C16.2421 5.90889 16.2006 5.97098 16.1483 6.02328L9.39828 12.7733C9.34603 12.8257 9.28395 12.8672 9.21562 12.8956C9.14728 12.9239 9.07402 12.9385 9.00003 12.9385C8.92604 12.9385 8.85278 12.9239 8.78444 12.8956C8.7161 12.8672 8.65403 12.8257 8.60178 12.7733L1.85178 6.02328C1.7994 5.97103 1.75783 5.90895 1.72948 5.84062C1.70112 5.77228 1.68652 5.69902 1.68652 5.62503C1.68652 5.55104 1.70112 5.47778 1.72948 5.40944C1.75783 5.3411 1.7994 5.27903 1.85178 5.22678Z" fill="#fff")
-                
+
                 svg.dataset-chevron(v-else @click="toggleDataSetModels(dataset.dataset_id)" width="18" height="19" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg")
                   path(fill-rule="evenodd" clip-rule="evenodd" d="M5.22776 16.6472C5.17537 16.595 5.13381 16.5329 5.10545 16.4646C5.0771 16.3962 5.0625 16.323 5.0625 16.249C5.0625 16.175 5.0771 16.1017 5.10545 16.0334C5.13381 15.9651 5.17537 15.903 5.22776 15.8507L11.5806 9.49899L5.22775 3.14724C5.17546 3.09495 5.13397 3.03286 5.10567 2.96453C5.07736 2.89619 5.06279 2.82296 5.06279 2.74899C5.06279 2.67503 5.07736 2.6018 5.10567 2.53346C5.13397 2.46513 5.17546 2.40304 5.22775 2.35074C5.28005 2.29845 5.34214 2.25696 5.41047 2.22866C5.4788 2.20035 5.55204 2.18578 5.626 2.18578C5.69997 2.18578 5.7732 2.20035 5.84154 2.22866C5.90987 2.25696 5.97196 2.29845 6.02425 2.35074L12.7743 9.10074C12.8266 9.153 12.8682 9.21507 12.8966 9.28341C12.9249 9.35175 12.9395 9.42501 12.9395 9.49899C12.9395 9.57298 12.9249 9.64624 12.8966 9.71458C12.8682 9.78292 12.8266 9.84499 12.7743 9.89724L6.02426 16.6472C5.972 16.6996 5.90993 16.7412 5.84159 16.7695C5.77325 16.7979 5.69999 16.8125 5.62601 16.8125C5.55202 16.8125 5.47876 16.7979 5.41042 16.7695C5.34208 16.7412 5.28001 16.6996 5.22776 16.6472Z" fill="white")
                 div.editable-field.model-name-wrapper
                   bdi {{dataset.name | datasetformat}}
-                  
+
               div.column-2
                 strong(
                   v-if="dataset.exists_on_disk === false"
@@ -95,7 +95,7 @@
                   span.img-button( :class="{ 'disabledIconButton': dataset.models.length > 0 }" @click="deleteDataset(dataset.dataset_id)")
                     img(src="../../../../static/img/project-page/remove-red.svg")
             //-- MODELS BELONG TO DATASET --//
-            template(v-if="isDatasetOpened(dataset.dataset_id)")  
+            template(v-if="isDatasetOpened(dataset.dataset_id)")
               div.models-list-row.model-list-item.model-list-item-child(
                 v-for="(model, index) in getModelsByDataSetId(dataset.dataset_id)"
                 @contextmenu.stop.prevent="openContext($event, model.networkID)"
@@ -109,22 +109,22 @@
                   .editable-field.model-name-wrapper
                     span.model-name(
                       :title="model.networkName"
-                      v-if="!isRenamingItem(model.networkID)" 
-                      v-tooltip:bottom="'Click to open Model'" 
+                      v-if="!isRenamingItem(model.networkID)"
+                      v-tooltip:bottom="'Click to open Model'"
                       @click.stop="goToNetworkView(model.networkID)"
                     ) {{model.networkName}}
                     input.rename-control(
-                      v-else 
-                      v-model="renameValue" 
+                      v-else
+                      v-model="renameValue"
                       @blur="renameModel"
                       @keyup.enter="renameModel"
                       ref="titleInput"
                     )
-    
+
                   div.model-unsaved_changes_indicator(v-if="hasUnsavedChanges(model.networkID)")
                     span Unsaved
                     .indicator-circle
-    
+
                 div.column-2
                   |
                 div.column-3
@@ -155,7 +155,7 @@
               span.model-name {{model.name}}
 
             div.column-2 Deleted
-            
+
             div.column-4
               span(@click.stop="") -
             div.column-7 Deleted
@@ -168,7 +168,7 @@
               | {{ (model && model && model.updated) ? formatDate(model.updated) : ''}}
 
 
-        
+
           //- div.models-list-row.model-no-item(
           //-   v-if="workspaceContent.length === 0 && unparsedModels.length === 0"
           //-   )
@@ -182,7 +182,7 @@
           //-       circle(cx="4.4" cy="26.401" r="4.4" fill="#828282")
 
           //-   h3 Create Your First Project
-            
+
     select-model-modal(
       v-if="showNewModelPopup"
       @close="onCloseSelectModelModal"
@@ -204,13 +204,16 @@
 
   import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
   import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
-  import cloneDeep from 'lodash.clonedeep';  
-  import { getModelJson as rygg_getModelJson, uploadDatasetToFileserver } from '@/core/apiRygg';
+  import cloneDeep from 'lodash.clonedeep';
+  import { getModelJson as rygg_getModelJson } from '@/core/apiRygg';
+  import { uploadDatasetToFileserver as rygg_uploadDatasetToFileserver } from '@/core/apiRygg';
+  import { getTaskStatus as rygg_getTaskStatus } from '@/core/apiRygg';
+  import { isTaskComplete as rygg_isTaskComplete } from '@/core/apiRygg';
   import { LOCAL_STORAGE_HIDE_DELETE_MODAL } from '@/core/constants.js'
   import { arrayIncludeOrOmit } from "@/core/helpers";
 
   const mockModelList = [];
-  
+
   export default {
     name: "pageProjects",
     components: {
@@ -232,6 +235,7 @@
         contextModelId: null,
         isContextOpened: false,
         modelContextStyles: {},
+        timeoutIds: {},
 
         // for renaming models
         renameId: null,
@@ -283,7 +287,7 @@
         handler(newVal, oldVal) {
           if (!this.isTutorialMode) { return; }
           if (newVal !== 'tutorial-model-hub-new-button') { return; }
-          
+
           this.activateCurrentStep();
         },
         immediate: true
@@ -306,11 +310,12 @@
         set_currentModelIndex: 'mod_workspace/SET_currentModelIndex',
         createProjectModel:  'mod_project/createProjectModel',
         setActivePageAction: 'modal_pages/setActivePageAction',
-        delete_networkById:  'mod_workspace/DELETE_networkById',        
+        delete_networkById:  'mod_workspace/DELETE_networkById',
         closeStatsTestViews:  'mod_workspace/SET_statisticsAndTestToClosed',
         setCurrentView:       'mod_tutorials/setCurrentView',
         setNextStep:          'mod_tutorials/setNextStep',
-        deleteDataset:    'mod_datasets/deleteDataset',
+        deleteDataset:        'mod_datasets/deleteDataset',
+        refreshDatasets:      'mod_datasets/getDatasets',
 
         SET_openStatistics:   'mod_workspace/SET_openStatistics',
         SET_openTest:         'mod_workspace/SET_openTest',
@@ -328,7 +333,7 @@
 
         this.set_currentModelIndex(index > 0 ? index : 0);
         this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
-        
+
         if(index !== -1) {
           this.$store.dispatch("mod_workspace/setViewType", 'model');
           // this.SET_openStatistics(false);
@@ -382,7 +387,7 @@
       },
       async removeItems() {
         if(!this.selectedListIds.length) return; // prevent removing modal when no item are selected
-        
+
         if(localStorage.getItem(LOCAL_STORAGE_HIDE_DELETE_MODAL)) {
           for (const networkId of this.selectedListIds) {
             await this.delete_networkById(networkId);
@@ -396,7 +401,7 @@
               for (const networkId of this.selectedListIds) {
                 await this.delete_networkById(networkId);
               }
-              
+
               this.selectedListIds = [];
             }
           });
@@ -465,11 +470,11 @@
         if (typeof openStatistics === 'boolean') {
           this.$store.dispatch("mod_workspace/setViewType", 'statistic');
 
-          this.$router.push({name: 'app'}) 
+          this.$router.push({name: 'app'})
             .then(() => {
               this.set_currentNetwork(index);
               this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
-              
+
               this.$store.dispatch("mod_workspace/SET_currentStatsIndex", index);
               this.$store.commit('mod_workspace/update_network_meta', {key: 'hideStatistics', networkID: model.networkID, value: false});
               this.SET_openStatistics(true);
@@ -516,7 +521,7 @@
             }
           });
         }
-        
+
         this.closeContext();
       },
       onClickDeletedModel(model, index) {
@@ -531,7 +536,7 @@
             }
           })
       },
-      
+
       // Rename Module
       handleContextRenameModel() {
         if(this.isCoreOffline) {
@@ -634,19 +639,41 @@
         })
         this.dataSetIsOpenedStateArray = temp;
       },
+
+      async checkTask(taskId, datasetId, interval) {
+        delete this.timeoutIds[taskId];
+
+        const taskStatus = await rygg_getTaskStatus(taskId);
+
+        // TODO: Placeholder for a proper progress bar
+        console.log('Task Progress', taskStatus)
+
+        // get the task status from rygg
+        if (rygg_isTaskComplete(taskStatus.state)) {
+          // if the task is complete, then refresh the dataset list
+          await this.refreshDatasets();
+        } else {
+          // if the task is ongoing, then restart a timeout
+          this.timeoutIds[taskId] = setTimeout(this.checkTask, interval, taskId, datasetId, interval)
+        }
+      },
       loadDataset() {
         const fileInput = document.createElement('input');
         fileInput.setAttribute('type', 'file');
         fileInput.setAttribute('accept', '.csv,.zip');
-        fileInput.addEventListener('change', (e) => {
+        fileInput.addEventListener('change', async (e) => {
           const file = e.target.files[0];
-          uploadDatasetToFileserver(file)
+          const res = await rygg_uploadDatasetToFileserver(file);
+          if (res) {
+            const { data: { task_id, dataset_id } } = res;
+            this.checkTask(task_id, dataset_id, 1000); // no await. Just let it run
+          }
         })
         fileInput.click();
       },
     },
     created() {
-      // Adding this because of reloads on this page 
+      // Adding this because of reloads on this page
       // When the stats and test views are their own routes,
       // a better alternative would be to put a lot of the
       // following in the router.
@@ -677,7 +704,7 @@
   }
   .project-wrapper {
     height: 100%;
-    box-sizing: border-box;    
+    box-sizing: border-box;
     background-color: theme-var($neutral-7);
     border-radius: 15px 0px 0px 0px;
     padding: 10px 20px;
@@ -768,14 +795,14 @@
     padding-left: 40px;
   }
 
-  .models-list {    
+  .models-list {
     background: theme-var($neutral-8);
     border: $border-1;
     box-sizing: border-box;
     border-radius: 4px;
     min-height: calc(100% - #{$header-height});
   }
-  
+
   .models-list-row {
     .column-1 {
       position: relative;
@@ -786,7 +813,7 @@
       width: 300px;
     }
     .column-2 {
-      min-width: 210px; 
+      min-width: 210px;
       cursor: pointer;
     }
     .column-3 {
@@ -864,7 +891,7 @@
       & .model-unsaved_changes_indicator {
         color: $color-6;
       }
-      
+
       & .test-link {
         color: white;
         & path {
@@ -986,17 +1013,17 @@
 
   .model-no-item {
     color: theme-var($neutral-1);
-    text-align: center;    
+    text-align: center;
 
-    position: absolute;  
-    top: 50%; 
+    position: absolute;
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
 
     & .no-item-mark {
       display: flex;
       justify-content: center;
-      align-items: center;      
+      align-items: center;
       margin-left: auto;
       margin-right: auto;
       width: 150px;

@@ -124,7 +124,7 @@ class Migration(migrations.Migration):
                 ('is_removed', models.BooleanField(default=False)),
                 ('dataset_id', models.AutoField(primary_key=True, serialize=False)),
                 ('name', models.CharField(max_length=1000)),
-                ('location', models.CharField(blank=True, max_length=1000, validators=[rygg.api.models.validate_file_name, rygg.api.models.validate_file_exists])),
+                ('location', models.CharField(blank=True, max_length=1000, validators=[rygg.api.models.dataset.validate_file_name, rygg.api.models.dataset.validate_file_exists])),
                 ('models', models.ManyToManyField(blank=True, related_name='datasets', to='api.Model')),
                 ('project', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='datasets', to='api.project')),
             ],

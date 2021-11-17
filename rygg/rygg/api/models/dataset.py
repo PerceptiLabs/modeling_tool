@@ -2,7 +2,6 @@ from django.core.exceptions import ValidationError
 from django.db import models as dj_models
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
-from django_http_exceptions import HTTPExceptions
 from model_utils import Choices
 from model_utils.models import SoftDeletableModel, StatusModel, TimeStampedModel
 import os
@@ -10,86 +9,18 @@ import shutil
 import uuid
 
 from rygg.api.tasks import delete_path_async
-from rygg.files.tasks import download_async
+from rygg.files.tasks import download_async, unzip_async
 from rygg.settings import IS_CONTAINERIZED, file_upload_dir, IS_SERVING, DATA_BLOB
+from rygg.api.models import Project, Model
+from rygg.files.utils.file import get_text_lines
 
-
-class FileLink(dj_models.Model):
-    filelink_id = dj_models.AutoField(primary_key=True)
-    resource_locator = dj_models.CharField(max_length=1000, blank=False)
-
-
-class Project(SoftDeletableModel):
-    project_id = dj_models.AutoField(primary_key=True)
-    name = dj_models.CharField(max_length=1000, blank=False)
-    default_directory = dj_models.CharField(max_length=1000, blank=True)
-    created = dj_models.DateTimeField(auto_now_add=True)
-    updated = dj_models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.name} ({self.project_id})"
-
-    @property
-    def base_directory(self):
-        if IS_CONTAINERIZED:
-            return file_upload_dir(self.project_id)
-        else:
-            return self.default_directory
-
-@receiver(post_save, sender=Project)
-def project_created_post(created, instance, **kwargs):
-    # we only manage the project dirs in docker
-    if not IS_CONTAINERIZED:
-        return
-
-    dir = instance.base_directory
-
-    if created:
-        os.makedirs(dir, exist_ok=True)
-    elif instance.is_removed:
-        delete_path_async(instance.project_id, dir)
-
-
-class Model(SoftDeletableModel):
-    project = dj_models.ForeignKey(
-        Project,
-        related_name="models",
-        on_delete=dj_models.PROTECT
-    )
-    model_id = dj_models.AutoField(primary_key=True)
-    name = dj_models.CharField(max_length=1000, blank=False)
-    location = dj_models.CharField(max_length=1000, blank=True)
-    created = dj_models.DateTimeField(auto_now_add=True)
-    updated = dj_models.DateTimeField(auto_now=True)
-    saved_by = dj_models.CharField(max_length=100, blank=True)
-    saved_version_location = dj_models.CharField(max_length=100, blank=True)
-
-
-class Notebook(SoftDeletableModel):
-    project = dj_models.ForeignKey(
-        Project,
-        related_name="notebooks",
-        on_delete=dj_models.PROTECT
-    )
-    filelink = dj_models.ForeignKey(
-        FileLink,
-        related_name="notebook",
-        on_delete=dj_models.SET_NULL,
-        null=True
-    )
-    notebook_id = dj_models.AutoField(primary_key=True)
-    name = dj_models.CharField(max_length=1000, blank=False)
-    created = dj_models.DateTimeField(auto_now_add=True)
-    updated = dj_models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.name} ({self.notebook_id})"
-
+UPLOAD_PREFIX = "upload: "
 
 def validate_file_name(location):
     # in local mode, we need to save the file's exact location
     if not IS_CONTAINERIZED:
         return
+
     if os.sep in location:
         raise ValidationError(f"File {location} contains an invalid character.", code=400)
 
@@ -101,6 +32,26 @@ def validate_file_exists(location):
 
     if not os.path.isfile(location):
         raise ValidationError(f"File {location} isn't a file.", code=400)
+
+def validate_root_dir(location):
+    # on local we don't need the root dir. Skip validation
+    if not IS_CONTAINERIZED:
+        return
+
+    if os.sep in location:
+        raise ValidationError(f"Directory {location} contains an invalid character.", code=400)
+
+
+def take_temp_file(tempfile_path, dest_dir, filename):
+    os.makedirs(dest_dir, exist_ok=True)
+
+    dest_path = os.path.join(dest_dir, filename)
+    shutil.move(tempfile_path, dest_path)
+
+    # since we just took the file from the temp dir, write an empty file there to keep any eventual deletion from failing
+    open(tempfile_path, "wb").close()
+
+    return dest_path
 
 
 class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
@@ -123,15 +74,35 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
     location = dj_models.TextField(blank=True, validators=[validate_file_name, validate_file_exists])
     source_url = dj_models.TextField(blank=True)
     models = dj_models.ManyToManyField(Model, blank=True, related_name="datasets")
+    root_dir = dj_models.CharField(max_length=1000, blank=True, validators=[validate_root_dir])
+
+    def get_by_id(id):
+        return Dataset.available_objects.get(pk=id, project__is_removed=False)
+
+    def get_queryset():
+        return Dataset.available_objects.filter(project__is_removed=False)
 
     @property
     def exists_on_disk(self):
-        ret = os.path.isfile(self.location)
-        return ret
+        return os.path.isfile(self.location)
 
     @property
     def is_perceptilabs_sourced(self):
         return self.source_url and self.source_url.startswith(DATA_BLOB)
+
+    @property
+    def upload_path(self):
+        if not self.source_url.startswith(UPLOAD_PREFIX):
+            raise Exception(f"Dataset wasn't uploaded. Operation not supported.")
+
+        prefix_len = len(UPLOAD_PREFIX)
+        return self.source_url[prefix_len:]
+
+    def get_csv_content(self, num_rows=4):
+        if not self.status == 'uploaded' or not self.location or not os.path.isfile(self.location):
+            raise Exception("Attempt to read contents before completion")
+
+        return get_text_lines(self.location, num_rows=num_rows)
 
 
     def __str__(self):
@@ -147,31 +118,55 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
     def create_from_remote(cls, project_id, name, remote_name, destination):
         if IS_CONTAINERIZED:
             upload_dir = file_upload_dir(project_id)
-            dest_path = os.path.join(upload_dir, f"dataset-{uuid.uuid4()}")
+            unique_suffix = f"dataset-{uuid.uuid4()}"
+            root_dir = os.path.join(upload_dir, unique_suffix)
         else:
-            dest_path = destination
+            root_dir = destination
 
         dataset = Dataset(
             project_id=project_id,
             name=name,
             source_url=f"{DATA_BLOB}/{remote_name}",
-            location=dest_path
+            root_dir = root_dir,
         )
+
         dataset.save()
         task_id = download_async(dataset.dataset_id)
 
         return task_id, dataset
 
+    @classmethod
+    def create_from_upload(cls, project_id, dataset_name, uploaded_temp_file):
+        if not IS_CONTAINERIZED:
+            raise Exception("Not supported!")
+
+        upload_dir = file_upload_dir(project_id)
+        dest_dir = os.path.join(upload_dir, f"dataset-{uuid.uuid4()}")
+
+        upload_path = take_temp_file(uploaded_temp_file, dest_dir, dataset_name)
+
+        dataset = Dataset(
+            project_id=project_id,
+            name=dataset_name,
+            location=upload_path,
+            root_dir=dest_dir,
+
+            # a way to keep track of the fact that this was an upload
+            source_url=f"{UPLOAD_PREFIX}{upload_path}",
+        )
+        dataset.save()
+        task_id = unzip_async(dataset.dataset_id)
+
+        return task_id, dataset
+
 
 @receiver(pre_save, sender=Dataset)
-def dataset_deleted_pre(sender, **kwargs):
+def dataset_pre_save(sender, **kwargs):
     ds = kwargs["instance"]
+
+    # we're only modifying datasets that have been removed
     if not ds.is_removed:
         return
-
-    # TODO: fail when the dataset isn't done unpacking yet. (Or make sure the task is abandoned)
-    # TODO: ... or see whether renaming the directory below just breaks the download/unzip and upload/unzip tasks.
-    # if ds.status
 
     unique_str = "_TO_DELETE_" + str(uuid.uuid4())
 
@@ -190,22 +185,22 @@ def dataset_deleted_pre(sender, **kwargs):
 
 
 @receiver(post_save, sender=Dataset)
-def dataset_deleted_post(sender, **kwargs):
+def dataset_post_save(sender, **kwargs):
     ds = kwargs["instance"]
-    if not ds.is_removed:
-        return
+    if ds.is_removed:
+        # we don't know the root dir except for files with a source_url, so only delete them
+        if not ds.is_perceptilabs_sourced:
+            return
 
-    # we don't know the root dir except for files with a source_url, so only delete them
-    if not ds.is_perceptilabs_sourced:
-        return
+        # after unpacking, remote datasets have their path edited. Take that into account
+        if os.path.isfile(ds.location):
+            full_path = os.path.dirname(ds.location)
+        elif os.path.isdir(ds.location):
+            full_path = ds.location
+        else:
+            # It's not there. Bail out.
+            return
 
-    # after unpacking, remote datasets have their path edited. Take that into account
-    if os.path.isfile(ds.location):
-        full_path = os.path.dirname(ds.location)
-    elif os.path.isdir(ds.location):
-        full_path = ds.location
-    else:
-        # It's not there. Bail out.
-        return
-
-    delete_path_async(ds.project.project_id, full_path)
+        delete_path_async(ds.project.project_id, full_path)
+    elif ds.root_dir:
+        os.makedirs(ds.root_dir, exist_ok=True)

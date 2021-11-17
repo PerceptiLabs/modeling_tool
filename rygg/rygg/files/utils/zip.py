@@ -10,7 +10,6 @@ def default_dest(zipfile):
 
 def unzipped_files_from_zipfile(zipfile_name, dest=None, cancel_token=None):
 
-    # TODO: is it performant to open the zip twice?
     with ZipFile(zipfile_name, 'r') as zip:
         files = zip.namelist()
 
@@ -58,7 +57,12 @@ def unzipped_files_from_unzip(zipfile, dest=None, cancel_token=None):
                 yield pathparts[0].strip()
 
 
-    return get_expected(), get_items()
+    expected = get_expected()
+
+    if expected > 0:
+        os.makedirs(dest, exist_ok=True)
+
+    return expected, get_items()
 
 def get_unzipper():
     def check_unzip_version():
