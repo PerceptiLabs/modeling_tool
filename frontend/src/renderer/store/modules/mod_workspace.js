@@ -187,12 +187,13 @@ const getters = {
       : 0
   },
   GET_networkCoreStatus(state, getters) {
-    return getters.GET_networkIsNotEmpty
+    return getters.GET_networkIsNotEmpty && getters.GET_currentNetwork.networkMeta.coreStatus
       ? getters.GET_currentNetwork.networkMeta.coreStatus.Status
       : null
   },
   GET_networkCoreStatusByModelId:(state, getters) => (modelId = null) => {
-    return getters.GET_networkByNetworkId(modelId).networkMeta.coreStatus.Status;
+    const coreStatus = getters.GET_networkByNetworkId(modelId).networkMeta.coreStatus;
+    return coreStatus && coreStatus.Status;
   },
   GET_currentSelectedEl(state, getters) {
     let selectedIndex = [];
@@ -983,7 +984,7 @@ const mutations = {
     }
   },
   set_statusNetworkCoreStatus(state, {getters, value}) {
-    if(getters.GET_currentNetwork.networkMeta) {
+    if(getters.GET_currentNetwork.networkMeta && getters.GET_currentNetwork.networkMeta.coreStatus) {
       getters.GET_currentNetwork.networkMeta.coreStatus.Status = value;
     }
   },
@@ -1001,7 +1002,7 @@ const mutations = {
     }
   },
   set_statusNetworkCoreStatusProgressClear(state, {getters}) {
-    if(getters.GET_currentNetwork.networkMeta.coreStatus.Status.Progress) {
+    if(getters.GET_currentNetwork.networkMeta.coreStatus && getters.GET_currentNetwork.networkMeta.coreStatus.Status.Progress) {
       getters.GET_currentNetwork.networkMeta.coreStatus.Status.Progress = 0;
     }
   },
@@ -1922,6 +1923,8 @@ const mutations = {
     if (!getters.GET_networkByNetworkId(networkId)) { return; }
     const networkList = getters.GET_networkByNetworkId(networkId).networkElementList;
     
+    console.log('setChartComponentLoadingStateMutation', descendants, networkList, networkId, value);
+
     descendants.forEach(componentId => {
       if(networkList[componentId] && networkList[componentId].chartDataIsLoading !== undefined) {
         if(value) { // is should increment
@@ -2172,7 +2175,6 @@ const actions = {
     // has started, but before it is completed.
     const network = state.workspaceContent.find(network => network.networkID === networkID);
 
-    console.log('SET_chartsRequestsIfNeeded', networkID, network);
     // console.group('SET_chartsRequestsIfNeeded');
     // console.log('stats tab', network.networkMeta.openStatistics);
     // console.log('test tab', network.networkMeta.openTest);
@@ -2188,22 +2190,13 @@ const actions = {
 
     // this check is only for the statistics tab
     dispatch('mod_api/API_checkNetworkRunning', networkID, {root: true})
-      .then((isRunning) => {
-
-      if (network.networkMeta.coreStatus.Status === 'Paused') {
-        //statistics still being computed and paused
-        dispatch('EVENT_onceDoRequest', true);
-      } else if (isRunning) {
-        //statistics still being computed and NOT paused
-        dispatch('EVENT_startDoRequest', true);
-      } else if (network.networkMeta.coreStatus.Status === 'Finished' &&
-        network.networkMeta.coreStatus.Progress < 1 &&
-        network.networkMeta.chartsRequest.waitGlobalEvent) {
-        // statistics done, tests have started
-        dispatch('EVENT_startDoRequest', true);
-      } else {
-        dispatch('EVENT_onceDoRequest', true);
-      }
+      .then(({content: isRunning}) => {
+        if (isRunning && network.networkMeta.coreStatus && !['Stopped', 'Paused', 'Waiting', 'Finished'].includes(network.networkMeta.coreStatus.Status)) {
+          //statistics still being computed and NOT paused
+          dispatch('EVENT_startDoRequest', true);
+        } else {
+          dispatch('EVENT_onceDoRequest', true);
+        }
     });
   },
   SET_currentNetwork({commit}, index){

@@ -32,9 +32,11 @@ const getters = {
 
 const mutations = {
   SET_selectedElArr (state, value) {
-    value.viewBox.layerMeta.isSelected = true; 
-    state.statisticsTabs.selectedMetric = value.statistics.layerName
-    state.selectedElArr = value;
+    if (value.viewBox) {
+      value.viewBox.layerMeta.isSelected = true; 
+      state.statisticsTabs.selectedMetric = value.statistics.layerName
+      state.selectedElArr = value;
+    }
   },
   SET_piePercents (state, value) {
     state.piePercents = value

@@ -1,5 +1,5 @@
 <template lang="pug">
-    div.relative
+    div.relative(v-if="statusData")
       div(v-if="statusData.Status === 'Finished'").d-flex.align-items-center
         img(src="./../../../../static/img/model-status-complete-white.svg")
         span.training-complete-text Training Complete

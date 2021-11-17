@@ -408,6 +408,9 @@ const removeChartData = (inputNetwork) => {
   network = cleanNetworkSnapshotsChartData(network);
   if (network.networkMeta && network.networkMeta.chartsRequest)
     network.networkMeta.chartsRequest.timerID = null;
+  if (network.networkMeta.coreStatus) {
+    delete(network.networkMeta.coreStatus);
+  }
   return network;
 
 
@@ -419,6 +422,7 @@ const removeChartData = (inputNetwork) => {
       if (!layerObject.hasOwnProperty('chartData')) { continue; }
   
       layerObject['chartData'] = {};
+      layerObject['chartDataIsLoading'] = 0;
     }
     return net
   }

@@ -260,9 +260,6 @@ const actions = {
         }
       });
   },
-  API_runServer({state, dispatch, commit, rootGetters}) {
-    dispatch('coreStatusWatcher');
-  },
 
   API_closeCore(context, receiver) {
     const theData = {
@@ -468,8 +465,12 @@ const actions = {
       .then((data)=> {
         dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
         dispatch('mod_workspace/saveCurrentModelAction', null, {root: true});
-        dispatch('API_getStatus');
         dispatch('mod_tracker/EVENT_trainingCompleted', 'User stopped', {root: true});
+
+        // It takes time to stop training on kernel side
+        setTimeout(() => {
+          dispatch('API_getStatus');
+        }, 1000);
       })
       .catch((err)=> {
         console.error(err);
@@ -699,7 +700,7 @@ const actions = {
           dispatch('globalView/GP_errorPopup', data.error.message + "\n\n" + data.error.details, {root: true});
 	      }
 
-        if (data.Status === 'Finished') {
+        if (data.Status === 'Finished' || data.Status === 'Stopped') {
           dispatch('mod_workspace/EVENT_stopRequest', { networkId }, {root: true});
         }
       })
@@ -790,7 +791,7 @@ const actions = {
     //   'API_getBatchPreviewSample req',
     //   theData
     // );
-    
+
     dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: true, networkId } , { root: true });
 
     return renderingKernel.getPreviews(networkId, net, datasetSettings, userEmail)     
