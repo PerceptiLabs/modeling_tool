@@ -3,7 +3,7 @@ from django.http import HttpResponseBadRequest
 
 def token_middleware(get_response):
     def check_token(request):
-        if settings.DEBUG or settings.IS_CONTAINERIZED:
+        if settings.DEBUG or settings.IS_CONTAINERIZED or request.path.startswith('/mixpanel'):
             return None
 
         passed_token = request.GET.get("token") or request.POST.get("token")
