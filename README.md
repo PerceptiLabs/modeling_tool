@@ -65,7 +65,7 @@ cd build/docker/compose
 1. Training worker
     ```
     cd backend
-    PL_REDIS_URL="redis://localhost" celery -A perceptilabs.tasks.celery_executor worker --loglevel=debug --queues=training
+    PL_REDIS_URL="redis://localhost" celery -A perceptilabs.tasks.celery_executor worker --loglevel=debug --queues=training --pool=threads
     ```
 1. Flower (optional)
     ```
