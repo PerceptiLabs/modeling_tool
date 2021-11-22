@@ -558,10 +558,10 @@ export default {
         runStatistics
       )
       .then(res => {
-        if (res.error) {
+        if (res && res.error) {
           this.deleteModelWithErrorPopup(
             apiMeta.model_id,
-	    res.error.message + "\n\n" + res.error.details
+	          res.error.message + "\n\n" + res.error.details
           );
         }
         return res;
@@ -571,7 +571,12 @@ export default {
          apiMeta.model_id,
          "Couldn't get model recommendation due to an exception: " + err
        );
+       return null;
       });
+
+      if (!modelRecommendation) {
+        this.closeModal(false);
+      }
 
       const inputData = convertModelRecommendationToVisNodeEdgeList(
         modelRecommendation

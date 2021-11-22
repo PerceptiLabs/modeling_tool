@@ -205,7 +205,10 @@ export const renderingKernel = {
     return whenRenderingKernelReady
       .then(rk => rk.post('/models/recommendations', payload))
       .then(res => {
-        return (res.status === 200) ? res.data : null;
+        if (res.status === 200) {
+          return res.data;
+        }
+        throw res.data;
       })
   },
   
