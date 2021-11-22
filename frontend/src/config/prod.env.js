@@ -7,6 +7,8 @@ module.exports = {
   KEYCLOAK_BASE_URL: '"https://keycloak.perceptilabs.com:8443/auth"',
   KEYCLOAK_REALM: '"PerceptiLabs"',
   KEYCLOAK_CLIENT_ID: '"perceptilabs_tool"',
+  SENTRY_DSN: '"https://a926ebcbc2a0463ab728fe06ebd750a8@o283802.ingest.sentry.io/6061754"',
+  ENABLE_SENTRY: '"true"',        
   GITHUB_CLIENT_ID: '"094271b0edb47c75dc24"',
   ENABLE_LOGROCKET: '"true"',
   LOGROCKET_APP_ID: '"l2mogl/modeling-tool"',

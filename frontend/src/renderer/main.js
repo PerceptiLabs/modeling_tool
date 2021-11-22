@@ -47,10 +47,17 @@ if (process.env.ENABLE_LOGROCKET) {
 }
 
 //- Use plugin
-if (!Vue.config.devtools) {
+if (process.env.ENABLE_SENTRY === 'true') {
   Sentry.init({
-    dsn: 'https://2497f27009b24990b4c0f3feeda4d37d@o283802.ingest.sentry.io/1833551',
-    integrations: [new Integrations.Vue({Vue, attachProps: true})],
+    dsn: process.env.SENTRY_DSN,
+    integrations: [
+      new Integrations.Vue({
+        Vue,
+        attachProps: true,
+        attachStacktrace: true,      
+      })
+    ],
+    release: process.env.PACKAGE_VERSION
   });
 }
 Vue.use(VeeValidate);
@@ -96,6 +103,10 @@ function runApp(token, refreshToken){
   userProfile.firstName = userProfile.given_name
   userProfile.lastName = userProfile.family_name
 
+  Sentry.setUser({
+    email: userProfile.email,
+  });  
+
   store.dispatch('mod_user/SET_userProfile', userProfile, {root: true});
   setTokens(store, token, refreshToken);
 
@@ -105,9 +116,7 @@ function runApp(token, refreshToken){
       email: userProfile.email
     });
     LogRocket.getSessionURL(sessionURL => {
-      Sentry.withScope(scope => {
-        scope.setExtra('sessionURL', sessionURL);
-      })
+      Sentry.setExtra('sessionURL', sessionURL);
     })
   }
 
