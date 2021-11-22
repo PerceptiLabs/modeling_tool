@@ -14,6 +14,25 @@ import os
 import sys
 import uuid
 import pathlib
+import sentry_sdk
+from rygg import __version__    
+from sentry_sdk.integrations.django import DjangoIntegration
+
+def is_prod():
+    return __version__ != "development"
+
+# According to Sentry, DSNs are safe to keep public
+# https://docs.sentry.io/product/sentry-basics/dsn-explainer/
+SENTRY_DSN = "https://56aaa2a9837147f9bd8778a9f4c6f878@o283802.ingest.sentry.io/6061756"  
+
+if is_prod():
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        send_default_pii=True,
+        release=__version__
+    )
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = pathlib.Path(__file__).resolve(strict=True).parent.parent
