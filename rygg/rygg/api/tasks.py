@@ -11,19 +11,19 @@ logger = logging.getLogger(__name__)
 
 def _rm_rf(path):
 
-    # short-circuit
     if os.path.isdir(path):
         try:
             shutil.rmtree(path)
         except FileNotFoundError:
+            # skip the race condition
             pass
         return True
 
     elif os.path.isfile(path):
         os.remove(path)
         return True
-
-    return False
+    else:
+        return False
 
 def is_subdir(child, parent):
     if os.path.commonpath([parent, child]) != parent:

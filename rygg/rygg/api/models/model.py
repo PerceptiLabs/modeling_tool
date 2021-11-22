@@ -43,8 +43,17 @@ class Model(SoftDeletableModel):
         return Model.available_objects.filter(project__is_removed=False)
 
     @property
+    def abs_dir(self):
+        assert self.location
+        return os.path.expanduser(self.location)
+
+    @property
+    def full_location(self):
+        return os.path.join(self.abs_dir, "model.json")
+
+    @property
     def content(self):
-        full_path = os.path.join(self.location, "model.json")
+        full_path = self.full_location
         if not os.path.isfile(full_path):
             return None
 
@@ -52,19 +61,20 @@ class Model(SoftDeletableModel):
 
 
     def save_content(self, model_dict):
-        assert self.location
-        full_path = os.path.join(self.location, "model.json")
+        assert not os.path.isdir(self.full_location)
+        assert not self.abs_dir.endswith('.json')
+        os.makedirs(self.abs_dir, exist_ok=True)
 
-        model_dir = os.path.dirname(full_path)
-        os.makedirs(model_dir, exist_ok=True)
+        if not os.path.isdir(self.abs_dir):
+            raise PermissionError(f"Couldn't make {self.abs_dir}")
 
-        if not os.path.isdir(model_dir):
-            raise PermissionError(f"Couldn't make {model_dir}")
+        if not os.access(self.abs_dir, os.W_OK):
+            raise PermissionError(f"{self.abs_dir} is not writeable")
 
-        if not os.access(model_dir, os.W_OK):
-            raise PermissionError(f"{model_dir} is not writeable")
+        if os.path.isfile(self.full_location) and not os.access(self.full_location, os.W_OK):
+            raise PermissionError(f"{self.full_location} is not writeable")
 
-        save_json(full_path, model_dict)
+        save_json(self.full_location, model_dict)
 
 
     def next_name(project_id, prefix):
@@ -95,7 +105,7 @@ def model_pre_save(instance, **kwargs):
     model_dir = f"model-{uuid.uuid4()}"
     instance.location = os.path.join(parent_dir, model_dir)
     assert instance.location
-    os.makedirs(instance.location, exist_ok=True)
+    os.makedirs(instance.abs_dir, exist_ok=True)
 
 
 # Remove the model's files on deletion
@@ -105,7 +115,7 @@ def model_post_save(instance, **kwargs):
         return
 
     if instance.is_removed:
-        delete_path_async(instance.project.project_id, instance.location)
+        delete_path_async(instance.project.project_id, instance.abs_dir)
 
-    assert instance.location
-    assert os.path.isdir(instance.location)
+    assert instance.full_location
+    assert os.path.isdir(instance.abs_dir)

@@ -49,7 +49,7 @@ def test_cant_update_model_location(rest, tmpdir, tmp_project):
             model.update(location = str(tmpdir))
 
 
-@pytest.mark.timeout(0.2)
+@pytest.mark.timeout(0.4)
 @pytest.mark.usefixtures('enterprise_only')
 def test_next_name_works(rest, tmp_project):
     # gets " 1" when there are no others with a number
@@ -61,3 +61,18 @@ def test_next_name_works(rest, tmp_project):
     # gets "2" if there's one with the prefix but no number
     ModelClient.make(rest, project=tmp_project.id, name="this_is_a_prefix 11")
     assert ModelClient.get_next_name(rest, tmp_project.id, "this_is_a_prefix")['next_name'] == "this_is_a_prefix 12"
+
+@pytest.mark.timeout(0.2)
+@pytest.mark.usefixtures('pip_only')
+def test_user_home_used(rest, tmp_project):
+    from pathlib import Path
+    dest = os.path.join("~", "pltest")
+    try:
+        with ModelClient.make(rest, name="test project", project=tmp_project.id, location=dest) as model:
+            model.save_json({})
+
+            expected = os.path.join(Path.home(), "pltest", "model.json")
+            assert os.path.isfile(expected)
+    finally:
+        import shutil
+        shutil.rmtree(dest, ignore_errors=True)
