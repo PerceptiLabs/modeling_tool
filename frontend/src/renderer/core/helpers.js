@@ -513,6 +513,16 @@ export const isBrowserChromeOrFirefox = () => {
   return  (isJS.chrome() || isJS.firefox()) && navigator.userAgent.indexOf('Edg/') === -1;
 }
 
+/**
+ * Determine if a value is an Object
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is an Object, otherwise false
+ */
+ export function isObject(val) {
+  return val !== null && typeof val === 'object';
+}
+
 
 export {
   projectPathModel,

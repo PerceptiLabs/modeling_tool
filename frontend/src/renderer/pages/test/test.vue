@@ -91,7 +91,7 @@ import ChartSwitch from "@/components/charts/chart-switch";
 import ChartSpinner from "@/components/charts/chart-spinner";
 import MetricTestTable from "./components/metric-test-table";
 import { TestTypes } from "@/core/constants";
-import { getFirstElementFromObject } from "@/core/helpers";
+import { isObject } from "@/core/helpers";
 import cloneDeep from 'lodash.clonedeep';
 
 const chartStyles = {
@@ -109,8 +109,12 @@ export default {
   },
   created() {
     this.$store.dispatch("mod_webstorage/getTestStatistic").then(res => {
-      console.log('testdata', res);
-      this.$store.dispatch("mod_test/setTestData", JSON.parse(res), { root: true });
+      if(!isObject(res)) {
+        throw new Error(`Wrong type - {${typeof res}}, expected Object`)
+      }
+      
+      this.$store.dispatch("mod_test/setTestData", res, { root: true });
+
     });
   },
   data() {
