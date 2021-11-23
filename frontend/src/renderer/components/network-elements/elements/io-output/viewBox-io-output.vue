@@ -235,7 +235,7 @@ export default {
           itemsCount += Object.keys(itm).length;
         }
       });
-      return `${classNamePrefixes[itemsCount]}-box-display`;
+      return `four-box-display`;
     },
     getData() {
       switch (this.currentTab) {
