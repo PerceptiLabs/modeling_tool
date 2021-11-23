@@ -78,6 +78,9 @@ export const getModelDatasetPath = (model) => {
 };
 
 export const isModelTrained = (model) => {
-  const networkStatus = model.networkMeta.coreStatus.Status;
+  const { networkMeta: { coreStatus: { Status: networkStatus } = {} } } = model;
+  if(!networkStatus) {
+    return false;
+  }
   return networkStatus === 'Finished' || networkStatus === 'Testing' || networkStatus === 'Validation' || networkStatus === 'Stopped' || model.networkMeta.coreStatus.Epoch > 0;
 };
