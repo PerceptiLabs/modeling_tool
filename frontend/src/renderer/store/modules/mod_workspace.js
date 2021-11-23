@@ -851,6 +851,13 @@ const mutations = {
 
     await rygg_deleteFolder(path)
   },
+  async unregister_networkById(state, networkId) {
+    const networkIndex = state.workspaceContent.findIndex(w => w.networkID == networkId);
+
+    if (networkIndex < 0) { return; }
+
+    state.workspaceContent.splice(networkIndex, 1);
+  },
   //---------------
   //  LOADER FOR TRAINING
   //---------------
@@ -2081,6 +2088,33 @@ const actions = {
       dispatch('mod_tracker/EVENT_modelDeletion', null, { root: true});
       commit('delete_networkById', networkId);
       dispatch('mod_datasets/deleteModel', networkId, {root: true});
+      resolve();
+    })
+  },
+  UNREGISTER_networkById({commit, dispatch}, networkId) {
+    return new Promise(resolve => {
+      const index = state.workspaceContent.findIndex(wc => wc.networkID == networkId);
+      if (index === -1) { return; }
+
+      // API_closeCore stops the process in the core
+      dispatch('mod_api/API_closeCore', networkId, { root: true });
+
+      if (index === state.currentNetwork) {
+
+        if (state.workspaceContent.length === 1) {
+          commit('set_lastActiveTabInLocalStorage', '');
+        } else if (index === 0) {
+          commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index + 1].networkID);
+        } else {
+          commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index - 1].networkID);
+        }
+      }
+      const modelApiMeta = state.workspaceContent[index].apiMeta;
+
+      // deleting in rygg
+      dispatch('mod_project/deleteModel', modelApiMeta, {root: true});
+      dispatch('mod_datasets/unregisterModel', networkId, {root: true});
+      commit('unregister_networkById', networkId);
       resolve();
     })
   },
