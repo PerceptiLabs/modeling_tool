@@ -8,8 +8,10 @@ from rygg.files.utils.zip import unzipped_files
 from rygg.tasks import run_async
 
 # TODO: get this behind the tasks api
-from celery.decorators import task
+from celery import Celery
 from rygg.tasks.celery import work_in_celery
+
+app = Celery()
 
 
 ######################
@@ -87,7 +89,7 @@ def unzip(cancel_token, status_callback, dataset_id):
 
 
 # Worker-side interface with celery
-@task(
+@app.task(
     name="unzip", # must be in list in rygg/celery.py
     bind=True,
 )
@@ -102,7 +104,7 @@ def unzip_async(dataset_id):
 
 ######################
 # Download/Unzip
-@task(
+@app.task(
     name="download", # must be in list in rygg/celery.py
     bind=True,
 )

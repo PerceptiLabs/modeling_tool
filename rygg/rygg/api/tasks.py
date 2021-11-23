@@ -1,6 +1,6 @@
-from celery.decorators import task
 import os
 import shutil
+from celery import Celery
 
 from rygg.tasks import run_async
 from rygg.settings import file_upload_dir, IS_CONTAINERIZED
@@ -8,6 +8,8 @@ from rygg.tasks.celery import work_in_celery
 
 import logging
 logger = logging.getLogger(__name__)
+
+app = Celery()
 
 def _rm_rf(path):
 
@@ -53,7 +55,7 @@ def delete_path_async(project_id, path):
 
     run_async("delete_path", delete_path, path)
 
-@task(
+@app.task(
     name="delete_path",
     bind=True,
 )

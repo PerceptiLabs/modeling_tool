@@ -1,4 +1,4 @@
-from celery.decorators import task
+import celery
 from celery.result import AsyncResult
 from threading import Event, Thread
 from time import sleep
