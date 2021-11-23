@@ -32,8 +32,8 @@
           span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
 
 
-    .workspace-frame(:class="{'border':emptyNavigationMode == 0}")
-      component.blue-left-border(:is="toolbarType" v-if="emptyNavigationMode == 0")    
+    .workspace-frame(:class="{'border': emptyNavigationMode == 0}")
+      component.blue-left-border(:is="toolbarType" v-if="emptyNavigationMode == 0")
       .workspace_content_wrapper
         .workspace_content.bookmark_content.js-workspace.blue-border(
           v-show="emptyNavigationMode == 0"  
@@ -259,8 +259,8 @@
     grid-area: the-testing;
   }
   .the-network-field {
+    max-width: 100%;
     grid-area: network-field;
-    // background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
     border: $border-1;
     border-radius: 4px;
 
@@ -278,7 +278,6 @@
 
     > .info-section_head {
       color: $color-6;
-      // background: #090f19;
     }
   }
   .info-section_main {
