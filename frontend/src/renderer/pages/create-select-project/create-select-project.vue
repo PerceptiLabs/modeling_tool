@@ -85,7 +85,7 @@
   import { mapState, mapGetters, mapActions, mapMutations } from "vuex";
   import SortByButton from "@/components/sort-by-button";
   // import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
-  import { generateID, getDefaultProjectPathForOs } from "@/core/helpers";
+  import { generateID } from "@/core/helpers";
   import { coreRequest } from '@/core/apiWeb.js';
   import cloneDeep from 'lodash.clonedeep';
   import { getFolderContent as rygg_getFolderContent } from '@/core/apiRygg';

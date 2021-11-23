@@ -108,6 +108,11 @@ class ProjectClient(ClientBase):
         super().__exit__(*args)
         shutil.rmtree(self.upload_dir, ignore_errors=True)
 
+    def get_default(rest):
+        url = f"{ProjectClient.ENDPOINT}default/"
+        resp = rest.get(url)
+        return ProjectClient(rest, resp['project_id'])
+
 
     @property
     def upload_dir(self):
@@ -137,6 +142,10 @@ class ProjectClient(ClientBase):
     @property
     def updated(self):
         return dateutil.parser.parse(self.as_dict["updated"])
+
+    @property
+    def default_directory(self):
+        return self.as_dict["default_directory"]
 
 
 class ModelClient(ClientBase):

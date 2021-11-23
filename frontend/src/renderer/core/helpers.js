@@ -14,10 +14,6 @@ const projectPathModel = function (projectPath) {
 };
 
 
-const getDefaultProjectPathForOs = function() {
-  return '~/Documents/PerceptiLabs'; //the path to MyDocuments is resolved in Kernel
-};
-
 const checkpointDirFromProject = function(projectPath) {
     return `${projectPath}/checkpoint`;
 };
@@ -526,7 +522,6 @@ export const isBrowserChromeOrFirefox = () => {
 
 export {
   projectPathModel,
-  getDefaultProjectPathForOs,
   checkpointDirFromProject,  
   encryptionData,
   decryptionData,

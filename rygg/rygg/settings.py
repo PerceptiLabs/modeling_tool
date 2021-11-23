@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 import sys
 import uuid
-import pathlib
+from pathlib import Path
 import sentry_sdk
 from rygg import __version__    
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -35,7 +35,7 @@ if is_prod():
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = pathlib.Path(__file__).resolve(strict=True).parent.parent
+BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
 def is_docker():
     try:
@@ -52,7 +52,7 @@ IS_CONTAINERIZED = is_docker() or is_podman()
 
 DB_LOCATION = os.environ.get("PERCEPTILABS_DB")
 if DB_LOCATION or not IS_CONTAINERIZED:
-    DB_LOCATION = os.environ.get("PERCEPTILABS_DB") or os.path.join(pathlib.Path.home(), ".perceptilabs/db.sqlite3")
+    DB_LOCATION = os.environ.get("PERCEPTILABS_DB") or os.path.join(Path.home(), ".perceptilabs/db.sqlite3")
     db_dir=os.path.dirname(DB_LOCATION)
     os.makedirs(db_dir, exist_ok=True)
 
@@ -289,3 +289,7 @@ CELERY_ENABLED = True
 DATA_BLOB = os.getenv('PL_DATA_BLOB', "https://perceptilabs.blob.core.windows.net/data")
 DATA_LIST = os.getenv('PL_DATA_LIST', DATA_BLOB + "/dataset-list.csv")
 DATA_CATEGORY_LIST = os.getenv('PL_DATA_CATEGORY_LIST', DATA_BLOB + "/dataset-categories.csv")
+
+DEFAULT_PROJECT_NAME = "Default"
+DEFAULT_PROJECT_DIR = os.path.join(Path.home(), 'Documents', 'PerceptiLabs', 'Default')
+

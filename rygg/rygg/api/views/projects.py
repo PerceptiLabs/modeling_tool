@@ -1,5 +1,7 @@
 from django_http_exceptions import HTTPExceptions
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from rygg.api.models import Project
 from rygg.api.serializers import ProjectSerializer
@@ -18,3 +20,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def update(self, request, **kwargs):
         protect_read_only_enterprise_field(request, 'default_directory')
         return super().update(request, **kwargs)
+
+    @action(detail=False, methods=['GET'])
+    def default(self, request):
+        found = Project.get_default()
+        if not found:
+            raise HTTPExceptions.NOT_FOUND
+        serializer = ProjectSerializer(found)
+        return Response(serializer.data)

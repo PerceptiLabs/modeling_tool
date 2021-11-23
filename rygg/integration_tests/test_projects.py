@@ -1,6 +1,7 @@
 import os
 import pytest
 import time
+from pathlib import Path
 
 from rest import RyggRest
 from clients import ProjectClient, ModelClient, NotebookClient, DatasetClient
@@ -91,3 +92,14 @@ def test_create_rejects_default_directory_in_enterprise(rest, tmpdir):
 def test_update_rejects_default_directory_in_enterprise(rest, tmpdir, tmp_project):
     with pytest.raises(Exception, match="400.*default_directory"):
         tmp_project.update(default_directory=str(tmpdir))
+
+
+DEFAULT_PATH = os.path.join(Path.home(), "Documents", "PerceptiLabs", "Default")
+@pytest.mark.skipif(not Path.home(), reason="Default project requires a HOME directory")
+@pytest.mark.skipif(os.path.isdir(DEFAULT_PATH), reason="Default project requires a HOME directory")
+def test_get_default_mode_project(rest):
+    assert not os.path.isdir(DEFAULT_PATH)
+    p = ProjectClient.get_default(rest)
+    assert os.path.isdir(p.default_directory)
+    assert p.default_directory == DEFAULT_PATH
+

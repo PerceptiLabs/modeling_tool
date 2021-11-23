@@ -141,20 +141,14 @@ const actions = {
       })
   },
   async getDefaultModeProject(ctx) {
-    const {data: { results: projects }} = await ctx.dispatch('getProjects');
-
-    // TODO: this won't scale in enterprise. Only do O(n) call to find() in local mode.
-    let defaultProject = projects.find(p => p.name === DEFAULT_PROJECT_NAME);
-
-    if (!defaultProject) {
-      let req = await rygg_isEnterpriseApp() ?
-        { name: DEFAULT_PROJECT_NAME } :
-        { name: DEFAULT_PROJECT_NAME, default_directory: DEFAULT_LOCAL_PROJECT_DIR };
-      defaultProject = await ctx.dispatch('createProject', req);
+    try {
+      const { data: defaultProject } = await rygg.get('/projects/default/')
+      await ctx.commit('selectProject', defaultProject.project_id);
+      await ctx.commit("addProjectToList", defaultProject)
+      return defaultProject
+    } catch(e) {
+      console.error(e);
     }
-
-    await ctx.commit('selectProject', defaultProject.project_id);
-    return defaultProject;
   },
   async createProject(ctx, { name, default_directory }) {
     const createProjectRes = await rygg_createProjectWithDefaultDir(name, default_directory);

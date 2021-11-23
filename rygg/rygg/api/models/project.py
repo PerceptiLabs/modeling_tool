@@ -3,10 +3,10 @@ from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from model_utils.models import SoftDeletableModel
 import os
+from pathlib import Path
 
-from rygg.settings import IS_CONTAINERIZED, file_upload_dir
+from rygg.settings import IS_CONTAINERIZED, file_upload_dir, DEFAULT_PROJECT_NAME, DEFAULT_PROJECT_DIR
 from rygg.api.tasks import delete_path_async
-
 
 class Project(SoftDeletableModel):
     project_id = dj_models.AutoField(primary_key=True)
@@ -24,6 +24,14 @@ class Project(SoftDeletableModel):
             return file_upload_dir(self.project_id)
         else:
             return self.default_directory
+
+    def get_default():
+        ret = Project.available_objects.filter(name=DEFAULT_PROJECT_NAME).first()
+        if not ret:
+            os.makedirs(DEFAULT_PROJECT_DIR, exist_ok=True)
+            ret = Project(name=DEFAULT_PROJECT_NAME, default_directory=DEFAULT_PROJECT_DIR)
+            ret.save()
+        return ret
 
 @receiver(post_save, sender=Project)
 def project_created_post(created, instance, **kwargs):
