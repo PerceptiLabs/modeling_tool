@@ -346,7 +346,6 @@ class ProcessResults():
             categories = self._results[layer_name]['categories']
 
             # normalize the matrix and purge nans
-            result = result/result.astype(np.float).sum(axis=0)
             result = np.nan_to_num(result)
             result = np.around(result, 3)
 
