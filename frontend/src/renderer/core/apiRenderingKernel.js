@@ -298,6 +298,17 @@ export const renderingKernel = {
       })
   },
 
+  async importModel(datasetId, modelFilePath) {
+    const payload = {
+      datasetId: datasetId,
+      modelFilePath: modelFilePath
+    };
+    return whenRenderingKernelReady
+      .then(rk => rk.post('/models/import', payload))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },
 }
 
 

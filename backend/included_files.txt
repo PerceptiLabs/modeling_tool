@@ -16,6 +16,7 @@ perceptilabs/training_interface.py
 perceptilabs/testing_interface.py
 perceptilabs/serving_interface.py
 perceptilabs/preprocessing_interface.py
+perceptilabs/rygg.py
 
 # perceptilabs/script
 perceptilabs/script/__init__.py
@@ -278,6 +279,9 @@ perceptilabs/trainer/__init__.py
 perceptilabs/trainer/base.py
 perceptilabs/trainer/losses.py
 perceptilabs/trainer/model.py
+
+# backend/perceptilabs/importer/
+perceptilabs/importer/base.py
 
 # backend/perceptilabs/exporter/
 perceptilabs/exporter/base.py

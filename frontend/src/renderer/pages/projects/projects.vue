@@ -65,6 +65,7 @@ div
                 @click="removeItems()"
               )
                 img(src="../../../../static/img/project-page/remove-red.svg")
+              
 
       perfect-scrollbar.model-list-scrollbar
         div(v-for="dataset in allDatasets", :key="dataset.dataset_id")
@@ -117,7 +118,7 @@ div
             .column-4
             .column-5
             .column-6
-            .column-7.d-flex.flex-row-reverse
+            .column-7.d-flex
               .new-model-btn(
                 v-if="dataset.exists_on_disk === true",
                 @click="createModelWithCurrentDataSetPath(dataset.dataset_id)"
@@ -129,6 +130,11 @@ div
                   @click="deleteDataset(dataset.dataset_id)"
                 )
                   img(src="../../../../static/img/project-page/remove-red.svg")
+              div.new-model-btn(
+                v-tooltip:networkElement="'Experimental'"
+                v-if="dataset.exists_on_disk === true"
+                @click="loadModelIntoExistingDataset(dataset.dataset_id)"
+              ) + Load model
           //-- MODELS BELONG TO DATASET --//
           template(v-if="isDatasetOpened(dataset.dataset_id)")
             .models-list-row.model-list-item.model-list-item-child(
@@ -250,13 +256,23 @@ import ImportModel from "@/components/global-popups/import-model-popup.vue";
 
 import { mapActions, mapMutations, mapState, mapGetters } from "vuex";
 import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
+  import { deepCopy }   from "@/core/helpers";
 import cloneDeep from "lodash.clonedeep";
 import { getModelJson as rygg_getModelJson } from "@/core/apiRygg";
+import { getNextModelName as rygg_getNextModelName } from '@/core/apiRygg';
 import { uploadDatasetToFileserver as rygg_uploadDatasetToFileserver } from "@/core/apiRygg";
 import { getTaskStatus as rygg_getTaskStatus } from "@/core/apiRygg";
 import { isTaskComplete as rygg_isTaskComplete } from "@/core/apiRygg";
+  import { pickFile as rygg_pickFile, getFileContent as rygg_getFileContent } from "@/core/apiRygg";
+  import { renderingKernel }  from "@/core/apiRenderingKernel.js";
 import { LOCAL_STORAGE_HIDE_DELETE_MODAL } from "@/core/constants.js";
 import { arrayIncludeOrOmit } from "@/core/helpers";
+import {
+  convertModelRecommendationToVisNodeEdgeList,
+  createVisNetwork
+} from "@/core/helpers/layer-positioning-helper";
+import { buildLayers } from "@/core/helpers/layer-creation-helper";
+
 
 const mockModelList = [];
 
@@ -299,6 +315,8 @@ export default {
       getCurrentStepCode: "mod_tutorials/getCurrentStepCode",
       isEnterpriseMode: "globalView/get_isEnterpriseApp",
       allDatasets: "mod_datasets/GET_datasets",
+      projectPath:          'mod_project/GET_projectPath',
+      defaultTemplate:      'mod_workspace/GET_defaultNetworkTemplate',
     }),
     ...mapState({
       currentProjectId: (state) => state.mod_project.currentProject,
@@ -367,6 +385,7 @@ export default {
       popupConfirm: "globalView/GP_confirmPopup",
       popupDeleteConfirm: "globalView/GP_deleteConfirmPopup",
       popupNewModel: "globalView/SET_newModelPopup",
+      showErrorPopup:      'globalView/GP_errorPopup',
       showInfoPopup: "globalView/GP_infoPopup",
       set_currentNetwork: "mod_workspace/SET_currentNetwork",
       set_currentModelIndex: "mod_workspace/SET_currentModelIndex",
@@ -383,6 +402,7 @@ export default {
       SET_openTest: "mod_workspace/SET_openTest",
 
       setNetworkNameAction: "mod_workspace/SET_networkName",
+      addNetwork:           'mod_workspace/ADD_network',
     }),
     goToNetworkView(networkID) {
       // maybe should receive a id and search index by it
@@ -815,6 +835,58 @@ export default {
     },
     createModelWithCurrentDataSetPath(datasetId) {
       this.popupNewModel({ datasetId });
+    },
+    async loadModelIntoExistingDataset(datasetId) {
+
+      const selectedModelFile = await rygg_pickFile(
+        "Choose model to load",
+        this.startupDatasetPath,
+        [{extensions: ["*.json"]}]
+      );
+
+      const res = await renderingKernel.importModel(datasetId, selectedModelFile.path);
+
+      if (res.error) {
+              this.showErrorPopup(res.error.message + "\n\n" + res.error.details);
+        return;
+      };
+
+      const inputData = convertModelRecommendationToVisNodeEdgeList(
+        res.graphSpec
+      );
+      const network = createVisNetwork(inputData);
+
+      // Wait till the 'stabilized' event has fired
+      await new Promise(resolve =>
+        network.on("stabilized", async data => resolve())
+      );
+
+      // Creating the networkElementList for the network
+      var ids = inputData.nodes.getIds();
+      var nodePositions = network.getPositions(ids);  // TODO: create a ticket for parsing this if it isn't resolved...
+      
+      const layers = await buildLayers(res.graphSpec, nodePositions);
+      
+      const namePrefix = "Loaded"
+      const modelName = await rygg_getNextModelName(namePrefix);              
+
+      const apiMeta = await this.createProjectModel({
+        name: modelName,
+        project: this.currentProjectId,
+        location: `${this.projectPath}/${modelName}`,
+        datasets: [datasetId],
+      });
+      
+      const newNetwork = cloneDeep(this.defaultTemplate);
+      newNetwork.networkID = apiMeta.model_id;
+      newNetwork.networkName = modelName;
+      newNetwork.networkElementList = layers;
+      newNetwork.networkMeta.datasetSettings = deepCopy(res.datasetSettings);
+      newNetwork.networkMeta.trainingSettings = deepCopy(res.trainingSettings);        
+      // Adding network to workspace
+      
+      await this.$store.dispatch('mod_workspace/setViewType', 'model');
+      await this.addNetwork({ network: newNetwork, apiMeta });
     },
     toggleDataSetAllModels(dataSet) {
       const dataSetModelsIds = this.getDataSetModelsIds(dataSet);
@@ -1381,5 +1453,7 @@ $header-height: 60px;
 }
 .new-model-btn {
   margin-right: 20px;
+  white-space: nowrap;
+  font-size: 16px;
 }
 </style>

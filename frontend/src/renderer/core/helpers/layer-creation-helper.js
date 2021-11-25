@@ -227,6 +227,9 @@ const setupConnections = (coreNetwork, layers) => {
     //  forward_connections: Array(1)
     //    0: {dst_id: "2", dst_var: "input", src_var: "output"}
 
+    newLayers[k].forward_connections = v['forward_connections'];
+    newLayers[k].backward_connections = v['backward_connections'];    
+    
     for (const { dst_id, dst_var, src_var } of v['forward_connections']) {
 
       const targetInputs = newLayers[dst_id]['inputs'];
@@ -238,7 +241,7 @@ const setupConnections = (coreNetwork, layers) => {
       targetInput[1]['reference_var_id'] = varIdMap.get(`${k}_outputs_${src_var}`);
     }
   }
-
+  
   return newLayers;
 }
 

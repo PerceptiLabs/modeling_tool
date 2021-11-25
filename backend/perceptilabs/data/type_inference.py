@@ -102,7 +102,13 @@ class TypeInferrer:
         return series.apply(has_image_ext).all()
 
 
-
+    @classmethod
+    def with_default_settings(cls):
+        return cls(
+            max_categories=50,
+            always_allowed=['categorical'],
+            never_allowed=['binary']
+        )
 
 
 

@@ -214,7 +214,10 @@ class GraphSpec(AbstractGraphSpec):
         return iter(self.nodes_by_id.values())
 
     def show(self):
+        import matplotlib
         import matplotlib.pyplot as plt
+        matplotlib.use('TkAgg')
+        
         pos = nx.kamada_kawai_layout(self._nx_graph)
 
         labels = {

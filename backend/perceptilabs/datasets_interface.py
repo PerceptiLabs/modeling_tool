@@ -45,10 +45,7 @@ class DatasetsInterface:
 
 
     def infer_datatypes(self, path, dataset_id, user_email=None):
-        inferrer = TypeInferrer(
-            always_allowed=['categorical'],
-            never_allowed=['binary']
-        )
+        inferrer = TypeInferrer.with_default_settings()
         try:
             datatypes = inferrer.get_valid_and_default_datatypes_for_csv(path)
         except ValueError as e:

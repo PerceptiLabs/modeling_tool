@@ -6,11 +6,13 @@ from perceptilabs.stats.base import OutputStats
 from perceptilabs.exporter.base import Exporter, CompatibilityError
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.data.base import DataLoader
+from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.resources.files import FileAccess
 from perceptilabs.utils import get_file_path
 from perceptilabs.utils import KernelError
 from perceptilabs.lwcore import LightweightCore
 from perceptilabs.script import ScriptFactory
+from perceptilabs.importer.base import Importer
 import perceptilabs.lwcore.utils as lwcore_utils
 import perceptilabs.automation.utils as automation_utils
 import perceptilabs.data.utils as data_utils
@@ -267,3 +269,23 @@ class ModelsInterface:
             dataset_id=data_loader.settings.dataset_id
         )
     
+    def import_model(self, dataset_id, source_file):
+        file_access = FileAccess()
+        file_path = file_access.get_local_path(source_file)
+
+        importer = Importer(self._dataset_access)
+        dataset_settings_dict, graph_spec_dict, training_settings_dict = importer.run(
+            dataset_id, file_path)
+        
+        output = {
+            'datasetSettings': dataset_settings_dict,
+            'graphSpec': graph_spec_dict,
+            'trainingSettings': training_settings_dict
+        }
+        return output
+
+
+        
+        
+
+        

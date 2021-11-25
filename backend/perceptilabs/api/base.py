@@ -25,6 +25,7 @@ from perceptilabs.resources.models import ModelAccess
 from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.script import ScriptFactory
 from perceptilabs.issues import traceback_from_exception
+from perceptilabs.rygg import RyggWrapper
 from perceptilabs import __version__
 import perceptilabs.utils as utils
 import perceptilabs.tracking as tracking
@@ -32,6 +33,8 @@ import perceptilabs.tracking as tracking
 
 logger = logging.getLogger(__name__)
 
+
+rygg = RyggWrapper.with_default_settings()
 
 
 class MyJSONEncoder(JSONEncoder):
@@ -45,7 +48,7 @@ def create_app(
         message_broker = get_message_broker(),            
         models_access = ModelAccess(),        
         epochs_access = EpochsAccess(),
-        dataset_access = DatasetAccess(),
+        dataset_access = DatasetAccess(rygg),
         training_results_access = TrainingResultsAccess(),
         testing_results_access = TestingResultsAccess(),
         serving_results_access = ServingResultsAccess(),
@@ -140,7 +143,18 @@ def create_app(
             json_data.get('userEmail')
         )
         return jsonify(graph_spec_dict)
+
+    @app.route('/models/import', methods=['POST'])    
+    def import_model():
+        json_data = request.get_json()
         
+        output = models_interface.import_model(
+            json_data["datasetId"],
+            json_data["modelFilePath"]
+        )
+        return jsonify(output)
+    
+
     @app.route('/models/<model_id>/layers/<layer_id>/code', methods=['POST'])
     def get_layer_code(model_id, layer_id):
         json_data = request.get_json()
@@ -299,7 +313,7 @@ def create_app(
     def testing_results(testing_session_id):
         output = inference_interface.get_testing_results(testing_session_id)
         return jsonify(output)
-    
+
 
     @app.before_request
     def before_request():
@@ -318,6 +332,8 @@ def create_app(
         
         if not isinstance(original_error, utils.KernelError):
             error = utils.KernelError.from_exception(original_error)
+        else:
+            error = original_error
 
         response = {"error": error.to_dict()}
 

@@ -1,21 +1,31 @@
-import os
 import requests
-
-from perceptilabs.settings import (
-    RYGG_BASE_URL,
-    RYGG_FILE_SERVING_TOKEN as TOKEN
-)
-
 
 
 class DatasetAccess:
+    def __init__(self, rygg):
+        self._rygg = rygg
+    
     def is_perceptilabs_sourced(self, dataset_id):
+        data = self._rygg.get_dataset(dataset_id)
         try:
-            data = requests.get(f"{RYGG_BASE_URL}/datasets/{dataset_id}/?token={TOKEN}").json()
             return bool(data['is_perceptilabs_sourced'])
         except:
             return None
 
+    def get_location(self, dataset_id):
+        data = self._rygg.get_dataset(dataset_id)                    
+        try:
+            return data['location']
+        except:
+            return None
+
+    def get_name(self, dataset_id):
+        data = self._rygg.get_dataset(dataset_id)                    
+        try:
+            return data['name']
+        except:
+            return None
+        
         
     
     
