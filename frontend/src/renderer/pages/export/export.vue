@@ -47,7 +47,7 @@
         .export-where-to-grid-parent
           .export-options
             .section-title
-              .middle-text.bold 2. Select export Option
+              .middle-text.bold 2. Select Export option
             .divider
             div.d-flex
               .export-button(
