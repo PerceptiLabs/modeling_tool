@@ -168,8 +168,8 @@ export default {
           this.showErrorPopup("Error: Couldn't infer data types");
         });
 
-      if (fileContents && fileContents.file_contents) {
-        this.dataset = fileContents.file_contents;
+      if (fileContents) {
+        this.dataset = fileContents;
       }
 
       this.elementToFeatures = Object.values(
