@@ -65,7 +65,6 @@ div
                 @click="removeItems()"
               )
                 img(src="../../../../static/img/project-page/remove-red.svg")
-              
 
       perfect-scrollbar.model-list-scrollbar
         div(v-for="dataset in allDatasets", :key="dataset.dataset_id")
@@ -120,6 +119,11 @@ div
             .column-6
             .column-7.d-flex
               .new-model-btn(
+                v-tooltip:networkElement="'Experimental'",
+                v-if="dataset.exists_on_disk === true",
+                @click="loadModelIntoExistingDataset(dataset.dataset_id)"
+              ) + Load model
+              .new-model-btn(
                 v-if="dataset.exists_on_disk === true",
                 @click="createModelWithCurrentDataSetPath(dataset.dataset_id)"
               )
@@ -130,11 +134,7 @@ div
                   @click="deleteDataset(dataset.dataset_id)"
                 )
                   img(src="../../../../static/img/project-page/remove-red.svg")
-              div.new-model-btn(
-                v-tooltip:networkElement="'Experimental'"
-                v-if="dataset.exists_on_disk === true"
-                @click="loadModelIntoExistingDataset(dataset.dataset_id)"
-              ) + Load model
+
           //-- MODELS BELONG TO DATASET --//
           template(v-if="isDatasetOpened(dataset.dataset_id)")
             .models-list-row.model-list-item.model-list-item-child(
@@ -256,15 +256,18 @@ import ImportModel from "@/components/global-popups/import-model-popup.vue";
 
 import { mapActions, mapMutations, mapState, mapGetters } from "vuex";
 import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
-  import { deepCopy }   from "@/core/helpers";
+import { deepCopy } from "@/core/helpers";
 import cloneDeep from "lodash.clonedeep";
 import { getModelJson as rygg_getModelJson } from "@/core/apiRygg";
-import { getNextModelName as rygg_getNextModelName } from '@/core/apiRygg';
+import { getNextModelName as rygg_getNextModelName } from "@/core/apiRygg";
 import { uploadDatasetToFileserver as rygg_uploadDatasetToFileserver } from "@/core/apiRygg";
 import { getTaskStatus as rygg_getTaskStatus } from "@/core/apiRygg";
 import { isTaskComplete as rygg_isTaskComplete } from "@/core/apiRygg";
-  import { pickFile as rygg_pickFile, getFileContent as rygg_getFileContent } from "@/core/apiRygg";
-  import { renderingKernel }  from "@/core/apiRenderingKernel.js";
+import {
+  pickFile as rygg_pickFile,
+  getFileContent as rygg_getFileContent
+} from "@/core/apiRygg";
+import { renderingKernel } from "@/core/apiRenderingKernel.js";
 import { LOCAL_STORAGE_HIDE_DELETE_MODAL } from "@/core/constants.js";
 import { arrayIncludeOrOmit } from "@/core/helpers";
 import {
@@ -272,7 +275,6 @@ import {
   createVisNetwork
 } from "@/core/helpers/layer-positioning-helper";
 import { buildLayers } from "@/core/helpers/layer-creation-helper";
-
 
 const mockModelList = [];
 
@@ -284,9 +286,9 @@ export default {
     SelectModelModal,
     ModelStatus,
     WorkspaceLoadNetwork,
-    ImportModel,
+    ImportModel
   },
-  data: function () {
+  data: function() {
     return {
       isSelectedSortType: 0,
       isNewUser: false,
@@ -305,7 +307,7 @@ export default {
       renameId: null,
       renameValue: null,
       showUser: !process.env.NO_KC,
-      dataSetIsOpenedStateArray: [],
+      dataSetIsOpenedStateArray: []
     };
   },
   computed: {
@@ -315,22 +317,22 @@ export default {
       getCurrentStepCode: "mod_tutorials/getCurrentStepCode",
       isEnterpriseMode: "globalView/get_isEnterpriseApp",
       allDatasets: "mod_datasets/GET_datasets",
-      projectPath:          'mod_project/GET_projectPath',
-      defaultTemplate:      'mod_workspace/GET_defaultNetworkTemplate',
+      projectPath: "mod_project/GET_projectPath",
+      defaultTemplate: "mod_workspace/GET_defaultNetworkTemplate"
     }),
     ...mapState({
-      currentProjectId: (state) => state.mod_project.currentProject,
-      showFilePickerPopup: (state) =>
+      currentProjectId: state => state.mod_project.currentProject,
+      showFilePickerPopup: state =>
         state.globalView.globalPopup.showFilePickerPopup,
-      showNewModelPopup: (state) =>
+      showNewModelPopup: state =>
         state.globalView.globalPopup.showNewModelPopup,
-      hotKeyPressDelete: (state) => state.mod_events.globalPressKey.del,
-      showLoadSettingPopup: (state) =>
+      hotKeyPressDelete: state => state.mod_events.globalPressKey.del,
+      showLoadSettingPopup: state =>
         state.globalView.globalPopup.showLoadSettingPopup,
-      workspaceContent: (state) => state.mod_workspace.workspaceContent,
-      unparsedModels: (state) => state.mod_workspace.unparsedModels,
-      showImportNetworkfromGitHubOrLocalPopup: (state) =>
-        state.globalView.globalPopup.showImportNetworkfromGitHubOrLocalPopup,
+      workspaceContent: state => state.mod_workspace.workspaceContent,
+      unparsedModels: state => state.mod_workspace.unparsedModels,
+      showImportNetworkfromGitHubOrLocalPopup: state =>
+        state.globalView.globalPopup.showImportNetworkfromGitHubOrLocalPopup
     }),
     statusLocalCore() {
       return this.$store.state.mod_api.statusLocalCore;
@@ -339,7 +341,7 @@ export default {
       return this.$store.getters["mod_workspace/GET_networkIndexById"](
         this.renameId
       );
-    },
+    }
   },
   watch: {
     hotKeyPressDelete() {
@@ -348,7 +350,7 @@ export default {
       }
 
       const indexCheckedProj = this.projects.findIndex(
-        (el) => el.isChecked === true
+        el => el.isChecked === true
       );
       if (indexCheckedProj < 0) return;
 
@@ -370,22 +372,22 @@ export default {
 
         this.activateCurrentStep();
       },
-      immediate: true,
+      immediate: true
     },
     "allDatasets.length": {
       handler(newVal, oldVal) {
         if (newVal !== 0 && newVal !== oldVal) {
           this.expandDatasetsModels();
         }
-      },
-    },
+      }
+    }
   },
   methods: {
     ...mapActions({
       popupConfirm: "globalView/GP_confirmPopup",
       popupDeleteConfirm: "globalView/GP_deleteConfirmPopup",
       popupNewModel: "globalView/SET_newModelPopup",
-      showErrorPopup:      'globalView/GP_errorPopup',
+      showErrorPopup: "globalView/GP_errorPopup",
       showInfoPopup: "globalView/GP_infoPopup",
       set_currentNetwork: "mod_workspace/SET_currentNetwork",
       set_currentModelIndex: "mod_workspace/SET_currentModelIndex",
@@ -402,18 +404,18 @@ export default {
       SET_openTest: "mod_workspace/SET_openTest",
 
       setNetworkNameAction: "mod_workspace/SET_networkName",
-      addNetwork:           'mod_workspace/ADD_network',
+      addNetwork: "mod_workspace/ADD_network"
     }),
     goToNetworkView(networkID) {
       // maybe should receive a id and search index by it
       this.$store.commit("mod_workspace/update_network_meta", {
         key: "hideModel",
         networkID: networkID,
-        value: false,
+        value: false
       });
 
       const index = this.workspaceContent.findIndex(
-        (wc) => wc.networkID == networkID
+        wc => wc.networkID == networkID
       );
       this.set_currentNetwork(index > 0 ? index : 0);
 
@@ -448,7 +450,7 @@ export default {
       } else {
         this.selectedListIds = [
           ...this.selectedListIds.slice(0, itmPosition),
-          ...this.selectedListIds.slice(itmPosition + 1),
+          ...this.selectedListIds.slice(itmPosition + 1)
         ];
       }
     },
@@ -466,15 +468,13 @@ export default {
       if (!this.isAtLeastOneItemSelected()) {
         return;
       }
-      this.selectedListIds.forEach((id) => {
+      this.selectedListIds.forEach(id => {
         this.$store.commit("mod_workspace/update_network_meta", {
           key: "hideModel",
           networkID: id,
-          value: false,
+          value: false
         });
-        const index = this.workspaceContent.findIndex(
-          (wc) => wc.networkID == id
-        );
+        const index = this.workspaceContent.findIndex(wc => wc.networkID == id);
         this.set_currentNetwork(index > 0 ? index : 0);
         this.set_currentModelIndex(index > 0 ? index : 0);
       });
@@ -500,7 +500,7 @@ export default {
             }
 
             this.selectedListIds = [];
-          },
+          }
         });
       }
     },
@@ -524,7 +524,7 @@ export default {
         this.selectedListIds = [];
       } else {
         let newWorkspaceContent = [...this.workspaceContent];
-        this.selectedListIds = newWorkspaceContent.map((networkItem) =>
+        this.selectedListIds = newWorkspaceContent.map(networkItem =>
           parseInt(networkItem.networkID, 10)
         );
       }
@@ -532,7 +532,7 @@ export default {
     handleAddNetworkModal() {
       this.setNextStep({
         currentStep: "tutorial-model-hub-new-button",
-        activateNextStep: false, // or extra notification will appear
+        activateNextStep: false // or extra notification will appear
       });
 
       // open modal
@@ -575,7 +575,7 @@ export default {
     },
     handleStatisticClick(index, e, model) {
       const {
-        networkMeta: { openStatistics },
+        networkMeta: { openStatistics }
       } = model;
 
       if (typeof openStatistics === "boolean") {
@@ -589,7 +589,7 @@ export default {
           this.$store.commit("mod_workspace/update_network_meta", {
             key: "hideStatistics",
             networkID: model.networkID,
-            value: false,
+            value: false
           });
           this.SET_openStatistics(true);
           this.SET_openTest(false);
@@ -605,7 +605,7 @@ export default {
       const { pageX, pageY } = e;
       this.modelContextStyles = {
         top: pageY + "px",
-        left: pageX + "px",
+        left: pageX + "px"
       };
       this.isContextOpened = true;
       this.contextModelId = modelId;
@@ -637,7 +637,7 @@ export default {
         this.popupDeleteConfirm({
           ok: async () => {
             await this.delete_networkById(modelId);
-          },
+          }
         });
       }
 
@@ -657,7 +657,7 @@ export default {
         text: `Are you sure you want to unregister the model from Model Hub?`,
         ok: () => {
           this.$store.dispatch("mod_workspace/UNREGISTER_networkById", modelId);
-        },
+        }
       });
 
       this.closeContext();
@@ -669,10 +669,10 @@ export default {
           this.$store.dispatch("mod_tracker/EVENT_modelDeletion", "Unparsed");
           this.$store
             .dispatch("mod_project/deleteModel", model)
-            .then((serverResponse) => {
+            .then(serverResponse => {
               this.unparsedModels.splice(index, 1);
             });
-        },
+        }
       });
     },
 
@@ -685,8 +685,9 @@ export default {
         return;
       }
       this.renameId = this.contextModelId;
-      this.renameValue =
-        this.workspaceContent[this.get_modelIndexById].networkName;
+      this.renameValue = this.workspaceContent[
+        this.get_modelIndexById
+      ].networkName;
       setTimeout(() => {
         this.$refs.titleInput[0].focus();
       }, 300);
@@ -713,7 +714,7 @@ export default {
       const { pageX, pageY } = e;
       this.modelContextStyles = {
         top: pageY + "px",
-        left: pageX + "px",
+        left: pageX + "px"
       };
       this.isDatasetContextOpened = true;
       this.contextDatasetId = datasetId;
@@ -751,7 +752,7 @@ export default {
         this.popupDeleteConfirm({
           ok: async () => {
             await this.deleteDataset(datasetId);
-          },
+          }
         });
       }
 
@@ -786,7 +787,7 @@ export default {
     getModelsByDataSetId(dataSetId) {
       let matchedModels = [];
       const models = this.workspaceContent;
-      models.forEach((model) => {
+      models.forEach(model => {
         if (
           model.apiMeta.datasets &&
           model.apiMeta.datasets.includes(dataSetId)
@@ -809,13 +810,13 @@ export default {
       });
     },
     getDataSetModelsIds(dataSetId) {
-      return this.getModelsByDataSetId(dataSetId).map((d) => d.networkID);
+      return this.getModelsByDataSetId(dataSetId).map(d => d.networkID);
     },
     areAllDataSetItemsChecked(dataSetId) {
       const dataSetIds = this.getDataSetModelsIds(dataSetId);
       return (
         dataSetIds.length !== 0 &&
-        dataSetIds.every((ai) => this.selectedListIds.includes(ai))
+        dataSetIds.every(ai => this.selectedListIds.includes(ai))
       );
     },
     selectModelById(modelId) {
@@ -830,26 +831,28 @@ export default {
       }
       this.selectedListIds = [
         ...this.selectedListIds.slice(0, idIndex),
-        ...this.selectedListIds.slice(idIndex + 1),
+        ...this.selectedListIds.slice(idIndex + 1)
       ];
     },
     createModelWithCurrentDataSetPath(datasetId) {
       this.popupNewModel({ datasetId });
     },
     async loadModelIntoExistingDataset(datasetId) {
-
       const selectedModelFile = await rygg_pickFile(
         "Choose model to load",
         this.startupDatasetPath,
-        [{extensions: ["*.json"]}]
+        [{ extensions: ["*.json"] }]
       );
 
-      const res = await renderingKernel.importModel(datasetId, selectedModelFile.path);
+      const res = await renderingKernel.importModel(
+        datasetId,
+        selectedModelFile.path
+      );
 
       if (res.error) {
-              this.showErrorPopup(res.error.message + "\n\n" + res.error.details);
+        this.showErrorPopup(res.error.message + "\n\n" + res.error.details);
         return;
-      };
+      }
 
       const inputData = convertModelRecommendationToVisNodeEdgeList(
         res.graphSpec
@@ -863,42 +866,42 @@ export default {
 
       // Creating the networkElementList for the network
       var ids = inputData.nodes.getIds();
-      var nodePositions = network.getPositions(ids);  // TODO: create a ticket for parsing this if it isn't resolved...
-      
+      var nodePositions = network.getPositions(ids); // TODO: create a ticket for parsing this if it isn't resolved...
+
       const layers = await buildLayers(res.graphSpec, nodePositions);
-      
-      const namePrefix = "Loaded"
-      const modelName = await rygg_getNextModelName(namePrefix);              
+
+      const namePrefix = "Loaded";
+      const modelName = await rygg_getNextModelName(namePrefix);
 
       const apiMeta = await this.createProjectModel({
         name: modelName,
         project: this.currentProjectId,
         location: `${this.projectPath}/${modelName}`,
-        datasets: [datasetId],
+        datasets: [datasetId]
       });
-      
+
       const newNetwork = cloneDeep(this.defaultTemplate);
       newNetwork.networkID = apiMeta.model_id;
       newNetwork.networkName = modelName;
       newNetwork.networkElementList = layers;
       newNetwork.networkMeta.datasetSettings = deepCopy(res.datasetSettings);
-      newNetwork.networkMeta.trainingSettings = deepCopy(res.trainingSettings);        
+      newNetwork.networkMeta.trainingSettings = deepCopy(res.trainingSettings);
       // Adding network to workspace
-      
-      await this.$store.dispatch('mod_workspace/setViewType', 'model');
+
+      await this.$store.dispatch("mod_workspace/setViewType", "model");
       await this.addNetwork({ network: newNetwork, apiMeta });
     },
     toggleDataSetAllModels(dataSet) {
       const dataSetModelsIds = this.getDataSetModelsIds(dataSet);
       if (this.areAllDataSetItemsChecked(dataSet)) {
-        dataSetModelsIds.map((modelId) => this.unSelectModelById(modelId));
+        dataSetModelsIds.map(modelId => this.unSelectModelById(modelId));
       } else {
-        dataSetModelsIds.map((modelId) => this.selectModelById(modelId));
+        dataSetModelsIds.map(modelId => this.selectModelById(modelId));
       }
     },
     expandDatasetsModels() {
       const temp = [];
-      this.allDatasets.forEach((dataset) => {
+      this.allDatasets.forEach(dataset => {
         temp.push(dataset.dataset_id);
       });
       this.dataSetIsOpenedStateArray = temp;
@@ -931,18 +934,18 @@ export default {
       const fileInput = document.createElement("input");
       fileInput.setAttribute("type", "file");
       fileInput.setAttribute("accept", ".csv,.zip");
-      fileInput.addEventListener("change", async (e) => {
+      fileInput.addEventListener("change", async e => {
         const file = e.target.files[0];
         const res = await rygg_uploadDatasetToFileserver(file);
         if (res) {
           const {
-            data: { task_id, dataset_id },
+            data: { task_id, dataset_id }
           } = res;
           this.checkTask(task_id, dataset_id, 1000); // no await. Just let it run
         }
       });
       fileInput.click();
-    },
+    }
   },
   created() {
     // Adding this because of reloads on this page
@@ -961,14 +964,13 @@ export default {
         lestSlashIx
       );
       if (folderName) {
-        return `${
-          folderName[0].toUpperCase() + folderName.substring(1)
-        } - ${datasetName}`;
+        return `${folderName[0].toUpperCase() +
+          folderName.substring(1)} - ${datasetName}`;
       } else {
         return datasetName;
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
