@@ -3,7 +3,7 @@
     ref="rootBaseElement"
     :style="style"
     :openLayerContainer="openLayerContainer"
-    :id="dataEl.layerMeta.tutorialId"
+    :id="dataEl.layerMeta && dataEl.layerMeta.tutorialId"
     :layer-id="dataEl.layerId"
     :class="classEl"
 

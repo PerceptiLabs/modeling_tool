@@ -34,15 +34,17 @@ export default {
   },
 
   beforeDestroy() {
-    //this.$refs.rootBaseElement.removeEventListener('mousedown', this.switchMousedownEvent);
-    this.$refs.rootBaseElement.removeEventListener('touchstart', this.switchMousedownEvent);
-    /*appMode*/
-    this.$parent.$parent.$el.removeEventListener('mousemove', this.arrowMovePaint);
-    this.$refs.rootBaseElement.removeEventListener('mouseup', this.Mix_paintArrow_arrowEndPaint);
-
-    this.$parent.$parent.$el.removeEventListener('touchmove', this.arrowMovePaint, true);
-    this.$refs.rootBaseElement.removeEventListener('touchend touchcancel', this.Mix_paintArrow_arrowEndPaint, true);
-    this.$refs.rootBaseElement.removeEventListener('touchstart', this.Mix_paintArrow_arrowEndPaint, true);
+    if (this.$refs.rootBaseElement) {
+      //this.$refs.rootBaseElement.removeEventListener('mousedown', this.switchMousedownEvent);
+      this.$refs.rootBaseElement.removeEventListener('touchstart', this.switchMousedownEvent);
+      /*appMode*/
+      this.$parent.$parent.$el.removeEventListener('mousemove', this.arrowMovePaint);
+      this.$refs.rootBaseElement.removeEventListener('mouseup', this.Mix_paintArrow_arrowEndPaint);
+  
+      this.$parent.$parent.$el.removeEventListener('touchmove', this.arrowMovePaint, true);
+      this.$refs.rootBaseElement.removeEventListener('touchend touchcancel', this.Mix_paintArrow_arrowEndPaint, true);
+      this.$refs.rootBaseElement.removeEventListener('touchstart', this.Mix_paintArrow_arrowEndPaint, true);
+    }
     /*clickOutsideAction*/
     document.removeEventListener('mousedown', this.mousedownOutside);
     document.removeEventListener('click', this.hideAllWindow, true);
@@ -79,10 +81,10 @@ export default {
       return this.dataEl.layerId
     },
     beForEnd() {
-      return this.dataEl.layerMeta.OutputDim
+      return this.dataEl.layerMeta && this.dataEl.layerMeta.OutputDim
     },
     isSelectedEl() {
-      return this.dataEl.layerMeta.isSelected
+      return this.dataEl.layerMeta && this.dataEl.layerMeta.isSelected
     },
     networkMode() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
@@ -94,7 +96,7 @@ export default {
       return {
         [`el-type-${this.dataEl.layerType}`]: true,
         'net-element--active': this.isSelectedEl || this.dataEl.layerId === this.closestElId,
-        'element--hidden': this.dataEl.layerMeta.isInvisible
+        'element--hidden': this.dataEl.layerMeta && this.dataEl.layerMeta.isInvisible
       }
     },
     classElWindow() {
@@ -249,6 +251,9 @@ export default {
     },
     calcWindowPosition(el) {
       let windowWs = document.querySelector('.js-info-section_main');
+      if (!this.dataEl.layerMeta) {
+        return;
+      }
       let windowWsWidth = windowWs.clientWidth /this.wsZoom;
       let windowWsHeight = windowWs.clientHeight /this.wsZoom;
       let layerHeight = this.$refs.rootBaseElement.clientHeight;

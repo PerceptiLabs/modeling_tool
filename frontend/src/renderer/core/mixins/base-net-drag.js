@@ -237,7 +237,7 @@ const baseNetDrag = {
       return this.dataEl.layerMeta.isLock
     },
     x() {
-      if(this.dataEl) {
+      if(this.dataEl && this.dataEl.layerMeta) {
         let l = this.dataEl.layerMeta.position.left;
         this.left = l;
         return l
@@ -248,7 +248,7 @@ const baseNetDrag = {
       }
     },
     y() {
-      if(this.dataEl) {
+      if(this.dataEl && this.dataEl.layerMeta) {
         let t = this.dataEl.layerMeta.position.top;
         this.top = t;
         return t

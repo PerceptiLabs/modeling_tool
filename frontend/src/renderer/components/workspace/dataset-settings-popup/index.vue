@@ -175,7 +175,7 @@ export default {
       this.elementToFeatures = Object.values(
         this.currentNetwork.networkElementList
       )
-        .filter(el => el.layerSettings.Type === "IoInput")
+        .filter(el => el.layerSettings && el.layerSettings.Type === "IoInput")
         .reduce(
           (acc, element) => ({
             ...acc,
