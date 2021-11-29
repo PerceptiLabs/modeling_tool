@@ -1,11 +1,20 @@
+
 import base64
-import pickle
-import os
-from perceptilabs.utils import b64decode_and_sanitize
-from perceptilabs.utils import sanitize_path
 import time
 import platform
+import pickle
+import os
+import logging
+
+from perceptilabs.utils import b64decode_and_sanitize
+from perceptilabs.utils import sanitize_path
+
 from filelock import FileLock
+
+
+logger = logging.getLogger(__name__)
+
+
 class TrainingResultsAccess:
     FILE_NAME = 'latest-training-results.pkl'
 
@@ -17,6 +26,8 @@ class TrainingResultsAccess:
         with FileLock(path+'.lock'):
             with open(path, 'wb') as f:
                 pickle.dump(results, f)
+                size = os.path.getsize(path)
+                logger.info(f"Size of latest training results in bytes: {size}")
 
     def get_latest(self, training_session_id):
         if training_session_id is None:

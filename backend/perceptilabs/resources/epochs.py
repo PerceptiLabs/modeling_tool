@@ -1,9 +1,12 @@
 import re
 import os
 import pickle
+import logging
 from filelock import FileLock
 
 from perceptilabs.utils import b64decode_and_sanitize
+
+logger = logging.getLogger(__name__)
 
 class EpochsAccess:
     def get_latest(self, training_session_id, require_checkpoint=True, require_trainer_state=False):
@@ -73,6 +76,8 @@ class EpochsAccess:
         with FileLock(path+'.lock'):
             with open(path, 'wb') as f:
                 pickle.dump(state_dict, f)
+                size = os.path.getsize(path)
+                logger.info(f"Size of state pickle file in bytes: {size}")
 
     def _resolve_directory_path(self, training_session_id):
         directory = b64decode_and_sanitize(training_session_id)  # For now it's just a base64 path
