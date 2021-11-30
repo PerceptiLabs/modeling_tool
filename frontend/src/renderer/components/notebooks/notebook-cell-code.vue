@@ -1,22 +1,23 @@
 <template>
   <div class="cell-contents">
     <div class="cell-input">
-      <div class="cell-input-operation-count">In [ {{ cell.execution_count || '&nbsp;' }} ]:</div>
-      <codeEditor 
-        :class="['cell-input-code', {'focused': isFocused}]"
+      <div class="cell-input-operation-count">
+        In [ {{ cell.execution_count || "&nbsp;" }} ]:
+      </div>
+      <codeEditor
+        :class="['cell-input-code', { focused: isFocused }]"
         :code="cell.Output"
         :readOnly="true"
         :autoUpdateEditorHeight="true"
         :scrollBeyondLastLine="false"
-        :handleMouseWheel="false" />
+        :handleMouseWheel="false"
+      />
     </div>
-    
-    <div 
-      class="cell-output"
-      v-if="cell.outputs && cell.outputs.length">
+
+    <div class="cell-output" v-if="cell.outputs && cell.outputs.length">
       <div class="cell-output-gutter"></div>
       <div class="cell-output-contents">
-        {{ cell.outputs[0].text  }}
+        {{ cell.outputs[0].text }}
       </div>
     </div>
   </div>
@@ -24,7 +25,7 @@
 
 
 <script>
-import codeEditor from '@/components/different/code-editor.vue';
+import codeEditor from "@/components/different/code-editor.vue";
 
 export default {
   components: { codeEditor },
@@ -39,10 +40,15 @@ export default {
   },
   computed: {
     codeMirrorMode() {
-      if (!this.cell) { return ''; }
-      else if (this.cell.hasOwnProperty('Output')) { return 'text/x-python'; }
-      else if (cell.cell_type === "markdown") { return 'gfm'; }
-      else { return ''; }
+      if (!this.cell) {
+        return "";
+      } else if (this.cell.hasOwnProperty("Output")) {
+        return "text/x-python";
+      } else if (cell.cell_type === "markdown") {
+        return "gfm";
+      } else {
+        return "";
+      }
     }
   }
 };
@@ -78,7 +84,7 @@ $cell-left-gutter: 6.6rem;
       border: 1px solid $bg-toolbar;
       box-sizing: border-box;
       border-radius: 2px;
-      
+
       &.focused {
         border: 1px solid $color-6;
       }
@@ -95,10 +101,9 @@ $cell-left-gutter: 6.6rem;
       width: $cell-left-gutter;
     }
 
-    .cell-output-contents{
-      padding: 0.5rem 0;  
+    .cell-output-contents {
+      padding: 0.5rem 0;
     }
   }
 }
-
 </style>

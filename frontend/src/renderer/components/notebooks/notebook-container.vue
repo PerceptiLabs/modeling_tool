@@ -16,8 +16,8 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-import { stringifyNetworkObjects, promiseWithTimeout } from '@/core/helpers';
+import { mapGetters } from "vuex";
+import { stringifyNetworkObjects, promiseWithTimeout } from "@/core/helpers";
 
 import NotebookCell from "@/components/notebooks/notebook-cell.vue";
 import NotebookInfoMessage from "@/components/notebooks/notebook-info-message.vue";
@@ -25,7 +25,7 @@ import NotebookInfoMessage from "@/components/notebooks/notebook-info-message.vu
 export default {
   components: {
     NotebookCell,
-    NotebookInfoMessage,
+    NotebookInfoMessage
   },
   computed: {
     ...mapGetters({
@@ -44,21 +44,21 @@ export default {
     onCellClick(payload) {
       this.focusedCellId = payload;
     },
-    updateNotebook(){
-      Promise.all([
-          this.fetchNetworkCode(),
-          this.fetchNetworkCodeOrder()
-        ])
-        .then(([networkCodes, networkCodeOrder]) => {
-
+    updateNotebook() {
+      Promise.all([this.fetchNetworkCode(), this.fetchNetworkCodeOrder()]).then(
+        ([networkCodes, networkCodeOrder]) => {
           // using "this.fetchedCode" instead of "networkCodes" because when
           // toggling the Notebook button quickly and many times, "networkCodes"
           // can return "undefined".
-          const fetchedCodes = Object.values(this.fetchedCode).map(v =>  v);
-          const sortedCode = this.sortNetworkCode(fetchedCodes, networkCodeOrder);
+          const fetchedCodes = Object.values(this.fetchedCode).map(v => v);
+          const sortedCode = this.sortNetworkCode(
+            fetchedCodes,
+            networkCodeOrder
+          );
 
           this.cells = sortedCode;
-        });
+        }
+      );
     },
     fetchNetworkCode() {
       if (!this.currentNetwork || !this.currentNetwork.networkElementList) {
@@ -67,10 +67,15 @@ export default {
 
       const fetchCodePromises = [];
 
-      const networkElements = Object.entries(this.currentNetwork.networkElementList);
+      const networkElements = Object.entries(
+        this.currentNetwork.networkElementList
+      );
       for (let networkElement of networkElements) {
-        const promise = promiseWithTimeout(400, addIdToLayerCode.call(this, networkElement));
-        
+        const promise = promiseWithTimeout(
+          400,
+          addIdToLayerCode.call(this, networkElement)
+        );
+
         fetchCodePromises.push(promise);
       }
 
@@ -93,11 +98,11 @@ export default {
           .dispatch("mod_api/API_getCode", payload)
           .then(result => {
             result.layerId = networkInformation.layerId;
-            this.$set(this.fetchedCode, result.layerId, result)
+            this.$set(this.fetchedCode, result.layerId, result);
 
             // don't really need to return any results
             // the results we want are set in "this.fetchedCode"
-            return result; 
+            return result;
           });
       }
     },
@@ -108,19 +113,20 @@ export default {
         .catch(error => []);
     },
     sortNetworkCode(array, sortOrder = null) {
-      if (!array || !sortOrder) { return; }
+      if (!array || !sortOrder) {
+        return;
+      }
 
       // current sort is O(n^2), will use Map if most networks have many elements
       const sortedArray = [];
       for (let sortKey of sortOrder) {
-
         let targetCode = array.find(element => element.layerId === sortKey);
         if (targetCode) {
           sortedArray.push(targetCode);
         }
       }
       return sortedArray;
-    },
+    }
   },
   watch: {
     currentNetwork: {
@@ -130,7 +136,7 @@ export default {
         this.updateNotebook();
       }
     }
-  },
+  }
 };
 </script>
 
@@ -142,13 +148,13 @@ export default {
 
 ::-webkit-scrollbar-thumb {
   border-radius: 3px;
-  background-color: rgba(#989FB0, .5);
-  box-shadow: 0 0 6px rgba(#000, .3);
+  background-color: rgba(#989fb0, 0.5);
+  box-shadow: 0 0 6px rgba(#000, 0.3);
   &:hover {
-    background-color: rgba(#989FB0, 1);
+    background-color: rgba(#989fb0, 1);
   }
   &:window-inactive {
-    background-color: rgba(#989FB0, .2);
+    background-color: rgba(#989fb0, 0.2);
   }
 }
 
@@ -157,7 +163,11 @@ export default {
   height: calc(100vh - 129px);
 }
 #notebook-container {
-  background-color: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
+  background-color: linear-gradient(
+    180deg,
+    #363e51 0%,
+    rgba(54, 62, 81, 0) 100%
+  );
   padding: 5rem 0;
 
   width: 100%;

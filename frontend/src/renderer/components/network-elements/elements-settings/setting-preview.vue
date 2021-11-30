@@ -1,7 +1,7 @@
 <template lang="pug">
 .settings-layer
   .network-component-footer-wrapper(
-    v-if="!!storeCurrentElement"
+    v-if="!!storeCurrentElement",
     :class="{ 'no-preview': !shouldShowPreview }"
   )
     setting-inputs(:element="storeCurrentElement")
@@ -37,20 +37,20 @@ export default {
   inject: ["hideAllWindow"],
   components: { ChartSwitch, SettingInputs, SettingOutputs, ChartSpinner },
   props: {
-    currentEl: { type: Object },
+    currentEl: { type: Object }
   },
   data() {
     return {
       // previewValue: 'output',
       previewList: [],
       imgData: null,
-      haveChartToDisplay: false,
+      haveChartToDisplay: false
     };
   },
   computed: {
     ...mapGetters({
       isTutorialMode: "mod_tutorials/getIsTutorialMode",
-      statisticsOrTestIsOpen: "mod_workspace/GET_statisticsOrTestIsOpen",
+      statisticsOrTestIsOpen: "mod_workspace/GET_statisticsOrTestIsOpen"
     }),
     enableDrag() {
       if (this.statisticsOrTestIsOpen) return true;
@@ -101,14 +101,18 @@ export default {
       );
     },
     outputsVariables() {
-      return (this.storeCurrentElement && this.storeCurrentElement.previewVariableList) || []
+      return (
+        (this.storeCurrentElement &&
+          this.storeCurrentElement.previewVariableList) ||
+        []
+      );
     }
   },
   methods: {
     ...mapActions({
       api_getVariableList: "mod_api/API_getPreviewVariableList",
       api_getPreviewSample: "mod_api/API_getPreviewSample",
-      api_getOutputDim: "mod_api/API_getOutputDim",
+      api_getOutputDim: "mod_api/API_getOutputDim"
     }),
     toSettings() {
       this.$emit("to-settings");
@@ -119,37 +123,37 @@ export default {
     getSample(variableName) {
       this.api_getPreviewSample({
         layerId: this.layerId,
-        varData: variableName,
-      }).then((data) => {
+        varData: variableName
+      }).then(data => {
         this.previewValue = variableName;
         this.imgData = data;
         this.$store.dispatch("mod_workspace/SET_NetworkChartData", {
           layerId: this.layerId,
-          payload: data,
+          payload: data
         });
 
         this.$store.dispatch("mod_events/EVENT_calcArray");
       });
     },
     getVariableList() {
-      this.api_getVariableList(this.layerId).then((data) => {
+      this.api_getVariableList(this.layerId).then(data => {
         this.$store.commit("mod_workspace/SET_previewVariable", {
           layerId: this.layerId,
-          previewVariableName: data.VariableName,
+          previewVariableName: data.VariableName
         });
         this.$store.commit("mod_workspace/SET_previewVariableList", {
           layerId: this.layerId,
-          previewVariableList: data.VariableList,
+          previewVariableList: data.VariableList
         });
       });
     },
     handleChartIdxChange(chartIdx) {
       this.$store.dispatch("mod_workspace/SET_NetworkChartIdx", {
         layerId: this.layerId,
-        payload: chartIdx,
+        payload: chartIdx
       });
-    },
-  },
+    }
+  }
 };
 </script>
 <style lang="scss" scoped>

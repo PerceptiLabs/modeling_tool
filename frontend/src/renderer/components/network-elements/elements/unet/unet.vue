@@ -1,25 +1,21 @@
 <template lang="pug">
-  base-net-el(
-    :data-el="elementData"
-  )
-    view-el(:current-el="elementData" :withLayerTypeText="withLayerTypeText")
-
-
+base-net-el(:data-el="elementData")
+  view-el(:current-el="elementData", :withLayerTypeText="withLayerTypeText")
 </template>
 
 <script>
-import BaseNetEl    from '@/components/network-elements/net-base-element/net-base-element.vue';
-import ViewEl       from './view-unet.vue';
+import BaseNetEl from "@/components/network-elements/net-base-element/net-base-element.vue";
+import ViewEl from "./view-unet.vue";
 
 export default {
-  name: 'UNet',
+  name: "UNet",
   components: {
     BaseNetEl,
-    ViewEl,
+    ViewEl
   },
   props: {
     elementData: Object,
-    withLayerTypeText: Boolean,
-  },
-}
+    withLayerTypeText: Boolean
+  }
+};
 </script>

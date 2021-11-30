@@ -6,12 +6,12 @@
 
 
 <script>
-import Showdown from 'showdown';
+import Showdown from "showdown";
 
 export default {
   props: {
     cell: {
-      default: ''
+      default: ""
     }
   },
   data() {
@@ -21,8 +21,12 @@ export default {
   },
   computed: {
     sourceInMarkdown() {
-      if (!this.cell.source) { return ''; }
-      if (!this.showdownConverter) { return ''; }
+      if (!this.cell.source) {
+        return "";
+      }
+      if (!this.showdownConverter) {
+        return "";
+      }
 
       return this.showdownConverter.makeHtml(this.cell.source);
     }
@@ -30,17 +34,16 @@ export default {
   created() {
     this.showdownConverter = new Showdown.Converter();
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>
-
 .cell-contents {
-    padding-left: 0.5rem;
-    text-align: left;
+  padding-left: 0.5rem;
+  text-align: left;
 }
 
 .markdown {
-    font-family:'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }
 </style>

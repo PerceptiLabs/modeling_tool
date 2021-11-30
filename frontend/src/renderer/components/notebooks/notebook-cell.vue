@@ -1,9 +1,9 @@
 <template>
-  <div 
-    :class="['cell-container', { 'focused': isFocused }]"
-    @click="onCellContainterClick">
-
-    <component :is="cellType" v-bind="{cell, isFocused}" />
+  <div
+    :class="['cell-container', { focused: isFocused }]"
+    @click="onCellContainterClick"
+  >
+    <component :is="cellType" v-bind="{ cell, isFocused }" />
   </div>
 </template>
 
@@ -27,12 +27,12 @@ export default {
   },
   methods: {
     onCellContainterClick(event) {
-      this.$emit('click', this.cell.layerId);
+      this.$emit("click", this.cell.layerId);
     }
   },
   computed: {
     cellType() {
-      if (this.cell.hasOwnProperty('Output')) {
+      if (this.cell.hasOwnProperty("Output")) {
         return CodeCell;
       } else {
         return MarkdownCell;
@@ -62,5 +62,4 @@ $border-width: 3px;
     border-left: $border-width solid $color-6;
   }
 }
-
 </style>

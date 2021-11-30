@@ -1,51 +1,45 @@
 <template lang="pug">
-  div
-    div.output-container(
-      :class="{'is-opened-variable-list': isVariableListOpen && outputId === variableListId}"
-      v-for="(output, outputId) in element.outputs"
-      @contextmenu.stop.prevent="openContextMenu(outputId)"
-      @click.stop.prevent="openVariablesList(outputId)"
-      :data-output-id="outputId"
-    ) 
-      span.output-text {{output.name}}
-      div.circle-dot(
-        :data-output-circle-dot-id="outputId"
-        :data-output-layer-id="element.layerId"
-      )
-        .icon.icon-left-arrow-dot-line(
-          :class="{'hover': hoverHandle === true}"
-        )      
-      div.output-dot(
-        :data-output-dot-id="outputId"
-        :data-output-layer-id="element.layerId"
-        @mousedown.stop.prevent="startPreviewArrow"
-        @mouseover="handlehover"
-        @mouseleave="handleleave"
-      )
-      //- div.variable-list(
-      //-   v-if="isVariableListOpen && outputId === variableListId"
-      //- )
-      //-   button.variable-list-button(
-      //-     v-for="(variable) in outputsVariables"
-      //-     @click.stop.prevent="assignVariable(variable)"
-      //-   ) {{variable}}
-      
-      
-      div.output-context(
-        v-if="isContextOpen && outputId === contextOpenedId"
-      )
-        button.output-context-button(@click.stop.prevent="addOutput()") New output
-        button.output-context-button(
-          @click.stop.prevent="deleteOutput()"
-          v-if="!isLastVariable(element.outputs)"
-          ) Delete output
-        
+div
+  .output-container(
+    :class="{ 'is-opened-variable-list': isVariableListOpen && outputId === variableListId }",
+    v-for="(output, outputId) in element.outputs",
+    @contextmenu.stop.prevent="openContextMenu(outputId)",
+    @click.stop.prevent="openVariablesList(outputId)",
+    :data-output-id="outputId"
+  ) 
+    span.output-text {{ output.name }}
+    .circle-dot(
+      :data-output-circle-dot-id="outputId",
+      :data-output-layer-id="element.layerId"
+    )
+      .icon.icon-left-arrow-dot-line(:class="{ hover: hoverHandle === true }") 
+    .output-dot(
+      :data-output-dot-id="outputId",
+      :data-output-layer-id="element.layerId",
+      @mousedown.stop.prevent="startPreviewArrow",
+      @mouseover="handlehover",
+      @mouseleave="handleleave"
+    )
+    //- div.variable-list(
+    //-   v-if="isVariableListOpen && outputId === variableListId"
+    //- )
+    //-   button.variable-list-button(
+    //-     v-for="(variable) in outputsVariables"
+    //-     @click.stop.prevent="assignVariable(variable)"
+    //-   ) {{variable}}
+
+    .output-context(v-if="isContextOpen && outputId === contextOpenedId")
+      button.output-context-button(@click.stop.prevent="addOutput()") New output
+      button.output-context-button(
+        @click.stop.prevent="deleteOutput()",
+        v-if="!isLastVariable(element.outputs)"
+      ) Delete output
 </template>
 <script>
-import { mapActions, mapGetters } from 'vuex';
-import baseNetPaintArrows from '@/core/mixins/base-net-paint-arrows.js';
+import { mapActions, mapGetters } from "vuex";
+import baseNetPaintArrows from "@/core/mixins/base-net-paint-arrows.js";
 export default {
-  name: 'SettingOutputs',
+  name: "SettingOutputs",
   mixins: [baseNetPaintArrows],
   data() {
     return {
@@ -53,42 +47,42 @@ export default {
       variableListId: null,
       isContextOpen: false,
       contextOpenedId: null,
-      hoverHandle: false,
-    }
+      hoverHandle: false
+    };
   },
   props: {
     element: {
       default: () => {},
-      type: Object,
+      type: Object
     },
     outputsVariables: {
       default: () => [],
-      type: Array,
+      type: Array
     }
   },
   computed: {
     ...mapGetters({
-      currentNetwork: 'mod_workspace/GET_currentNetwork',
+      currentNetwork: "mod_workspace/GET_currentNetwork"
     })
   },
   methods: {
     ...mapActions({
-      setNetMode:               'mod_workspace/SET_netMode',
-      api_getVariableList:      'mod_api/API_getPreviewVariableList',
+      setNetMode: "mod_workspace/SET_netMode",
+      api_getVariableList: "mod_api/API_getPreviewVariableList"
     }),
     openContextMenu(outputId) {
       this.isContextOpen = true;
       this.contextOpenedId = outputId;
       // add event of click outside to close context
-      document.addEventListener('click', this.onClickOutside);
+      document.addEventListener("click", this.onClickOutside);
     },
     closeContextMenu() {
       this.isContextOpen = false;
       this.contextOpenedId = null;
-      document.removeEventListener('click', this.onClickOutside);
+      document.removeEventListener("click", this.onClickOutside);
     },
     onClickOutside(ev) {
-      if(!this.elementOrAncestorHasClass(ev.target, 'output-container')) {
+      if (!this.elementOrAncestorHasClass(ev.target, "output-container")) {
         this.closeContextMenu();
       }
     },
@@ -104,100 +98,104 @@ export default {
         if (parent.className.indexOf(className) >= 0) {
           return true;
         }
-      } while (parent = parent.parentNode);
+      } while ((parent = parent.parentNode));
       return false;
     },
     addOutput() {
       // chose automatically nex variable from variables provided in 'outputsVariables'
       // this.outoputs.push('none');
-      this.$store.commit('mod_workspace/ADD_outputVariableMutation', {
-        layerId: this.element.layerId,
+      this.$store.commit("mod_workspace/ADD_outputVariableMutation", {
+        layerId: this.element.layerId
       });
       this.closeContextMenu();
-
     },
     deleteOutput() {
-      if(this.isLastVariable(this.element.outputs)) {
+      if (this.isLastVariable(this.element.outputs)) {
         return;
       }
       // @todo alert that last variable can't be removed
-      this.$store.dispatch('mod_workspace/DELETE_outputVariableAction', {
-        layerId: this.element.layerId,
-        outputVariableId: this.contextOpenedId,
-      })
-      .then((layerIdsWithReferene) => {
-        if(layerIdsWithReferene.length > 0) {
-          for(let ix in layerIdsWithReferene) {
-            this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', layerIdsWithReferene[ix]);
+      this.$store
+        .dispatch("mod_workspace/DELETE_outputVariableAction", {
+          layerId: this.element.layerId,
+          outputVariableId: this.contextOpenedId
+        })
+        .then(layerIdsWithReferene => {
+          if (layerIdsWithReferene.length > 0) {
+            for (let ix in layerIdsWithReferene) {
+              this.$store.dispatch(
+                "mod_api/API_getBatchPreviewSampleForElementDescendants",
+                layerIdsWithReferene[ix]
+              );
+            }
           }
-       }
-      })
+        });
       // this.outoputs.splice(this.contextOpenedId, 1);
       this.closeContextMenu();
     },
     isLastVariable(obj) {
       return Object.values(obj).length === 1;
     },
-    openVariablesList(outputId){
-      if(this.isVariableListOpen) {
+    openVariablesList(outputId) {
+      if (this.isVariableListOpen) {
         this.closeVariableList();
       } else {
         this.isVariableListOpen = true;
         this.variableListId = outputId;
         this.getVariableList();
-        document.addEventListener('click', this.onClickOutsideVariableMenu);
+        document.addEventListener("click", this.onClickOutsideVariableMenu);
       }
     },
-    closeVariableList(){
+    closeVariableList() {
       this.isVariableListOpen = false;
       this.variableListId = null;
-      document.removeEventListener('click', this.onClickOutsideVariableMenu);
+      document.removeEventListener("click", this.onClickOutsideVariableMenu);
     },
-    onClickOutsideVariableMenu(ev){
-      if(!this.elementOrAncestorHasClass(ev.target, 'variable-list')){
+    onClickOutsideVariableMenu(ev) {
+      if (!this.elementOrAncestorHasClass(ev.target, "variable-list")) {
         this.closeVariableList();
       }
     },
-    assignVariable(variableName){
+    assignVariable(variableName) {
       // this.outoputs[this.variableListId] = variableName;
-      this.$store.dispatch('mod_workspace/SET_outputVariableAction', {
+      this.$store.dispatch("mod_workspace/SET_outputVariableAction", {
         layerId: this.element.layerId,
         outputVariableId: this.variableListId,
-        variableName: variableName,
+        variableName: variableName
       });
 
-      this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.element.layerId);
+      this.$store.dispatch(
+        "mod_api/API_getBatchPreviewSampleForElementDescendants",
+        this.element.layerId
+      );
       this.closeVariableList();
     },
     startPreviewArrow(ev) {
       this.$parent.$parent.startArrowPaint(ev);
     },
     handlehover() {
-      this.hoverHandle=true;
+      this.hoverHandle = true;
     },
     handleleave() {
-      this.hoverHandle=false;
+      this.hoverHandle = false;
     },
     getVariableList() {
-      this.$store.dispatch('mod_api/API_getPreviewVariableList', this.element.layerId)
-        .then((data)=> {
+      this.$store
+        .dispatch("mod_api/API_getPreviewVariableList", this.element.layerId)
+        .then(data => {
           // this.$store.commit('mod_workspace/SET_previewVariable', {
           //   layerId: this.element.layerId,
           //   previewVarialbeName: data.VariableName,
           // });
-          this.$store.commit('mod_workspace/SET_previewVariableList', {
+          this.$store.commit("mod_workspace/SET_previewVariableList", {
             layerId: this.element.layerId,
-            previewVariableList: data.VariableList,
+            previewVariableList: data.VariableList
           });
-
-        })
-    },
+        });
+    }
   }
-
-}
+};
 </script>
 <style lang="scss" scoped>
-
 .output-container {
   position: relative;
   width: 55px;
@@ -247,7 +245,6 @@ export default {
   &:hover {
     background-color: rgba(0, 0, 0, 0.3);
   }
-
 }
 
 .circle-dot {
@@ -261,7 +258,7 @@ export default {
   transform: translateY(-50%);
 
   &.connect {
-    background: #6185EE;
+    background: #6185ee;
   }
 }
 
@@ -274,7 +271,7 @@ export default {
 
   &.hover {
     display: block;
-    color: #B6C7FB;
+    color: #b6c7fb;
   }
 }
 
@@ -293,8 +290,8 @@ export default {
   position: absolute;
   z-index: 200;
   width: 70px;
-  background: #0B0D13;
-  border: 1px solid #363E51;
+  background: #0b0d13;
+  border: 1px solid #363e51;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
   border-radius: 2px;
   padding: 3px 0;
@@ -313,13 +310,13 @@ export default {
   position: absolute;
   z-index: 200;
   // background: #0B0D13;
-  border: 1px solid #363E51;
+  border: 1px solid #363e51;
   border-top: 0;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
   border-radius: 2px;
   padding: 3px 0;
   top: 21px;
-  left:-1px;
+  left: -1px;
   width: calc(100% + 2px);
   // left: 50%;
   // transform: translate(-50%, -50%);

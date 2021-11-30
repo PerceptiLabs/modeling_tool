@@ -1,61 +1,57 @@
 <template lang="pug">
-  div.input-wrapper
-    div.input-container(
-      :class="{'is-editable': !element.inputs[inputId].isDefault}"
-       v-for="(input, inputId) in element.inputs"
-       @dblclick="openInputEdit(inputId)"
-       @contextmenu.stop.prevent="openContextMenu(inputId)"
-    ) 
-      span.input-name(
-        v-if="!(inputEditId === inputId)"
-      ) {{input.name}}
-      input.setting-input-edit(
-        v-if="isInputEditOpen && inputId == inputEditId"
-        type="text"
-        v-model="inputValue"
-        @keyup.enter="saveInputName()"
-      )
-      div.circle-dot(
-        :data-input-circle-dot-id="inputId"
-        :data-input-layer-id="element.layerId"
-      )
-      div.input-dot(
-        :data-input-dot-id="inputId"
-        :data-input-layer-id="element.layerId"
-      )
-      div.input-context(
-        v-if="isContextOpen && inputId === contextOpenedId"
-      )
-        button.input-context-button(@click.stop.prevent="addInput()") New input
-        button.input-context-button(
-          @click.stop.prevent="deleteInput()"
-          v-if="!isLastVariable(element.inputs) && !element.inputs[contextOpenedId].isDefault"
-          ) Delete input
+.input-wrapper
+  .input-container(
+    :class="{ 'is-editable': !element.inputs[inputId].isDefault }",
+    v-for="(input, inputId) in element.inputs",
+    @dblclick="openInputEdit(inputId)",
+    @contextmenu.stop.prevent="openContextMenu(inputId)"
+  ) 
+    span.input-name(v-if="!(inputEditId === inputId)") {{ input.name }}
+    input.setting-input-edit(
+      v-if="isInputEditOpen && inputId == inputEditId",
+      type="text",
+      v-model="inputValue",
+      @keyup.enter="saveInputName()"
+    )
+    .circle-dot(
+      :data-input-circle-dot-id="inputId",
+      :data-input-layer-id="element.layerId"
+    )
+    .input-dot(
+      :data-input-dot-id="inputId",
+      :data-input-layer-id="element.layerId"
+    )
+    .input-context(v-if="isContextOpen && inputId === contextOpenedId")
+      button.input-context-button(@click.stop.prevent="addInput()") New input
+      button.input-context-button(
+        @click.stop.prevent="deleteInput()",
+        v-if="!isLastVariable(element.inputs) && !element.inputs[contextOpenedId].isDefault"
+      ) Delete input
 </template>
 <script>
-import mixinFocus     from '@/core/mixins/net-element-settings-input-focus.js';
-import baseNetPaintArrows from '@/core/mixins/base-net-paint-arrows.js';
+import mixinFocus from "@/core/mixins/net-element-settings-input-focus.js";
+import baseNetPaintArrows from "@/core/mixins/base-net-paint-arrows.js";
 export default {
-  name: 'SettingInputs',
+  name: "SettingInputs",
   mixins: [mixinFocus, baseNetPaintArrows],
   data() {
     return {
       isInputEditOpen: false,
       inputEditId: null,
-      inputValue: '',
+      inputValue: "",
       isContextOpen: false,
-      contextOpenedId: null,
-    }
+      contextOpenedId: null
+    };
   },
-  props:{
+  props: {
     element: {
       default: {},
-      type: Object,
+      type: Object
     }
   },
   methods: {
-    openInputEdit(inputId){
-      if(this.element.inputs[inputId].isDefault) {
+    openInputEdit(inputId) {
+      if (this.element.inputs[inputId].isDefault) {
         return;
       }
       this.inputValue = this.element.inputs[inputId].name;
@@ -63,18 +59,18 @@ export default {
       this.inputEditId = inputId;
       this.setIsSettingInputFocused(true); // for prevent deleting the component when keydown backspace
     },
-    closeInputEdit(){
-      this.inputValue = '';
+    closeInputEdit() {
+      this.inputValue = "";
       this.isInputEditOpen = false;
       this.inputEditId = null;
       this.setIsSettingInputFocused(false);
     },
     saveInputName() {
       // save input value to stored
-      this.$store.dispatch('mod_workspace/EDIT_inputVariableValueAction', {
+      this.$store.dispatch("mod_workspace/EDIT_inputVariableValueAction", {
         layerId: this.element.layerId,
         inputVariableId: this.inputEditId,
-        value: this.inputValue,
+        value: this.inputValue
       });
       this.closeInputEdit();
     },
@@ -82,15 +78,15 @@ export default {
       this.isContextOpen = true;
       this.contextOpenedId = inputId;
       // add event of click outside to close context
-      document.addEventListener('click', this.onClickOutsideContextMenu);
+      document.addEventListener("click", this.onClickOutsideContextMenu);
     },
     closeContextMenu() {
       this.isContextOpen = false;
       this.contextOpenedId = null;
-      document.removeEventListener('click', this.onClickOutsideContextMenu);
+      document.removeEventListener("click", this.onClickOutsideContextMenu);
     },
-    onClickOutsideContextMenu(ev){
-      if(!this.elementOrAncestorHasClass(ev.target, 'input-container')) {
+    onClickOutsideContextMenu(ev) {
+      if (!this.elementOrAncestorHasClass(ev.target, "input-container")) {
         this.closeContextMenu();
       }
     },
@@ -106,30 +102,29 @@ export default {
         if (parent.className.indexOf(className) >= 0) {
           return true;
         }
-      } while (parent = parent.parentNode);
+      } while ((parent = parent.parentNode));
       return false;
     },
     isLastVariable(obj) {
       return Object.values(obj).length === 1;
     },
-    addInput(){
-      this.$store.commit('mod_workspace/ADD_inputVariableMutation', {
-        layerId: this.element.layerId,
+    addInput() {
+      this.$store.commit("mod_workspace/ADD_inputVariableMutation", {
+        layerId: this.element.layerId
       });
       this.closeContextMenu();
     },
-    deleteInput(){
-      this.$store.dispatch('mod_workspace/DELETE_inputVariableAction', {
+    deleteInput() {
+      this.$store.dispatch("mod_workspace/DELETE_inputVariableAction", {
         layerId: this.element.layerId,
-        inputVariableId: this.contextOpenedId,
+        inputVariableId: this.contextOpenedId
       });
       this.closeContextMenu();
-    },
-  },
-}
+    }
+  }
+};
 </script>
 <style lang="scss" scoped>
-
 .input-wrapper {
   width: 66px;
   //  *** For Training component with are bigger to fit input names ***
@@ -155,7 +150,7 @@ export default {
   padding: 0 2px;
   &.is-editable {
     // background: rgba(54, 62, 81, 0.4);
-    border: 1px solid #3F4C70;
+    border: 1px solid #3f4c70;
     box-sizing: border-box;
     border-radius: 1px;
   }
@@ -171,7 +166,7 @@ export default {
   border-radius: 50%;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.3)
+    background: rgba(0, 0, 0, 0.3);
   }
 }
 .circle-dot {
@@ -185,7 +180,7 @@ export default {
   transform: translateY(-50%);
 
   &.connect {
-    background: #6185EE;
+    background: #6185ee;
   }
 }
 .setting-input-edit {
@@ -196,8 +191,8 @@ export default {
   position: absolute;
   z-index: 200;
   width: 70px;
-  background: #0B0D13;
-  border: 1px solid #363E51;
+  background: #0b0d13;
+  border: 1px solid #363e51;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
   border-radius: 2px;
   padding: 3px 0;

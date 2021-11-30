@@ -1,50 +1,53 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-data(:draggable="draggable"
-    data-component="IoInput"
-    data-layer="IO_Input"
-    data-type="IoInput"
-    v-tooltip-interactive:right="interactiveInfo"
-    id="tutorial_data-data"
-    :style="layerStyles"
+#tutorial_data-data.btn.btn--layersbar.net-element-data(
+  :draggable="draggable",
+  data-component="IoInput",
+  data-layer="IO_Input",
+  data-type="IoInput",
+  v-tooltip-interactive:right="interactiveInfo",
+  :style="layerStyles"
+)
+  i.icon.icon-data
+  text-editable.layer-type(
+    v-if="withLayerTypeText",
+    :text-title="currentEl.layerName",
+    @change-title="editElName",
+    :styleType="['network-view']"
   )
-    i.icon.icon-data
-    text-editable.layer-type(
-      v-if="withLayerTypeText"
-      :text-title="currentEl.layerName"
-      @change-title="editElName"
-      :styleType="['network-view']"
-      )
-    .layerTitle(v-if="showTitle") {{ displayTitle }}
-    img.icon-lock(src="../../../../../../static/img/lock2.svg" v-if="isDataWizardEnabled")
+  .layerTitle(v-if="showTitle") {{ displayTitle }}
+  img.icon-lock(
+    src="../../../../../../static/img/lock2.svg",
+    v-if="isDataWizardEnabled"
+  )
 </template>
 
 <script>
-  import mixinSet     from '@/core/mixins/net-element-view-layer.js';
-  import TextEditable from '@/components/base/text-editable.vue';
-  import mixinFocus   from '@/core/mixins/net-element-settings-input-focus.js';
-  import {isEnvDataWizardEnabled} from "@/core/helpers";
+import mixinSet from "@/core/mixins/net-element-view-layer.js";
+import TextEditable from "@/components/base/text-editable.vue";
+import mixinFocus from "@/core/mixins/net-element-settings-input-focus.js";
+import { isEnvDataWizardEnabled } from "@/core/helpers";
 export default {
-  name: 'ViewIoInput',
+  name: "ViewIoInput",
   mixins: [mixinSet, mixinFocus],
   components: { TextEditable },
   props: {
-      withLayerTypeText: Boolean,
+    withLayerTypeText: Boolean
   },
   data() {
     return {
       interactiveInfo: {
-        title: 'Data IO Input',
-        text: 'Read local CSV data '
+        title: "Data IO Input",
+        text: "Read local CSV data "
       },
-      displayTitle: 'IO Input'
-    }
+      displayTitle: "IO Input"
+    };
   },
   computed: {
     isDataWizardEnabled() {
-      return isEnvDataWizardEnabled()
+      return isEnvDataWizardEnabled();
     }
-  },
-}
+  }
+};
 </script>
 <style lang="scss" scoped>
 .btn--layersbar .icon-lock {
@@ -56,8 +59,8 @@ export default {
 
   .dark-theme & {
     filter: invert(80%);
-  }  
-  
+  }
+
   .net-element--active & {
     filter: none;
   }
