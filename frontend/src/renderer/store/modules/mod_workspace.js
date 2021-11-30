@@ -6,17 +6,17 @@ import {
   stringifyNetworkObjects,
   deepCopy,
   isEnvDataWizardEnabled,
-  checkpointDirFromProject
+  checkpointDirFromProject,
 } from "@/core/helpers.js";
 import { widthElement, LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS, defaultTrainingSettings } from '@/core/constants.js'
 import Vue    from 'vue'
 import router from '@/router'
 import { deleteFolder as rygg_deleteFolder } from '@/core/apiRygg';
 import cloneDeep from 'lodash.clonedeep';
-import { saveModelJson as rygg_saveModelJson, updateModelMeta } from '@/core/apiRygg';
+import { saveModelJson as rygg_saveModelJson, updateModelMeta as rygg_updateModelMeta } from '@/core/apiRygg';
 import { lockedComponentsNames } from "@/core/constants.js";
 import store from '@/store';
-import { removeChartData } from "@/core/helpers";
+import { disassembleModel, defaultNetwork } from "@/core/helpers/model-helper";
 
 const namespaced = true;
 
@@ -52,37 +52,12 @@ const state = {
   },
   isSettingInputFocused: false, // is chenghed when focus/blur on sidebar setting input (it's made for preventing component remove when press backspace in input)
   isSettingPreviewVisible: true,
-  defaultModelTemplate: {
-    networkName: '',
-    networkID: '',
-    networkMeta: {
-      openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
-      openTest: null,
-      hideModel: false,
-      hideStatistics: false,
-      hideTest: false,
-      zoom: 1,
-      zoomSnapshot: 1,
-      usingWeights: false,
-      netMode: 'edit',//'addArrow'
-      coreStatus: {
-        Status: 'Waiting' //Created, Training, Validation, Paused, Finished
-      },
-      chartsRequest: {
-        timerID: null,
-        waitGlobalEvent: false,
-        doRequest: 0,
-        showCharts: 0
-      },
-    },
-    networkElementList: {},
-    networkRootFolder: ''
-  },
   viewType: localStorage.getItem(LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY) || 'model', // [model,statistic,test]
   showModelPreviews: localStorage.hasOwnProperty(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) ? localStorage.getItem(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) === 'true' : true,
   fetchedPreviewsNetworksIds: [],
   copyOrCutNetworkSnapshot: [],
-  showComponents: false
+  showComponents: false,
+  defaultNetwork: defaultNetwork
 };
 
 const getters = {
@@ -92,9 +67,6 @@ const getters = {
       throw new Error(`Network: ${networkId} doesn't exists.`);
     }
     return networkIndex
-  },
-  GET_defaultNetworkTemplate(state) {
-    return state.defaultModelTemplate;
   },
   GET_networkIsNotEmpty(state) {
     return !!state.workspaceContent.length
@@ -111,10 +83,9 @@ const getters = {
 
   },
   GET_currentNetwork(state, getters)  {
-
     return getters.GET_networkIsNotEmpty
       ? state.workspaceContent[state.currentNetwork]
-      : deepCloneNetwork(state.defaultModelTemplate) //{networkID: '1'} //for the close ap when the empty workspace
+      : deepCloneNetwork(state.defaultNetwork);
 
   },
   GET_currentNetworkDatasetSettings(state, getters) {
@@ -480,7 +451,9 @@ const mutations = {
     const modelIndex = state.workspaceContent.findIndex(network => network.networkID === networkID);
     if(modelIndex !== -1) {
       Vue.set(state.workspaceContent[modelIndex].networkMeta, key, value);
-      updateModelMeta(state.workspaceContent[modelIndex]);
+
+      const model = disassembleModel(state.workspaceContent[modelIndex]);            
+      rygg_updateModelMeta(model);
     }
   },
   cleanupUnnecessaryArrowsMutation(state, { getters }){
@@ -625,56 +598,14 @@ const mutations = {
 
     if (networkIndex > -1) {
       Vue.set(state.workspaceContent, networkIndex, newNetwork);
-      rygg_saveModelJson(removeChartData(newNetwork))
+      
+      const streamLinedNetwork = disassembleModel(newNetwork);      
+      rygg_saveModelJson(streamLinedNetwork)
     }
   },
-  add_network (state, { network , apiMeta, dispatch, focusOnNetwork }) {
+  add_network (state, { newNetwork , dispatch, focusOnNetwork }) {
     let workspace = state.workspaceContent;
-    let newNetwork = {};
-    //-- DEFAULT DATA
-    const defaultNetwork = {
-      networkName: 'New_Model',
-      networkID: '',
-      networkMeta: {},
-      networkElementList: {},
-      networkRootFolder: '',
-      networkSnapshots: []
-    };
-    const defaultMeta = {
-      openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
-      openTest: null,
-      zoom: 1,
-      zoomSnapshot: 1,
-      netMode: 'edit',//'addArrow'
-      coreStatus: {
-        Status: 'Waiting' //Created, Training, Validation, Paused, Finished
-      },
-      chartsRequest: {
-        timerID: null,
-        waitGlobalEvent: false,
-        doRequest: 0,
-        showCharts: 0
-      }
-    };
-    //--
-    network === undefined
-      ? newNetwork = defaultNetwork
-      : newNetwork = network;
-
-    newNetwork.apiMeta = apiMeta;
-    newNetwork.networkID = apiMeta.model_id;
-
-    setNetworkMeta(newNetwork.networkMeta, defaultMeta, true);
-
-    //-- Create unic ID
-    if(!newNetwork.networkID) {
-      newNetwork.networkID = generateID();
-    }
-
-    //-- Check and create the position
-    createPositionElements(newNetwork.networkElementList);
-    //-- Add to workspace
-
+    
     const netIndex = findNetId(newNetwork, workspace);
     if (netIndex > -1) {
       workspace.splice(netIndex, 1, newNetwork);
@@ -698,105 +629,13 @@ const mutations = {
       router.replace({name: 'app'});
     }
 
-    rygg_saveModelJson(newNetwork)
+    const streamLinedNetwork = disassembleModel(newNetwork);          
+    rygg_saveModelJson(streamLinedNetwork)
+    
     dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
     function findNetId(newNet, netList) {
       let indexId = netList.findIndex((el)=> el.networkID === newNet.networkID);
       return indexId;
-    }
-    function createPositionElements(list) {
-      if(!list || Object.keys(list).length === 0 || Object.values(list)[0].layerMeta.position.top !== null) {
-        return;
-      }
-      else {
-        let elList = Object.values(list);
-        const elGap = 60;
-        const widthEl = widthElement;
-        const defaultPosition = { top: 0, left: 0 };
-        let arrLeft = [];
-        let arrTop = [];
-
-        elList[0].layerMeta.position = {...defaultPosition};
-        elList.forEach((el)=> {
-          if(el.layerMeta.position.top === null) {
-            el.layerMeta.position = {...defaultPosition};
-
-            let newElPosition = findFreePosition(el.layerMeta.position, elList, elGap, widthEl, el.layerId);
-            arrTop.push(newElPosition.top);
-            arrLeft.push(newElPosition.left);
-          }
-
-          if(el.connectionOut.length) {
-            let outLength = el.connectionOut.length;
-            el.connectionOut.forEach((elId, i)=> {
-              if(list[elId].layerMeta.position.top === null) {
-                const top = el.layerMeta.position.top + (elGap - ((outLength / 2) * (elGap + widthEl)) + ((elGap + widthEl) * i));
-                const left = el.layerMeta.position.left + elGap + widthEl;
-
-                let newPosition = findFreePosition({top, left}, elList, elGap, widthEl, list[elId].layerId);
-
-                list[elId].layerMeta.position.top = newPosition.top;
-                arrTop.push(newPosition.top);
-                list[elId].layerMeta.position.left = newPosition.left;
-                arrLeft.push(newPosition.left);
-              }
-            })
-          };
-        });
-
-        const netHeight = (Math.max(...arrTop) - Math.min(...arrTop));
-        const netWidth = (Math.max(...arrLeft) - Math.min(...arrLeft));
-        const corrTop = (document.body.clientHeight /2) - (netHeight/2);
-        const corrLeft = (document.body.clientWidth /2) - (netWidth/2) - 300;
-        const correctionTop = corrTop > 0 ? corrTop : elGap;
-        const correctionLeft = corrLeft > 0 ? corrLeft : elGap;
-
-        elList.forEach((el)=> {
-          el.layerMeta.position.top = el.layerMeta.position.top + correctionTop;
-          el.layerMeta.position.left = el.layerMeta.position.left + correctionLeft;
-        })
-      }
-    };
-    function findFreePosition(currentPos, checkingList, indent, widthEl, currentId) {
-      let checkPosition = currentPos;
-      checkingPosition();
-
-      return checkPosition;
-
-      function checkingPosition() {
-        return checkingList.forEach((el)=> {
-          if(currentId === el.layerId ) return;
-          if(
-              checkPosition.top > (el.layerMeta.position.top - indent/2)
-              && checkPosition.top < (el.layerMeta.position.top + indent/2 + widthEl)
-              && checkPosition.left > (el.layerMeta.position.left - indent/2)
-              && checkPosition.left < (el.layerMeta.position.left + indent/2 + widthEl)
-            ) {
-                checkPosition.top = checkPosition.top + indent;
-                checkingPosition();
-                return
-              }
-          else return checkPosition
-        })
-      }
-    }
-    function setNetworkMeta(original, target, preserveHideStates = true) {
-      if (!preserveHideStates) {
-        original = target;
-        return;
-      }
-      
-      if (original.hasOwnProperty('hideModel')) {
-        target['hideModel'] = original['hideModel'];
-      }
-
-      if (original.hasOwnProperty('hideStatistics')) {
-        target['hideStatistics'] = original['hideStatistics'];
-      }
-
-      if (original.hasOwnProperty('hideTest')) {
-        target['hideTest'] = original['hideTest'];
-      }
     }
   },
   add_existingNetworkToWorkspace (state, { network }) {
@@ -2036,10 +1875,10 @@ const actions = {
   ReplaceNetworkElementList({commit, getters}, newNetworkElementList){
     commit('replace_network_element_list', {newNetworkElementList, getters});
   },
-  ADD_network({commit, dispatch}, { network, apiMeta = {}, focusOnNetwork = true } = {}) {
+  ADD_network({commit, dispatch}, { newNetwork, apiMeta = {}, focusOnNetwork = true } = {}) {
 
     return new Promise((resolve, reject) => {
-      commit('add_network', { network, apiMeta, dispatch, focusOnNetwork });
+      commit('add_network', { newNetwork, apiMeta, dispatch, focusOnNetwork });
       const lastNetworkID = state.workspaceContent[state.currentNetwork].networkID;
 
       if (focusOnNetwork) {
@@ -2645,8 +2484,7 @@ const actions = {
   },
   saveCurrentModelAction({dispatch, getters}) {
     const currentNetwork = getters['GET_currentNetwork'];
-    let streamLinedNetwork = currentNetwork;
-    streamLinedNetwork = removeChartData(streamLinedNetwork);
+    const streamLinedNetwork = disassembleModel(currentNetwork);
 
     dispatch('mod_events/EVENT_saveNetwork', null, {root: true});
     return rygg_saveModelJson(streamLinedNetwork)
@@ -2659,8 +2497,7 @@ const actions = {
   saveModelAction({dispatch, state}, modelId) {
     const networkIndex = state.workspaceContent.findIndex(net => net.networkID === modelId);
     const network = state.workspaceContent[networkIndex];
-    let streamLinedNetwork = network;
-    streamLinedNetwork = removeChartData(streamLinedNetwork);
+    const streamLinedNetwork = disassembleModel(network);
 
     return rygg_saveModelJson(streamLinedNetwork)
       .then(_ => {

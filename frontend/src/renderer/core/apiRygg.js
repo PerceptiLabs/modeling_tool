@@ -145,6 +145,7 @@ export const saveModelJson = async model => {
     console.log('model', model)
     throw new Error(msg);
   }
+
   const modelAsString = stringifyNetworkObjects(model)
   const url = `/models/${model_id}/save_json/`
 

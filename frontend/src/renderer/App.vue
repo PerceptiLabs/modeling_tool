@@ -40,6 +40,7 @@
   import { LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, localStorageGridKey, THEME_LIGHT, THEME_DARK } from '@/core/constants.js'
   import { mapMutations, mapActions, mapGetters, mapState } from 'vuex';
   import { getModelDatasetPath } from '@/core/modelHelpers.js';
+  import { assembleModelFromJson } from "@/core/helpers/model-helper";
   import SidebarMenu            from '@/pages/layout/sidebar-menu.vue';
   import AppHeader              from '@/components/app-header/app-header.vue';
   import UpdatePopup            from '@/components/global-popups/update-popup/update-popup.vue'
@@ -430,10 +431,10 @@
       },
       async fetchNetworkMetas(currentProject) {
         if (!currentProject || !currentProject.models || !currentProject.models.length) { return; }
-
+        
         const promiseArray =
           currentProject.models
-            .map(x => this.getModelMeta(x));
+            .map(modelId => this.getModelMeta(modelId));
 
         Promise.all(promiseArray)
           .then(metas => {
@@ -514,7 +515,6 @@
         let unparsedModels = [];
 
         modelMetas.forEach(async (model) => {
-          console.log('model', model)
           const modelJson = await rygg_getModelJsonById(model.model_id);
           if(!modelJson) {
             unparsedModels.push(model);
@@ -541,8 +541,9 @@
               model.networkName = matchingApiData.name;
               model.networkRootFolder = matchingApiData.location;
             }
-            this.addNetwork({network: model, apiMeta: model.apiMeta, focusOnNetwork: false});
-
+            
+            let newNetwork = assembleModelFromJson(model, model.apiMeta);  // TODO(anton.k): Ask Rygg for the individual parts (possibly via a single API call for simplicity)
+            this.addNetwork({newNetwork: newNetwork, focusOnNetwork: false});
            }
         }
 

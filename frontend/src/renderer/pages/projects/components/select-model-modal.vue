@@ -172,6 +172,7 @@ import {
   createVisNetwork
 }                                             from "@/core/helpers/layer-positioning-helper";
 import { buildLayers }                        from "@/core/helpers/layer-creation-helper";
+import { assembleModel }                      from "@/core/helpers/model-helper";
 import BaseGlobalPopup                        from "@/components/global-popups/base-global-popup";
 
 import { debounce, deepCopy, isEnvDataWizardEnabled, isPublicDatasetEnabled }   from "@/core/helpers";
@@ -333,7 +334,6 @@ export default {
       currentProject: "mod_project/GET_project",
       projectPath: "mod_project/GET_projectPath",
       currentNetworkId: "mod_workspace/GET_currentNetworkId",
-      defaultTemplate: "mod_workspace/GET_defaultNetworkTemplate",
       userEmail: "mod_user/GET_userEmail",
       isEnterpriseMode:     'globalView/get_isEnterpriseApp',
     }),
@@ -561,7 +561,7 @@ export default {
         if (res && res.error) {
           this.deleteModelWithErrorPopup(
             apiMeta.model_id,
-	          res.error.message + "\n\n" + res.error.details
+                  res.error.message + "\n\n" + res.error.details
           );
         }
         return res;
@@ -594,15 +594,20 @@ export default {
       const layers = await buildLayers(modelRecommendation, nodePositions);
 
       // Creating network and adding the prepped layer to it
-      const newNetwork = cloneDeep(this.defaultTemplate);
-      newNetwork.networkID = apiMeta.model_id;
-      newNetwork.networkName = modelName;
-      newNetwork.networkElementList = layers;
-      newNetwork.networkMeta.datasetSettings = deepCopy(datasetSettings);
-      // Adding network to workspace
-      newNetwork.networkMeta.trainingSettings = deepCopy(this.settings);
+
+      const newNetwork = assembleModel(
+        modelName,
+        layers,
+        null,  // Use default rootFolder
+        null,  // Use default meta
+        null,  // Use default snapshots
+        apiMeta,
+        datasetSettings,
+        this.settings   
+      );
+      
       await this.$store.dispatch('mod_workspace/setViewType', 'model');
-      await this.addNetwork({ network: newNetwork, apiMeta }).then(() => {
+      await this.addNetwork({ newNetwork: newNetwork }).then(() => {
           if (runStatistics) {
             setTimeout(() => {
               this.$store.dispatch("mod_events/EVENT_set_eventRunStatistic");

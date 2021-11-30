@@ -256,6 +256,7 @@ import ImportModel from "@/components/global-popups/import-model-popup.vue";
 
 import { mapActions, mapMutations, mapState, mapGetters } from "vuex";
 import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
+import { assembleModel }                  from "@/core/helpers/model-helper";
 import { deepCopy } from "@/core/helpers";
 import cloneDeep from "lodash.clonedeep";
 import { getModelJson as rygg_getModelJson } from "@/core/apiRygg";
@@ -880,16 +881,19 @@ export default {
         datasets: [datasetId]
       });
 
-      const newNetwork = cloneDeep(this.defaultTemplate);
-      newNetwork.networkID = apiMeta.model_id;
-      newNetwork.networkName = modelName;
-      newNetwork.networkElementList = layers;
-      newNetwork.networkMeta.datasetSettings = deepCopy(res.datasetSettings);
-      newNetwork.networkMeta.trainingSettings = deepCopy(res.trainingSettings);
-      // Adding network to workspace
-
+      const newNetwork = assembleModel(
+	modelName,
+	layers,
+	null,  // Use default rootFolder
+	null,  // Use default meta
+	null,  // Use default snapshots
+	apiMeta,
+	res.datasetSettings,
+	res.trainingSettings	
+      );
+      
       await this.$store.dispatch("mod_workspace/setViewType", "model");
-      await this.addNetwork({ network: newNetwork, apiMeta });
+      await this.addNetwork({ newNetwork: newNetwork, apiMeta });
     },
     toggleDataSetAllModels(dataSet) {
       const dataSetModelsIds = this.getDataSetModelsIds(dataSet);

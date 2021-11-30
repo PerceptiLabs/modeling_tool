@@ -5,6 +5,7 @@ import { mapGetters, mapMutations, mapActions } from "vuex";
 import cloneDeep from 'lodash.clonedeep';
 import { doesDirExist as rygg_doesDirExist } from '@/core/apiRygg';
 import { saveModelJson as rygg_saveModelJson } from '@/core/apiRygg';
+import { disassembleModel } from "@/core/helpers/model-helper";
 
 const workspaceSaveNet = {
   created() {
@@ -114,20 +115,7 @@ const workspaceSaveNet = {
             this.$store.dispatch('mod_workspace/SET_networkLocation', prepareNet.toLocal.pathProject); // change new location in vuex
             this.$store.dispatch('mod_workspace/SET_networkName', prepareNet.toLocal.name); // change new location in vuex
           }
-          
-          const networkJson = cloneDeep(this.currentNetwork)
-          const healthNetworkElementList = {};
-          Object.keys(networkJson.networkElementList).map(key => {
-            const el = networkJson.networkElementList[key];
-            healthNetworkElementList[key] = {
-              ...el,
-              chartData: {}
-            }
-          })
-          const healthNetworkJson = {
-            ...networkJson,
-            networkElementList: healthNetworkElementList
-          }
+          const healthNetworkJson = disassembleModel(this.currentNetwork);      
           return rygg_saveModelJson(healthNetworkJson)
             .catch((e) => {
               console.log(e)
@@ -135,20 +123,8 @@ const workspaceSaveNet = {
             });
         })
         .then(()=> {
-
-          const networkJson = cloneDeep(this.currentNetwork)
-          const healthNetworkElementList = {};
-          Object.keys(networkJson.networkElementList).map(key => {
-            const el = networkJson.networkElementList[key];
-            healthNetworkElementList[key] = {
-              ...el,
-              chartData: {}
-            }
-          })
-          const healthNetworkJson = {
-            ...networkJson,
-            networkElementList: healthNetworkElementList
-          }
+          // Why is the model saved twice?
+          const healthNetworkJson = disassembleModel(this.currentNetwork);                
           rygg_saveModelJson(healthNetworkJson)
             .catch((e) => {
               console.log(e)
