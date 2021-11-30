@@ -25,9 +25,9 @@
             @click="addSelectedColumn($event, numColumn - 1)",
             :class="{ 'is-selected': selectedColumns.includes(numColumn - 1) }"
           )
-            span(v-if="numColumn <= computedNumberOfColumns") {{ dataRow[numColumn - 1] }}
+            div.d-inline-block(v-if="numColumn <= computedNumberOfColumns" v-tooltip:bottom="dataRow[numColumn - 1]") {{ strShortener(dataRow[numColumn - 1]) }}
 
-            span(v-else) utton.custom-select_view
+            div.d-inline-block(v-else) utton.custom-select_view
 
         //- Rows for io- and datatypes @TODO can be extracted as separate table on bottom of top one
 
@@ -89,6 +89,8 @@
 
 <script>
 import DataColumnOptions from "@/components/different/data-column-options";
+import { strShortener } from "@/core/helpers";
+
 export default {
   name: "CSVTable",
   components: {
@@ -97,7 +99,7 @@ export default {
   props: {
     dataSet: {
       type: Array,
-      default: []
+      default: [],
     },
     dataSetTypes: {
       type: Object
@@ -109,8 +111,8 @@ export default {
     elementToFeatures: {
       type: Object,
       required: false,
-      default: () => ({})
-    }
+      default: () => ({}),
+    },
   },
   data() {
     return {
@@ -188,6 +190,9 @@ export default {
     }
   },
   methods: {
+    strShortener(url) {
+      return strShortener(url, 20);
+    },
     setIOSelection(event, numColumn) {
       this.formattedDataset.ioTypes.splice(numColumn - 1, 1, event);
       this.emitEvent();
@@ -393,5 +398,9 @@ td {
   span {
     margin-left: 10px;
   }
+}
+
+.d-inline-block {
+  display: inline-block;
 }
 </style>

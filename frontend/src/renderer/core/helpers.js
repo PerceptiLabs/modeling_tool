@@ -14,8 +14,8 @@ const projectPathModel = function (projectPath) {
 };
 
 
-const checkpointDirFromProject = function(projectPath) {
-    return `${projectPath}/checkpoint`;
+const checkpointDirFromProject = function (projectPath) {
+  return `${projectPath}/checkpoint`;
 };
 
 /*encryption */
@@ -27,13 +27,13 @@ const decryptionData = function (data) {
 };
 
 /*other*/
-const generateID = function() {
+const generateID = function () {
   return Date.now().toString();
 };
 
 const calcLayerPosition = function (position, zoomScaleCoefficient = 1) {
   const grid = workspaceGrid * zoomScaleCoefficient;
-  return Math.round(position/grid)*grid
+  return Math.round(position / grid) * grid
 };
 
 const throttleEv = function (func, ms) {
@@ -54,7 +54,7 @@ const throttleEv = function (func, ms) {
 
     isThrottled = true;
 
-    setTimeout(function() {
+    setTimeout(function () {
       isThrottled = false;
       if (savedArgs) {
         wrapper.apply(savedThis, savedArgs);
@@ -81,7 +81,7 @@ const deepCopy = function (object) {
 const deepCloneNetwork = function (object) {
   return JSON.parse(JSON.stringify(
     object,
-    (key, val)=> {
+    (key, val) => {
       if (key === 'calcAnchor') return undefined;
       else return val;
     },
@@ -91,32 +91,32 @@ const deepCloneNetwork = function (object) {
 
 const isLocalStorageAvailable = function () {
   try {
-      var storage = window['localStorage'],
-          x = '__storage_test__';
-      storage.setItem(x, x);
-      storage.removeItem(x);
-      return true;
+    var storage = window['localStorage'],
+      x = '__storage_test__';
+    storage.setItem(x, x);
+    storage.removeItem(x);
+    return true;
   }
-  catch(e) {
-      return e instanceof DOMException && (
-          // everything except Firefox
-          e.code === 22 ||
-          // Firefox
-          e.code === 1014 ||
-          // test name field too, because code might not be present
-          // everything except Firefox
-          e.name === 'QuotaExceededError' ||
-          // Firefox
-          e.name === 'NS_ERROR_DOM_QUOTA_REACHED') &&
-          // acknowledge QuotaExceededError only if there's something already stored
-          storage && storage.length !== 0;
+  catch (e) {
+    return e instanceof DOMException && (
+      // everything except Firefox
+      e.code === 22 ||
+      // Firefox
+      e.code === 1014 ||
+      // test name field too, because code might not be present
+      // everything except Firefox
+      e.name === 'QuotaExceededError' ||
+      // Firefox
+      e.name === 'NS_ERROR_DOM_QUOTA_REACHED') &&
+      // acknowledge QuotaExceededError only if there's something already stored
+      storage && storage.length !== 0;
   }
 }
 
 const stringifyNetworkObjects = function (network) {
   return JSON.stringify(
     network,
-    (key, val)=> {
+    (key, val) => {
       if (key === 'calcAnchor') return undefined;
       else return val;
     },
@@ -141,7 +141,7 @@ const isOsMacintosh = () => {
 
 const isOsLinux = () => {
   return /Linux/.test(window.navigator.platform);
-  
+
 };
 
 const isDesktopApp = () => {
@@ -155,7 +155,7 @@ const shouldHideSidebar = () => {
 
 const calculateSidebarScaleCoefficient = () => {
   const pageHeight = document.documentElement.clientHeight;
-  if(pageHeight <= sidebarNavCoefficientScaleCalculateFromHeight) {
+  if (pageHeight <= sidebarNavCoefficientScaleCalculateFromHeight) {
     document.documentElement.style.setProperty('--sidebar-scale-coefficient', (pageHeight / sidebarNavCoefficientScaleCalculateFromHeight).toString());
   } else {
     document.documentElement.style.setProperty('--sidebar-scale-coefficient', '1');
@@ -184,7 +184,7 @@ const isWeb = () => {
 };
 
 const setAppTypeRootClasses = () => {
-  if(isWeb()) {
+  if (isWeb()) {
     document.body.classList.add('is-web');
     document.getElementsByTagName('html')[0].classList.add('is-web');
   } else {
@@ -193,11 +193,11 @@ const setAppTypeRootClasses = () => {
   }
 };
 
-const debounce = function(callback, waitInMs) {
+const debounce = function (callback, waitInMs) {
 
   let timerHandle;
 
-  return function() {
+  return function () {
     clearInterval(timerHandle);
     timerHandle = setTimeout(() => {
 
@@ -214,7 +214,7 @@ const promiseWithTimeout = function (timeout, promise) {
       () => resolve(),
       timeout);
   });
-  
+
   return Promise.race([
     promise,
     timeoutPromise
@@ -334,23 +334,23 @@ const layerBgColorTransparent = function (componentName) {
   return [className];
 }
 
-const hashObject = function(inputObject) {
+const hashObject = function (inputObject) {
   const concatValues = Object.values(inputObject)
-  .map(eo => eo.toString())
-  .join('');
+    .map(eo => eo.toString())
+    .join('');
 
   return hashString(concatValues || '');
 }
 
-const hashString = s => s.split('').reduce((a,b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
+const hashString = s => s.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0);
 
 const createCoreNetwork = (network, currentNetworkUsingWeights = false) => {
   if (!network) { return null; }
 
   let layers = {};
-  for(let layer in network.networkElementList) {
+  for (let layer in network.networkElementList) {
     const el = network.networkElementList[layer];
-    if(el.componentName === 'LayerContainer') continue;
+    if (el.componentName === 'LayerContainer') continue;
 
     /*prepare checkpoint*/
     const checkpointPath = {
@@ -358,9 +358,9 @@ const createCoreNetwork = (network, currentNetworkUsingWeights = false) => {
       'path': ''
     };
 
-    if(el.checkpoint.length >= 2) {
+    if (el.checkpoint.length >= 2) {
       checkpointPath.path = el.checkpoint[1]
-      
+
       if (checkpointPath.path.slice(-1) !== '/') {
         checkpointPath.path += '/';
       } else if (checkpointPath.path.slice(-1) !== '\\') {
@@ -391,21 +391,21 @@ const createCoreNetwork = (network, currentNetworkUsingWeights = false) => {
 }
 
 const objectToQueryParams = (reqData) => {
-  return  Object.keys(reqData).map(function(key) {
-      return key + '=' + reqData[key];
-    }).join('&');
+  return Object.keys(reqData).map(function (key) {
+    return key + '=' + reqData[key];
+  }).join('&');
 }
 
 const removeChartData = (inputNetwork) => {
 
   let network = cloneDeep(inputNetwork);
-  
+
   network = cleanNetworkElementListChartData(network);
   network = cleanNetworkSnapshotsChartData(network);
   if (network.networkMeta && network.networkMeta.chartsRequest)
     network.networkMeta.chartsRequest.timerID = null;
   if (network.networkMeta.coreStatus) {
-    delete(network.networkMeta.coreStatus);
+    delete (network.networkMeta.coreStatus);
   }
   return network;
 
@@ -416,7 +416,7 @@ const removeChartData = (inputNetwork) => {
     for (const key of Object.keys(net['networkElementList'])) {
       const layerObject = net['networkElementList'][key];
       if (!layerObject.hasOwnProperty('chartData')) { continue; }
-  
+
       layerObject['chartData'] = {};
       layerObject['chartDataIsLoading'] = 0;
     }
@@ -425,18 +425,18 @@ const removeChartData = (inputNetwork) => {
 
   function cleanNetworkSnapshotsChartData(net) {
     if (!net || !net['networkSnapshots']) { return net; }
-    
+
     const networkHaveSnapshots = net.networkSnapshots && net.networkSnapshots.length > 0;
 
-    if(networkHaveSnapshots) {
+    if (networkHaveSnapshots) {
       for (const key of Object.keys(net['networkSnapshots'][0])) {
         const layerObject = net['networkSnapshots'][0][key];
         if (!layerObject.hasOwnProperty('chartData')) { continue; }
-    
+
         layerObject['chartData'] = {};
       }
     }
-   
+
     return net
   }
 }
@@ -449,28 +449,28 @@ const removeNetworkSnapshots = (inputNetwork) => {
 
   return network;
 }
-const setCookie = (name,value,days) => {
+const setCookie = (name, value, days) => {
   let expires = "";
   if (days) {
-      const date = new Date();
-      date.setTime(date.getTime() + (days*24*60*60*1000));
-      expires = "; expires=" + date.toUTCString();
+    const date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    expires = "; expires=" + date.toUTCString();
   }
-  document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+  document.cookie = name + "=" + (value || "") + expires + "; path=/";
 }
 const getCookie = (name) => {
   const nameEQ = name + "=";
   const ca = document.cookie.split(';');
-  for(let i=0;i < ca.length;i++) {
-      let c = ca[i];
-      while (c.charAt(0)==' ') c = c.substring(1,c.length);
-      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
   }
   return null;
 }
 
-const eraseCookie = (name) => {   
-  document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+const eraseCookie = (name) => {
+  document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 }
 
 export const arrayIncludeOrOmit = (array, value) => {
@@ -493,12 +493,12 @@ export const isServingEnabled = () => {
 };
 
 export const getFirstElementFromObject = (data) => {
-  if(!data) throw new Error('No object passed');
+  if (!data) throw new Error('No object passed');
   return data[Object.keys(data)[0]];
 };
 
 export const removeKeysFromObject = (obj, removeKeys) => {
-  return Object.keys(obj).reduce((acc, key) => ( removeKeys.includes(key) ? acc : {...acc, [key]: obj[key]} ), {});
+  return Object.keys(obj).reduce((acc, key) => (removeKeys.includes(key) ? acc : { ...acc, [key]: obj[key] }), {});
 }
 
 export const isEmptyObject = (obj) => {
@@ -506,7 +506,7 @@ export const isEmptyObject = (obj) => {
 }
 
 export const isBrowserChromeOrFirefox = () => {
-  return  (isJS.chrome() || isJS.firefox()) && navigator.userAgent.indexOf('Edg/') === -1;
+  return (isJS.chrome() || isJS.firefox()) && navigator.userAgent.indexOf('Edg/') === -1;
 }
 
 /**
@@ -515,14 +515,25 @@ export const isBrowserChromeOrFirefox = () => {
  * @param {Object} val The value to test
  * @returns {boolean} True if value is an Object, otherwise false
  */
- export function isObject(val) {
+export function isObject(val) {
   return val !== null && typeof val === 'object';
+}
+
+/**
+ * 
+ * @param {string} string: url to be shorten 
+ * @param {number} length desired length of the shorten string
+ * @returns {string} Shortened url with [...] in the middle
+ */
+export function strShortener(string, length = 20) {
+  const preLength = Math.floor(length / 2);
+  return string.length > length ? string.substr(0, preLength) + '[...]' + string.substr(preLength - length) : string
 }
 
 
 export {
   projectPathModel,
-  checkpointDirFromProject,  
+  checkpointDirFromProject,
   encryptionData,
   decryptionData,
   generateID,
