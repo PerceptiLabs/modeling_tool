@@ -335,13 +335,14 @@ export default {
       showImportNetworkfromGitHubOrLocalPopup: state =>
         state.globalView.globalPopup.showImportNetworkfromGitHubOrLocalPopup
     }),
-    statusLocalCore() {
-      return this.$store.state.mod_api.statusLocalCore;
-    },
     get_modelIndexById() {
       return this.$store.getters["mod_workspace/GET_networkIndexById"](
         this.renameId
       );
+    },
+    isCoreOffline() {
+      console.log('this.$store.state.mod_api.statusLocalCore', this.$store.state.mod_api.statusLocalCore);
+      return this.$store.state.mod_api.statusLocalCore !== 'online';
     }
   },
   watch: {

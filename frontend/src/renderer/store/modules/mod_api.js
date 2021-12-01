@@ -253,6 +253,9 @@ const actions = {
           python: versions.python.split('.').slice(0,2).join('.'),
           tensorflow: versions.tensorflow
         })
+        if(state.statusLocalCore !== 'online') {
+          commit('SET_statusLocalCore', 'online');
+        }
       })
       .catch(()=> {
         if(state.statusLocalCore === 'online') {
