@@ -33,7 +33,7 @@ class TaskExecutor(ABC):
     
 
 @handle_exceptions    
-def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email, is_retry=False):
+def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email, is_retry=False, logrocket_url=''):
     
     import perceptilabs.settings as settings    
     from perceptilabs.training_interface import TrainingSessionInterface
@@ -86,12 +86,13 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
         load_checkpoint,
         user_email,
         results_interval=settings.TRAINING_RESULTS_REFRESH_INTERVAL,
-        is_retry=is_retry
+        is_retry=is_retry,
+        logrocket_url=logrocket_url
     )
     
 
 @handle_exceptions    
-def testing_task(testing_session_id, models_info, tests, user_email, is_retry=False):
+def testing_task(testing_session_id, models_info, tests, user_email, is_retry=False, logrocket_url=''):
     import perceptilabs.settings as settings        
     from perceptilabs.testing_interface import TestingSessionInterface
     from perceptilabs.messaging.base import get_message_broker
@@ -114,8 +115,6 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
     epochs_access = EpochsAccess()
     testing_results_access = TestingResultsAccess()
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())                
-
-
     # TODO: all this data loader etup should be moved into the test interface!!!
     models = {}
     for model_id in models_info.keys():
@@ -152,12 +151,13 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
         models,
         tests,
         user_email=user_email,
-        results_interval=settings.TESTING_RESULTS_REFRESH_INTERVAL        
+        results_interval=settings.TESTING_RESULTS_REFRESH_INTERVAL,
+        logrocket_url=logrocket_url
     )
      
 
 @handle_exceptions    
-def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email, serving_session_id, is_retry=False):
+def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email, serving_session_id, is_retry=False, logrocket_url=''):
     
     import perceptilabs.settings as settings    
     from perceptilabs.serving_interface import ServingSessionInterface
@@ -209,12 +209,13 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id,
         model_name,
         user_email,
         results_interval=settings.SERVING_RESULTS_REFRESH_INTERVAL,
-        is_retry=is_retry
+        is_retry=is_retry,
+        logrocket_url=logrocket_url
     )
     
 
 @handle_exceptions    
-def preprocessing_task(dataset_settings_dict, preprocessing_session_id):
+def preprocessing_task(dataset_settings_dict, preprocessing_session_id, logrocket_url=''):
     from perceptilabs.preprocessing_interface import PreprocessingSessionInterface  # TODO: should preprocessing_interface have a better name??
     from perceptilabs.caching.utils import get_data_metadata_cache    
     from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess        
@@ -223,6 +224,6 @@ def preprocessing_task(dataset_settings_dict, preprocessing_session_id):
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
     interface = PreprocessingSessionInterface(preprocessing_results_access)
 
-    interface.run(dataset_settings_dict, preprocessing_session_id)
+    interface.run(dataset_settings_dict, preprocessing_session_id, logrocket_url=logrocket_url)
     
     

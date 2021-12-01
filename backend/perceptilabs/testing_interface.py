@@ -2,6 +2,8 @@ import time
 import logging
 from queue import Empty
 
+import sentry_sdk
+
 import perceptilabs.utils as utils
 from perceptilabs.testcore import TestCore, ProcessResults
 from perceptilabs.utils import KernelError
@@ -23,7 +25,7 @@ class TestingSessionInterface():
         for _ in self.run_stepwise(*args, **kwargs):
             pass
 
-    def run_stepwise(self, testing_session_id, models, tests, user_email, results_interval=None):
+    def run_stepwise(self, testing_session_id, models, tests, user_email, results_interval=None, logrocket_url=''):
         try:
             test_core = self._setup_test_core(testing_session_id, models, tests, user_email)
 
@@ -33,9 +35,15 @@ class TestingSessionInterface():
         except Exception as e:
             error = KernelError.from_exception(e, "Error during testing!")            
             self._results_access.store(testing_session_id, {'error': error.to_dict()})
-            logger.exception("Exception in training session interface!")
+            logger.exception("Exception in testing session interface!")
 
-            raise  # Send it up to sentry. If these are common, we can add the same mechanism as for training here.
+            with sentry_sdk.push_scope() as scope:
+                scope.set_extra('testing_session_id', testing_session_id)
+                scope.set_extra('user_email', user_email)
+                scope.set_extra('logrocket_url', logrocket_url)            
+            
+                sentry_sdk.capture_exception(e)
+                sentry_sdk.flush()                        
 
     def _main_loop(self, queue, core, results_interval, testing_session_id):            
         testing_step = core.run_stepwise()

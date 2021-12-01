@@ -34,8 +34,18 @@ class ModelsInterface:
 
         self._script_factory = ScriptFactory()        
 
-    def start_training(self, dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email):
-        self._task_executor.enqueue('training_task', dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email)
+    def start_training(self, dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email, logrocket_url=''):
+        self._task_executor.enqueue(
+            'training_task',
+            dataset_settings_dict,
+            model_id,
+            graph_spec_dict,
+            training_session_id,
+            training_settings,
+            load_checkpoint,
+            user_email,
+            logrocket_url=logrocket_url            
+        )
 
     def stop_training(self, model_id, training_session_id):
         self._message_broker.publish(

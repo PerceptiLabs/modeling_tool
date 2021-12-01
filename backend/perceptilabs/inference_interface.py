@@ -13,9 +13,20 @@ class InferenceInterface:
         self._testing_results_access = testing_results_access
         self._serving_results_access = serving_results_access                
 
-    def start_serving(self, serving_type, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email):
+    def start_serving(self, serving_type, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email, logrocket_url=''):
         serving_session_id = self._serving_results_access.new_id()
-        self._task_executor.enqueue('serving_task', serving_type, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email, serving_session_id)
+        self._task_executor.enqueue(
+            'serving_task',
+            serving_type,
+            dataset_settings_dict,
+            graph_spec_dict,
+            model_id,
+            training_session_id,
+            model_name,
+            user_email,
+            serving_session_id,
+            logrocket_url=logrocket_url
+        )
         return serving_session_id
 
     def get_serving_status(self, serving_session_id):
@@ -26,9 +37,10 @@ class InferenceInterface:
         self._message_broker.publish(
             {'event': 'serving-stop', 'payload': {'serving_session_id': serving_session_id}})
 
-    def start_testing(self, models_info, tests, user_email):
+    def start_testing(self, models_info, tests, user_email, logrocket_url=''):
         testing_session_id = self._testing_results_access.new_id()
-        self._task_executor.enqueue('testing_task', testing_session_id, models_info, tests, user_email)
+        self._task_executor.enqueue(
+            'testing_task', testing_session_id, models_info, tests, user_email, logrocket_url=logrocket_url)
         return testing_session_id
     
     def get_testing_status(self, testing_session_id):

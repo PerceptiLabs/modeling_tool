@@ -109,9 +109,10 @@ def create_app(
         json_data = request.get_json()
         settings_dict = json_data['datasetSettings']
         user_email = json_data.get('userEmail')
+        logrocket_url = request.headers.get('X-LogRocket-URL', '') 
 
         session_id = datasets_interface.start_preprocessing(
-            settings_dict, user_email)
+            settings_dict, user_email, logrocket_url=logrocket_url)
 
         return jsonify({"preprocessingSessionId": session_id})
 
@@ -205,7 +206,8 @@ def create_app(
         dataset_settings = json_data['datasetSettings']
         training_settings = json_data['trainingSettings']
         load_checkpoint = json_data['loadCheckpoint']
-        user_email = json_data['userEmail']                                        
+        user_email = json_data['userEmail']
+        logrocket_url = request.headers.get('X-LogRocket-URL', '')         
 
         models_interface.start_training(
             dataset_settings,
@@ -214,7 +216,8 @@ def create_app(
             training_session_id,
             training_settings,
             load_checkpoint,
-            user_email
+            user_email,
+            logrocket_url=logrocket_url            
         )
         return jsonify({"content": "core started"})
 
@@ -272,7 +275,7 @@ def create_app(
     @app.route('/inference/serving/<model_id>', methods=['POST'])
     def start_serving(model_id):
         json_data = request.get_json()
-
+        
         session_id = inference_interface.start_serving(
             json_data['type'],
             json_data['datasetSettings'],
@@ -280,7 +283,8 @@ def create_app(
             model_id,
             request.args.get('training_session_id'),            
             json_data['modelName'],
-            json_data['userEmail']
+            json_data['userEmail'],
+            logrocket_url=request.headers.get('X-LogRocket-URL', '')         
         )        
         return jsonify(session_id)
 
@@ -300,8 +304,10 @@ def create_app(
         models_info = json_data['modelsInfo']
         tests = json_data['tests']        
         user_email = json_data.get('userEmail')
+        logrocket_url = request.headers.get('X-LogRocket-URL', '')         
 
-        session_id = inference_interface.start_testing(models_info, tests, user_email)
+        session_id = inference_interface.start_testing(
+            models_info, tests, user_email, logrocket_url=logrocket_url)
         return jsonify(session_id)
 
     @app.route('/inference/testing/<testing_session_id>/status', methods=['GET'])
@@ -340,7 +346,8 @@ def create_app(
         with sentry_sdk.push_scope() as scope:
             scope.set_extra('url', request.url)            
             scope.set_extra('request', request.json)
-            scope.set_extra('response', response)            
+            scope.set_extra('response', response)
+            scope.set_extra('logrocket-url', request.headers.get('X-LogRocket-URL', ''))
             sentry_sdk.capture_exception(original_error)
             
         return jsonify(response), 200   

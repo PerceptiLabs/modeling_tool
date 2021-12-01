@@ -22,7 +22,7 @@ class TrainingSessionInterface:
         for _ in self.run_stepwise(*args, **kwargs):
             pass
 
-    def run_stepwise(self, data_loader, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email, results_interval=None, is_retry=False):
+    def run_stepwise(self, data_loader, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email, results_interval=None, is_retry=False, logrocket_url=''):
         try:
             self._clean_old_status(training_session_id)
         
@@ -34,9 +34,9 @@ class TrainingSessionInterface:
                 yield from self._main_loop(queue, trainer, results_interval, training_session_id)
 
         except Exception as e:
-            self._handle_error(e, model_id, graph_spec_dict, training_session_id, training_settings, user_email)
+            self._handle_error(e, model_id, graph_spec_dict, training_session_id, training_settings, user_email, logrocket_url)
 
-    def _handle_error(self, e, model_id, graph_spec_dict, training_session_id, training_settings, user_email):
+    def _handle_error(self, e, model_id, graph_spec_dict, training_session_id, training_settings, user_email, logrocket_url):
         error = KernelError.from_exception(e, message="Error during training!")
         self._results_access.store(training_session_id, {'error': error.to_dict()})
         logger.exception("Exception in training session interface!")
@@ -47,6 +47,7 @@ class TrainingSessionInterface:
             scope.set_extra('training_session_id', training_session_id)
             scope.set_extra('training_settings', training_settings)
             scope.set_extra('user_email', user_email)
+            scope.set_extra('logrocket_url', logrocket_url)            
             
             sentry_sdk.capture_exception(e)
             sentry_sdk.flush()            

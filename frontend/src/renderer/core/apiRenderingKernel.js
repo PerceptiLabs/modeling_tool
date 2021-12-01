@@ -1,19 +1,33 @@
 import axios            from 'axios'
-// import { objectToQueryParams } from '@/core/helpers'
-// import { stringifyNetworkObjects }   from "@/core/helpers.js";
-
+import LogRocket        from 'logrocket'
 import { RENDERING_KERNEL_BASE_URL } from '@/core/constants'
 import { RENDERING_KERNEL_URL_CONFIG_PATH }   from "@/core/constants";
 import { whenUrlIsResolved } from '@/core/urlResolver';
 
-const whenRenderingKernelReady = whenUrlIsResolved(RENDERING_KERNEL_URL_CONFIG_PATH, RENDERING_KERNEL_BASE_URL)
-  .then(url => {
-    let ret = axios.create();
-    ret.defaults.baseURL = url
-    ret.defaults.headers.common["Content-Type"] = `application/json`;
-    ret.defaults.params = {}
-    return ret
+
+let logRocketURL = null;
+LogRocket.getSessionURL(function(sessionURL) {
+  logRocketURL = sessionURL;
+});
+
+
+const whenRenderingKernelReady = whenUrlIsResolved(RENDERING_KERNEL_URL_CONFIG_PATH, RENDERING_KERNEL_BASE_URL).then(url => {
+  const config = {
+    baseURL: url,
+    headers: {'Content-Type': 'application/json'},
+    params: {}
+  }
+  let ret = axios.create(config);
+
+  ret.interceptors.request.use(function (config) {
+    if (logRocketURL) {
+      config.headers['X-LogRocket-URL'] = logRocketURL;
+    }
+    return config;
   });
+  
+  return ret
+});
 
 export const renderingKernel = {
 

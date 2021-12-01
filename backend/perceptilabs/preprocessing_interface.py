@@ -1,6 +1,8 @@
 import os
 import logging
+
 import pandas as pd
+import sentry_sdk
 
 import perceptilabs.settings as settings    
 from perceptilabs.resources.files import FileAccess
@@ -19,7 +21,7 @@ class PreprocessingSessionInterface:
     def __init__(self, results_access):
         self._results_access = results_access
 
-    def run(self, dataset_settings_dict, preprocessing_session_id):
+    def run(self, dataset_settings_dict, preprocessing_session_id, logrocket_url=''):
         try:        
             self._run_internal(dataset_settings_dict, preprocessing_session_id)
         except Exception as e:
@@ -29,7 +31,13 @@ class PreprocessingSessionInterface:
             self._results_access.set_results(
                 preprocessing_session_id, 'failed', error=error.to_dict())
 
-            raise  # Send it up to sentry. If these are common, we can add the same mechanism as for training here.            
+            with sentry_sdk.push_scope() as scope:
+                scope.set_extra('preprocessing_session_id', preprocessing_session_id)
+                scope.set_extra('dataset_settings_dict', dataset_settings_dict)
+                scope.set_extra('logrocket_url', logrocket_url)            
+            
+                sentry_sdk.capture_exception(e)
+                sentry_sdk.flush()                        
 
     def _run_internal(self, dataset_settings_dict, preprocessing_session_id):
         dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)

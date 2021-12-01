@@ -21,12 +21,12 @@ class DatasetsInterface:
         self._results_access = results_access
         self._dataset_access = dataset_access
         
-    def start_preprocessing(self, settings_dict, user_email):
+    def start_preprocessing(self, settings_dict, user_email, logrocket_url=''):
         dataset_settings = DatasetSettings.from_dict(settings_dict)
         preprocessing_session_id = dataset_settings.compute_hash()
         
         self._task_executor.enqueue(
-            'preprocessing_task', settings_dict, preprocessing_session_id)
+            'preprocessing_task', settings_dict, preprocessing_session_id, logrocket_url)
 
         return preprocessing_session_id
     

@@ -63,7 +63,6 @@ class DataLoader:
         training_set, _, _ = cls._build_and_partition_data(
             data_frame, dataset_settings, num_repeats
         )
-        
         _, metadata = cls._build_pipelines(dataset_settings, training_set, on_status_updated=on_status_updated)
         return metadata        
 
