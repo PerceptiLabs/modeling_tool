@@ -94,7 +94,7 @@ def test_update_rejects_default_directory_in_enterprise(rest, tmpdir, tmp_projec
         tmp_project.update(default_directory=str(tmpdir))
 
 
-DEFAULT_PATH = os.path.join(Path.home(), "Documents", "PerceptiLabs", "Default")
+DEFAULT_PATH = os.path.join(Path.home(), "Documents", "Perceptilabs", "Default")
 @pytest.mark.skipif(not Path.home(), reason="Default project requires a HOME directory")
 @pytest.mark.skipif(os.path.isdir(DEFAULT_PATH), reason="Default project requires a HOME directory")
 def test_get_default_mode_project(rest):

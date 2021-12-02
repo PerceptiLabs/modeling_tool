@@ -291,5 +291,5 @@ DATA_LIST = os.getenv('PL_DATA_LIST', DATA_BLOB + "/dataset-list.csv")
 DATA_CATEGORY_LIST = os.getenv('PL_DATA_CATEGORY_LIST', DATA_BLOB + "/dataset-categories.csv")
 
 DEFAULT_PROJECT_NAME = "Default"
-DEFAULT_PROJECT_DIR = os.path.join(Path.home(), 'Documents', 'PerceptiLabs', 'Default')
+DEFAULT_PROJECT_DIR = os.path.join(Path.home(), 'Documents', 'Perceptilabs', 'Default')
 
