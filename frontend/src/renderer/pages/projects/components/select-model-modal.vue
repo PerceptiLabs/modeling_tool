@@ -50,6 +50,7 @@ div
           load-dataset(
             v-if="isPublicDatasetEnabled",
             @openFilePicker="openFilePicker('setDataPath')",
+            :isFilePickerOpened="isFilePickerOpened",
             @openPLVideoTutorialPage="openPLVideoTutorialPage()",
             @handleDataPathUpdates="handleDataPathUpdates"
           )
@@ -90,7 +91,9 @@ div
                   type="button",
                   @click="openFilePicker"
                 ) Browse
-            perfect-scrollbar.fix-for-scroll-bar-place(style="padding-bottom: 180px")
+            perfect-scrollbar.fix-for-scroll-bar-place(
+              style="padding-bottom: 180px"
+            )
               csv-table(
                 v-if="dataset",
                 :dataSet="dataset",
@@ -187,7 +190,7 @@ import InfoTooltip from "@/components/different/info-tooltip.vue";
 import ChartSpinner from "@/components/charts/chart-spinner";
 import {
   defaultTrainingSettings,
-  PERCEPTILABS_VIDEO_TUTORIAL_URL,
+  PERCEPTILABS_VIDEO_TUTORIAL_URL
 } from "@/core/constants";
 import { mapActions, mapState, mapGetters } from "vuex";
 import mixinFocus from "@/core/mixins/net-element-settings-input-focus.js";
@@ -196,16 +199,16 @@ import ErrorCta from "@/components/error-cta";
 import {
   convertModelRecommendationToVisNodeEdgeList,
   createVisNetwork
-}                                             from "@/core/helpers/layer-positioning-helper";
-import { buildLayers }                        from "@/core/helpers/layer-creation-helper";
-import { assembleModel }                      from "@/core/helpers/model-helper";
-import BaseGlobalPopup                        from "@/components/global-popups/base-global-popup";
+} from "@/core/helpers/layer-positioning-helper";
+import { buildLayers } from "@/core/helpers/layer-creation-helper";
+import { assembleModel } from "@/core/helpers/model-helper";
+import BaseGlobalPopup from "@/components/global-popups/base-global-popup";
 
 import {
   debounce,
   deepCopy,
   isEnvDataWizardEnabled,
-  isPublicDatasetEnabled,
+  isPublicDatasetEnabled
 } from "@/core/helpers";
 import cloneDeep from "lodash.clonedeep";
 
@@ -228,7 +231,7 @@ const STEP = {
   TRAINING: 3,
   PUBLIC_LIST: 4,
   TYPE: 5,
-  CLASS: 6,
+  CLASS: 6
 };
 
 const mockClassList = [
@@ -237,14 +240,14 @@ const mockClassList = [
     name: "Class 1",
     images: [
       "/static/img/project-page/classification.png",
-      "/static/img/project-page/linear-regression.png",
-    ],
+      "/static/img/project-page/linear-regression.png"
+    ]
   },
   {
     id: 2,
     name: "Class 2",
-    images: [],
-  },
+    images: []
+  }
 ];
 
 export default {
@@ -257,7 +260,7 @@ export default {
     ChartSpinner,
     DataColumnOptionSidebar,
     ErrorCta,
-    LoadDataset,
+    LoadDataset
   },
   mixins: [mixinFocus],
   async created() {
@@ -269,7 +272,7 @@ export default {
     ) {
       let datasetPath = "";
       const allDatasets = this.$store.getters["mod_datasets/GET_datasets"];
-      allDatasets.forEach((dataset) => {
+      allDatasets.forEach(dataset => {
         if (dataset.dataset_id === showNewModelPopup.datasetId) {
           datasetPath = dataset.location;
         }
@@ -277,7 +280,7 @@ export default {
       this.handleDataPathUpdates([datasetPath]);
     }
   },
-  data: function () {
+  data: function() {
     return {
       STEP: STEP,
       trainingModes: [
@@ -286,14 +289,14 @@ export default {
           title: "Image Classification",
           description: "Train your model to classify images",
           imgPath: "./static/img/project-page/upload-class.jpg",
-          onClick: this.gotoClassStep,
+          onClick: this.gotoClassStep
         },
         {
           id: 2,
           title: "Segment Images",
           description: "Train your model to segment things in images",
           imgPath: "./static/img/project-page/upload-segment.jpg",
-          onClick: () => {},
+          onClick: () => {}
         },
         {
           id: 3,
@@ -301,8 +304,8 @@ export default {
           description:
             "Combined data types, inputs and targets for more complex problems",
           imgPath: "./static/img/project-page/upload-multi.jpg",
-          onClick: () => {},
-        },
+          onClick: () => {}
+        }
       ],
       classList: mockClassList,
       basicTemplates: [
@@ -312,36 +315,36 @@ export default {
           template: imageClassification,
           description:
             "This is a simple image classification template, perfect for datasets such as MNIST. The standard dataset included with this template is an MNIST dataset where the input is an array of 784 grayscale pixel values and 10 unique label values (integers 0-9). The model consists of a reshaping component, a convolutional layer, and a fully connected output layer with 10 neurons. Because of the reshaping component it requries the input data to be 784 or a form thereof (28x28, for example). The labels must be integers ranging from 0 to 9 to be compatible with the one hot encoding that is applied to the labels.",
-          screenshoot: "template_image_classification.png",
+          screenshoot: "template_image_classification.png"
         },
         {
           title: "Linear Regression",
           imgPath: "./static/img/project-page/linear-regression.png",
           template: linearRegression,
           description: `This is a template for linear regression, where it tries to create a line of best fit for the datapoints you load. The standard dataset is a one-dimensional input value and one-dimensional labels. The input data can be multidimensional, but our visualizations will display the data in one dimension. The labels data must be one-dimensional as they represent the value of the input data. The model is built as a single fully connected layer with one neuron as output.`,
-          screenshoot: "template_linear_regression.png",
+          screenshoot: "template_linear_regression.png"
         },
         {
           title: "DQN",
           imgPath: "./static/img/project-page/reinforcement-learning.png",
           template: reinforcementLearning,
           description: `This is a template for Reinforcement Learning consisting of one grayscale component, one convolutional layer and one fully connected layer as output. This template uses Q learning on Atari Gym games, where it is set up to play breakout. To play another game, you will change the neurons in the fully connected layer to match the number of possible actions in the actionspace, which you can see in the Environment component.`,
-          screenshoot: "template_dqn.png",
+          screenshoot: "template_dqn.png"
         },
         {
           title: "YOLO V1",
           imgPath: "./static/img/project-page/object-detection.png",
           template: objectDetection,
           description: `This is a template of the Object Detection model YOLO. It trains on a custom-built dataset containing different shapes as standard. Since it consists of only convolutional layers, any input data will work to train on, as long as the label data matches the input data.`,
-          screenshoot: "template_yolo.png",
+          screenshoot: "template_yolo.png"
         },
         {
           title: "GAN",
           imgPath: "./static/img/project-page/GAN.png",
           template: ganTemplate,
           description: `This is a template for a Generative Adversarial Network (GAN) where it trains on the MNIST data as a standard. The model consists of a generative network and a discriminative network, as well as a switch layer which switches between the generated image and real image.`,
-          screenshoot: "template_gan.png",
-        },
+          screenshoot: "template_gan.png"
+        }
       ],
       chosenTemplate: null,
       modelName: "",
@@ -355,7 +358,7 @@ export default {
       datasetSettings: {
         randomizedPartitions: true,
         partitions: [70, 20, 10],
-        randomSeed: "123",
+        randomSeed: "123"
       },
       debouncedCreateModelFunction: null,
       onStep: 1,
@@ -366,22 +369,22 @@ export default {
       isShowCTA: false,
       buildingPreProcessingStatus: "Building preprocessing pipelines...",
       createdFromDatasetId: null,
+      isFilePickerOpened: false
     };
   },
   computed: {
     ...mapState({
-      currentProjectId: (state) => state.mod_project.currentProject,
-      workspaces: (state) => state.mod_workspace.workspaceContent,
-      startupDatasetPath: (state) => state.mod_datasetSettings.startupFolder,
-      showNewModelPopup: (state) =>
-        state.globalView.globalPopup.showNewModelPopup,
+      currentProjectId: state => state.mod_project.currentProject,
+      workspaces: state => state.mod_workspace.workspaceContent,
+      startupDatasetPath: state => state.mod_datasetSettings.startupFolder,
+      showNewModelPopup: state => state.globalView.globalPopup.showNewModelPopup
     }),
     ...mapGetters({
       currentProject: "mod_project/GET_project",
       projectPath: "mod_project/GET_projectPath",
       currentNetworkId: "mod_workspace/GET_currentNetworkId",
       userEmail: "mod_user/GET_userEmail",
-      isEnterpriseMode: "globalView/get_isEnterpriseApp",
+      isEnterpriseMode: "globalView/get_isEnterpriseApp"
     }),
     isPublicDatasetEnabled() {
       return isPublicDatasetEnabled();
@@ -410,13 +413,13 @@ export default {
           return "Add one class for each type of image you want to tell apart.";
           break;
       }
-    },
+    }
   },
   mounted() {
     document.addEventListener("keydown", this.keysNavigationHandler);
     this.modelPath = this.projectPath;
 
-    this.debouncedCreateModelFunction = debounce((_) => {
+    this.debouncedCreateModelFunction = debounce(_ => {
       this.createModel();
     }, 1000);
 
@@ -442,7 +445,7 @@ export default {
       setCurrentView: "mod_tutorials/setCurrentView",
       setNextStep: "mod_tutorials/setNextStep",
       activateNotification: "mod_tutorials/activateNotification",
-      setChecklistItemComplete: "mod_tutorials/setChecklistItemComplete",
+      setChecklistItemComplete: "mod_tutorials/setChecklistItemComplete"
     }),
     keysNavigationHandler(event) {
       event.stopPropagation();
@@ -492,7 +495,7 @@ export default {
         const { csvData } = this;
         return (
           csvData &&
-          csvData.ioTypes.filter((v) => v !== undefined).length ===
+          csvData.ioTypes.filter(v => v !== undefined).length ===
             csvData.ioTypes.length
         );
       } else {
@@ -504,8 +507,8 @@ export default {
         const { csvData } = this;
         return (
           csvData &&
-          csvData.ioTypes.filter((v) => v === "Input").length > 0 &&
-          csvData.ioTypes.filter((v) => v === "Target").length > 0
+          csvData.ioTypes.filter(v => v === "Input").length > 0 &&
+          csvData.ioTypes.filter(v => v === "Target").length > 0
         );
       } else {
         return false;
@@ -515,7 +518,7 @@ export default {
       if (this.isDataWizardEnabled) {
         const { csvData } = this;
         return (
-          csvData && csvData.ioTypes.filter((v) => v === "Target").length === 1
+          csvData && csvData.ioTypes.filter(v => v === "Target").length === 1
         );
       } else {
         return false;
@@ -547,7 +550,7 @@ export default {
     },
     deleteModelWithErrorPopup(modelId, errorMessage) {
       this.$store.dispatch("mod_project/deleteModel", {
-        model_id: modelId,
+        model_id: modelId
       });
       this.showErrorPopup(errorMessage);
       this.isCreateModelLoading = false;
@@ -584,7 +587,7 @@ export default {
       let newModelParams = {
         name: modelName,
         project: this.currentProjectId,
-        datasets: [this.createdFromDatasetId],
+        datasets: [this.createdFromDatasetId]
       };
 
       if (!this.isEnterpriseMode) {
@@ -600,14 +603,14 @@ export default {
         featureSpecs: formatCSVTypesIntoKernelFormat(this.csvData),
         filePath: this.datasetPath,
         randomSeed: this.datasetSettings.randomSeed,
-        datasetId: this.createdFromDatasetId,
+        datasetId: this.createdFromDatasetId
       };
       const userEmail = this.userEmail;
 
       await renderingKernel.waitForDataReady(
         datasetSettings,
         userEmail,
-        (message) => {
+        message => {
           this.buildingPreProcessingStatus = message;
         }
       );
@@ -619,7 +622,7 @@ export default {
           apiMeta.model_id,
           runStatistics
         )
-        .then((res) => {
+        .then(res => {
           if (res && res.error) {
             this.deleteModelWithErrorPopup(
               apiMeta.model_id,
@@ -628,10 +631,10 @@ export default {
           }
           return res;
         })
-        .catch((err) => {
+        .catch(err => {
           this.deleteModelWithErrorPopup(
             apiMeta.model_id,
-                  res.error.message + "\n\n" + res.error.details
+            res.error.message + "\n\n" + res.error.details
           );
           return null;
         });
@@ -640,13 +643,14 @@ export default {
         this.closeModal(false);
       }
 
-      const inputData =
-        convertModelRecommendationToVisNodeEdgeList(modelRecommendation);
+      const inputData = convertModelRecommendationToVisNodeEdgeList(
+        modelRecommendation
+      );
       const network = createVisNetwork(inputData);
 
       // Wait till the 'stabilized' event has fired
-      await new Promise((resolve) =>
-        network.on("stabilized", async (data) => resolve())
+      await new Promise(resolve =>
+        network.on("stabilized", async data => resolve())
       );
 
       // Creating the networkElementList for the network
@@ -659,22 +663,22 @@ export default {
       const newNetwork = assembleModel(
         modelName,
         layers,
-        null,  // Use default rootFolder
-        null,  // Use default meta
-        null,  // Use default snapshots
+        null, // Use default rootFolder
+        null, // Use default meta
+        null, // Use default snapshots
         apiMeta,
         datasetSettings,
-        this.settings   
+        this.settings
       );
-      
-      await this.$store.dispatch('mod_workspace/setViewType', 'model');
+
+      await this.$store.dispatch("mod_workspace/setViewType", "model");
       await this.addNetwork({ newNetwork: newNetwork }).then(() => {
-          if (runStatistics) {
-            setTimeout(() => {
-              this.$store.dispatch("mod_events/EVENT_set_eventRunStatistic");
-            }, 0);
-          }
-        });
+        if (runStatistics) {
+          setTimeout(() => {
+            this.$store.dispatch("mod_events/EVENT_set_eventRunStatistic");
+          }, 0);
+        }
+      });
 
       // Swapping view so that the newly created model is shown
       // TODO: break apart this views
@@ -703,11 +707,13 @@ export default {
         if (this.isEnterpriseMode) {
           this.loadDataset();
         } else {
+          this.isFilePickerOpened = true;
           const selectedDataset = await rygg_pickFile(
             "Choose data to load",
             this.startupDatasetPath,
             [{ extensions: ["*.csv"] }]
           );
+          this.isFilePickerOpened = false;
 
           if (selectedDataset && selectedDataset.path) {
             await this.handleDataPathUpdates([selectedDataset.path]);
@@ -745,7 +751,7 @@ export default {
         ) {
           if (elementList[el].layerSettings.accessProperties.Sources.length) {
             elementList[el].layerSettings.accessProperties.Sources.forEach(
-              (item) => {
+              item => {
                 item.path =
                   rootPath + suffix + "tutorial_data" + suffix + item.path;
               }
@@ -784,14 +790,14 @@ export default {
         await this.$store.dispatch("mod_datasets/getDatasets");
         const allDatasets = this.$store.getters["mod_datasets/GET_datasets"];
         const datasetIndex = allDatasets
-          .map((x) => x.location)
+          .map(x => x.location)
           .indexOf(dataPath[0]);
         if (datasetIndex !== -1) {
           this.createdFromDatasetId = allDatasets[datasetIndex].dataset_id;
         } else {
           const createDataset = await rygg_createDataset({
             name: dataPath[0],
-            location: dataPath[0],
+            location: dataPath[0]
           });
           this.$store.dispatch("mod_datasets/getDatasets");
           this.createdFromDatasetId = createDataset.data.dataset_id;
@@ -808,7 +814,7 @@ export default {
             this.createdFromDatasetId,
             this.userEmail
           )
-          .then((res) => {
+          .then(res => {
             if (res.error) {
               this.showErrorPopup(
                 res.error.message + "\n\n" + res.error.details
@@ -817,7 +823,7 @@ export default {
             }
             return res;
           })
-          .catch((err) => {
+          .catch(err => {
             console.error(err);
             this.showErrorPopup(
               "Error: Couldn't infer data types due to an exception: " + err
@@ -850,7 +856,7 @@ export default {
       }
 
       const modelMeta = await this.currentProjectModels();
-      const modelNames = modelMeta.map((x) => x.name);
+      const modelNames = modelMeta.map(x => x.name);
 
       // Making sure name is not already in the list
       return modelNames.indexOf(modelName) === -1;
@@ -897,7 +903,7 @@ export default {
       this.classList.push({
         id: this.classList.length + 1,
         name: "Class " + (this.classList.length + 1),
-        images: [],
+        images: []
       });
     },
     onAddClassImages() {},
@@ -905,13 +911,13 @@ export default {
       const fileInput = document.createElement("input");
       fileInput.setAttribute("type", "file");
       fileInput.setAttribute("accept", ".csv,.zip");
-      fileInput.addEventListener("change", (e) => {
+      fileInput.addEventListener("change", e => {
         const file = e.target.files[0];
         rygg_uploadFile(file, false)
           .then(async () => {
             this.handleDataPathUpdates([file.name]);
           })
-          .catch(async (e) => {
+          .catch(async e => {
             if (
               e.response.data ===
               `File ${file.name} exists and overwrite is false`
@@ -921,8 +927,8 @@ export default {
           });
       });
       fileInput.click();
-    },
-  },
+    }
+  }
 };
 </script>
 <style lang="scss" scoped>

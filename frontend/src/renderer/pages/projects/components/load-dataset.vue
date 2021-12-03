@@ -2,22 +2,23 @@
 div
   .switch
     base-switch(
-      :options="options"
-      :value="selectedLoadOption"
+      :options="options",
+      :value="selectedLoadOption",
       @change="onSelectLoadOption"
     )
   .content
     public-dataset-list(
-      v-if="selectedLoadOption === LoadDatasetOptions.public"
+      v-if="selectedLoadOption === LoadDatasetOptions.public",
       @loadDataset="handleDataPathUpdates"
     )
     template(v-else)
       .main-file-structure-contents
         .load-contents-group
           button.btn.btn--primary.load-dataset(
-            @click="openFilePicker('setDataPath')"
+            @click="openFilePicker('setDataPath')",
+            :disabled="isFilePickerOpened"
           ) Upload .CSV
-      div.find-out-message Find our starting guide 
+      .find-out-message Find our starting guide
         span.guide-link(@click="openPLVideoTutorialPage") here.
 </template>
 
@@ -38,8 +39,14 @@ export default {
       label: LoadDatasetOptions[key]
     })),
     LoadDatasetOptions: LoadDatasetOptions,
-    selectedLoadOption: LoadDatasetOptions.public,
+    selectedLoadOption: LoadDatasetOptions.public
   }),
+  props: {
+    isFilePickerOpened: {
+      type: Boolean,
+      default: false
+    }
+  },
   methods: {
     onSelectLoadOption(ev) {
       this.selectedLoadOption = ev;
@@ -60,7 +67,7 @@ export default {
 <style lang="scss" scoped>
 .main-file-structure-contents {
   margin: 24px 0;
-  border: 1px dashed #5E6F9F;
+  border: 1px dashed #5e6f9f;
   border-radius: 2px;
   height: 250px;
   display: flex;
