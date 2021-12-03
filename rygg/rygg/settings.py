@@ -23,15 +23,16 @@ def is_prod():
 
 # According to Sentry, DSNs are safe to keep public
 # https://docs.sentry.io/product/sentry-basics/dsn-explainer/
-SENTRY_DSN = "https://56aaa2a9837147f9bd8778a9f4c6f878@o283802.ingest.sentry.io/6061756"  
+SENTRY_DSN = "https://56aaa2a9837147f9bd8778a9f4c6f878@o283802.ingest.sentry.io/6061756"
+SENTRY_ENV = "prod" if is_prod() else "dev"
 
-if is_prod():
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        integrations=[DjangoIntegration()],
-        send_default_pii=True,
-        release=__version__
-    )
+sentry_sdk.init(
+    dsn=SENTRY_DSN,
+    integrations=[DjangoIntegration()],
+    send_default_pii=True,
+    environment=SENTRY_ENV,
+    release=__version__
+)
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.

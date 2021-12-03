@@ -47,9 +47,10 @@ if (process.env.ENABLE_LOGROCKET) {
 }
 
 //- Use plugin
-if (process.env.ENABLE_SENTRY === 'true') {
+if (process.env.SENTRY_ENABLED === 'true') {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
+    environment: process.env.SENTRY_ENV,
     integrations: [
       new Integrations.Vue({
         Vue,
@@ -116,7 +117,7 @@ function runApp(token, refreshToken){
       email: userProfile.email
     });
     LogRocket.getSessionURL(sessionURL => {
-      Sentry.setExtra('sessionURL', sessionURL);
+      Sentry.setExtra('logrocket-url', sessionURL);
     })
   }
 

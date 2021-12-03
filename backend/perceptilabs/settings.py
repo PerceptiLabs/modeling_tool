@@ -27,4 +27,6 @@ MIXPANEL_TOKEN_DEV = '8312db76002e43f8a9dc9acf9a12c1fc'  # TODO: should be env v
 
 SENTRY_DSN = "https://94cbefca287f42cf9e800f20b7eb131b@o283802.ingest.sentry.io/6061749"  # Apparently this is safe to keep in public: https://docs.sentry.io/product/sentry-basics/dsn-explainer/#dsn-utilization
 SENTRY_ENABLED_PROD = True
-SENTRY_ENABLED_DEV = False
+SENTRY_ENABLED_DEV = True
+SENTRY_ENV_PROD = "prod"
+SENTRY_ENV_DEV = "dev"

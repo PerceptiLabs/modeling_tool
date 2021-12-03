@@ -587,10 +587,10 @@ def setup_sentry():
         return    
 
     if is_prod():
-        environment = "prod"
+        environment = settings.SENTRY_ENV_PROD
         release = get_version()
     else:
-        environment = "dev"
+        environment = settings.SENTRY_ENV_DEV
         release = sentry_sdk.utils.get_default_release()
     
     integrations = [
