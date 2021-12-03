@@ -260,7 +260,7 @@ export default {
 .btn-menu-bar .icon {
   display: block;
   margin-right: 0;
-  font-size: 11px;
+  font-size: 10px;
 }
 .scaled-icon {
   transform-origin: 50% 50%;

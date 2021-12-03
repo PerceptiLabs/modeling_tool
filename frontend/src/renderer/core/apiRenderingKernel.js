@@ -264,12 +264,32 @@ export const renderingKernel = {
       })
   },
 
+  async pauseTraining(modelId, trainingSessionId) {
+    return whenRenderingKernelReady
+      .then(rk => rk.put(`/models/${modelId}/training/${trainingSessionId}/pause`))
+      .then(res => {
+        if (res.status !== 200) {
+          throw new Error('Failed to pause training');
+        }
+      })
+  },
+
+  async unpauseTraining(modelId, trainingSessionId) {
+    return whenRenderingKernelReady
+      .then(rk => rk.put(`/models/${modelId}/training/${trainingSessionId}/unpause`))
+      .then(res => {
+        if (res.status !== 200) {
+          throw new Error('Failed to unpause training');
+        }
+      })
+  },
+
   async stopTraining(modelId, trainingSessionId) {
     return whenRenderingKernelReady
       .then(rk => rk.put(`/models/${modelId}/training/${trainingSessionId}/stop`))
       .then(res => {
         if (res.status !== 200) {
-          throw new Error('Failed to pause training');
+          throw new Error('Failed to stop training');
         }
       })
   },
