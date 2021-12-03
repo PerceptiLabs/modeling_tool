@@ -49,7 +49,7 @@ export const GITHUB_GET_TOKEN_BY_CODE_URL = 'https://ghsk.azurewebsites.net'
 export const KEYCLOAK_REALM_PATH = `/realms/${process.env.KEYCLOAK_REALM}`;
 
 export const PERCEPTILABS_DOCUMENTATION_URL = 'https://docs.perceptilabs.com/perceptilabs';
-export const PERCEPTILABS_YOUTUBE_VIDEO_TUTORIAL_URL = 'https://www.youtube.com/watch?v=IDC_uHfdpnw&list=PLhDSeRDt1gigF-8DrTBedYy3TMZ2OelqA';
+export const PERCEPTILABS_YOUTUBE_VIDEO_TUTORIAL_URL = 'https://www.youtube.com/watch?v=dhzxOCin2kY&list=PLhDSeRDt1gigF-8DrTBedYy3TMZ2OelqA&index=5';
 export const PERCEPTILABS_VIDEO_TUTORIAL_URL = 'https://docs.perceptilabs.com/perceptilabs/getting-started/video-tutorials';
 export const PERCEPTILABS_YOUTUBE_URL = 'https://www.youtube.com/channel/UCYAWJ3u8N6E6OI7GjIUe-Iw';
 export const PERCEPTILABS_SLACK_URL = 'https://join.slack.com/t/perceptilabs-com/shared_invite/zt-mxohtpkm-lQI_0nT~tBeUd2RtZIfe4g'
