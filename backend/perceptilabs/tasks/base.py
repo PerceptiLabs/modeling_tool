@@ -215,7 +215,7 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id,
     
 
 @handle_exceptions    
-def preprocessing_task(dataset_settings_dict, preprocessing_session_id, logrocket_url=''):
+def preprocessing_task(dataset_settings_dict, preprocessing_session_id, user_email, logrocket_url=''):
     from perceptilabs.preprocessing_interface import PreprocessingSessionInterface  # TODO: should preprocessing_interface have a better name??
     from perceptilabs.caching.utils import get_data_metadata_cache    
     from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess        
@@ -224,6 +224,6 @@ def preprocessing_task(dataset_settings_dict, preprocessing_session_id, logrocke
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
     interface = PreprocessingSessionInterface(preprocessing_results_access)
 
-    interface.run(dataset_settings_dict, preprocessing_session_id, logrocket_url=logrocket_url)
+    interface.run(dataset_settings_dict, preprocessing_session_id, user_email, logrocket_url=logrocket_url)
     
     

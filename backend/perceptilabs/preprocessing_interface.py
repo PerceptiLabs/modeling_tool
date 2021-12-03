@@ -21,7 +21,7 @@ class PreprocessingSessionInterface:
     def __init__(self, results_access):
         self._results_access = results_access
 
-    def run(self, dataset_settings_dict, preprocessing_session_id, logrocket_url=''):
+    def run(self, dataset_settings_dict, preprocessing_session_id, user_email, logrocket_url=''):
         try:        
             self._run_internal(dataset_settings_dict, preprocessing_session_id)
         except Exception as e:
@@ -32,6 +32,7 @@ class PreprocessingSessionInterface:
                 preprocessing_session_id, 'failed', error=error.to_dict())
 
             with sentry_sdk.push_scope() as scope:
+                scope.set_user({'email': user_email})                
                 scope.set_extra('preprocessing_session_id', preprocessing_session_id)
                 scope.set_extra('dataset_settings_dict', dataset_settings_dict)
                 scope.set_extra('logrocket_url', logrocket_url)            

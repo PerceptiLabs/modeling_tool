@@ -343,7 +343,12 @@ def create_app(
 
         response = {"error": error.to_dict()}
 
+        email = None
+        if 'Authorization' in request.headers:
+            email = utils.parse_user_email(request.headers['Authorization'])
+        
         with sentry_sdk.push_scope() as scope:
+            scope.set_user({'email': email})
             scope.set_extra('url', request.url)            
             scope.set_extra('request', request.json)
             scope.set_extra('response', response)

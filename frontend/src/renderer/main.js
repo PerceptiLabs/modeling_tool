@@ -15,6 +15,7 @@ import router from './router'
 import store  from './store'
 import { setAppTypeRootClasses, setCookie, getCookie } from "@/core/helpers";
 import { isDevelopMode } from '@/core/constants.js'
+import { LOCAL_STORAGE_CURRENT_USER } from "@/core/constants";
 
 //- Global components
 import BaseCheckbox     from '@/components/base/checkbox.vue'
@@ -135,7 +136,7 @@ function setTokens(store, token, refreshToken) {
     refreshToken: refreshToken,
   }, {root: true});
 
-  localStorage.setItem('currentUser', token);
+  localStorage.setItem(LOCAL_STORAGE_CURRENT_USER, token);
   localStorage.setItem("vue-token", token);
   localStorage.setItem("vue-refresh-token", refreshToken);
 }

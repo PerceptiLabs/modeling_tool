@@ -26,8 +26,12 @@ class DatasetsInterface:
         preprocessing_session_id = dataset_settings.compute_hash()
         
         self._task_executor.enqueue(
-            'preprocessing_task', settings_dict, preprocessing_session_id, logrocket_url)
-
+            'preprocessing_task',
+            settings_dict,
+            preprocessing_session_id,
+            user_email,
+            logrocket_url=logrocket_url
+        )
         return preprocessing_session_id
     
     def get_preprocessing_status(self, preprocessing_session_id):

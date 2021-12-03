@@ -42,11 +42,11 @@ class TrainingSessionInterface:
         logger.exception("Exception in training session interface!")
 
         with sentry_sdk.push_scope() as scope:
+            scope.set_user({'email': user_email})            
             scope.set_extra('model_id', model_id)
             scope.set_extra('graph_spec', graph_spec_dict)
             scope.set_extra('training_session_id', training_session_id)
             scope.set_extra('training_settings', training_settings)
-            scope.set_extra('user_email', user_email)
             scope.set_extra('logrocket_url', logrocket_url)            
             
             sentry_sdk.capture_exception(e)

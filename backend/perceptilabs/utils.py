@@ -60,6 +60,22 @@ def get_memory_usage():
     return fraction_used
 
 
+def parse_jwt(jwt):
+    """ Parses JWT. Copied from frontend parseJWT at frontend/src/renderer/core/helpers.js """
+    import base64
+    import json
+    payload = jwt.split('.')[1]
+    decoded = base64.b64decode(payload + '==').decode()
+    as_dict = json.loads(decoded)
+    return as_dict
+
+
+def parse_user_email(authorization):
+    jwt = authorization[7:]  # Drop "Bearer "
+    parsed = parse_jwt(jwt)
+    return parsed['email']
+
+
 def convert(obj):
     """ Converts datatypes which can't be jsonified to a type which can """
     if isinstance(obj, (np.int64, np.int32)):
