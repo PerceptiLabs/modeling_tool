@@ -35,7 +35,6 @@
     createDataset as rygg_createDataset,
     attachModelsToDataset as rygg_attachModelsToDataset,
   } from '@/core/apiRygg';
-  import { ryggAvailability } from '@/core/apiRygg';
   import Analytics from '@/core/analytics';
   import { LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, localStorageGridKey, THEME_LIGHT, THEME_DARK } from '@/core/constants.js'
   import { mapMutations, mapActions, mapGetters, mapState } from 'vuex';
@@ -401,18 +400,10 @@
         getPyPiUpdate:          'mod_workspace-notifications/getPyPiUpdate',
 
         setCurrentView:         'mod_tutorials/setCurrentView',
+        checkRyggAvailability:  'mod_api/checkRyggAvailability',
       }),
       updateOnlineStatus() {
         this.SET_onlineStatus(navigator.onLine);
-      },
-      checkRyggAvailability() {
-        ryggAvailability().then(resp => {
-          if (resp === "UNAVAILABLE") {
-            this.openErrorPopup("The app service isn't available");
-          } else if (resp === "BAD_TOKEN") {
-            this.openErrorPopup("Unable to talk to the app service. Did you use the correct token to load this page?");
-          }
-        })
       },
       disableHotKeys(event) {
         const isHotkey = isOsMacintosh() ? event.metaKey : event.ctrlKey;

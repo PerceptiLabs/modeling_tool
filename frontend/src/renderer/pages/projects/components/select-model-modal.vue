@@ -264,6 +264,12 @@ export default {
   },
   mixins: [mixinFocus],
   async created() {
+    // Check if Rygg is online
+    if (!await this.checkRyggAvailability()) {
+      this.closeModal();
+      return;
+    }
+
     const showNewModelPopup = this.showNewModelPopup;
     if (
       typeof showNewModelPopup === "object" &&
@@ -445,7 +451,8 @@ export default {
       setCurrentView: "mod_tutorials/setCurrentView",
       setNextStep: "mod_tutorials/setNextStep",
       activateNotification: "mod_tutorials/activateNotification",
-      setChecklistItemComplete: "mod_tutorials/setChecklistItemComplete"
+      setChecklistItemComplete: "mod_tutorials/setChecklistItemComplete",
+      checkRyggAvailability: "mod_api/checkRyggAvailability",
     }),
     keysNavigationHandler(event) {
       event.stopPropagation();

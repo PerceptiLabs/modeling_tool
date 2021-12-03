@@ -280,7 +280,25 @@ const actions = {
         }
       });
   },
-
+  async checkRyggAvailability({ dispatch }) {
+    const resp = await ryggAvailability();
+    if (resp === "UNAVAILABLE") {
+      dispatch(
+        "globalView/GP_errorPopup", 
+        "The app service isn't available", 
+        { root: true }
+      );
+      return false;
+    } else if (resp === "BAD_TOKEN") {
+      dispatch(
+        "globalView/GP_errorPopup",
+        "Unable to talk to the app service. Did you use the correct token to load this page?", 
+        { root: true }
+      );
+      return false;
+    }
+    return true;
+  },
   API_closeCore(context, receiver) {
     const theData = {
       receiver: receiver,
@@ -288,9 +306,6 @@ const actions = {
       value: "",
     };
     coreRequest(theData)
-      .then(data => {
-        return;
-      })
       .catch(err => {
         console.error(err);
       });
@@ -303,9 +318,6 @@ const actions = {
       value: "",
     };
     coreRequest(theData)
-      .then(data => {
-        return;
-      })
       .catch(err => {
         console.error(err);
       });
@@ -567,7 +579,6 @@ const actions = {
       value: "",
     };
     coreRequest(theData)
-      .then(data => {})
       .catch(err => {
         console.error(err);
       });
@@ -583,7 +594,6 @@ const actions = {
     //console.log('API_getResultInfo', theData);
     return renderingKernel
       .getTrainingResults(networkId, trainingSessionId, "end-results")
-      .then(data => data)
       .catch(err => {
         console.error(err);
       });
