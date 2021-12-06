@@ -268,6 +268,7 @@ const actions = {
             .join("."),
           tensorflow: versions.tensorflow,
         });
+        dispatch('globalView/SET_appVersion', versions.perceptilabs, {root: true});
         if (state.statusLocalCore !== "online") {
           commit("SET_statusLocalCore", "online");
         }

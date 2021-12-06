@@ -258,6 +258,9 @@ const actions = {
   },
   SET_datasetSettingsPopupAction({commit}, value) {
     commit('SET_datasetSettingsPopupMutation', value);
+  },
+  SET_appVersion({commit}, value) {
+    commit('SET_appVersion', value);
   }
 };
 

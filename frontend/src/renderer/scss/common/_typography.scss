@@ -73,6 +73,10 @@ a {
 	fill: $color-bold;
 }
 
+.small {
+	font-size: 0.6em;
+}
+
 .normal {
 	font-weight: 400;
 	color: theme-var($text-normal);
