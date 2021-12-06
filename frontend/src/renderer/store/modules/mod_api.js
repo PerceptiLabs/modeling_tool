@@ -874,11 +874,16 @@ const actions = {
             { networkId: networkId },
             { root: true },
           );
-          dispatch(
-            "globalView/GP_errorPopup",
-            data.error.message + "\n\n" + data.error.details,
-            { root: true },
-          );
+          if (
+            window.location.pathname === "/app" &&
+            networkId === rootGetters["mod_workspace/GET_currentNetworkId"]
+          ) {
+            dispatch(
+              "globalView/GP_errorPopup",
+              data.error.message + "\n\n" + data.error.details,
+              { root: true },
+            );
+          }
         }
 
         // Do not update status when the coreStatus is stopped or paused
