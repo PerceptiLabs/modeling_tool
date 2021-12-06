@@ -24,17 +24,13 @@ jobs:
           artifact: linux_3.8_wheel
           image: 'ubuntu-latest'
           pyver: '3.8'
-        osx_py3.6:
-          artifact: osx_3.6_wheel
-          image: 'macOS-10.14'
-          pyver: '3.6'
         osx_py3.7:
           artifact: osx_3.7_wheel
-          image: 'macOS-10.14'
+          image: 'macOS-latest'
           pyver: '3.7'
         osx_py3.8:
           artifact: osx_3.8_wheel
-          image: 'macOS-10.14'
+          image: 'macOS-latest'
           pyver: '3.8'
         win_py3.6:
           artifact: windows_3.6_wheel
