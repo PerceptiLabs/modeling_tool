@@ -39,7 +39,7 @@
   import { LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, localStorageGridKey, THEME_LIGHT, THEME_DARK } from '@/core/constants.js'
   import { mapMutations, mapActions, mapGetters, mapState } from 'vuex';
   import { getModelDatasetPath } from '@/core/modelHelpers.js';
-  import { assembleModelFromJson } from "@/core/helpers/model-helper";
+  import { assembleModel } from "@/core/helpers/model-helper";
   import SidebarMenu            from '@/pages/layout/sidebar-menu.vue';
   import AppHeader              from '@/components/app-header/app-header.vue';
   import UpdatePopup            from '@/components/global-popups/update-popup/update-popup.vue'
@@ -529,11 +529,16 @@
 
             const matchingApiData = modelsApiData.find(mad => mad.model_id === model.networkID);
             if (matchingApiData) {
-              model.networkName = matchingApiData.name;
-              model.networkRootFolder = matchingApiData.location;
+              model.frontendSettings.networkName = matchingApiData.name;
+              model.frontendSettings.networkRootFolder = matchingApiData.location;
             }
             
-            let newNetwork = assembleModelFromJson(model, model.apiMeta);  // TODO(anton.k): Ask Rygg for the individual parts (possibly via a single API call for simplicity)
+            let newNetwork = assembleModel(
+              model.datasetSettings,
+              model.trainingSettings,
+              model.graphSettings,
+              model.frontendSettings
+            );
             this.addNetwork({newNetwork: newNetwork, focusOnNetwork: false});
            }
         }

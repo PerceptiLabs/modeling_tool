@@ -86,7 +86,6 @@ const getters = {
     return getters.GET_networkIsNotEmpty
       ? state.workspaceContent[state.currentNetwork]
       : deepCloneNetwork(state.defaultNetwork);
-
   },
   GET_currentNetworkDatasetSettings(state, getters) {
     return getters.GET_networkIsNotEmpty

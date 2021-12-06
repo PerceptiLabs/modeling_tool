@@ -15,7 +15,7 @@ class Importer:
         with open(file_location, 'r') as f:
             content = json.load(f)
 
-        dataset_settings_dict = content['networkMeta']['datasetSettings']
+        dataset_settings_dict = content['datasetSettings']
         dataset_location = self._dataset_access.get_location(dataset_id)
 
 
@@ -60,40 +60,29 @@ class Importer:
                 dataset_settings_dict['featureSpecs'][new_column] = dataset_settings_dict['featureSpecs'][original_column]
                 del dataset_settings_dict['featureSpecs'][original_column]
                 logger.info(
-                    f"Remapped '{original_column}' (dataset: {original_dataset_id}) -> '{new_column}' (dataset (dataset: {dataset_id})")
+                    f"Remapped '{original_column}' (dataset: {original_dataset_id}) -> '{new_column}' (dataset: {dataset_id})")
             else:
                 logger.info(
                     f"Column '{new_column}' present in both datasets. No remapping needed")
 
                 
-        training_settings_dict = content['networkMeta']['trainingSettings']
 
+        graph_spec_dict = content['graphSettings']        
+        for layer_id, layer_spec_dict in graph_spec_dict.items():
+            if layer_spec_dict["Type"] not in ["IoInput", "IoOutput"]:
+                continue
 
-        # TODO: refactor... we should rely on the graph spec for ground truth...
-        layers = {}
-        for layer_id, el in content['networkElementList'].items():
-            layers[layer_id] = {
-                'Name': el['layerName'],  # TODO: layer names are the old ones
-                'Type': el['componentName'],
-                'endPoints': el['endPoints'],
-                'Properties': el['layerSettings'],
-                'Code': el['layerCode'],
-                'backward_connections': el['backward_connections'],
-                'forward_connections': el['forward_connections'],
-                'visited': el['visited'],
-                'previewVariable': el['previewVariable']
-            }
-
-            if 'FeatureName' in layers[layer_id]['Properties']:
-                original_column = layers[layer_id]['Properties']['FeatureName']  # TODO: make prettier?
-                layers[layer_id]['Properties']['FeatureName'] = mapping[original_column]
-
-
-        graph_spec = GraphSpec.from_dict(layers)
-        graph_spec_dict = graph_spec.to_dict()  # Just for validation...
+            original_column = layer_spec_dict["Properties"]["FeatureName"]
+            new_column = mapping[original_column]
+            layer_spec_dict["Properties"]["FeatureName"] = new_column
+                
+            logger.info(
+                f"Remapped '{original_column}' -> '{new_column}' (in graph settings)")
+            
+        training_settings_dict = content['trainingSettings']
 
         #graph_spec.show()
-
+        
         return dataset_settings_dict, graph_spec_dict, training_settings_dict
     
 

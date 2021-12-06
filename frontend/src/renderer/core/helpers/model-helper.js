@@ -1,5 +1,4 @@
-import { getFirstElementFromObject } from "@/core/helpers";
-import cloneDeep from "lodash.clonedeep";
+import { getFirstElementFromObject, deepCopy, deepCloneNetwork } from "@/core/helpers";
 
 export const getDatasetPath = (datasetSettings) => {
   if (datasetSettings.csv_path) {
@@ -136,7 +135,7 @@ const createPositionElements = (list) => {
 
 const removeChartData = (network, copy = true) => {
   if (copy) {
-    network = cloneDeep(network); 
+    network = deepCopy(network); 
   }
   
   network = cleanNetworkElementListChartData(network);
@@ -180,66 +179,113 @@ const removeChartData = (network, copy = true) => {
   }
 }
 
-export const assembleModel = (name, elementList, rootFolder, meta, snapshots, apiMeta, datasetSettings = null, trainingSettings = null) => {
-  /** Constructs a frontend model from its components **/  
-  let newNetwork = cloneDeep(defaultNetwork);
-
-
-  newNetwork.apiMeta = apiMeta;
-  newNetwork.networkID = apiMeta.model_id;
-
-  if (rootFolder) {
-    newNetwork.networkRootFolder = rootFolder;
-  }
-  if (name) {
-    newNetwork.networkName = name;
-  }
-  if (snapshots) {
-    newNetwork.networkSnapshots = snapshots;
-  }
-  if (elementList) {
-    newNetwork.networkElementList = elementList;
-  }
-  if (meta) {
-    newNetwork.networkMeta = meta;
-  }
-  if (trainingSettings) {
-    newNetwork.networkMeta.trainingSettings = cloneDeep(trainingSettings);
-  }
-  if (datasetSettings) {
-    newNetwork.networkMeta.datasetSettings = cloneDeep(datasetSettings);
-  }
+function makeNetworkElementList(graphSettings, frontendSettings) {
+  let elements = {}
   
-  createPositionElements(newNetwork.networkElementList); // TODO: is this used?
-  return newNetwork;
+  for (const key of Object.keys(frontendSettings.layerMeta)) {
+    elements[key] = deepCopy(frontendSettings.layerMeta[key]);
+
+    elements[key]['layerName'] = graphSettings[key]['Name']
+    elements[key]['componentName'] = graphSettings[key]['Type']
+    elements[key]['layerSettings'] = graphSettings[key]['Properties']
+    elements[key]['layerCode'] = graphSettings[key]['Code']
+    elements[key]['backward_connections'] = graphSettings[key]['backward_connections']
+    elements[key]['forward_connections'] = graphSettings[key]['forward_connections']
+    elements[key]['visited'] = graphSettings[key]['visited']
+    elements[key]['previewVariable'] = graphSettings[key]['previewVariable']
+  }
+  return deepCloneNetwork(elements)
 }
 
-export const assembleModelFromJson = (jsonNet, apiMeta) => {
-  /** Constructs a frontend model from whatever is stored in Rygg **/
-  return assembleModel(
-    jsonNet.networkName,
-    jsonNet.networkElementList,
-    jsonNet.networkRootFolder,
-    jsonNet.networkMeta,
-    jsonNet.networkSnapshots,
-    apiMeta
-  );
+function makeGraphSettings(elements) {
+  let layers = {}
+
+  for(let layer in elements) {
+    const el = elements[layer];
+
+    layers[el.layerId] = {
+      Name: el.layerName,
+      Type: el.componentName,
+      Properties: el.layerSettings,
+      Code: el.layerCode,
+      backward_connections: el.backward_connections,
+      forward_connections: el.forward_connections,
+      visited: el.visited,
+      previewVariable: el.previewVariable
+    };
+  }    
+  return layers
+}
+
+function makeLayerMeta(elements) {
+  let layerMeta = {}
+    
+  for(let layer in elements) {
+    const el = deepCopy(elements[layer]);
+
+    delete el['layerName']
+    delete el['componentName'],
+    delete el['layerSettings'],
+    delete el['layerCode'],
+    delete el['backward_connections'],
+    delete el['forward_connections'],
+    delete el['visited'],
+    delete el['previewVariable']
+    
+    layerMeta[layer] = el;
+  }
+  return layerMeta;
+}
+
+export const assembleModel = (datasetSettings, trainingSettings, graphSettings, frontendSettings) => {
+  /** Constructs a frontend model from its components **/  
+  let newNetwork = deepCopy(defaultNetwork);
+  
+  newNetwork.apiMeta = deepCopy(frontendSettings.apiMeta);
+  newNetwork.networkID = frontendSettings.apiMeta.model_id;
+  newNetwork.networkName = frontendSettings.networkName;
+  newNetwork.networkElementList = makeNetworkElementList(graphSettings, frontendSettings);
+
+  if (frontendSettings.networkMeta) {
+    newNetwork.networkMeta = deepCopy(frontendSettings.networkMeta);
+  }
+
+  if (frontendSettings.networkRootFolder) {
+    newNetwork.networkRootFolder = frontendSettings.networkRootFolder;
+  }
+  
+  newNetwork.networkMeta.trainingSettings = deepCopy(trainingSettings);
+  newNetwork.networkMeta.datasetSettings = deepCopy(datasetSettings);
+  
+  createPositionElements(newNetwork.networkElementList); // TODO: is this used?
+
+  return newNetwork;
 }
 
 export const disassembleModel = (inputNetwork) => {
   /** Deconstructs a frontend model to something that can be stored in Rygg **/
-  let network = cloneDeep(inputNetwork);  // Defensive copy
+  let network = deepCloneNetwork(inputNetwork);  
   network = removeChartData(network, false);
+
   
-  return {
-    apiMeta: network.apiMeta,
-    networkName: network.networkName,
-    networkID: network.networkID,
-    networkMeta: network.networkMeta,
-    networkElementList: network.networkElementList,
-    networkRootFolder: network.networkRootFolder,
-    networkSnapshots: network.networkSnapshots
-  }
+  
+  const parts = {
+    datasetSettings: deepCopy(network.networkMeta.datasetSettings),
+    trainingSettings: deepCopy(network.networkMeta.trainingSettings),
+    graphSettings: makeGraphSettings(network.networkElementList),    
+    frontendSettings: { 
+      apiMeta: deepCopy(network.apiMeta),
+      networkName: network.networkName,
+      networkMeta: deepCopy(network.networkMeta),      
+      networkRootFolder: deepCopy(network.networkRootFolder),      
+      layerMeta: makeLayerMeta(network.networkElementList)
+    }
+  };
+
+  delete parts.frontendSettings.networkMeta.datasetSettings;
+  delete parts.frontendSettings.networkMeta.trainingSettings;  
+  
+  return parts;
 }
 
 

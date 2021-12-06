@@ -663,19 +663,22 @@ export default {
       // Creating the networkElementList for the network
       var ids = inputData.nodes.getIds();
       var nodePositions = network.getPositions(ids);
-      const layers = await buildLayers(modelRecommendation, nodePositions);
+      const layerMeta = await buildLayers(modelRecommendation, nodePositions);
 
       // Creating network and adding the prepped layer to it
 
+      let frontendSettings = {
+        apiMeta: apiMeta,
+        networkName: modelName,
+        networkMeta: null, // Use default
+        layerMeta: layerMeta
+      }
+
       const newNetwork = assembleModel(
-        modelName,
-        layers,
-        null, // Use default rootFolder
-        null, // Use default meta
-        null, // Use default snapshots
-        apiMeta,
         datasetSettings,
-        this.settings
+        this.settings,
+        modelRecommendation,
+        frontendSettings
       );
 
       await this.$store.dispatch("mod_workspace/setViewType", "model");

@@ -870,7 +870,7 @@ export default {
       var ids = inputData.nodes.getIds();
       var nodePositions = network.getPositions(ids); // TODO: create a ticket for parsing this if it isn't resolved...
 
-      const layers = await buildLayers(res.graphSpec, nodePositions);
+      const layerMeta = await buildLayers(res.graphSpec, nodePositions);
 
       const namePrefix = "Loaded";
       const modelName = await rygg_getNextModelName(namePrefix);
@@ -882,15 +882,18 @@ export default {
         datasets: [datasetId]
       });
 
+      let frontendSettings = {
+        apiMeta: apiMeta,
+        networkName: modelName,
+        networkMeta: null, // Use default
+        layerMeta: layerMeta
+      }
+
       const newNetwork = assembleModel(
-	modelName,
-	layers,
-	null,  // Use default rootFolder
-	null,  // Use default meta
-	null,  // Use default snapshots
-	apiMeta,
-	res.datasetSettings,
-	res.trainingSettings	
+        res.datasetSettings,
+        res.trainingSettings,
+        res.graphSpec,
+        frontendSettings
       );
       
       await this.$store.dispatch("mod_workspace/setViewType", "model");

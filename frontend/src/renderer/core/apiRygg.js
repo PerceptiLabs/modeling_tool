@@ -138,7 +138,7 @@ export const getModelJsonById = async model_id => {
 };
 
 export const saveModelJson = async model => {
-  const model_id = model.apiMeta.model_id;
+  const model_id = model.frontendSettings.apiMeta.model_id;
   if (!model_id) {
     let msg = "missing model_id"
     console.error(msg)
@@ -154,22 +154,26 @@ export const saveModelJson = async model => {
 }
 
 export const updateModelMeta = async model => {
-  if (!model.apiMeta.project) {
+  if (!model.frontendSettings.apiMeta.project) {
     let msg = "missing project from updateModelMeta"
     console.error(msg)
     throw new Error(msg);
   }
-  const project_id = model.apiMeta.project;
+  const project_id = model.frontendSettings.apiMeta.project;
   if (currentProject() !== project_id) {
     let msg = "project_id mismatch"
     console.error(msg)
     throw new Error(msg);
   }
-  let updatedPcModel = await getModelJsonById(model.apiMeta.model_id)
+  let updatedPcModel = await getModelJsonById(model.frontendSettings.apiMeta.model_id)
   if (updatedPcModel) {
-    updatedPcModel.networkMeta = model.networkMeta;
+    updatedPcModel.frontendSettings.networkMeta = model.frontendSettings.networkMeta;
   } else {
-    updatedPcModel = {networkMeta: model.networkMeta};
+    updatedPcModel = {
+      frontendSettings: {
+        networkMeta: model.frontendSettings.networkMeta
+      }
+    };
   }
   await saveModelJson(updatedPcModel);
 };
