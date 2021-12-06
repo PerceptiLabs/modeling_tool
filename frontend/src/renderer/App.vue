@@ -529,6 +529,7 @@
 
             const matchingApiData = modelsApiData.find(mad => mad.model_id === model.networkID);
             if (matchingApiData) {
+              model.frontendSettings = {...(model.frontendSettings || {})};
               model.frontendSettings.networkName = matchingApiData.name;
               model.frontendSettings.networkRootFolder = matchingApiData.location;
             }
