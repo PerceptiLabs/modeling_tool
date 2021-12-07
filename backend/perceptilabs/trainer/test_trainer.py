@@ -12,7 +12,7 @@ from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import FeatureSpec, Partitions, DatasetSettings
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.trainer import Trainer, TrainingModel
-from perceptilabs.exporter.base import Exporter
+from perceptilabs.sharing.exporter import Exporter
 from perceptilabs.resources.files import FileAccess
 
 

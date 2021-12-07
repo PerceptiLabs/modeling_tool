@@ -1,135 +1,139 @@
 <template lang="pug">
-  chart-spinner(v-if="loadingMessage" :text="loadingMessage")
-  div(v-else)
-    h1.export-header.bold Deploy
-    div.export-page-wrapper
-      .export-model-list.export-view
-      
-        .section-select-model
+chart-spinner(v-if="loadingMessage", :text="loadingMessage")
+div(v-else)
+  h1.export-header.bold Deploy
+  .export-page-wrapper
+    .export-model-list.export-view
+      .section-select-model
+        .section-title
+          .middle-text.bold 1. Select trained models
+        .divider
+        .search-input
+          img(src="../../../../static/img/search-models.svg")
+          input(type="text", placeholder="Search model", v-model="searchValue")
+        .columns-grid.model-list-header.bold
+          .column-1 File name
+          .column-2
+          .column-3 
+          .column-4 Accuracy
+          .column-5 Loss
+          .column-6 Runtime
+          .column-7 Last Modified
+        perfect-scrollbar.model-list-scrollbar
+          .models-list-row.columns-grid.model-list-item.model-list-item-dataset(
+            v-for="(model, index) in computedTrainedFilteredModels",
+            :key="model.networkID",
+            :class="{ 'is-selected': model.isChecked }"
+          )
+            .column-1
+              base-checkbox.btn-checkbox(
+                :value="model.isChecked",
+                @input="(val) => handleModelSelect(val, model.networkID)"
+              )
+              .editable-field.model-name-wrapper
+                bdi {{ model.networkName }}
+
+            .column-2
+            .column-3 
+            .column-4 -
+            .column-5 -
+            .column-6 {{ model && model.networkMeta && model.networkMeta.coreStatus && model.networkMeta.coreStatus.Training_Duration ? model.networkMeta.coreStatus.Training_Duration.toFixed(2) + 's' : '-' }}
+            .column-7 {{ model && model.apiMeta && model.apiMeta.updated ? formatDate(model.apiMeta.updated) : '' }}
+    .export-where-to.export-view
+      .export-where-to-grid-parent
+        .export-options
           .section-title
-            .middle-text.bold 1. Select trained models
+            .middle-text.bold 2. Select Export option
           .divider
-          div.search-input
-            img(src="../../../../static/img/search-models.svg")
-            input(
-              type="text"
-              placeholder="Search model"
-              v-model="searchValue"
+          .d-flex
+            .export-button(v-tooltip:bottom="tooltips.tensorflow")
+              img.c-pointer(
+                @click="openExportAsTensorflowModal",
+                role="button",
+                src="static/img/export-tensorflow.svg"
+              )
+            .export-button(
+              v-tooltip:bottom="tooltips.fastApi",
+              v-if="isServingEnabled"
             )
-          div.columns-grid.model-list-header.bold
-            div.column-1 File name
-            div.column-2
-            div.column-3 
-            div.column-4 Accuracy
-            div.column-5 Loss
-            div.column-6 Runtime
-            div.column-7 Last Modified
-          perfect-scrollbar.model-list-scrollbar
-            div.models-list-row.columns-grid.model-list-item.model-list-item-dataset(
-              v-for="(model, index) in computedTrainedFilteredModels" :key="model.networkID"
-              :class="{'is-selected': model.isChecked}"
+              img.c-pointer(
+                @click="openExportAsFastApi",
+                role="button",
+                src="static/img/export-fastapi.svg"
               )
-              div.column-1
-                base-checkbox.btn-checkbox(
-                  :value="model.isChecked"
-                  @input="(val) => handleModelSelect(val, model.networkID)"
-                )
-                div.editable-field.model-name-wrapper
-                  bdi {{model.networkName}}
-                  
-              div.column-2
-              div.column-3 
-              div.column-4 -
-              div.column-5 -
-              div.column-6 {{ model && model.networkMeta && model.networkMeta.coreStatus && model.networkMeta.coreStatus.Training_Duration ? model.networkMeta.coreStatus.Training_Duration.toFixed(2) + 's' : '-' }}
-              div.column-7 {{ (model && model.apiMeta && model.apiMeta.updated) ? formatDate(model.apiMeta.updated)  : ''}}
-      .export-where-to.export-view
-        .export-where-to-grid-parent
-          .export-options
-            .section-title
-              .middle-text.bold 2. Select Export option
-            .divider
-            div.d-flex
-              .export-button(
-                v-tooltip:bottom="tooltips.tensorflow"
+            .export-button(v-tooltip:bottom="tooltips.archive")
+              img.c-pointer(
+                @click="openExportAsArchive",
+                role="button",
+                src="static/img/export-pl.svg"
               )
-                img.c-pointer(
-                  @click="openExportAsTensorflowModal"
-                  role="button"
-                  src="static/img/export-tensorflow.svg"
-                )
-              .export-button(
-                v-tooltip:bottom="tooltips.fastApi"
-                v-if="isServingEnabled"
+        .export-deploy(v-if="isServingEnabled")
+          .section-title
+            .middle-text.bold Or Deploy Live
+          .divider
+          .d-flex
+            .export-button(v-tooltip:bottom="tooltips.gradio")
+              img.c-pointer(
+                v-if="isServingEnabled",
+                @click="exportGradio",
+                role="button",
+                src="static/img/export-gradio.svg"
               )
-                img.c-pointer(
-                  @click="openExportAsFastApi"
-                  role="button"
-                  src="static/img/export-fastapi.svg"
-                )
-          .export-deploy(v-if="isServingEnabled")
-            .section-title
-              .middle-text.bold Or Deploy Live
-            .divider
-            div.d-flex
-              .export-button(
-                v-tooltip:bottom="tooltips.gradio"
+  base-global-popup(
+    v-if="isTensorFlowExportOpened",
+    title="Confirm Export",
+    titleAlign="text-center",
+    size="small",
+    @closePopup="closeTensorFlowExport"
+  )
+    template(slot="Confirm Export-content")
+      .section-content
+        table.settings-table
+          tr
+            td.bold.right Save to:
+            td.input_group.form_row(colSpan="2")
+              input.form_input(
+                type="text",
+                v-model="settings.Location",
+                readonly
               )
-                img.c-pointer(
-                  v-if="isServingEnabled"
-                  @click="exportGradio"
-                  role="button"
-                  src="static/img/export-gradio.svg"
-                )
-    base-global-popup(
-      v-if="isTensorFlowExportOpened"
-      title="Confirm Export"
-      titleAlign="text-center"
-      size="small"
-      @closePopup="closeTensorFlowExport"
-    )
-      template(slot="Confirm Export-content")
-        .section-content
-          table.settings-table
-            tr
-              td.bold.right Save to:
-              td.input_group.form_row(colSpan="2")
-                input.form_input(type="text" v-model="settings.Location" readonly)
-                button.btn.btn--primary(
-                  type="button"
-                  @click="saveLoadFile"
-                  :class="{'flash-button': !wasSavePathChoosen}"
-                ) Browse
-            tr(v-if="isModalOpendFor === 'tensorflow'")
-              td.bold.right Optimize:
-              td.d-flex.justify-content-between
-                div.checkbox-tooltip(v-tooltip:right-wrap-text="`Produces a frozen model (.pb) which\ncan be used for inference`")
-                  base-checkbox(v-model="settings.Compressed") Compressed
-                div.checkbox-tooltip(v-tooltip:right-wrap-text="`Produces a quantized tf-lite model which\ncan be used for edge devices`")
-                  base-checkbox(v-model="settings.Quantized")  Quantized
+              button.btn.btn--primary(
+                type="button",
+                @click="saveLoadFile",
+                :class="{ 'flash-button': !wasSavePathChosen }"
+              ) Browse
+          tr(v-if="isModalOpenedFor === 'tensorflow'")
+            td.bold.right Optimize:
+            td.d-flex.justify-content-between
+              .checkbox-tooltip(
+                v-tooltip:right-wrap-text="`Produces a frozen model (.pb) which\ncan be used for inference`"
+              )
+                base-checkbox(v-model="settings.Compressed") Compressed
+              .checkbox-tooltip(
+                v-tooltip:right-wrap-text="`Produces a quantized tf-lite model which\ncan be used for edge devices`"
+              )
+                base-checkbox(v-model="settings.Quantized") Quantized
 
-      template(slot="action")
-        button.btn.btn--default(type="button"
-          @click="closeTensorFlowExport") Cancel
-        button.btn.btn--primary(
-          :disabled="!wasSavePathChoosen"
-          type="button" 
-          @click="handleExportAs"
-        ) Export
-
+    template(slot="action")
+      button.btn.btn--default(type="button", @click="closeTensorFlowExport") Cancel
+      button.btn.btn--primary(
+        :disabled="!wasSavePathChosen",
+        type="button",
+        @click="handleExportAs"
+      ) Export
 </template>
 
 <script>
-import ChartSpinner from '@/components/charts/chart-spinner';
-import BaseGlobalPopup from '@/components/global-popups/base-global-popup.vue';
+import ChartSpinner from "@/components/charts/chart-spinner";
+import BaseGlobalPopup from "@/components/global-popups/base-global-popup.vue";
 import { mapGetters } from "vuex";
-import { isModelTrained } from '@/core/modelHelpers';
-import { isServingEnabled } from '@/core/helpers.js';
-import cloneDeep from 'lodash.clonedeep';
-import { pickDirectory as rygg_pickDirectory } from '@/core/apiRygg.js';
+import { isModelTrained } from "@/core/modelHelpers";
+import { isServingEnabled } from "@/core/helpers.js";
+import cloneDeep from "lodash.clonedeep";
+import { pickDirectory as rygg_pickDirectory } from "@/core/apiRygg.js";
 
 export default {
-  name: 'ExportPage',
+  name: "ExportPage",
   components: {
     ChartSpinner,
     BaseGlobalPopup,
@@ -141,151 +145,193 @@ export default {
     return {
       trainedModels: [],
       selectOptions: [
-        { text: 'TensorFlow Model',         value: 'TFModel' },
-        { text: 'Jupyter Notebook',         value: 'ipynb'},
-        { text: 'FastAPI Server',           value: 'FastAPI' },
-        { text: 'Serve Gradio',             value: 'Serve Gradio' }
+        { text: "TensorFlow Model", value: "TFModel" },
+        { text: "Jupyter Notebook", value: "ipynb" },
+        { text: "FastAPI Server", value: "FastAPI" },
+        { text: "Serve Gradio", value: "Serve Gradio" },
       ],
       settings: {
-        Location: '',
-        Type: 'TFModel',
+        Location: "",
+        Type: "TFModel",
         Compressed: false,
         Quantized: false,
-        name: '',
+        name: "",
       },
-      loadingMessage: '',
-      wasSavePathChoosen: false,
+      loadingMessage: "",
+      wasSavePathChosen: false,
       isTensorFlowExportOpened: false,
-      isModalOpendFor: null,
-      searchValue: '',
+      isModalOpenedFor: null,
+      searchValue: "",
       tooltips: {
         tensorflow: `<div style="white-space: normal; width: 280px;">The standard TensorFlow "saved model" format, great for if you want to use the model in an existing serving pipeline or write a small script around. Can be also be compressed and quantized from here.</div>`,
         fastApi: `<div style="white-space: normal; width: 280px;">Exports a ready-to-use serving script based on FastAPI. \n Run the script to start serving the model and then send \n requests to it to get predictions.</div>`,
         gradio: `<div style="white-space: normal; width: 280px;">Deploy the model as a Gradio app, which is a great way to demo your model for other people or just test it out on some new data.</div>`,
-      }
+        archive: `<div style="white-space: normal; width: 280px;">Export as a PerceptiLabs archive, which is useful for sharing your work with other users.</div>`,
+      },
     };
   },
   watch: {
-    'models'() {
+    models() {
       this.filterTrainedModels();
     },
-    'settings.Quantized'(value) {
-      if(value) {
+    "settings.Quantized"(value) {
+      if (value) {
         this.settings.Compressed = false;
       }
     },
-    'settings.Compressed'(value) {
-      if(value) {
+    "settings.Compressed"(value) {
+      if (value) {
         this.settings.Quantized = false;
       }
     },
-    'searchValue'(strSearched) {
+    searchValue(strSearched) {
       console.log(strSearched);
     },
   },
-  
+
   computed: {
     ...mapGetters({
-      testStatus: 'mod_test/GET_testStatus',
-      models:     'mod_workspace/GET_models',
+      testStatus: "mod_test/GET_testStatus",
+      models: "mod_workspace/GET_models",
     }),
     checkedModelsLength() {
-      return this.trainedModels && this.trainedModels.filter(m => m.isChecked).length;
+      return (
+        this.trainedModels && this.trainedModels.filter(m => m.isChecked).length
+      );
     },
     isAllModelsChecked() {
       const trainedModelsLength = this.trainedModels.length;
-      return trainedModelsLength ===  this.checkedModelsLength;
+      return trainedModelsLength === this.checkedModelsLength;
     },
     isServingEnabled() {
       return isServingEnabled();
     },
     computedTrainedFilteredModels() {
-      const ret = this.trainedModels.filter(model => model.networkName.indexOf(this.searchValue) !== -1);
+      const ret = this.trainedModels.filter(
+        model => model.networkName.indexOf(this.searchValue) !== -1,
+      );
       const keepIsCheckedModelIds = ret.map(m => m.networkID);
       this.trainedModels.forEach(m => {
-        if(keepIsCheckedModelIds.indexOf(m.networkID)  === -1) {
+        if (keepIsCheckedModelIds.indexOf(m.networkID) === -1) {
           m.isChecked = false;
         }
-      })
+      });
       return ret;
-    }
+    },
   },
-  methods: {    
+  methods: {
     isModelTrained(model) {
-      return this.$store.dispatch('mod_api/API_checkTrainedNetwork', model.networkID);
+      return this.$store.dispatch(
+        "mod_api/API_checkTrainedNetwork",
+        model.networkID,
+      );
     },
     filterTrainedModels() {
-      if(!this.models.length) {
+      if (!this.models.length) {
         this.trainedModels = [];
       }
-      const payload = cloneDeep(this.models.filter((model) => isModelTrained(model)));
-      for(let i = 0; i < payload.length; i++) {
-        this.$set(payload[i], 'isChecked', false);
+      const payload = cloneDeep(
+        this.models.filter(model => isModelTrained(model)),
+      );
+      for (let i = 0; i < payload.length; i++) {
+        this.$set(payload[i], "isChecked", false);
       }
       this.trainedModels = payload;
     },
     setExportPath(value) {
       if (value && Array.isArray(value) && value.length > 0) {
         this.settings.Location = value[0];
-        this.wasSavePathChoosen = true;
+        this.wasSavePathChosen = true;
       }
     },
     async saveLoadFile() {
-      const selectedPath = await rygg_pickDirectory('Choose export path');
+      const selectedPath = await rygg_pickDirectory("Choose export path");
       if (selectedPath && selectedPath.path) {
-        this.setExportPath([selectedPath.path])
+        this.setExportPath([selectedPath.path]);
       }
     },
     handleModelSelect(isChecked, modelId) {
       let modelIndex = null;
-      for(let i = 0; i < this.trainedModels.length; i++) {
-        this.$set(this.trainedModels[i], 'isChecked', false);
-        if(modelId === this.trainedModels[i].networkID) {
+      for (let i = 0; i < this.trainedModels.length; i++) {
+        this.$set(this.trainedModels[i], "isChecked", false);
+        if (modelId === this.trainedModels[i].networkID) {
           modelIndex = i;
         }
       }
-      if(isChecked) {
-        this.$set(this.trainedModels[modelIndex], 'isChecked', true);
+      if (isChecked) {
+        this.$set(this.trainedModels[modelIndex], "isChecked", true);
       }
     },
     checkIsAtLeastModelSelected() {
       const isModelSelected = this.trainedModels.find(m => m.isChecked);
-      if(isModelSelected !== undefined) {
+      if (isModelSelected !== undefined) {
         return true;
       } else {
-        this.$store.dispatch('globalView/GP_infoPopup', "Select model to export.", {root: true});
+        this.$store.dispatch(
+          "globalView/GP_infoPopup",
+          "Select model to export.",
+          { root: true },
+        );
         return false;
       }
     },
     handleExportAs() {
-      if(this.isModalOpendFor === 'tensorflow') {
+      if (this.isModalOpenedFor === "tensorflow") {
         this.exportAsTensorflow();
-      } else if (this.isModalOpendFor = 'fastapi') {
+      } else if (this.isModalOpenedFor === "fastapi") {
         this.exportAsFastApi();
+      } else if (this.isModalOpenedFor === "archive") {
+        this.exportAsArchive();
       }
     },
     exportGradio() {
-      if(!this.checkIsAtLeastModelSelected()) { 
+      if (!this.checkIsAtLeastModelSelected()) {
         return;
       }
-      this.$store.dispatch('globalView/GP_confirmPopup', {
-        text: 'Gradio will open in a web browser. Click Ok to continue.',
+      this.$store.dispatch("globalView/GP_confirmPopup", {
+        text: "Gradio will open in a web browser. Click Ok to continue.",
         ok: async () => {
           const modelToExport = this.trainedModels.find(m => m.isChecked);
           const exportPayload = {
             modelId: modelToExport.networkID,
             name: modelToExport.networkName,
-            Type: 'Serve Gradio',
+            Type: "Serve Gradio",
           };
           this.loadingMessage = `Deploying model: ${modelToExport.networkName}..`;
-          const retMessage = await this.$store.dispatch('mod_api/API_exportData', exportPayload);
-          const gradioUrl = retMessage.substring(retMessage.indexOf('http'));
-          const popup = window.open(gradioUrl, '_blank');
+          const retMessage = await this.$store.dispatch(
+            "mod_api/API_exportData",
+            exportPayload,
+          );
+          const gradioUrl = retMessage.substring(retMessage.indexOf("http"));
+          const popup = window.open(gradioUrl, "_blank");
           if (!popup) {
-            this.$store.dispatch('globalView/GP_infoPopup', `Open <a href="${gradioUrl}" target="_blank" style="color: #6185EE;">${gradioUrl}</a> to run Gradio`, {root: true});
+            this.$store.dispatch(
+              "globalView/GP_infoPopup",
+              `Open <a href="${gradioUrl}" target="_blank" style="color: #6185EE;">${gradioUrl}</a> to run Gradio`,
+              { root: true },
+            );
           }
-          this.loadingMessage = '';
+          this.loadingMessage = "";
         },
+      });
+    },
+    async exportAsArchive() {
+      const modelToExport = this.trainedModels.find(m => m.isChecked);
+      const exportPayload = {
+        modelId: modelToExport.networkID,
+        name: modelToExport.networkName,
+        Type: "Archive",
+        Location: this.settings.Location,
+      };
+      this.loadingMessage = `Exporting model: ${modelToExport.networkName}.. archive`;
+      const retMessage = await this.$store.dispatch(
+        "mod_api/API_exportData",
+        exportPayload,
+      );
+      this.loadingMessage = "";
+      this.closeTensorFlowExport();
+      this.$store.dispatch("globalView/GP_infoPopup", retMessage, {
+        root: true,
       });
     },
     async exportAsFastApi() {
@@ -293,69 +339,89 @@ export default {
       const exportPayload = {
         modelId: modelToExport.networkID,
         name: modelToExport.networkName,
-        Type: 'FastAPI',
+        Type: "FastAPI",
         Location: this.settings.Location,
       };
       this.loadingMessage = `Exporting model: ${modelToExport.networkName}.. fastaApi`;
-      const retMessage = await this.$store.dispatch('mod_api/API_exportData', exportPayload);
-      this.loadingMessage = '';
+      const retMessage = await this.$store.dispatch(
+        "mod_api/API_exportData",
+        exportPayload,
+      );
+      this.loadingMessage = "";
       this.closeTensorFlowExport();
-      this.$store.dispatch('globalView/GP_infoPopup', retMessage , {root: true});
+      this.$store.dispatch("globalView/GP_infoPopup", retMessage, {
+        root: true,
+      });
     },
-    async exportAsTensorflow() { 
+    async exportAsTensorflow() {
       const modelToExport = this.trainedModels.find(m => m.isChecked);
       const exportPayload = {
         modelId: modelToExport.networkID,
         name: modelToExport.networkName,
-        Type: 'TFModel',
+        Type: "TFModel",
         Compressed: this.settings.Compressed,
         Quantized: this.settings.Quantized,
         Location: this.settings.Location,
       };
       this.loadingMessage = `Exporting model: ${modelToExport.networkName}..`;
-      const retMessage = await this.$store.dispatch('mod_api/API_exportData', exportPayload);
-      this.loadingMessage = '';
+      const retMessage = await this.$store.dispatch(
+        "mod_api/API_exportData",
+        exportPayload,
+      );
+      this.loadingMessage = "";
       this.closeTensorFlowExport();
-      this.$store.dispatch('globalView/GP_infoPopup', retMessage , {root: true});
+      this.$store.dispatch("globalView/GP_infoPopup", retMessage, {
+        root: true,
+      });
     },
     openExportAsTensorflowModal() {
-      if(!this.checkIsAtLeastModelSelected()) { 
+      if (!this.checkIsAtLeastModelSelected()) {
         return;
       }
-      this.isModalOpendFor = 'tensorflow';
+      this.isModalOpenedFor = "tensorflow";
       this.isTensorFlowExportOpened = true;
     },
     openExportAsFastApi() {
-      if(!this.checkIsAtLeastModelSelected()) { 
+      if (!this.checkIsAtLeastModelSelected()) {
         return;
       }
-      this.isModalOpendFor = 'fastapi';
+      this.isModalOpenedFor = "fastapi";
+      this.isTensorFlowExportOpened = true;
+    },
+    openExportAsArchive() {
+      if (!this.checkIsAtLeastModelSelected()) {
+        return;
+      }
+      this.isModalOpenedFor = "archive";
       this.isTensorFlowExportOpened = true;
     },
     closeTensorFlowExport() {
       this.isTensorFlowExportOpened = false;
-      this.isModalOpendFor = null;
+      this.isModalOpenedFor = null;
     },
-    formatDate (dateString) {
-      if(!dateString) { return ''; }
+    formatDate(dateString) {
+      if (!dateString) {
+        return "";
+      }
       let date = new Date(dateString);
-      return `${date.toLocaleDateString(navigator.language)} ${date.toLocaleTimeString([], {hour12: false})}`;
+      return `${date.toLocaleDateString(
+        navigator.language,
+      )} ${date.toLocaleTimeString([], { hour12: false })}`;
     },
-  }
-}
+  },
+};
 </script>
 
 <style lang="scss" scoped>
-
 @keyframes clickMeFrame {
   0% {
-    box-shadow: 0 0 3px #6185EE;
+    box-shadow: 0 0 3px #6185ee;
   }
   50% {
-    box-shadow: 0 0 10px #6185EE;
+    box-shadow: 0 0 10px #6185ee;
   }
   100% {
-    box-shadow: 0 0 3px #6185EE;
+    box-shadow: 0 0 3px #6185ee;
   }
 }
 .flash-button {
@@ -423,11 +489,13 @@ export default {
 }
 table {
   font-size: 14px;
-  td, th {
+  td,
+  th {
     padding-right: 20px;
   }
   tr:not(:last-child) {
-    td, th {
+    td,
+    th {
       padding-bottom: 30px;
     }
   }
@@ -448,24 +516,29 @@ table {
   height: calc(100vh - 130px);
 }
 
-
 .export-model-list {
   height: 100%;
   grid-area: 1 / 1 / 13 / 8;
 }
-.export-where-to { grid-area: 1 / 8 / 13 / 13; }
+.export-where-to {
+  grid-area: 1 / 8 / 13 / 13;
+}
 
 .export-where-to-grid-parent {
   display: grid;
   grid-template-columns: 1fr;
-grid-template-rows: repeat(12, 1fr);
+  grid-template-rows: repeat(12, 1fr);
   grid-column-gap: 0px;
   grid-row-gap: 0px;
   height: 100%;
 }
 
-.export-options { grid-area: 1 / 1 / 6 / 2; }
-.export-deploy { grid-area: 6 / 1 / 13 / 2; }
+.export-options {
+  grid-area: 1 / 1 / 6 / 2;
+}
+.export-deploy {
+  grid-area: 6 / 1 / 13 / 2;
+}
 
 .width-56 {
   width: 56px;
@@ -476,41 +549,41 @@ grid-template-rows: repeat(12, 1fr);
 }
 
 .model-list-item {
-    display: flex;
-    height: 56px;
-    font-size: 16px;
-    font-weight: 400;
-    align-items: center;
-    border-radius: 4px;
-    margin: 10px 0px;
-    border: 1px solid transparent;
+  display: flex;
+  height: 56px;
+  font-size: 16px;
+  font-weight: 400;
+  align-items: center;
+  border-radius: 4px;
+  margin: 10px 0px;
+  border: 1px solid transparent;
 
-    &:hover:not(.is-selected) {
-      // background: rgba(97, 133, 238, 0.75);
-      // box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-      background: $color-6;
+  &:hover:not(.is-selected) {
+    // background: rgba(97, 133, 238, 0.75);
+    // box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    background: $color-6;
+    color: white;
+    .is-favorite {
+      path {
+        fill: #e1e1e1;
+      }
+    }
+
+    & .model-unsaved_changes_indicator {
+      color: $color-6;
+    }
+
+    & .test-link {
       color: white;
-      .is-favorite{
-        path {
-          fill: #E1E1E1;
-        }
-      }
-
-      & .model-unsaved_changes_indicator {
-        color: $color-6;
-      }
-      
-      & .test-link {
-        color: white;
-        & path {
-          fill: white;
-        }
+      & path {
+        fill: white;
       }
     }
-    &.is-selected {
-      background: theme-var($neutral-6);
-      border: 1px solid $color-6;
-    }
+  }
+  &.is-selected {
+    background: theme-var($neutral-6);
+    border: 1px solid $color-6;
+  }
 }
 .columns-grid {
   .column-1 {
@@ -524,11 +597,11 @@ grid-template-rows: repeat(12, 1fr);
       position: absolute;
       left: 41px;
       top: 50%;
-      transform: translateY(-50%)
+      transform: translateY(-50%);
     }
   }
   .column-2 {
-    min-width: 210px; 
+    min-width: 210px;
     cursor: pointer;
     display: none;
   }
@@ -558,7 +631,7 @@ grid-template-rows: repeat(12, 1fr);
 
     img {
       margin-left: 10px;
-      margin-bottom: 3px
+      margin-bottom: 3px;
     }
   }
 }
@@ -573,7 +646,7 @@ grid-template-rows: repeat(12, 1fr);
       position: absolute;
       left: 41px;
       top: 50%;
-      transform: translateY(-50%)
+      transform: translateY(-50%);
     }
   }
   .column-6 {
@@ -585,42 +658,47 @@ grid-template-rows: repeat(12, 1fr);
 .export-button {
   background-color: $white;
   width: 160px;
-  height: 64px;
+  height: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
   border-radius: 4px;
   margin: 0 10px;
-  border: 2px solid #B6C7FB;
+  border: 2px solid #b6c7fb;
   transition: 0.3s !important;
   &:hover {
-    border: 2px solid #6185EE;
+    border: 2px solid #6185ee;
   }
   &:active {
-    background: linear-gradient(0deg, rgba(97, 133, 238, 0.2), rgba(97, 133, 238, 0.2)), #FFFFFF;
+    background: linear-gradient(
+        0deg,
+        rgba(97, 133, 238, 0.2),
+        rgba(97, 133, 238, 0.2)
+      ),
+      #ffffff;
   }
 }
 .search-input {
-    position: relative;
-    width: auo;
-    margin-left: 16px;
-    img {
-      cursor: pointer;
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      left: 10px;
-    }
-    input {
-      padding-left: 36px;
-      height: 100%;
-      border: $border-1;
-      border-radius: 4px;
-      font-size: 14px;
-      background: theme-var($neutral-7);
-    }
+  position: relative;
+  width: auo;
+  margin-left: 16px;
+  img {
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 10px;
   }
-  .model-list-scrollbar {
-    max-height: calc(100vh - 380px);
+  input {
+    padding-left: 36px;
+    height: 100%;
+    border: $border-1;
+    border-radius: 4px;
+    font-size: 14px;
+    background: theme-var($neutral-7);
   }
+}
+.model-list-scrollbar {
+  max-height: calc(100vh - 380px);
+}
 </style>

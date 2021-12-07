@@ -9,6 +9,10 @@ import {
 } from "@/core/helpers.js";
 import { ryggAvailability } from "@/core/apiRygg.js";
 import { pathSlash, sessionStorageInstanceIdKey } from "@/core/constants.js";
+import { disassembleModel } from "@/core/helpers/model-helper";
+
+import { createCoreNetwork } from "@/core/helpers";
+
 import {
   getModelJson as rygg_getModelJson,
   doesDirExist as rygg_doesDirExist,
@@ -96,8 +100,14 @@ const getters = {
     const network = rootGetters["mod_workspace/GET_networkByNetworkId"](id);
     return network.networkName;
   },
-  GET_coreNetworkById: (state, getters, rootState, rootGetters) => id => {
-    const network = rootGetters["mod_workspace/GET_networkByNetworkId"](id);
+  GET_disassembledModelById: (state, getters, rootState, rootGetters) => (id) => {
+    const network = rootGetters['mod_workspace/GET_networkByNetworkId'](id);
+    const disNetwork = disassembleModel(network);
+    return disNetwork;
+  },  
+  GET_coreNetworkById: (state, getters, rootState, rootGetters) => (id) => {
+    // TODO: refactor to use model-helpers
+    const network = rootGetters['mod_workspace/GET_networkByNetworkId'](id);
     let layers = {};
 
     for (let layer in network.networkElementList) {
@@ -762,38 +772,45 @@ const actions = {
   async API_exportData({ rootGetters, getters, dispatch }, settings) {
     const userEmail = rootGetters["mod_user/GET_userEmail"];
     const modelId = settings.modelId;
-    const datasetSettings = rootGetters[
-      "mod_workspace/GET_currentNetworkDatasetSettingsByModelId"
-    ](settings.modelId);
+    const disassembledModel = getters.GET_disassembledModelById(settings.modelId);
+    
 
     async function exportClosure() {
-      const network = getters.GET_coreNetworkById(settings.modelId);
-      const networkName = getters.GET_networkNameById(modelId);
-      const checkpointDirectory = rootGetters[
-        "mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId"
-      ](settings.modelId);
+      const networkName = getters.GET_networkNameById(modelId)	
+      const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](settings.modelId);       
       const trainingSessionId = base64url(checkpointDirectory);
 
+      console.info(settings, disassembledModel);
+      
       if (settings.Type != "Serve Gradio") {
-        // TODO: serving TEMPORARILY falls under export
+	const trainingSettings = settings.Type == 'Archive'
+	      ? deepCopy(disassembledModel.trainingSettings)
+	      : null
+	
+	const frontendSettings = settings.Type == 'Archive'
+	      ? deepCopy(disassembledModel.frontendSettings)
+	      : null
+	
         return renderingKernel.exportModel(
-          settings,
-          datasetSettings,
-          userEmail,
-          modelId,
-          network,
-          trainingSessionId,
-        );
+	  settings,
+	  disassembledModel.datasetSettings,
+	  userEmail,
+	  modelId,
+	  disassembledModel.graphSettings,
+	  trainingSessionId,
+	  trainingSettings,
+	  frontendSettings
+	)
       } else {
         const url = renderingKernel.waitForServedModelReady(
-          "gradio",
-          datasetSettings,
-          userEmail,
-          modelId,
-          network,
-          trainingSessionId,
-          networkName,
-        );
+	  "gradio",
+	  disassembledModel.datasetSettings,	  	  
+	  userEmail,
+	  modelId,
+	  disassembledModel.graphSettings,	  
+	  trainingSessionId,
+	  networkName
+	)
         return url;
       }
     }

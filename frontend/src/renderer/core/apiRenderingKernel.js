@@ -43,12 +43,14 @@ export const renderingKernel = {
       })
   },
 
-  async exportModel(exportSettings, datasetSettings, userEmail, modelId, network, trainingSessionId) {
+  async exportModel(exportSettings, datasetSettings, userEmail, modelId, network, trainingSessionId, trainingSettings, frontendSettings) {
     const payload = {
       exportSettings: exportSettings,
       datasetSettings: datasetSettings,
       network: network,
       userEmail: userEmail,
+      trainingSettings: trainingSettings,
+      frontendSettings: frontendSettings
     };
     return whenRenderingKernelReady
       .then(rk => rk.put(`/models/${modelId}/export?training_session_id=${trainingSessionId}`, payload))

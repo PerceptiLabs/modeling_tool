@@ -11,7 +11,7 @@ from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings, FeatureSpec
 from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.builder import GraphSpecBuilder
-from perceptilabs.exporter.base import Exporter
+from perceptilabs.sharing.exporter import Exporter
 from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable, OutputVisualization
 from perceptilabs.resources.files import FileAccess
 

@@ -13,9 +13,9 @@ from perceptilabs.script import ScriptFactory
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import FeatureSpec, DatasetSettings, Partitions
 from perceptilabs.graph.builder import GraphSpecBuilder
-from perceptilabs.exporter.base import Exporter
+from perceptilabs.sharing.exporter import Exporter
 from perceptilabs.resources.files import FileAccess
-import perceptilabs.exporter.fastapi_utils as fastapi_utils
+import perceptilabs.sharing.fastapi_utils as fastapi_utils
 import perceptilabs.data.utils as data_utils
 
 

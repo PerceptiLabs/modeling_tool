@@ -280,12 +280,11 @@ perceptilabs/trainer/base.py
 perceptilabs/trainer/losses.py
 perceptilabs/trainer/model.py
 
-# backend/perceptilabs/importer/
-perceptilabs/importer/base.py
+# backend/perceptilabs/sharing/
+perceptilabs/sharing/exporter.py
+perceptilabs/sharing/fastapi_utils.py
+perceptilabs/sharing/importer.py
 
-# backend/perceptilabs/exporter/
-perceptilabs/exporter/base.py
-perceptilabs/exporter/fastapi_utils.py
 
 # backend/perceptilabs/stats/
 perceptilabs/stats/__init__.py
@@ -343,6 +342,7 @@ perceptilabs/tasks/utils.py
 
 # backend/perceptilabs/resources/
 perceptilabs/resources/models.py
+perceptilabs/resources/model_archives.py
 perceptilabs/resources/datasets.py
 perceptilabs/resources/epochs.py
 perceptilabs/resources/files.py

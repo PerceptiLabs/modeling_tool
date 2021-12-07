@@ -218,7 +218,7 @@ def test_pausing_mid_training(queue, message_broker, data_loader, graph_spec, tr
 def test_export_mid_training(monkeypatch, queue, message_broker, data_loader, graph_spec, training_model, training_settings, tmp_path):
     fn_export = MagicMock()
 
-    from perceptilabs.exporter.base import Exporter
+    from perceptilabs.sharing.exporter import Exporter
     monkeypatch.setattr(Exporter, "export", fn_export)  
     
     model_access = MagicMock()

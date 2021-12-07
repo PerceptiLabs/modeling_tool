@@ -5,7 +5,7 @@ from queue import Empty
 import sentry_sdk
 
 from perceptilabs.trainer import Trainer
-from perceptilabs.exporter.base import Exporter
+from perceptilabs.sharing.exporter import Exporter
 from perceptilabs.utils import KernelError
 
 logger = logging.getLogger(__name__)

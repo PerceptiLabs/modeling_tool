@@ -8,17 +8,15 @@ from perceptilabs.graph.spec import GraphSpec
 logger = logging.getLogger(__name__)
         
 class Importer:
-    def __init__(self, dataset_access):
+    def __init__(self, dataset_access, model_archives_access):
         self._dataset_access = dataset_access
-    
+        self._model_archives_access = model_archives_access
+        
     def run(self, dataset_id, file_location):
-        with open(file_location, 'r') as f:
-            content = json.load(f)
-
-        dataset_settings_dict = content['datasetSettings']
+        dataset_settings_dict, graph_spec_dict, training_settings_dict, frontend_settings_dict = \
+            self._model_archives_access.read(file_location)
+        
         dataset_location = self._dataset_access.get_location(dataset_id)
-
-
         original_dataset_id = dataset_settings_dict['datasetId']
         
         if dataset_id != original_dataset_id:
@@ -65,9 +63,6 @@ class Importer:
                 logger.info(
                     f"Column '{new_column}' present in both datasets. No remapping needed")
 
-                
-
-        graph_spec_dict = content['graphSettings']        
         for layer_id, layer_spec_dict in graph_spec_dict.items():
             if layer_spec_dict["Type"] not in ["IoInput", "IoOutput"]:
                 continue
@@ -78,8 +73,8 @@ class Importer:
                 
             logger.info(
                 f"Remapped '{original_column}' -> '{new_column}' (in graph settings)")
-            
-        training_settings_dict = content['trainingSettings']
+
+        # TODO: return frontend settings dict here so we can include positions as well.
 
         #graph_spec.show()
         

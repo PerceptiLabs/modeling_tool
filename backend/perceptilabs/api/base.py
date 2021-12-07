@@ -22,6 +22,7 @@ from perceptilabs.resources.datasets import DatasetAccess
 from perceptilabs.resources.serving_results import ServingResultsAccess
 from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess
 from perceptilabs.resources.models import ModelAccess
+from perceptilabs.resources.model_archives import ModelArchivesAccess
 from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.script import ScriptFactory
 from perceptilabs.issues import traceback_from_exception
@@ -46,7 +47,8 @@ def create_app(
         preview_cache = NullCache(),
         task_executor = get_task_executor(),
         message_broker = get_message_broker(),            
-        models_access = ModelAccess(),        
+        models_access = ModelAccess(),
+        model_archives_access = ModelArchivesAccess(),
         epochs_access = EpochsAccess(),
         dataset_access = DatasetAccess(rygg),
         training_results_access = TrainingResultsAccess(),
@@ -70,6 +72,7 @@ def create_app(
         message_broker,
         dataset_access,
         models_access,
+        model_archives_access,
         epochs_access,
         training_results_access,
         preprocessing_results_access,
@@ -261,6 +264,8 @@ def create_app(
         dataset_settings_dict = json_data['datasetSettings']
         export_options = json_data['exportSettings']        
         user_email = json_data.get('userEmail')
+        training_settings = json_data.get('trainingSettings')        
+        frontend_settings = json_data.get('frontendSettings')
 
         status = models_interface.export(
             export_options,
@@ -268,7 +273,9 @@ def create_app(
             graph_spec_dict,
             dataset_settings_dict,
             training_session_id,
-            user_email
+            user_email,
+            training_settings,
+            frontend_settings
         )        
         return jsonify(status)
 

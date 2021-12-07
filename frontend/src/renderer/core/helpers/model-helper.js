@@ -268,7 +268,6 @@ export const disassembleModel = (inputNetwork) => {
   network = removeChartData(network, false);
 
   
-  
   const parts = {
     datasetSettings: deepCopy(network.networkMeta.datasetSettings),
     trainingSettings: deepCopy(network.networkMeta.trainingSettings),

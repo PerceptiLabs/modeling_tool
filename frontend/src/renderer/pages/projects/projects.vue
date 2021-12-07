@@ -843,7 +843,7 @@ export default {
       const selectedModelFile = await rygg_pickFile(
         "Choose model to load",
         this.startupDatasetPath,
-        [{ extensions: ["*.json"] }]
+        [{ extensions: ["*.zip"] }]
       );
 
       const res = await renderingKernel.importModel(

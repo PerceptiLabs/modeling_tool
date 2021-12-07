@@ -3,7 +3,7 @@ import sys
 import logging
 
 from perceptilabs.stats.base import OutputStats
-from perceptilabs.exporter.base import Exporter, CompatibilityError
+from perceptilabs.sharing.exporter import Exporter, CompatibilityError
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.data.base import DataLoader
 from perceptilabs.graph.spec import GraphSpec
@@ -12,7 +12,7 @@ from perceptilabs.utils import get_file_path
 from perceptilabs.utils import KernelError
 from perceptilabs.lwcore import LightweightCore
 from perceptilabs.script import ScriptFactory
-from perceptilabs.importer.base import Importer
+from perceptilabs.sharing.importer import Importer
 import perceptilabs.lwcore.utils as lwcore_utils
 import perceptilabs.automation.utils as automation_utils
 import perceptilabs.data.utils as data_utils
@@ -22,11 +22,12 @@ logger = logging.getLogger(__name__)
 
 
 class ModelsInterface:
-    def __init__(self, task_executor, message_broker, dataset_access, model_access, epochs_access, training_results_access, preprocessing_results_access, preview_cache):
+    def __init__(self, task_executor, message_broker, dataset_access, model_access, model_archives_access, epochs_access, training_results_access, preprocessing_results_access, preview_cache):
         self._task_executor = task_executor
         self._message_broker = message_broker
         self._dataset_access = dataset_access                
-        self._model_access = model_access        
+        self._model_access = model_access
+        self._model_archives_access = model_archives_access                
         self._epochs_access = epochs_access
         self._training_results_access = training_results_access
         self._preprocessing_results_access = preprocessing_results_access
@@ -108,11 +109,22 @@ class ModelsInterface:
         return self._epochs_access.has_saved_epoch(
             training_session_id, require_trainer_state=False)
         
-    def export(self, options, model_id, graph_spec_dict, dataset_settings_dict, training_session_id, user_email):
-        if self.has_checkpoint(model_id, training_session_id):
-            return self._export_after_training(options, model_id, graph_spec_dict, dataset_settings_dict, training_session_id, user_email)
+    def export(self, options, model_id, graph_spec_dict, dataset_settings_dict, training_session_id, training_settings_dict, user_email, frontend_settings):
+
+        if options['Type'] == 'Archive':
+            return self._export_as_archive(
+                model_id,
+                options['Location'],
+                dataset_settings_dict,
+                graph_spec_dict,
+                training_settings_dict,
+                frontend_settings
+            )
         else:
-            return self._export_while_training(options, model_id, training_session_id)            
+            if self.has_checkpoint(model_id, training_session_id):
+                return self._export_after_training(options, model_id, graph_spec_dict, dataset_settings_dict, training_session_id, user_email)
+            else:
+                return self._export_while_training(options, model_id, training_session_id)            
 
     def _export_while_training(self, options, model_id, training_session_id):
         export_path = os.path.join(options['Location'], options['name'])
@@ -283,9 +295,9 @@ class ModelsInterface:
         file_access = FileAccess()
         file_path = file_access.get_local_path(source_file)
 
-        importer = Importer(self._dataset_access)
-        dataset_settings_dict, graph_spec_dict, training_settings_dict = importer.run(
-            dataset_id, file_path)
+        importer = Importer(self._dataset_access, self._model_archives_access)
+        dataset_settings_dict, graph_spec_dict, training_settings_dict = \
+            importer.run(dataset_id, file_path)
         
         output = {
             'datasetSettings': dataset_settings_dict,
@@ -294,8 +306,26 @@ class ModelsInterface:
         }
         return output
 
-
-        
+    def _export_as_archive(self, model_id, location, dataset_settings_dict, graph_spec_dict, training_settings_dict, frontend_settings):
+        try:
+            path = self._model_archives_access.write(
+                model_id,
+                location,
+                dataset_settings_dict,
+                graph_spec_dict,
+                training_settings_dict,
+                frontend_settings
+            )
+        except Exception as e:
+            logging.exception("Model export failed")
+            return f"Model export failed"
+        else:
+            return f"Model exported to '{path}'"
+            
+            
+            
+    
+    
         
 
         
