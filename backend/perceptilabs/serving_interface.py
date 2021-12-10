@@ -12,8 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 class ServingSessionInterface():
-    def __init__(self, message_broker, model_access, epochs_access, results_access):
-        self._message_broker = message_broker        
+    def __init__(self, message_broker, event_tracker, model_access, epochs_access, results_access):
+        self._message_broker = message_broker
+        self._event_tracker = event_tracker
         self._model_access = model_access
         self._epochs_access = epochs_access
         self._results_access = results_access
@@ -55,7 +56,7 @@ class ServingSessionInterface():
         )
 
         def on_serving_started():
-            tracking.send_model_served(user_email, model_id)            
+            tracking.send_model_served(self._event_tracker, user_email, model_id)            
 
         launcher = GradioLauncher(self._model_access, self._epochs_access)
         launcher.start(

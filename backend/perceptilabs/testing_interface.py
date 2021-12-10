@@ -7,6 +7,7 @@ import sentry_sdk
 import perceptilabs.utils as utils
 from perceptilabs.testcore import TestCore, ProcessResults
 from perceptilabs.utils import KernelError
+import perceptilabs.tracking as tracking
 
 
 logger = logging.getLogger(__name__)
@@ -15,7 +16,8 @@ logger = logging.getLogger(__name__)
 class TestingSessionInterface():
     """Main Class that does all the computations for the tests and returns the results
     """
-    def __init__(self, message_broker, model_access, epochs_access, results_access):
+    def __init__(self, message_broker, event_tracker, model_access, epochs_access, results_access):
+        self._event_tracker = event_tracker
         self._message_broker = message_broker
         self._model_access = model_access
         self._epochs_access = epochs_access
@@ -64,12 +66,17 @@ class TestingSessionInterface():
             yield
 
     def _setup_test_core(self, testing_session_id, models, tests, user_email):
+
+        def on_testing_completed(model_id, test):
+            tracking.send_testing_completed(
+                self._event_tracker, user_email, model_id, test)
+        
         core = TestCore(
             testing_session_id,
             list(models.keys()),
             models,
             tests,
-            user_email=user_email,
+            on_testing_completed=on_testing_completed
         )
         return core
             

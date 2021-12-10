@@ -22,9 +22,10 @@ logger = logging.getLogger(__name__)
 
 
 class ModelsInterface:
-    def __init__(self, task_executor, message_broker, dataset_access, model_access, model_archives_access, epochs_access, training_results_access, preprocessing_results_access, preview_cache):
+    def __init__(self, task_executor, message_broker, event_tracker, dataset_access, model_access, model_archives_access, epochs_access, training_results_access, preprocessing_results_access, preview_cache):
         self._task_executor = task_executor
         self._message_broker = message_broker
+        self._event_tracker = event_tracker
         self._dataset_access = dataset_access                
         self._model_access = model_access
         self._model_archives_access = model_archives_access                
@@ -109,7 +110,7 @@ class ModelsInterface:
         return self._epochs_access.has_saved_epoch(
             training_session_id, require_trainer_state=False)
         
-    def export(self, options, model_id, graph_spec_dict, dataset_settings_dict, training_session_id, training_settings_dict, user_email, frontend_settings):
+    def export(self, options, model_id, graph_spec_dict, dataset_settings_dict, training_session_id, user_email, training_settings_dict, frontend_settings):
 
         if options['Type'] == 'Archive':
             return self._export_as_archive(
@@ -117,6 +118,7 @@ class ModelsInterface:
                 options['Location'],
                 dataset_settings_dict,
                 graph_spec_dict,
+                user_email,
                 training_settings_dict,
                 frontend_settings
             )
@@ -163,9 +165,15 @@ class ModelsInterface:
                 graph_spec.to_dict(),  # TODO. f/e should send an ID
                 checkpoint_path=checkpoint_path
             )
+
+            def on_model_exported():
+                tracking.send_model_exported(
+                    self._event_tracker, user_email, model_id)
             
             exporter = Exporter(
-                graph_spec, training_model, data_loader, model_id=model_id, user_email=user_email)
+                graph_spec, training_model, data_loader,
+                on_model_exported=on_model_exported
+            )
             
             export_path = os.path.join(options['Location'], options['name'])
             mode = self._get_export_mode(options)
@@ -280,6 +288,7 @@ class ModelsInterface:
             data_loader.settings.dataset_id)
 
         tracking.send_model_recommended(
+            self._event_tracker,
             user_email,
             model_id,
             skipped_workspace,            
@@ -306,7 +315,7 @@ class ModelsInterface:
         }
         return output
 
-    def _export_as_archive(self, model_id, location, dataset_settings_dict, graph_spec_dict, training_settings_dict, frontend_settings):
+    def _export_as_archive(self, model_id, location, dataset_settings_dict, graph_spec_dict, user_email, training_settings_dict, frontend_settings):
         try:
             path = self._model_archives_access.write(
                 model_id,
@@ -320,6 +329,8 @@ class ModelsInterface:
             logging.exception("Model export failed")
             return f"Model export failed"
         else:
+            tracking.send_model_exported(
+                self._event_tracker, user_email, model_id)            
             return f"Model exported to '{path}'"
             
             

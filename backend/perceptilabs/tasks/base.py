@@ -38,6 +38,7 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
     import perceptilabs.settings as settings    
     from perceptilabs.training_interface import TrainingSessionInterface
     from perceptilabs.messaging.base import get_message_broker
+    from perceptilabs.tracking.base import EventTracker
     from perceptilabs.caching.utils import get_data_metadata_cache    
     from perceptilabs.script.base import ScriptFactory    
     from perceptilabs.resources.models import ModelAccess
@@ -73,9 +74,11 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
         num_repeats=num_repeats,
         metadata=data_metadata
     )
+
+    event_tracker = EventTracker()
     
     interface = TrainingSessionInterface(
-        message_broker, model_access, epochs_access, training_results_access)
+        message_broker, event_tracker, model_access, epochs_access, training_results_access)
     
     interface.run(
         data_loader,
@@ -105,6 +108,7 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
     from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess        
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
+    from perceptilabs.tracking.base import EventTracker
     import perceptilabs.utils as utils
     import os
     
@@ -143,8 +147,9 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
             'training_session_id': models_info[model_id]['training_session_id']
         }
 
+    event_tracker = EventTracker()    
     interface = TestingSessionInterface(
-        message_broker, model_access, epochs_access, testing_results_access)
+        message_broker, event_tracker, model_access, epochs_access, testing_results_access)
 
     interface.run(
         testing_session_id,
@@ -170,7 +175,8 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id,
     from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess        
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
-    from perceptilabs.messaging.base import get_message_broker    
+    from perceptilabs.messaging.base import get_message_broker
+    from perceptilabs.tracking.base import EventTracker    
     import perceptilabs.utils as utils
     import os
 
@@ -197,8 +203,10 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id,
         metadata=data_metadata
     )
     
+    event_tracker = EventTracker()
+    
     interface = ServingSessionInterface(
-        message_broker, model_access, epochs_access, serving_results_access)
+        message_broker, event_tracker, model_access, epochs_access, serving_results_access)
 
     interface.run(
         data_loader,

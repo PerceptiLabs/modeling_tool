@@ -79,9 +79,11 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, results_int
 
     epochs_access = MagicMock()
     results_access = MagicMock()
+    event_tracker = MagicMock()
     
     interface = TestingSessionInterface(
         message_broker,
+        event_tracker,
         model_access=model_access,
         epochs_access=epochs_access,
         results_access=results_access
@@ -116,9 +118,11 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
 
     epochs_access = MagicMock()
     results_access = MagicMock()
+    event_tracker = MagicMock()        
     
     interface = TestingSessionInterface(
         message_broker,
+        event_tracker,
         model_access=model_access,
         epochs_access=epochs_access,
         results_access=results_access

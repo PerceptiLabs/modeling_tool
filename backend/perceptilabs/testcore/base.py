@@ -12,21 +12,20 @@ from perceptilabs.createDataObject import createDataObject, subsample
 from perceptilabs.testcore.strategies.modelstrategies import LoadInferenceModel
 from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable, OutputVisualization
 from perceptilabs.utils import KernelError
-import perceptilabs.tracking as tracking
 import perceptilabs.utils as utils
 
 
 logger = logging.getLogger(__name__)
 
 class TestCore():
-    def __init__(self, testing_session_id, model_ids, models_info, tests, user_email=None):
+    def __init__(self, testing_session_id, model_ids, models_info, tests, on_testing_completed=None):
+        self._on_testing_completed = on_testing_completed
         self._testing_session_id = testing_session_id
         self._status = None
         self.set_status('Initializing')
         self._model_ids = model_ids
         self._models_info = models_info
         self._tests = tests
-        self._user_email = user_email
 
         self._models = {}
         self._results = {}
@@ -139,9 +138,10 @@ class TestCore():
                 elif test == 'outputs_visualization':
                     results = OutputVisualization().run(model_inputs, model_outputs, compatible_output_layers)
                 logger.info("test %s completed for model %s.", test, model_id)
-                if self._user_email and not self._stopped:
-                    tracking.send_testing_completed(
-                        self._user_email, model_id, test)
+                
+                if self._on_testing_completed and not self._stopped:
+                    self._on_testing_completed(model_id, test)
+                    
                 return results
 
             else:

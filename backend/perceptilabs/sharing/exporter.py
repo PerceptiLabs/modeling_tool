@@ -16,7 +16,6 @@ from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.utils import sanitize_path
 import perceptilabs.sharing.fastapi_utils as fastapi_utils
-import perceptilabs.tracking as tracking
 
 logger = logging.getLogger(__name__)
 
@@ -26,12 +25,11 @@ class CompatibilityError(Exception):
 
 
 class Exporter:
-    def __init__(self, graph_spec, training_model, data_loader, model_id=None, user_email=None):
+    def __init__(self, graph_spec, training_model, data_loader, on_model_exported=None):
         self._graph_spec = graph_spec
         self._data_loader = data_loader
         self._training_model = training_model
-        self._model_id = model_id
-        self._user_email = user_email
+        self._on_model_exported = on_model_exported
 
     @property
     def data_loader(self):
@@ -59,8 +57,9 @@ class Exporter:
         else:
             raise NotImplementedError(f"Unknown export mode '{mode}'")
 
-        tracking.send_model_exported(self._user_email, self._model_id)
-
+        if self._on_model_exported:
+            self._on_model_exported()
+            
     def _export_inference_model(self, path, model=None):
         """ Export the inference model """
         if model is None:

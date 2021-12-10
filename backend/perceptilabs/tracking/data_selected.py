@@ -1,11 +1,9 @@
 import os
 
-from perceptilabs.tracking.base import get_mixpanel, silence_exceptions
 from perceptilabs.data.utils import is_tutorial_data_file
 from perceptilabs.tracking.utils import get_tool_version
 
-@silence_exceptions
-def send_data_selected(user_email, file_path, is_plabs_sourced, dataset_id):
+def send_data_selected(tracker, user_email, file_path, is_plabs_sourced, dataset_id):
     """ Sends an event to MixPanel whenever the user selects a data file """
     _, file_ext = os.path.splitext(file_path)
     dataset_size_bytes = os.path.getsize(file_path)
@@ -20,7 +18,6 @@ def send_data_selected(user_email, file_path, is_plabs_sourced, dataset_id):
         'dataset_id': dataset_id,
         'version': get_tool_version()                
     }
-    mp = get_mixpanel(user_email)
-    mp.track(user_email, 'data-selected', payload)     
+    tracker.emit('data-selected', user_email, payload)     
 
     

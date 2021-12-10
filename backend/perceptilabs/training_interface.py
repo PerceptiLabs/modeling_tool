@@ -7,13 +7,15 @@ import sentry_sdk
 from perceptilabs.trainer import Trainer
 from perceptilabs.sharing.exporter import Exporter
 from perceptilabs.utils import KernelError
+import perceptilabs.tracking as tracking
 
 logger = logging.getLogger(__name__)
 
 
 class TrainingSessionInterface:
-    def __init__(self, message_broker, model_access, epochs_access, results_access):
+    def __init__(self, message_broker, event_tracker, model_access, epochs_access, results_access):
         self._message_broker = message_broker
+        self._event_tracker = event_tracker
         self._model_access = model_access
         self._epochs_access = epochs_access
         self._results_access = results_access
@@ -90,11 +92,27 @@ class TrainingSessionInterface:
         training_model = self._model_access.get_training_model(
             graph_spec.to_dict(), checkpoint_path=checkpoint_path)
 
+        def on_model_exported():
+            tracking.send_model_exported(
+                self._event_tracker, user_email, model_id)
+
         exporter = Exporter(
             graph_spec, training_model, data_loader,
-            model_id=model_id, user_email=user_email
-        )        
-        
+            on_model_exported=on_model_exported
+        )
+
+        def on_training_started():
+            tracking.send_training_started(
+                self._event_tracker, user_email, model_id, graph_spec)
+
+        def on_training_completed(*args):
+            tracking.send_training_completed(
+                self._event_tracker, user_email, model_id, graph_spec, *args)
+
+        def on_training_stopped(*args):
+            tracking.send_training_stopped(
+                self._event_tracker, user_email, model_id, graph_spec, *args)                
+
         trainer = Trainer(
             data_loader,
             training_model,
@@ -102,8 +120,10 @@ class TrainingSessionInterface:
             training_session_id,
             exporter=exporter,
             model_id=model_id,
-            user_email=user_email,
-            initial_state=initial_state
+            initial_state=initial_state,
+            on_training_started=on_training_started,
+            on_training_completed=on_training_completed,
+            on_training_stopped=on_training_stopped
         )
         return trainer
 

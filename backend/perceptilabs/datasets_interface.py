@@ -16,10 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 class DatasetsInterface:
-    def __init__(self, task_executor, results_access, dataset_access):
+    def __init__(self, task_executor, event_tracker, results_access, dataset_access):
         self._task_executor = task_executor
+        self._event_tracker = event_tracker        
         self._results_access = results_access
         self._dataset_access = dataset_access
+
         
     def start_preprocessing(self, settings_dict, user_email, logrocket_url=''):
         dataset_settings = DatasetSettings.from_dict(settings_dict)
@@ -60,7 +62,7 @@ class DatasetsInterface:
                 is_plabs_sourced = self._dataset_access.is_perceptilabs_sourced(dataset_id)
             
                 tracking.send_data_selected(
-                    user_email, path, is_plabs_sourced, dataset_id)
+                    self._event_tracker, user_email, path, is_plabs_sourced, dataset_id)
                 
             return datatypes
         

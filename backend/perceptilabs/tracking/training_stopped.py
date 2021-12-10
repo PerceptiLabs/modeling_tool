@@ -1,10 +1,8 @@
-from perceptilabs.tracking.base import get_mixpanel, silence_exceptions
 from perceptilabs.tracking.utils import get_layer_counts, aggregate_summaries, get_tool_version
 
 
-@silence_exceptions
 def send_training_stopped(
-        user_email, model_id, graph_spec, training_duration, 
+        tracker, user_email, model_id, graph_spec, training_duration, 
         dataset_size, sample_size, num_iters_completed, num_epochs_completed, 
         batch_size, data_units_iter_based, data_units_epoch_based,
         model_params, trainable_params,
@@ -31,7 +29,4 @@ def send_training_stopped(
     aggregated_metrics = aggregate_summaries(all_output_summaries)
     payload.update(aggregated_metrics)
 
-    mp = get_mixpanel(user_email)
-    mp.track(user_email, 'training-stopped', payload)
-
-    
+    tracker.emit('training-stopped', user_email, payload)     

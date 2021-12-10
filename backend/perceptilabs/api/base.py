@@ -28,8 +28,10 @@ from perceptilabs.script import ScriptFactory
 from perceptilabs.issues import traceback_from_exception
 from perceptilabs.rygg import RyggWrapper
 from perceptilabs import __version__
+from perceptilabs.tracking.base import EventTracker
 import perceptilabs.utils as utils
 import perceptilabs.tracking as tracking
+
 
 
 logger = logging.getLogger(__name__)
@@ -42,20 +44,43 @@ class MyJSONEncoder(JSONEncoder):
     def default(self, obj):
         return utils.convert(obj)
 
+
+def maybe_get_email(request):
+    email = None
+    if 'Authorization' in request.headers:
+        email = utils.parse_user_email(request.headers['Authorization'])
+    return email
+
     
 def create_app(
-        preview_cache = NullCache(),
-        task_executor = get_task_executor(),
-        message_broker = get_message_broker(),            
-        models_access = ModelAccess(),
-        model_archives_access = ModelArchivesAccess(),
-        epochs_access = EpochsAccess(),
-        dataset_access = DatasetAccess(rygg),
-        training_results_access = TrainingResultsAccess(),
-        testing_results_access = TestingResultsAccess(),
-        serving_results_access = ServingResultsAccess(),
-        preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
+        preview_cache=None,
+        task_executor=None,
+        message_broker=None,
+        event_tracker=None,
+        models_access=None,
+        model_archives_access=None,
+        epochs_access=None,
+        dataset_access=None,
+        training_results_access=None,
+        testing_results_access=None,
+        serving_results_access=None,
+        preprocessing_results_access=None,
 ):
+    # Defer creating objects until function is actually called to ensure any mocking happens first
+    preview_cache = preview_cache or NullCache()
+    task_executor = task_executor or get_task_executor()
+    message_broker = message_broker or get_message_broker()
+    event_tracker = event_tracker or EventTracker()       
+    models_access = models_access or ModelAccess()
+    model_archives_access = model_archives_access or ModelArchivesAccess()
+    epochs_access = epochs_access or EpochsAccess()
+    dataset_access = dataset_access or DatasetAccess(rygg)
+    training_results_access = training_results_access or TrainingResultsAccess()
+    testing_results_access = testing_results_access or TestingResultsAccess()
+    serving_results_access = serving_results_access or ServingResultsAccess()
+    preprocessing_results_access = preprocessing_results_access or PreprocessingResultsAccess(get_data_metadata_cache())
+
+    
     app = Flask(__name__)
     app.json_encoder = MyJSONEncoder
 
@@ -65,11 +90,12 @@ def create_app(
     compress.init_app(app)
 
     datasets_interface = DatasetsInterface(
-        task_executor, preprocessing_results_access, dataset_access)
+        task_executor, event_tracker, preprocessing_results_access, dataset_access)
 
     models_interface = ModelsInterface(
         task_executor,
         message_broker,
+        event_tracker,
         dataset_access,
         models_access,
         model_archives_access,
@@ -89,10 +115,9 @@ def create_app(
     @app.route('/user', methods=['POST'])
     def set_user():
         json_data = request.get_json()
-        user_email = json_data["userEmail"]
+        user_email = maybe_get_email(request)
 
-        if not utils.is_pytest():
-            tracking.send_user_email_set(user_email)
+        tracking.send_user_email_set(event_tracker, user_email)
             
         logger.info("User has been set to %s" % str(user_email))
         return jsonify(f"User has been set to {user_email}")
@@ -144,7 +169,7 @@ def create_app(
             json_data.get('modelId'),
             json_data.get('skippedWorkspace'),
             json_data['datasetSettings'],
-            json_data.get('userEmail')
+            user_email=maybe_get_email(request)
         )
         return jsonify(graph_spec_dict)
 
@@ -193,7 +218,7 @@ def create_app(
         datatypes = datasets_interface.infer_datatypes(
             request.args['path'],
             request.args.get('dataset_id'),
-            user_email=request.args.get('user_email')
+            user_email=maybe_get_email(request)
         )        
         return jsonify(datatypes)
     
@@ -209,7 +234,6 @@ def create_app(
         dataset_settings = json_data['datasetSettings']
         training_settings = json_data['trainingSettings']
         load_checkpoint = json_data['loadCheckpoint']
-        user_email = json_data['userEmail']
         logrocket_url = request.headers.get('X-LogRocket-URL', '')         
 
         models_interface.start_training(
@@ -219,7 +243,7 @@ def create_app(
             training_session_id,
             training_settings,
             load_checkpoint,
-            user_email,
+            maybe_get_email(request),            
             logrocket_url=logrocket_url            
         )
         return jsonify({"content": "core started"})
@@ -263,7 +287,7 @@ def create_app(
         graph_spec_dict = json_data['network']
         dataset_settings_dict = json_data['datasetSettings']
         export_options = json_data['exportSettings']        
-        user_email = json_data.get('userEmail')
+        user_email = maybe_get_email(request)        
         training_settings = json_data.get('trainingSettings')        
         frontend_settings = json_data.get('frontendSettings')
 
@@ -290,7 +314,7 @@ def create_app(
             model_id,
             request.args.get('training_session_id'),            
             json_data['modelName'],
-            json_data['userEmail'],
+            maybe_get_email(request),                    
             logrocket_url=request.headers.get('X-LogRocket-URL', '')         
         )        
         return jsonify(session_id)
@@ -310,7 +334,7 @@ def create_app(
         json_data = request.get_json()
         models_info = json_data['modelsInfo']
         tests = json_data['tests']        
-        user_email = json_data.get('userEmail')
+        user_email = maybe_get_email(request)
         logrocket_url = request.headers.get('X-LogRocket-URL', '')         
 
         session_id = inference_interface.start_testing(
@@ -350,9 +374,7 @@ def create_app(
 
         response = {"error": error.to_dict()}
 
-        email = None
-        if 'Authorization' in request.headers:
-            email = utils.parse_user_email(request.headers['Authorization'])
+        email = maybe_get_email(request)        
         
         with sentry_sdk.push_scope() as scope:
             scope.set_user({'email': email})

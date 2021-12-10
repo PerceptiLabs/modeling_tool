@@ -33,7 +33,11 @@ logger = logging.getLogger(__name__)
 
 
 class Trainer:
-    def __init__(self, data_loader, training_model, training_settings, training_session_id, exporter=None, model_id=None, user_email=None, initial_state=None):
+    def __init__(self, data_loader, training_model, training_settings, training_session_id, exporter=None, model_id=None, initial_state=None, on_training_started=None, on_training_stopped=None, on_training_completed=None):
+        self._on_training_started = on_training_started
+        self._on_training_stopped = on_training_stopped
+        self._on_training_completed = on_training_completed
+
         self._initial_state = initial_state
         self._training_settings = training_settings.copy()
 
@@ -41,7 +45,6 @@ class Trainer:
             refresh_interval=settings.TRAINING_RESULTS_REFRESH_INTERVAL)  # Worst case scenario, it is a factor of 2 seconds behind.
 
         self._model_id = model_id
-        self._user_email = user_email
 
         self._data_loader = data_loader
         self._training_model = training_model
@@ -152,13 +155,13 @@ class Trainer:
         self.ensure_data_initialized()
         peak_memory_usage = get_memory_usage()
 
-        if self._user_email:
-            tracking.send_training_started(self._user_email, self._model_id, self._graph_spec)
-
         if self._num_epochs_completed == 0:
             logger.info("Entering training loop")
         else:
             logger.info(f"Entering training loop (starting from epoch {self._num_epochs_completed}/{self.num_epochs})")
+
+        if self._on_training_started:
+            self._on_training_started()
 
         self._set_status('Training')
         while self._num_epochs_completed < self.num_epochs and not self.is_closed:
@@ -222,14 +225,10 @@ class Trainer:
         logger.info(
             f"Training completed. Total duration: {round(self._training_time, 3)} s")
 
-        if self._user_email:
+        if self._on_training_completed:
             dataset_size, sample_size, num_iters_completed, data_units_iter_based, \
                 data_units_epoch_based, model_params, trainable_params = self._get_mixpanel_pricing_metrics()
-
-            tracking.send_training_completed(
-                self._user_email,
-                self._model_id,
-                self._graph_spec,
+            self._on_training_completed(
                 self._training_time,
                 dataset_size,
                 sample_size,
@@ -595,13 +594,11 @@ class Trainer:
     def stop(self):
         self._set_status('Stopped')
 
-        if self._user_email:
+        if self._on_training_stopped:
             dataset_size, sample_size, num_iters_completed, data_units_iter_based, \
-                data_units_epoch_based, model_params, trainable_params = self._get_mixpanel_pricing_metrics() 
-            tracking.send_training_stopped(
-                self._user_email,
-                self._model_id,
-                self._graph_spec,
+                data_units_epoch_based, model_params, trainable_params = self._get_mixpanel_pricing_metrics()
+            
+            self._on_training_stopped(
                 self._training_time,
                 dataset_size,
                 sample_size,
