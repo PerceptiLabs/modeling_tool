@@ -122,7 +122,7 @@ div
                 v-tooltip:networkElement="'Experimental'",
                 v-if="dataset.exists_on_disk === true",
                 @click="loadModelIntoExistingDataset(dataset.dataset_id)"
-              ) + Load model
+              ) + Load Model
               .new-model-btn(
                 v-if="dataset.exists_on_disk === true",
                 @click="createModelWithCurrentDataSetPath(dataset.dataset_id)"
