@@ -143,7 +143,7 @@ class Trainer:
             inputs_batch, training=False)
         self._compute_total_loss(
             predictions_batch, targets_batch, self._loss_functions)
-
+        
     def run(self, _=None, on_iterate=None, model_id=None):
         """ Run all training steps """
         # TODO: remove _, on_iterate and model_id when possible
@@ -164,12 +164,14 @@ class Trainer:
             self._on_training_started()
 
         self._set_status('Training')
+        self._log_model_summary()
+
         while self._num_epochs_completed < self.num_epochs and not self.is_closed:
             t0 = time.perf_counter()
             yield from self._sleep_while_paused()
             if self.is_closed:
                 break
-            
+
             self._set_status('Training')
 
             yield from self._loop_over_dataset(
@@ -262,6 +264,19 @@ class Trainer:
         state_dict = self.save_state()
         epochs_access.save_state_dict(self._training_session_id, epoch, state_dict)
 
+    def _log_model_summary(self):
+        try:
+            batch, _ = self._data_loader.get_example_batch(batch_size=1)
+        except ValueError:
+            logger.exception(
+                f"The model summary failed because the data loader couldn't get an example batch!" 
+                f"This is usually because the data loader isn't instantiated properly."
+            )
+            return
+            
+        _ = self._training_model(batch)
+        logger.info(self._training_model.summary())
+
     def _log_epoch_summary(self, epoch_time):
         logger.info(
             f"Finished epoch {self._num_epochs_completed}/{self.num_epochs} - "
@@ -270,7 +285,7 @@ class Trainer:
         )
 
     def _loop_over_dataset(self, model, loss_functions, dataset, set_num_batches_completed_this_epoch, is_closed, is_training=True, optimizer=None):
-        """ Loop over all batches of data once """
+        """ Loop over all batches of data once """            
         for steps_completed, (inputs_batch, targets_batch) in enumerate(dataset):
             if is_closed:
                 break

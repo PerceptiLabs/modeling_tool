@@ -384,12 +384,6 @@ class DataLoader:
         dataset = self._get_dataset_partition(partition)
         return dataset.take(1)
 
-    def get_sample(self, partition='training'):
-        """ Returns a sample from a specified partition in the dataset """
-        self.ensure_initialized()
-        dataset = self._get_dataset_partition(partition)
-        return dataset.take(1)
-
     def _apply_pipelines(self, dataset, which='all'):
         """ Applies preprocessing pipelines to the data
 
