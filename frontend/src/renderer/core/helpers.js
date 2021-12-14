@@ -1,49 +1,58 @@
-import cloneDeep from 'lodash.clonedeep';
-import isJS from 'is_js';
+import cloneDeep from "lodash.clonedeep";
+import isJS from "is_js";
 import {
   workspaceGrid,
   pathSlash,
   hideSidebarOnBreakpoint,
-  sidebarNavCoefficientScaleCalculateFromHeight
-} from '@/core/constants.js'
-
-
-
-const projectPathModel = function (projectPath) {
-  return `${projectPath}${pathSlash}model.json`
+  sidebarNavCoefficientScaleCalculateFromHeight,
+} from "@/core/constants.js";
+import {
+  isTaskComplete as rygg_isTaskComplete,
+  getTaskStatus as rygg_getTaskStatus,
+} from "@/core/apiRygg";
+const projectPathModel = function(projectPath) {
+  return `${projectPath}${pathSlash}model.json`;
 };
 
+const getDefaultProjectPathForOs = function() {
+  return "~/Documents/PerceptiLabs"; //the path to MyDocuments is resolved in Kernel
+};
 
-const checkpointDirFromProject = function (projectPath) {
+const checkpointDirFromProject = function(projectPath) {
   return `${projectPath}/checkpoint`;
 };
 
 /*encryption */
-const encryptionData = function (data) {
-  return JSON.stringify(data).split('').reverse().join('');
+const encryptionData = function(data) {
+  return JSON.stringify(data)
+    .split("")
+    .reverse()
+    .join("");
 };
-const decryptionData = function (data) {
-  return JSON.stringify(data).split('').reverse().join('');
+const decryptionData = function(data) {
+  return JSON.stringify(data)
+    .split("")
+    .reverse()
+    .join("");
 };
 
 /*other*/
-const generateID = function () {
+const generateID = function() {
   return Date.now().toString();
 };
 
-const calcLayerPosition = function (position, zoomScaleCoefficient = 1) {
+const calcLayerPosition = function(position, zoomScaleCoefficient = 1) {
   const grid = workspaceGrid * zoomScaleCoefficient;
-  return Math.round(position / grid) * grid
+  return Math.round(position / grid) * grid;
 };
 
-const throttleEv = function (func, ms) {
+const throttleEv = function(func, ms) {
   var isThrottled = false,
     savedArgs,
     savedThis;
   let delay = ms || 33; //30Hz
 
   function wrapper() {
-
     if (isThrottled) {
       savedArgs = arguments;
       savedThis = this;
@@ -54,7 +63,7 @@ const throttleEv = function (func, ms) {
 
     isThrottled = true;
 
-    setTimeout(function () {
+    setTimeout(function() {
       isThrottled = false;
       if (savedArgs) {
         wrapper.apply(savedThis, savedArgs);
@@ -66,11 +75,11 @@ const throttleEv = function (func, ms) {
   return wrapper;
 };
 
-const goToLink = function (url) {
-  let link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('target', '_blank');
-  link.setAttribute('rel', 'noopener noreferrer');
+const goToLink = function(url) {
+  let link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("target", "_blank");
+  link.setAttribute("rel", "noopener noreferrer");
   link.click();
 };
 
@@ -81,13 +90,16 @@ function isCyclic(obj) {
   var detected = false;
 
   function detect(obj, key) {
-    if (obj && typeof obj != 'object') { return; }
+    if (obj && typeof obj != "object") {
+      return;
+    }
 
-    if (stackSet.has(obj)) { // it's cyclic! Print the object and its locations.
+    if (stackSet.has(obj)) {
+      // it's cyclic! Print the object and its locations.
       var oldindex = stack.indexOf(obj);
-      var l1 = keys.join('.') + '.' + key;
-      var l2 = keys.slice(0, oldindex + 1).join('.');
-      console.log('CIRCULAR: ' + l1 + ' = ' + l2 + ' = ' + obj);
+      var l1 = keys.join(".") + "." + key;
+      var l2 = keys.slice(0, oldindex + 1).join(".");
+      console.log("CIRCULAR: " + l1 + " = " + l2 + " = " + obj);
       console.log(obj);
       detected = true;
       return;
@@ -96,8 +108,11 @@ function isCyclic(obj) {
     keys.push(key);
     stack.push(obj);
     stackSet.add(obj);
-    for (var k in obj) { //dive on the object's children
-      if (Object.prototype.hasOwnProperty.call(obj, k)) { detect(obj[k], k); }
+    for (var k in obj) {
+      //dive on the object's children
+      if (Object.prototype.hasOwnProperty.call(obj, k)) {
+        detect(obj[k], k);
+      }
     }
 
     keys.pop();
@@ -106,85 +121,93 @@ function isCyclic(obj) {
     return;
   }
 
-  detect(obj, 'obj');
+  detect(obj, "obj");
   return detected;
 }
 
-const deepCopy = function (object) {
+const deepCopy = function(object) {
   // isCyclic(object); // find circular references
-  return JSON.parse(JSON.stringify(object))
+  return JSON.parse(JSON.stringify(object));
 };
 
-const deepCloneNetwork = function (object) {
-  // isCyclic(object); // find circular references  
-  return JSON.parse(JSON.stringify(
-    object,
-    (key, val) => {
-      if (key === 'calcAnchor') return undefined;
-      else return val;
-    },
-    ' ')
+const deepCloneNetwork = function(object) {
+  // isCyclic(object); // find circular references
+  return JSON.parse(
+    JSON.stringify(
+      object,
+      (key, val) => {
+        if (key === "calcAnchor") return undefined;
+        else return val;
+      },
+      " ",
+    ),
   );
 };
 
-const isLocalStorageAvailable = function () {
+const isLocalStorageAvailable = function() {
   try {
-    var storage = window['localStorage'],
-      x = '__storage_test__';
+    var storage = window["localStorage"],
+      x = "__storage_test__";
     storage.setItem(x, x);
     storage.removeItem(x);
     return true;
-  }
-  catch (e) {
-    return e instanceof DOMException && (
+  } catch (e) {
+    return (
+      e instanceof DOMException &&
       // everything except Firefox
-      e.code === 22 ||
-      // Firefox
-      e.code === 1014 ||
-      // test name field too, because code might not be present
-      // everything except Firefox
-      e.name === 'QuotaExceededError' ||
-      // Firefox
-      e.name === 'NS_ERROR_DOM_QUOTA_REACHED') &&
+      (e.code === 22 ||
+        // Firefox
+        e.code === 1014 ||
+        // test name field too, because code might not be present
+        // everything except Firefox
+        e.name === "QuotaExceededError" ||
+        // Firefox
+        e.name === "NS_ERROR_DOM_QUOTA_REACHED") &&
       // acknowledge QuotaExceededError only if there's something already stored
-      storage && storage.length !== 0;
+      storage &&
+      storage.length !== 0
+    );
   }
-}
+};
 
-const stringifyNetworkObjects = function (network) {
+const stringifyNetworkObjects = function(network) {
   return JSON.stringify(
     network,
     (key, val) => {
-      if (key === 'calcAnchor') return undefined;
+      if (key === "calcAnchor") return undefined;
       else return val;
     },
-    ' ');
+    " ",
+  );
 };
 
 const isOsWindows = () => {
   const windowsUserAgent = [
-    'Windows NT 10.0',
-    'Windows NT 6.2',
-    'Windows NT 6.1',
-    'Windows NT 6.0',
-    'Windows NT 5.1',
-    'Windows NT 5.0',
+    "Windows NT 10.0",
+    "Windows NT 6.2",
+    "Windows NT 6.1",
+    "Windows NT 6.0",
+    "Windows NT 5.1",
+    "Windows NT 5.0",
   ];
   const userAgent = window.navigator.userAgent;
-  return windowsUserAgent.map(windowsStr => userAgent.indexOf(windowsStr) !== -1).filter(itm => itm === true).length > 0;
+  return (
+    windowsUserAgent
+      .map(windowsStr => userAgent.indexOf(windowsStr) !== -1)
+      .filter(itm => itm === true).length > 0
+  );
 };
 const isOsMacintosh = () => {
-  return window.navigator.platform.indexOf('Mac') > -1
+  return window.navigator.platform.indexOf("Mac") > -1;
 };
 
 const isOsLinux = () => {
   return /Linux/.test(window.navigator.platform);
-
 };
 
 const isDesktopApp = () => {
   const userAgent = window.navigator.userAgent.toLowerCase();
-  return (userAgent.indexOf(' electron/') > -1);
+  return userAgent.indexOf(" electron/") > -1;
 };
 
 const shouldHideSidebar = () => {
@@ -194,220 +217,222 @@ const shouldHideSidebar = () => {
 const calculateSidebarScaleCoefficient = () => {
   const pageHeight = document.documentElement.clientHeight;
   if (pageHeight <= sidebarNavCoefficientScaleCalculateFromHeight) {
-    document.documentElement.style.setProperty('--sidebar-scale-coefficient', (pageHeight / sidebarNavCoefficientScaleCalculateFromHeight).toString());
+    document.documentElement.style.setProperty(
+      "--sidebar-scale-coefficient",
+      (pageHeight / sidebarNavCoefficientScaleCalculateFromHeight).toString(),
+    );
   } else {
-    document.documentElement.style.setProperty('--sidebar-scale-coefficient', '1');
+    document.documentElement.style.setProperty(
+      "--sidebar-scale-coefficient",
+      "1",
+    );
   }
 };
 
-const parseJWT = (jwt) => {
-  if (!jwt) { return; }
+const parseJWT = jwt => {
+  if (!jwt) {
+    return;
+  }
 
   try {
-    const payload = jwt.split('.')[1];
+    const payload = jwt.split(".")[1];
     if (payload) {
       return JSON.parse(window.atob(payload));
     }
   } catch (error) {
-    console.error('parseJWT', error);
+    console.error("parseJWT", error);
     return;
   }
 };
 
 const isElectron = () => {
-  return navigator.userAgent.toLowerCase().indexOf(' electron/') > -1;
+  return navigator.userAgent.toLowerCase().indexOf(" electron/") > -1;
 };
 const isWeb = () => {
-  return !(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1);
+  return !(navigator.userAgent.toLowerCase().indexOf(" electron/") > -1);
 };
 
 const setAppTypeRootClasses = () => {
   if (isWeb()) {
-    document.body.classList.add('is-web');
-    document.getElementsByTagName('html')[0].classList.add('is-web');
+    document.body.classList.add("is-web");
+    document.getElementsByTagName("html")[0].classList.add("is-web");
   } else {
-    document.body.classList.add('is-electron');
-    document.getElementsByTagName('html')[0].classList.add('is-electron');
+    document.body.classList.add("is-electron");
+    document.getElementsByTagName("html")[0].classList.add("is-electron");
   }
 };
 
-const debounce = function (callback, waitInMs) {
-
+const debounce = function(callback, waitInMs) {
   let timerHandle;
 
-  return function () {
+  return function() {
     clearInterval(timerHandle);
     timerHandle = setTimeout(() => {
-
       callback.apply(this, arguments);
-
     }, waitInMs);
-  }
-}
+  };
+};
 
-
-const promiseWithTimeout = function (timeout, promise) {
+const promiseWithTimeout = function(timeout, promise) {
   const timeoutPromise = new Promise((resolve, reject) => {
-    const timerHandle = setTimeout(
-      () => resolve(),
-      timeout);
+    const timerHandle = setTimeout(() => resolve(), timeout);
   });
 
-  return Promise.race([
-    promise,
-    timeoutPromise
-  ]);
-}
+  return Promise.race([promise, timeoutPromise]);
+};
 
-const layerBgColor = function (componentName) {
-  let className = '';
+const layerBgColor = function(componentName) {
+  let className = "";
   switch (componentName) {
-    case 'DataData':
-    case 'DataEnvironment':
-    case 'DataRandom':
-    case 'IoInput':
-      className = 'net-color-data';
+    case "DataData":
+    case "DataEnvironment":
+    case "DataRandom":
+    case "IoInput":
+      className = "net-color-data";
       break;
-    case 'DeepLearningFC':
-    case 'DeepLearningConv':
-    case 'DeepLearningRecurrent':
-    case 'PreTrainedResNet50':
-    case 'PreTrainedVGG16':
-    case 'PreTrainedMobileNetV2':
-    case 'PreTrainedInceptionV3':
-    case 'UNet':
-      className = 'net-color-learn-deep';
+    case "DeepLearningFC":
+    case "DeepLearningConv":
+    case "DeepLearningRecurrent":
+    case "PreTrainedResNet50":
+    case "PreTrainedVGG16":
+    case "PreTrainedMobileNetV2":
+    case "PreTrainedInceptionV3":
+    case "UNet":
+      className = "net-color-learn-deep";
       break;
-    case 'ProcessCrop':
-    case 'ProcessEmbed':
-    case 'ProcessGrayscale':
-    case 'ProcessOneHot':
-    case 'ProcessReshape':
-    case 'ProcessRescale':
-      className = 'net-color-process';
+    case "ProcessCrop":
+    case "ProcessEmbed":
+    case "ProcessGrayscale":
+    case "ProcessOneHot":
+    case "ProcessReshape":
+    case "ProcessRescale":
+      className = "net-color-process";
       break;
-    case 'TrainNormal':
-    case 'TrainGenetic':
-    case 'TrainDynamic':
-    case 'TrainReinforce':
-    case 'TrainLoss':
-    case 'TrainOptimizer':
-    case 'TrainDetector':
-    case 'TrainGan':
-    case 'TrainRegression':
-    case 'IoOutput':
-      className = 'net-color-train';
+    case "TrainNormal":
+    case "TrainGenetic":
+    case "TrainDynamic":
+    case "TrainReinforce":
+    case "TrainLoss":
+    case "TrainOptimizer":
+    case "TrainDetector":
+    case "TrainGan":
+    case "TrainRegression":
+    case "IoOutput":
+      className = "net-color-train";
       break;
-    case 'MathArgmax':
-    case 'MathMerge':
-    case 'MathSplit':
-    case 'MathSwitch':
-      className = 'net-color-math';
+    case "MathArgmax":
+    case "MathMerge":
+    case "MathSplit":
+    case "MathSwitch":
+      className = "net-color-math";
       break;
-    case 'ClassicMLDbscans':
-    case 'ClassicMLKMeans':
-    case 'ClassicMLKNN':
-    case 'ClassicMLRandomForest':
-    case 'ClassicMLSVM':
-      className = 'net-color-learn-class';
+    case "ClassicMLDbscans":
+    case "ClassicMLKMeans":
+    case "ClassicMLKNN":
+    case "ClassicMLRandomForest":
+    case "ClassicMLSVM":
+      className = "net-color-learn-class";
       break;
-    case 'LayerContainer':
-      className = 'net-color-layercontainer';
+    case "LayerContainer":
+      className = "net-color-layercontainer";
       break;
-    case 'LayerCustom':
-      className = 'net-color-custom';
+    case "LayerCustom":
+      className = "net-color-custom";
       break;
   }
   return [className];
-}
+};
 
-const layerBgColorTransparent = function (componentName) {
-  let className = '';
+const layerBgColorTransparent = function(componentName) {
+  let className = "";
   switch (componentName) {
-    case 'DataData':
-    case 'DataEnvironment':
-      className = 'net-element-data';
+    case "DataData":
+    case "DataEnvironment":
+      className = "net-element-data";
       break;
-    case 'DeepLearningFC':
-    case 'DeepLearningConv':
-    case 'DeepLearningRecurrent':
-    case 'PreTrainedResNet50':
-    case 'PreTrainedVGG16':
-    case 'PreTrainedInceptionV3':
-      className = 'net-element-learn-deep';
+    case "DeepLearningFC":
+    case "DeepLearningConv":
+    case "DeepLearningRecurrent":
+    case "PreTrainedResNet50":
+    case "PreTrainedVGG16":
+    case "PreTrainedInceptionV3":
+      className = "net-element-learn-deep";
       break;
-    case 'ProcessCrop':
-    case 'ProcessEmbed':
-    case 'ProcessGrayscale':
-    case 'ProcessOneHot':
-    case 'ProcessReshape':
-    case 'ProcessRescale':
-      className = 'net-element-process';
+    case "ProcessCrop":
+    case "ProcessEmbed":
+    case "ProcessGrayscale":
+    case "ProcessOneHot":
+    case "ProcessReshape":
+    case "ProcessRescale":
+      className = "net-element-process";
       break;
-    case 'TrainNormal':
-    case 'TrainGenetic':
-    case 'TrainDynamic':
-    case 'TrainReinforce':
-    case 'TrainLoss':
-    case 'TrainOptimizer':
-    case 'TrainDetector':
-      className = 'net-element-train';
+    case "TrainNormal":
+    case "TrainGenetic":
+    case "TrainDynamic":
+    case "TrainReinforce":
+    case "TrainLoss":
+    case "TrainOptimizer":
+    case "TrainDetector":
+      className = "net-element-train";
       break;
-    case 'MathArgmax':
-    case 'MathMerge':
-    case 'MathSplit':
-      className = 'net-element-math';
+    case "MathArgmax":
+    case "MathMerge":
+    case "MathSplit":
+      className = "net-element-math";
       break;
-    case 'ClassicMLDbscans':
-    case 'ClassicMLKMeans':
-    case 'ClassicMLKNN':
-    case 'ClassicMLRandomForest':
-    case 'ClassicMLSVM':
-      className = 'net-element-learn-class';
+    case "ClassicMLDbscans":
+    case "ClassicMLKMeans":
+    case "ClassicMLKNN":
+    case "ClassicMLRandomForest":
+    case "ClassicMLSVM":
+      className = "net-element-learn-class";
       break;
-    case 'LayerContainer':
-      className = 'net-element-layercontainer';
+    case "LayerContainer":
+      className = "net-element-layercontainer";
       break;
   }
   return [className];
-}
+};
 
-const hashObject = function (inputObject) {
+const hashObject = function(inputObject) {
   const concatValues = Object.values(inputObject)
     .map(eo => eo.toString())
-    .join('');
+    .join("");
 
-  return hashString(concatValues || '');
-}
+  return hashString(concatValues || "");
+};
 
-const hashString = s => s.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0);
+const hashString = s =>
+  s.split("").reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
 
 const createCoreNetwork = (network, currentNetworkUsingWeights = false) => {
-  if (!network) { return null; }
+  if (!network) {
+    return null;
+  }
 
   let layers = {};
   for (let layer in network.networkElementList) {
     const el = network.networkElementList[layer];
-    if (el.componentName === 'LayerContainer') continue;
+    if (el.componentName === "LayerContainer") continue;
 
     /*prepare checkpoint*/
     const checkpointPath = {
-      'load_checkpoint': true, // always true during testing
-      'path': ''
+      load_checkpoint: true, // always true during testing
+      path: "",
     };
 
     if (el.checkpoint.length >= 2) {
-      checkpointPath.path = el.checkpoint[1]
+      checkpointPath.path = el.checkpoint[1];
 
-      if (checkpointPath.path.slice(-1) !== '/') {
-        checkpointPath.path += '/';
-      } else if (checkpointPath.path.slice(-1) !== '\\') {
-        checkpointPath.path += '\\';
+      if (checkpointPath.path.slice(-1) !== "/") {
+        checkpointPath.path += "/";
+      } else if (checkpointPath.path.slice(-1) !== "\\") {
+        checkpointPath.path += "\\";
       }
 
-      checkpointPath.path += 'checkpoint';
+      checkpointPath.path += "checkpoint";
     } else {
-      checkpointPath.path = network.apiMeta.location + '/checkpoint'
+      checkpointPath.path = network.apiMeta.location + "/checkpoint";
     }
 
     /*prepare elements*/
@@ -421,110 +446,195 @@ const createCoreNetwork = (network, currentNetworkUsingWeights = false) => {
       backward_connections: el.backward_connections,
       forward_connections: el.forward_connections,
       visited: el.visited,
-      previewVariable: el.previewVariable
+      previewVariable: el.previewVariable,
     };
-
   }
   return layers;
-}
+};
 
-const objectToQueryParams = (reqData) => {
-  return Object.keys(reqData).map(function (key) {
-    return key + '=' + reqData[key];
-  }).join('&');
-}
+const objectToQueryParams = reqData => {
+  return Object.keys(reqData)
+    .map(function(key) {
+      return key + "=" + reqData[key];
+    })
+    .join("&");
+};
 
-const removeNetworkSnapshots = (inputNetwork) => {
-  if (!inputNetwork || !inputNetwork['networkSnapshots']) { return inputNetwork; }
+const removeChartData = inputNetwork => {
+  let network = cloneDeep(inputNetwork);
+
+  network = cleanNetworkElementListChartData(network);
+  network = cleanNetworkSnapshotsChartData(network);
+  if (network.networkMeta && network.networkMeta.chartsRequest)
+    network.networkMeta.chartsRequest.timerID = null;
+  if (network.networkMeta.coreStatus) {
+    delete network.networkMeta.coreStatus;
+  }
+  return network;
+
+  function cleanNetworkElementListChartData(net) {
+    if (!net || !net["networkElementList"]) {
+      return net;
+    }
+
+    for (const key of Object.keys(net["networkElementList"])) {
+      const layerObject = net["networkElementList"][key];
+      if (!layerObject.hasOwnProperty("chartData")) {
+        continue;
+      }
+
+      layerObject["chartData"] = {};
+      layerObject["chartDataIsLoading"] = 0;
+    }
+    return net;
+  }
+
+  function cleanNetworkSnapshotsChartData(net) {
+    if (!net || !net["networkSnapshots"]) {
+      return net;
+    }
+
+    const networkHaveSnapshots =
+      net.networkSnapshots && net.networkSnapshots.length > 0;
+
+    if (networkHaveSnapshots) {
+      for (const key of Object.keys(net["networkSnapshots"][0])) {
+        const layerObject = net["networkSnapshots"][0][key];
+        if (!layerObject.hasOwnProperty("chartData")) {
+          continue;
+        }
+
+        layerObject["chartData"] = {};
+      }
+    }
+
+    return net;
+  }
+};
+
+const removeNetworkSnapshots = inputNetwork => {
+  if (!inputNetwork || !inputNetwork["networkSnapshots"]) {
+    return inputNetwork;
+  }
 
   const network = cloneDeep(inputNetwork);
-  delete network['networkSnapshots'];
+  delete network["networkSnapshots"];
 
   return network;
-}
+};
 const setCookie = (name, value, days) => {
   let expires = "";
   if (days) {
     const date = new Date();
-    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     expires = "; expires=" + date.toUTCString();
   }
   document.cookie = name + "=" + (value || "") + expires + "; path=/";
-}
-const getCookie = (name) => {
+};
+const getCookie = name => {
   const nameEQ = name + "=";
-  const ca = document.cookie.split(';');
+  const ca = document.cookie.split(";");
   for (let i = 0; i < ca.length; i++) {
     let c = ca[i];
-    while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+    while (c.charAt(0) == " ") c = c.substring(1, c.length);
     if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
   }
   return null;
-}
+};
 
-const eraseCookie = (name) => {
-  document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-}
+const eraseCookie = name => {
+  document.cookie = name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+};
 
 export const arrayIncludeOrOmit = (array, value) => {
   const ix = array.indexOf(value);
-  (ix !== -1) ? array.splice(ix, 1) : array.push(value);
+  ix !== -1 ? array.splice(ix, 1) : array.push(value);
   return array;
-}
+};
 const sleep = m => new Promise(r => setTimeout(r, m));
 
 export const isEnvDataWizardEnabled = () => {
-  return process.env.ENABLE_DATAWIZARD === 'true';
-}
-
-export const isPublicDatasetEnabled = () => {
-  return process.env.ENABLE_PUBLIC_DATASET === 'true';
-}
-
-export const isServingEnabled = () => {
-  return process.env.ENABLE_SERVING === 'true';
+  return process.env.ENABLE_DATAWIZARD === "true";
 };
 
-export const getFirstElementFromObject = (data) => {
-  if (!data) throw new Error('No object passed');
+export const isPublicDatasetEnabled = () => {
+  return process.env.ENABLE_PUBLIC_DATASET === "true";
+};
+
+export const isServingEnabled = () => {
+  return process.env.ENABLE_SERVING === "true";
+};
+
+export const isFolderLoadingEnabled = () => {
+  return process.env.ENABLE_FOLDER_LOADING === "true";
+};
+
+export const getFirstElementFromObject = data => {
+  if (!data) throw new Error("No object passed");
   return data[Object.keys(data)[0]];
 };
 
 export const removeKeysFromObject = (obj, removeKeys) => {
-  return Object.keys(obj).reduce((acc, key) => (removeKeys.includes(key) ? acc : { ...acc, [key]: obj[key] }), {});
-}
+  return Object.keys(obj).reduce(
+    (acc, key) =>
+      removeKeys.includes(key) ? acc : { ...acc, [key]: obj[key] },
+    {},
+  );
+};
 
-export const isEmptyObject = (obj) => {
+export const isEmptyObject = obj => {
   return !obj || Object.keys(obj).length === 0;
-}
+};
 
 export const isBrowserChromeOrFirefox = () => {
-  return (isJS.chrome() || isJS.firefox()) && navigator.userAgent.indexOf('Edg/') === -1;
-}
+  return (
+    (isJS.chrome() || isJS.firefox()) &&
+    navigator.userAgent.indexOf("Edg/") === -1
+  );
+};
 
 /**
- * Determine if a value is an Object
  *
- * @param {Object} val The value to test
- * @returns {boolean} True if value is an Object, otherwise false
- */
-export function isObject(val) {
-  return val !== null && typeof val === 'object';
-}
-
-/**
- * 
- * @param {string} string: url to be shorten 
+ * @param {string} string: url to be shorten
  * @param {number} length desired length of the shorten string
  * @returns {string} Shortened url with [...] in the middle
  */
 export function strShortener(string, length = 20) {
   const preLength = Math.floor(length / 2);
-  return string.length > length ? string.substr(0, preLength) + '[...]' + string.substr(preLength - length) : string
+  return string.length > length
+    ? string.substr(0, preLength) + "[...]" + string.substr(preLength - length)
+    : string;
 }
+
+/**
+ *
+ * @param {string} taskId
+ * @param {requestCallback} cb
+ * @param {number} ms
+ * @returns
+ */
+export const whenCeleryTaskDone = (taskId, cb, ms = 50) => {
+  return new Promise(resolve => {
+    if (!taskId) {
+      return resolve();
+    } else {
+      const intervalId = setInterval(() => {
+        rygg_getTaskStatus(taskId).then(taskStatus => {
+          if (rygg_isTaskComplete(taskStatus.state)) {
+            clearInterval(intervalId);
+            return resolve(taskStatus);
+          } else {
+            cb(taskStatus);
+          }
+        });
+      }, ms);
+    }
+  });
+};
 
 export {
   projectPathModel,
+  getDefaultProjectPathForOs,
   checkpointDirFromProject,
   encryptionData,
   decryptionData,
@@ -558,5 +668,5 @@ export {
   getCookie,
   eraseCookie,
   sleep,
-  isCyclic
-}
+  isCyclic,
+};

@@ -7,45 +7,175 @@ div
       @change="onSelectLoadOption"
     )
   .content
+    //- filter should ne passed here to filter model types 
     public-dataset-list(
       v-if="selectedLoadOption === LoadDatasetOptions.public",
-      @loadDataset="handleDataPathUpdates"
+      @loadDataset="handleDataPathUpdates",
+      :modelType="modelType"
     )
     template(v-else)
-      .main-file-structure-contents
-        .load-contents-group
-          button.btn.btn--primary.load-dataset(
-            @click="openFilePicker('setDataPath')",
-            :disabled="isFilePickerOpened"
-          ) Upload .CSV
-      .find-out-message Find our starting guide
-        span.guide-link(@click="openPLVideoTutorialPage") here.
+      template(v-if="modelType === modelTypes.CLASSIFICATION")
+        .model-local-wrapper
+          .d-flex
+            .w-50
+              h4.load-guide-title Folder Structure Guide
+              .load-guide-list
+                .d-flex
+                  span 1.
+                  p Create separate folders for each <br/> different category of images.
+                .d-flex
+                  span 2.
+                  p Group them into a folder for upload.
+            .w-50.d-flex.flex-row-reverse
+              .classification-image-wrapper
+                img(src="static/img/classification-model-structure.png")
+        .d-flex.justify-content-center.mb-20
+          create-model-picker(
+            label="Select Upload Folder",
+            @onPick="$emit('handleImageClassificationFolderPicker', $event)"
+          )
+        .d-flex.justify-content-between
+          button.link.back-to-previous-step(@click="backToPreviousStep")
+            img(src="/static/img/back-arrow.svg")
+            | Back
+          button.btn.btn--primary(
+            :disabled="isImageClassificationNextButtonDissabled",
+            @click="$emit('handleImageClassificationNext')"
+          ) Next
+      template(v-if="modelType === modelTypes.SEGMENTATION")
+        .model-local-wrapper
+          .d-flex
+            .w-50
+              h4.load-guide-title File Separation Guide
+              .load-guide-list
+                .d-flex
+                  span 1.
+                  p Ensure all files are in .jpg/.jpeg/.png/.tiff/.tif.
+                .d-flex
+                  span 2.
+                  p Separate files for Images and Masks into different folders.
+                .d-flex
+                  span 3.
+                  p Name each image and mask pair identically.
+                .d-flex
+                  span 4.
+                  p Ensure Image files all in either RGB or Grayscale.
+                .d-flex
+                  span 5.
+                  p Ensure Mask files are in Grayscale where the pixel value is the class value.
+            .w-50.d-flex.justify-content-around
+              .segmentation-image-wrapper
+                img(src="static/img/segmentation-guide-image.png")
+                h2.segmentation-image-name Images/Four_1.jpg
+              .segmentation-image-wrapper
+                img(src="static/img/segmentation-guide-mask.png")
+                h2.segmentation-image-name Masks/Four_1.png
+
+        // LOADING FILE BUTTONS
+        .d-flex.justify-content-center.mb-20
+          create-model-picker(
+            label="Select Image Folder",
+            @onPick="$emit('handleImageSegmentationImageFolderPicker', $event)"
+          )
+        .d-flex.justify-content-center.mb-20
+          create-model-picker(
+            label="Select Mask Folder",
+            @onPick="$emit('handleImageSegmentationMaskFolderPicker', $event)"
+          )
+        .d-flex.justify-content-between
+          button.link.back-to-previous-step(@click="$emit('back')")
+            img(src="/static/img/back-arrow.svg")
+            | Back
+          button.btn.btn--primary(
+            :disabled="isImageSegmentationNextButtonDisabled",
+            @click="$emit('handleImageSegmentationNext')"
+          ) Next
+      template(v-if="modelType === modelTypes.MULTI_MODAL")
+        .model-local-wrapper
+          .d-flex
+            .w-50
+              h4.load-guide-title File Guide
+              .load-guide-list
+                .d-flex
+                  span 1.
+                  p Ensure CSV file contains two or more columns separated by comma “,” where every column will correspond to either an Input or Target feature.
+                .d-flex
+                  span 2.
+                  p Ensure the first row contains the name of each column as headers. Make sure these names are unique and reflect the content of the column.
+            .w-50.d-flex.flex-row-reverse
+              .multi-modal-image-wrapper
+                img(src="static/img/multi-modal-guide-csv.png")
+        .d-flex.justify-content-center.mb-20
+          create-model-picker(
+            label="Select .csv",
+            @onPick="$emit('handleMultiModalCsvPicker', $event)",
+            :pickCsv="true"
+          )
+        .d-flex.justify-content-between
+          button.link.back-to-previous-step(@click="$emit('back')")
+            img(src="/static/img/back-arrow.svg")
+            | Back
+          button.btn.btn--primary(
+            :disabled="isMultiModalNextButtonDisabled",
+            @click="$emit('handleMultiModalNext')"
+          ) Next
+      template(v-if="!isFolderLoadingEnabled")
+        .main-file-structure-contents
+          .load-contents-group
+            button.btn.btn--primary.load-dataset(
+              @click="openFilePicker('setDataPath')",
+              :disabled="isFilePickerOpened"
+            ) Upload .CSV
+        .find-out-message Find our starting guide
+          span.guide-link(@click="openPLVideoTutorialPage") here.
 </template>
 
 <script>
 import PublicDatasetList from "./public-dataset-list";
-
+import CreateModelPicker from "./create-model-picker.vue";
+import { modelTypes } from "@/core/constants";
+import { isFolderLoadingEnabled } from "@/core/helpers";
 const LoadDatasetOptions = {
   public: "Public",
-  local: "Local"
+  local: "Local",
 };
 
 export default {
   name: "LoadDataSet",
-  components: { PublicDatasetList },
+  components: {
+    PublicDatasetList,
+    CreateModelPicker,
+  },
   data: () => ({
     options: Object.keys(LoadDatasetOptions).map(key => ({
       value: LoadDatasetOptions[key],
-      label: LoadDatasetOptions[key]
+      label: LoadDatasetOptions[key],
     })),
     LoadDatasetOptions: LoadDatasetOptions,
-    selectedLoadOption: LoadDatasetOptions.public
+    selectedLoadOption: LoadDatasetOptions.public,
+    modelTypes: modelTypes,
+    isFolderLoadingEnabled: isFolderLoadingEnabled(),
+    // under feature flag
+    multiModalPath: null,
   }),
   props: {
+    modelType: {
+      type: String,
+      default: "",
+    },
+    isImageClassificationNextButtonDissabled: {
+      type: Boolean,
+    },
+    isImageSegmentationNextButtonDisabled: {
+      type: Boolean,
+    },
+    isMultiModalNextButtonDisabled: {
+      type: Boolean,
+    },
     isFilePickerOpened: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   methods: {
     onSelectLoadOption(ev) {
@@ -59,8 +189,15 @@ export default {
     },
     handleDataPathUpdates(value) {
       this.$emit("handleDataPathUpdates", value);
-    }
-  }
+    },
+    backToPreviousStep() {
+      this.$emit("handleImageSegmentationImageFolderPicker", null);
+      this.$emit("handleImageSegmentationMaskFolderPicker", null);
+      this.$emit("handleImageClassificationFolderPicker", null);
+      this.$emit("handleMultiModalCsvPicker", null);
+      this.$emit("back");
+    },
+  },
 };
 </script>
 
@@ -104,5 +241,67 @@ export default {
   cursor: pointer;
   color: $color-6;
   text-decoration: underline;
+}
+.model-local-wrapper {
+  margin: 24px 0;
+  background: var(--neutral-7);
+  border-radius: 4px;
+  padding: 30px;
+  min-height: 150px;
+}
+.classification-image-wrapper {
+  border: $border-1;
+  padding: 20px;
+  background-color: #fff;
+}
+.multi-modal-image-wrapper {
+  border: $border-1;
+  padding: 20px;
+  background-color: var(--neutral-8);
+}
+.load-guide-title {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+.load-guide-list {
+  font-size: 14px;
+  p {
+    margin-left: 5px;
+    margin-bottom: 0;
+  }
+}
+.mb-20 {
+  margin-bottom: 20px;
+}
+.segmentation-image-wrapper {
+  height: 150px;
+  width: 150px;
+  border: $border-1;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 17px 30px;
+  background-color: var(--neutral-8);
+}
+
+.segmentation-image-name {
+  margin-top: 10px;
+  font-size: 10px;
+}
+.mt-10 {
+  margin-top: 20px;
+}
+.back-to-previous-step {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  img {
+    margin-right: 20px;
+  }
 }
 </style>

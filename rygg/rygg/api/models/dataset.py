@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import models as dj_models
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
+from django_http_exceptions import HTTPExceptions
 from model_utils import Choices
 from model_utils.models import SoftDeletableModel, StatusModel, TimeStampedModel
 import os
@@ -9,7 +10,7 @@ import shutil
 import uuid
 
 from rygg.api.tasks import delete_path_async
-from rygg.files.tasks import download_async, unzip_async
+from rygg.files.tasks import download_async, unzip_async, create_classification_csv_async, create_segmentation_csv_async
 from rygg.settings import IS_CONTAINERIZED, file_upload_dir, IS_SERVING, DATA_BLOB
 from rygg.api.models import Project, Model
 from rygg.files.utils.file import get_text_lines
@@ -56,14 +57,14 @@ def take_temp_file(tempfile_path, dest_dir, filename):
 
 class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
     # On enterprise, the client is expected to upload the file afterward so the default status is "new".
-    # On local, the file is expected to already exist so the default is "uploaded"
-    STATUS = Choices('new', 'uploading', 'uploaded')
+    # On local, the file is expected to already exist so the default is "building csv"
+    STATUS = Choices('new', 'uploading', 'building csv', 'uploaded')
 
-    # only set STATUS to something else when we're running, lest we confuse the migrations system
+    # set status to building csv initially. when the csv file exists, it will be updated to uploaded
     if IS_SERVING and not IS_CONTAINERIZED:
-        STATUS = Choices("uploaded")
+        STATUS = Choices("building csv", "uploaded")
 
-
+    
     project = dj_models.ForeignKey(
         Project,
         related_name="datasets",
@@ -75,6 +76,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
     source_url = dj_models.TextField(blank=True)
     models = dj_models.ManyToManyField(Model, blank=True, related_name="datasets")
     root_dir = dj_models.CharField(max_length=1000, blank=True, validators=[validate_root_dir])
+    
 
     def get_by_id(id):
         return Dataset.available_objects.get(pk=id, project__is_removed=False)
@@ -110,7 +112,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
 
 
     class Meta:
-        unique_together = (("project", "name"),
+        unique_together = (("project", "name"), 
                            ("project", "location"))
 
 
@@ -127,12 +129,12 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
             project_id=project_id,
             name=name,
             source_url=f"{DATA_BLOB}/{remote_name}",
-            root_dir = root_dir,
+            root_dir = root_dir
         )
 
         dataset.save()
         task_id = download_async(dataset.dataset_id)
-
+        
         return task_id, dataset
 
     @classmethod
@@ -149,9 +151,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
             project_id=project_id,
             name=dataset_name,
             location=upload_path,
-            root_dir=dest_dir,
-
-            # a way to keep track of the fact that this was an upload
+            root_dir=dest_dir,         # a way to keep track of the fact that this was an upload
             source_url=f"{UPLOAD_PREFIX}{upload_path}",
         )
         dataset.save()
@@ -160,10 +160,65 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         return task_id, dataset
 
 
+    @classmethod
+    def create_classification_dataset(self, project_id, dataset_path):
+        if IS_CONTAINERIZED:
+            raise HTTPExceptions.NOT_FOUND
+            
+        location = dataset_path+'/'+'pl_data.csv'
+        name = os.path.split(dataset_path)[1]
+        
+        datasetExist = Dataset.get_queryset().filter(
+            project_id=project_id,
+            name=name,
+            location=location
+        ).exists()
+
+        if datasetExist:
+            return None, Dataset.get_queryset().get(project_id=project_id,name=name,location=location)
+        
+        dataset = Dataset(
+            project_id=project_id,
+            name=name,
+            location=location,
+        )
+        dataset.save()
+        task_id = create_classification_csv_async(dataset, dataset_path)
+        return task_id, dataset
+    
+    @classmethod
+    def create_segmentation_dataset(self, project_id, image_path, mask_path):
+        if IS_CONTAINERIZED:
+            raise HTTPExceptions.NOT_FOUND
+            
+        image_root_dir = os.path.split(image_path)[0]
+        
+        location = image_path+'/'+'pl_data.csv'
+        name = os.path.split(image_root_dir)[1]
+        
+        datasetExist = Dataset.get_queryset().filter(
+            project_id=project_id,
+            name=name,
+            location=location
+        ).exists()
+        if datasetExist:
+            return None, Dataset.get_queryset().get(project_id=project_id,name=name,location=location)
+
+        dataset = Dataset(
+            project_id=project_id,
+            name=name,
+            location=location,
+        )
+        dataset.save()
+        task_id = create_segmentation_csv_async(dataset, image_path, mask_path)
+        return task_id, dataset
+    
+    
 @receiver(pre_save, sender=Dataset)
 def dataset_pre_save(sender, **kwargs):
     ds = kwargs["instance"]
-
+    if ds.exists_on_disk:
+        ds.status = 'uploaded'
     # we're only modifying datasets that have been removed
     if not ds.is_removed:
         return

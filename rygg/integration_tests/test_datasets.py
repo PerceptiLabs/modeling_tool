@@ -16,6 +16,10 @@ LARGE_DATASET_SIZE = 50 * MB
 
 SPAM_CSV = os.path.join(os.path.dirname(__file__), "spam.zip")
 
+CLASSIFICATION_DATASET_DIR = os.path.join(os.path.dirname(__file__), "test_data")
+SEGMENTATION_IMAGE_PATH = os.path.join(os.path.dirname(__file__), 'test_data', "setA")
+SEGMENTATION_MASK_PATH = os.path.join(os.path.dirname(__file__), 'test_data', "setB")
+
 def assert_workingdir(rest, project_id):
     if rest.is_enterprise:
         assert os.path.isdir(rest.get_upload_dir(project_id))
@@ -490,3 +494,78 @@ def test_dataset_location_read_only(rest, tmpdir, tmp_project):
     with spam_dataset(rest, tmp_project, 'spam') as dataset:
         with pytest.raises(Exception, match="400.*location"):
             dataset.update(location=str(tmpdir))
+
+
+@pytest.mark.timeout(10)
+@pytest.mark.usefixtures('pip_only')
+def test_create_classification_dataset(rest, tmp_project):
+    task, dataset = DatasetClient.create_classification_dataset(rest, dataset_path=CLASSIFICATION_DATASET_DIR, project=tmp_project)
+    # make sure the task acts as expected
+    assert_task_completes(rest, task)
+
+    # re-fetch the dataset by id
+    dataset.refresh()
+    assert dataset.status == "uploaded"
+
+    #assert csv file is created
+    csv_path = dataset.location
+    assert os.path.split(csv_path)[1] == 'pl_data.csv'
+
+    # Check the download. Since we currently only support csv, make sure it's the right file type
+    content = dataset.get_content(num_rows=3)['file_contents']
+    assert len(content) == 3
+    assert "," in content[0] # very rudimentary check that it's csv
+
+
+    # check that deleting the csv file makes exists_on_disk change to false
+    assert dataset.exists_on_disk == True
+    os.remove(dataset.location)
+    dataset.refresh()
+    assert dataset.exists_on_disk == False
+
+    # make sure we didn't delete too high in the directory tree
+    assert_workingdir(rest, tmp_project.id)
+
+
+@pytest.mark.timeout(10)
+@pytest.mark.usefixtures('pip_only')
+def test_create_segmentation_dataset(rest, tmp_project):
+    task, dataset = DatasetClient.create_segmentation_dataset(rest, project=tmp_project, image_path=SEGMENTATION_IMAGE_PATH, mask_path=SEGMENTATION_MASK_PATH)
+    # make sure the task acts as expected
+    assert_task_completes(rest, task)
+
+    # re-fetch the dataset by id
+    dataset.refresh()
+    assert dataset.status == "uploaded"
+
+    #assert csv file is created
+    csv_path = dataset.location
+    assert os.path.split(csv_path)[1] == 'pl_data.csv'
+
+    # Check the download. Since we currently only support csv, make sure it's the right file type
+    content = dataset.get_content(num_rows=3)['file_contents']
+    assert len(content) == 3
+    assert "," in content[0] # very rudimentary check that it's csv
+
+
+    # check that deleting the csv file makes exists_on_disk change to false
+    assert dataset.exists_on_disk == True
+    os.remove(dataset.location)
+    dataset.refresh()
+    assert dataset.exists_on_disk == False
+
+    # make sure we didn't delete too high in the directory tree
+    assert_workingdir(rest, tmp_project.id)
+
+@pytest.mark.timeout(0.2)
+@pytest.mark.usefixtures('enterprise_only')
+def test_create_classification_dataset_enterprise(rest, tmp_project):
+    with pytest.raises(Exception, match="404"):
+        DatasetClient.create_classification_dataset(rest, dataset_path=CLASSIFICATION_DATASET_DIR, project=tmp_project)
+
+
+@pytest.mark.timeout(0.2)
+@pytest.mark.usefixtures('enterprise_only')
+def test_create_segmentation_dataset_enterprise(rest, tmp_project):
+    with pytest.raises(Exception, match="404"):
+        DatasetClient.create_segmentation_dataset(rest, project=tmp_project, image_path=SEGMENTATION_IMAGE_PATH, mask_path=SEGMENTATION_MASK_PATH)

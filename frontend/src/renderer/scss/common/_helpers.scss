@@ -6,41 +6,38 @@
   3. Width
    ---------------------------------------------------------*/
 
-
 /* ---------------------------------------------------------
    1. Hide/show block
    ---------------------------------------------------------*/
 
-
 /*----- Breakpoints -----*/
-  // EXAMPLE
-  //
-  //.medium-hide {
-  //  @include media('>=medium') {
-  //    display: none;
-  //  }
-  //}
-  //
-  //.medium-show {
-  //  @include media('<medium') {
-  //    display: none;
-  //  }
-  //}
+// EXAMPLE
+//
+//.medium-hide {
+//  @include media('>=medium') {
+//    display: none;
+//  }
+//}
+//
+//.medium-show {
+//  @include media('<medium') {
+//    display: none;
+//  }
+//}
 
 @each $name, $size in $breakpoint {
   .#{$name}-hide {
-    @include media('>=#{$name}') {
+    @include media(">=#{$name}") {
       display: none !important;
     }
   }
 
   .#{$name}-show {
-    @include media('<#{$name}') {
+    @include media("<#{$name}") {
       display: none !important;
     }
   }
 }
-
 
 /*----- Breakpoints foundation Visibility-----*/
 // Basic hiding classes
@@ -50,7 +47,7 @@
 
 .invisible {
   opacity: 0;
-  position: absolute!important;
+  position: absolute !important;
   left: -9999px;
 }
 
@@ -58,30 +55,30 @@
 @each $name, $size in $breakpoint {
   @if $name != small {
     .hide-for-#{$name} {
-      @include media('>=#{$name}') {
+      @include media(">=#{$name}") {
         display: none !important;
       }
     }
 
     .show-for-#{$name} {
-      @include media('<#{$name}') {
+      @include media("<#{$name}") {
         display: none !important;
       }
     }
   }
 }
 
-$prevBreakPoint: '4k';
+$prevBreakPoint: "4k";
 @each $name, $size in $breakpoint {
   @if $name != large {
     .hide-for-#{$name}-only {
-      @include media('>=#{$name}', '<#{$prevBreakPoint}') {
+      @include media(">=#{$name}", "<#{$prevBreakPoint}") {
         display: none !important;
       }
     }
 
     .show-for-#{$name}-only {
-      @include media('<#{$name}', '>=#{$prevBreakPoint}') {
+      @include media("<#{$name}", ">=#{$prevBreakPoint}") {
         display: none !important;
       }
     }
@@ -106,11 +103,11 @@ $prevBreakPoint: '4k';
 .hide-for-portrait {
   display: block !important;
 
-  @include media('landscape') {
+  @include media("landscape") {
     display: block !important;
   }
 
-  @include media('portrait') {
+  @include media("portrait") {
     display: none !important;
   }
 }
@@ -119,15 +116,14 @@ $prevBreakPoint: '4k';
 .show-for-portrait {
   display: none !important;
 
-  @include media('landscape') {
+  @include media("landscape") {
     display: none !important;
   }
 
-  @include media('portrait') {
+  @include media("portrait") {
     display: block !important;
   }
 }
-
 
 /* ---------------------------------------------------------
    2. Text decoration
@@ -183,11 +179,11 @@ $prevBreakPoint: '4k';
    3. Background decoration
    ---------------------------------------------------------*/
 $soc-list: (
-  'facebook': #3b5998,
-  'twitter': #55acee,
-  'linkedin': #007bb5,
-  'google-plus': #dd4b39,
-  'pinterest': #cb2027
+  "facebook": #3b5998,
+  "twitter": #55acee,
+  "linkedin": #007bb5,
+  "google-plus": #dd4b39,
+  "pinterest": #cb2027,
 );
 
 @each $name, $color in $soc-list {
@@ -213,16 +209,19 @@ $soc-list: (
    4. Width
    ---------------------------------------------------------*/
 .w-25 {
-  width: calc(100% / 4)
+  width: calc(100% / 4);
 }
 .w-33 {
-  width: calc(100% / 3)
+  width: calc(100% / 3);
 }
 .w-50 {
-  width: calc(100% / 2)
+  width: calc(100% / 2);
 }
 .w-66 {
-  width: calc((100% * 2)/3 );
+  width: calc((100% * 2) / 3);
+}
+.w-75 {
+  width: calc((100% * 0.75));
 }
 .w-100 {
   width: 100%;
@@ -231,7 +230,7 @@ $soc-list: (
 // clearfix
 .clearfix {
   &:after {
-    content: '';
+    content: "";
     display: block;
     clear: both;
   }
@@ -404,8 +403,9 @@ $soc-list: (
 }
 .debug-top {
   position: relative;
-  &:after, &:before {
-    content: '';
+  &:after,
+  &:before {
+    content: "";
     position: absolute;
     left: -100vw;
     right: -100vw;
@@ -421,8 +421,9 @@ $soc-list: (
 }
 .debug-side {
   position: relative;
-  &:after, &:before {
-    content: '';
+  &:after,
+  &:before {
+    content: "";
     position: absolute;
     top: -100vh;
     bottom: -100vh;

@@ -39,9 +39,17 @@ To allow Oauth over insecure HTTP
 Go to http://localhost:8000
 
 # Running Integration Tests
+## Enterprise mode
 1. From the rygg directory:
     1. migrate the db: `PERCEPTILABS_DB=$(pwd)/db.sqlite3 python manage.py migrate`
     1. start the server: `PL_FILE_SERVING_TOKEN=thetoken PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=$(pwd)/db.sqlite3 container=xyz python manage.py runserver 0.0.0.0:8000`
     1. start the worker: `PL_FILE_SERVING_TOKEN=thetoken PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=$(pwd)/db.sqlite3 container=a celery -A rygg worker -l INFO --queues=rygg`
+1. In rygg/integration_tests, run: `python -m pytest`
+1. wait for success
+
+## Local mode
+1. From the rygg directory:
+    1. migrate the db: `PERCEPTILABS_DB=$(pwd)/db.sqlite3 python manage.py migrate`
+    1. start the server: `PL_FILE_SERVING_TOKEN=thetoken PL_TUTORIALS_DATA=$(git rev-parse --show-toplevel)/backend/perceptilabs/tutorial_data PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=$(pwd)/db.sqlite3 python manage.py runserver 0.0.0.0:8000`
 1. In rygg/integration_tests, run: `python -m pytest`
 1. wait for success

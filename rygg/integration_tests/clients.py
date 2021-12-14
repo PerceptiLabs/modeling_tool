@@ -209,6 +209,14 @@ class DatasetClient(ClientBase):
         resp = rest.post_file('/datasets/create_from_upload/', upload_file_path, "dataset.zip", project.id, name=name)
         return TaskClient(rest, resp['task_id']), DatasetClient(rest, resp['dataset_id'])
 
+    def create_classification_dataset(rest, project, dataset_path):
+        response = rest.post('/datasets/create_classification_dataset/', {}, dataset_path=dataset_path, project_id=project.id)
+        return TaskClient(rest, response['task_id']), DatasetClient(rest, response['dataset_id'])
+    
+    def create_segmentation_dataset(rest, project, image_path, mask_path):
+        response = rest.post('/datasets/create_segmentation_dataset/', {}, image_path=image_path, mask_path=mask_path, project_id=project.id)
+        return TaskClient(rest, response['task_id']), DatasetClient(rest, response['dataset_id'])
+        
     @property
     def name(self):
         return self.as_dict["name"]
@@ -230,10 +238,6 @@ class DatasetClient(ClientBase):
 
 
     @property
-    def source_url(self):
-        return self.as_dict["source_url"]
-
-    @property
     def exists_on_disk(self):
         return self.as_dict["exists_on_disk"]
 
@@ -244,10 +248,6 @@ class DatasetClient(ClientBase):
     @property
     def is_perceptilabs_sourced(self):
         return self.as_dict["is_perceptilabs_sourced"]
-
-    @property
-    def exists_on_disk(self):
-        return self.as_dict["exists_on_disk"]
 
     @property
     def models(self):

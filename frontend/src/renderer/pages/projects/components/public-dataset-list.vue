@@ -1,33 +1,37 @@
 <template lang="pug">
-div.container
+.container
   chart-spinner(v-if="isLoadingDataSet")
   .public-datasets-page(v-else)
     .search-bar
       i.icon.icon-search
-      input(
-        v-model="filter"
-        placeholder="Search dataset by keyword"
-      )
+      input(v-model="filter", placeholder="Search dataset by keyword")
     perfect-scrollbar.table-container
       .dataset-table
-        div.row(
+        .row(
           v-for="(dataset, index) in filteredList",
           :key="dataset.Name + index",
           :class="{ loading: isDatasetDownloading(dataset), loaded: dataset.downloadStatus }"
         )
-          div.cell(:style="{ width: '250px' }") 
+          .cell(:style="{ width: '250px' }") 
             strong {{ dataset['Name'] }}
-          div.cell.font-small(:style="{ width: '100px' }")  {{ dataset['Size'] }}
-          div.cell.font-small(:style="{ width: '150px' }")  {{ dataset['Industry'] }}
-          div.cell.font-small(:style="{ width: '150px' }")  {{ dataset['Category'] }}
-          div.cell(:style="{ width: '100px' }")  
-            a.source-link(v-if="dataset['sourceUrl']" :href="dataset['sourceUrl']" target="_blank" v-tooltip:bottom="'Go To Source'")
-              img.source-icon(:src="categoryList[dataset['Source']] && categoryList[dataset['Source']].iconLink")
-          div.cell(:style="{ width: '100px' }") 
+          .cell.font-small(:style="{ width: '100px' }") {{ dataset['Size'] }}
+          .cell.font-small(:style="{ width: '150px' }") {{ dataset['Industry'] }}
+          .cell.font-small(:style="{ width: '150px' }") {{ dataset['Category'] }}
+          .cell(:style="{ width: '100px' }") 
+            a.source-link(
+              v-if="dataset['sourceUrl']",
+              :href="dataset['sourceUrl']",
+              target="_blank",
+              v-tooltip:bottom="'Go To Source'"
+            )
+              img.source-icon(
+                :src="categoryList[dataset['Source']] && categoryList[dataset['Source']].iconLink"
+              )
+          .cell(:style="{ width: '100px' }") 
             button.action-button(
               v-if="!dataset.downloadStatus",
               type="button",
-              @click="download(dataset)"
+              @click="download(dataset)",
               v-tooltip:bottom="'License: ' + dataset.license"
             ) Load
             button.action-button(
@@ -40,21 +44,31 @@ div.container
               type="button",
               @click="useDataset(dataset)"
             ) Create
-          .progress-bar(v-if="isDatasetDownloading(dataset)" :style="{ width: downloadProgress(dataset) + '%' }")
+          .progress-bar(
+            v-if="isDatasetDownloading(dataset)",
+            :style="{ width: downloadProgress(dataset) + '%' }"
+          )
 </template>
 
 <script>
 import { mapActions, mapState, mapGetters } from "vuex";
 import ChartSpinner from "@/components/charts/chart-spinner";
-import { AZURE_BLOB_PATH_PREIFX } from "@/core/constants.js";
-import { isTaskComplete as rygg_isTaskComplete } from '@/core/apiRygg';
-
+import { AZURE_BLOB_PATH_PREIFX, modelTypes } from "@/core/constants.js";
+import { isFolderLoadingEnabled } from "@/core/helpers.js";
+import { isTaskComplete as rygg_isTaskComplete } from "@/core/apiRygg";
 export default {
   components: { ChartSpinner },
   data: () => ({
-    filter: ""
+    isFolderLoadingEnabled: isFolderLoadingEnabled(),
+    filter: "",
+    modelTypes: modelTypes
   }),
-
+  props: {
+    modelType: {
+      type: String,
+      default: ""
+    }
+  },
   computed: {
     ...mapState({
       isDatasetLoaded: state => state["mod_public-datasets"].isDatasetLoaded,
@@ -68,14 +82,36 @@ export default {
       datasets: "mod_datasets/GET_datasets"
     }),
     filteredList() {
-      return this.filter
-        ? this.datasetList.filter(
-            item =>
-              item.Category.toLowerCase().includes(this.filter.toLowerCase()) ||
-              item.Name.toLowerCase().includes(this.filter.toLowerCase()) ||
-              item.Industry.toLowerCase().includes(this.filter.toLowerCase())
-          )
-        : this.datasetList;
+      let listToBeFiltered = this.datasetList;
+
+      if (this.isFolderLoadingEnabled) {
+        listToBeFiltered = this.datasetList.filter(item => {
+          switch (this.modelType) {
+            case this.modelTypes.CLASSIFICATION:
+              return item.Category.toLowerCase().includes(
+                "image classification"
+              );
+            case this.modelTypes.SEGMENTATION:
+              return item.Category.toLowerCase().includes("image segmentation");
+            case this.modelTypes.MULTI_MODAL:
+              return (
+                !item.Category.toLowerCase().includes("image classification") &&
+                !item.Category.toLowerCase().includes("image segmentation")
+              );
+          }
+        });
+      }
+
+      if (this.filter) {
+        listToBeFiltered = listToBeFiltered.filter(
+          item =>
+            item.Category.toLowerCase().includes(this.filter.toLowerCase()) ||
+            item.Name.toLowerCase().includes(this.filter.toLowerCase()) ||
+            item.Industry.toLowerCase().includes(this.filter.toLowerCase())
+        );
+      }
+
+      return listToBeFiltered;
     }
   },
 
@@ -95,7 +131,9 @@ export default {
     },
     useDataset(publicDataset) {
       const dataset = this.datasets.find(
-        dataset => dataset.source_url === `${AZURE_BLOB_PATH_PREIFX}${publicDataset.UniqueName}`
+        dataset =>
+          dataset.source_url ===
+          `${AZURE_BLOB_PATH_PREIFX}${publicDataset.UniqueName}`
       );
       if (dataset) {
         this.$emit("loadDataset", [dataset.location]);
@@ -115,7 +153,8 @@ export default {
     },
     isDatasetDownloading(dataset) {
       return (
-        dataset.downloadStatus && !rygg_isTaskComplete(dataset.downloadStatus.state)
+        dataset.downloadStatus &&
+        !rygg_isTaskComplete(dataset.downloadStatus.state)
       );
     }
   },

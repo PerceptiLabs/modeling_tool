@@ -278,7 +278,9 @@ const actions = {
             .join("."),
           tensorflow: versions.tensorflow,
         });
-        dispatch('globalView/SET_appVersion', versions.perceptilabs, {root: true});
+        dispatch("globalView/SET_appVersion", versions.perceptilabs, {
+          root: true,
+        });
         if (state.statusLocalCore !== "online") {
           commit("SET_statusLocalCore", "online");
         }
@@ -292,17 +294,15 @@ const actions = {
   async checkRyggAvailability({ dispatch }) {
     const resp = await ryggAvailability();
     if (resp === "UNAVAILABLE") {
-      dispatch(
-        "globalView/GP_errorPopup", 
-        "The app service isn't available", 
-        { root: true }
-      );
+      dispatch("globalView/GP_errorPopup", "The app service isn't available", {
+        root: true,
+      });
       return false;
     } else if (resp === "BAD_TOKEN") {
       dispatch(
         "globalView/GP_errorPopup",
-        "Unable to talk to the app service. Did you use the correct token to load this page?", 
-        { root: true }
+        "Unable to talk to the app service. Did you use the correct token to load this page?",
+        { root: true },
       );
       return false;
     }
@@ -314,10 +314,9 @@ const actions = {
       action: "closeCore",
       value: "",
     };
-    coreRequest(theData)
-      .catch(err => {
-        console.error(err);
-      });
+    coreRequest(theData).catch(err => {
+      console.error(err);
+    });
   },
 
   API_CLOSE_core() {
@@ -326,10 +325,9 @@ const actions = {
       action: "Close",
       value: "",
     };
-    coreRequest(theData)
-      .catch(err => {
-        console.error(err);
-      });
+    coreRequest(theData).catch(err => {
+      console.error(err);
+    });
   },
   //---------------
   //  NETWORK TRAINING
@@ -587,10 +585,9 @@ const actions = {
       action: "SkipToValidation",
       value: "",
     };
-    coreRequest(theData)
-      .catch(err => {
-        console.error(err);
-      });
+    coreRequest(theData).catch(err => {
+      console.error(err);
+    });
   },
 
   API_getResultInfo({ rootGetters }) {

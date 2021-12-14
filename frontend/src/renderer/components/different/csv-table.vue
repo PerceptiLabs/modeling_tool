@@ -25,9 +25,12 @@
             @click="addSelectedColumn($event, numColumn - 1)",
             :class="{ 'is-selected': selectedColumns.includes(numColumn - 1) }"
           )
-            div.d-inline-block(v-if="numColumn <= computedNumberOfColumns" v-tooltip:bottom="dataRow[numColumn - 1]") {{ strShortener(dataRow[numColumn - 1]) }}
+            .d-inline-block(
+              v-if="numColumn <= computedNumberOfColumns",
+              v-tooltip:bottom="dataRow[numColumn - 1]"
+            ) {{ strShortener(dataRow[numColumn - 1]) }}
 
-            div.d-inline-block(v-else) utton.custom-select_view
+            .d-inline-block(v-else) utton.custom-select_view
 
         //- Rows for io- and datatypes @TODO can be extracted as separate table on bottom of top one
 
@@ -48,7 +51,7 @@
               :value="formattedDataset.ioTypes[numColumn - 1]",
               @input="setIOSelection($event, numColumn)"
             )
-            .text-center(v-else) {{ getColumnIOType(numColumn - 1) }}
+            .text-center(v-else) {{ elementToFeatures[datasetFields[numColumn - 1]].layerName }}
         tr.table-row(
           :data-tutorial-target="'tutorial-data-wizard-io-explanation'"
         )
@@ -89,12 +92,13 @@
 
 <script>
 import DataColumnOptions from "@/components/different/data-column-options";
+import { modelTypes } from "@/core/constants";
 import { strShortener } from "@/core/helpers";
 
 export default {
   name: "CSVTable",
   components: {
-    DataColumnOptions
+    DataColumnOptions,
   },
   props: {
     dataSet: {
@@ -102,20 +106,40 @@ export default {
       default: [],
     },
     dataSetTypes: {
-      type: Object
+      type: Object,
     },
     locked: {
       type: Boolean,
-      default: false
+      default: false,
     },
     elementToFeatures: {
       type: Object,
       required: false,
       default: () => ({}),
     },
+    datasetIOTypes: {
+      type: Array,
+      default: function() {
+        return [];
+      },
+    },
+    modelType: {
+      type: String,
+      default: "",
+    },
+  },
+  created() {
+    if (
+      this.modelType === this.modelTypes.CLASSIFICATION ||
+      this.modelType === this.modelTypes.SEGMENTATION
+    ) {
+      this.setIOSelection(this.ioOptions[0], 1);
+      this.setIOSelection(this.ioOptions[1], 2);
+    }
   },
   data() {
     return {
+      modelTypes: modelTypes,
       delimiters: ",",
       ioOptions: ["Input", "Target", "Do not use"],
       selectedColumns: [],
@@ -124,8 +148,8 @@ export default {
         ioTypes: [],
         dataTypes: [],
         columnOptions: [],
-        preprocessingTypes: []
-      }
+        preprocessingTypes: [],
+      },
     };
   },
   computed: {
@@ -145,7 +169,7 @@ export default {
 
       const longestRow = this.delimitedDataSet.reduce(
         (acc, curr) => (acc.length > curr.length ? acc : curr),
-        []
+        [],
       );
       return longestRow.length;
     },
@@ -185,9 +209,9 @@ export default {
     },
     hasMetaDataType() {
       return this.formattedDataset.dataTypes.find(
-        dataType => dataType === "mask"
+        dataType => dataType === "mask",
       );
-    }
+    },
   },
   methods: {
     strShortener(url) {
@@ -211,7 +235,7 @@ export default {
           this.selectedColumns.push(columnNumber);
         } else {
           this.selectedColumns = this.selectedColumns.filter(
-            sc => sc !== columnNumber
+            sc => sc !== columnNumber,
           );
         }
       } else {
@@ -238,14 +262,14 @@ export default {
         "mod_workspace/GET_currentNetworkElementList"
       ];
       const el = Object.values(layerList).find(
-        el => el.layerName === layerName
+        el => el.layerName === layerName,
       );
       if (el.layerType === "IoInput") {
         return this.ioOptions[0];
       } else if (el.layerType === "IoOutput") {
         return this.ioOptions[1];
       }
-    }
+    },
   },
   watch: {
     computedNumberOfColumns: {
@@ -277,9 +301,9 @@ export default {
         this.formattedDataset.preprocessingTypes = new Array(newVal).fill({});
         this.$emit("update", this.formattedDataset);
       },
-      immediate: true
-    }
-  }
+      immediate: true,
+    },
+  },
 };
 </script>
 

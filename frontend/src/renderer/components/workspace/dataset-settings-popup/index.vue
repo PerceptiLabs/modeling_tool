@@ -1,72 +1,68 @@
 <template lang="pug">
-  base-global-popup(
-    :title="popupTitle"
-    title-align="text-center"
-     @closePopup="closeModal"
-  )
-    template(:slot="popupTitle + '-content'")
-      .main-wrapper.data-settings-modal
-        chart-spinner(v-if="isLoadingDataset")
-        template(v-else)
-          chart-spinner(v-if="isUpdatingDataset")
-          .current-dataset
-            .form_row
-              h5.default-text Current dataset:
-              input.dataset-location(disabled :value="datasetPath")
-              //- button.btn.btn--secondary(
-              //-   @click="replaceDataset"
-              //- ) Replace
-          csv-table(
-            v-if="dataset"
-            :dataSet="dataset",
-            :dataSetTypes="dataSetTypes"
-            :elementToFeatures="elementToFeatures"
-            :locked="true"
-            @update="handleCSVDataTypeUpdates"
-          )
-          data-column-option-sidebar(
-            :key="index"
-            v-for="index in csvData && csvData.dataTypes.length"
-            :columnSelectedType="csvData && csvData.dataTypes"
-            :columnNames="csvData && csvData.columnNames"
-            :preprocessingTypes="csvData && csvData.preprocessingTypes"
-            @handleChange="updatePreprocessingTypes"
-            :saveOnMount="false"
-            :elementIndex="index - 1"
-          )
+base-global-popup(
+  :title="popupTitle",
+  title-align="text-center",
+  @closePopup="closeModal"
+)
+  template(:slot="popupTitle + '-content'")
+    .main-wrapper.data-settings-modal
+      chart-spinner(v-if="isLoadingDataset")
+      template(v-else)
+        chart-spinner(v-if="isUpdatingDataset")
+        .current-dataset
+          .form_row
+            h5.default-text Current dataset:
+            input.dataset-location(disabled, :value="datasetPath")
+            //- button.btn.btn--secondary(
+            //-   @click="replaceDataset"
+            //- ) Replace
+        csv-table(
+          v-if="dataset",
+          :dataSet="dataset",
+          :dataSetTypes="dataSetTypes",
+          :elementToFeatures="elementToFeatures",
+          :locked="true",
+          @update="handleCSVDataTypeUpdates"
+        )
+        data-column-option-sidebar(
+          :key="index",
+          v-for="index in csvData && csvData.dataTypes.length",
+          :columnSelectedType="csvData && csvData.dataTypes",
+          :columnNames="csvData && csvData.columnNames",
+          :preprocessingTypes="csvData && csvData.preprocessingTypes",
+          @handleChange="updatePreprocessingTypes",
+          :saveOnMount="false",
+          :elementIndex="index - 1"
+        )
 
-          //- span.default-text.error(v-if="isAllIOType1sFilled() && !hasInputAndTarget()") Make sure to have at least one input and one target to proceed
-          //- span.default-text.error(v-else-if="isAllIOTypesFilled() && !hasOneTarget()") Make sure to have only one target to proceed
-          .data-partition-wrapper
-            h5.default-text Data partitions:
-            triple-input(
-              v-model="datasetSettings.partitions",
-              separate-sign="%",
-              :validate-min="1",
-              :validate-max="98",
-              :validate-sum="100",
-              :withLabels="true"
-            )
-          div(style="display:flex;")
-            info-tooltip(
-              text="Select random samples to place in each partition, good practice if your dataset is ordered"
-            )
-            base-checkbox(
-              style="font-size: 14px; white-space:nowrap;"
-              v-model="datasetSettings.randomizedPartitions"
-            ) Randomize partition
+        //- span.default-text.error(v-if="isAllIOType1sFilled() && !hasInputAndTarget()") Make sure to have at least one input and one target to proceed
+        //- span.default-text.error(v-else-if="isAllIOTypesFilled() && !hasOneTarget()") Make sure to have only one target to proceed
+        .data-partition-wrapper
+          h5.default-text Data partitions:
+          triple-input(
+            v-model="datasetSettings.partitions",
+            separate-sign="%",
+            :validate-min="1",
+            :validate-max="98",
+            :validate-sum="100",
+            :withLabels="true"
+          )
+        div(style="display: flex")
+          info-tooltip(
+            text="Select random samples to place in each partition, good practice if your dataset is ordered"
+          )
+          base-checkbox(
+            style="font-size: 14px; white-space: nowrap",
+            v-model="datasetSettings.randomizedPartitions"
+          ) Randomize partition
 
-    template(slot="action" v-if="!isLoadingDataset")
-      button.btn.btn--primary.btn--disabled(
-        @click="closeModal()"
-      ) Cancel
-      button.btn.btn--primary(
-        @click="updateDataset()"
-        :disabled="!isDatasetAvailable"
-      )
-        | Save
-      
-    
+  template(slot="action", v-if="!isLoadingDataset")
+    button.btn.btn--primary.btn--disabled(@click="closeModal()") Cancel
+    button.btn.btn--primary(
+      @click="updateDataset()",
+      :disabled="!isDatasetAvailable"
+    )
+      | Save
 </template>
 <script>
 import { mapState, mapGetters, mapActions } from "vuex";
@@ -80,11 +76,11 @@ import TripleInput from "@/components/base/triple-input";
 import InfoTooltip from "@/components/different/info-tooltip.vue";
 import ChartSpinner from "@/components/charts/chart-spinner";
 import DataColumnOptionSidebar from "@/components/different/data-column-option-sidebar";
-import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
+import BaseGlobalPopup from "@/components/global-popups/base-global-popup";
 
 import {
   getDatasetPath,
-  formatCSVTypesIntoKernelFormat
+  formatCSVTypesIntoKernelFormat,
 } from "@/core/helpers/model-helper";
 import { renderingKernel } from "@/core/apiRenderingKernel";
 
@@ -95,7 +91,7 @@ export default {
     InfoTooltip,
     ChartSpinner,
     DataColumnOptionSidebar,
-    BaseGlobalPopup
+    BaseGlobalPopup,
   },
   data: () => ({
     dataset: null,
@@ -106,21 +102,21 @@ export default {
     isLoadingDataset: false,
     isUpdatingDataset: false,
     filePickerOptions: {
-      showToTutotialDataFolder: true
+      showToTutotialDataFolder: true,
     },
     elementToFeatures: {},
     isDatasetAvailable: true,
-    popupTitle: 'Data Settings',
+    popupTitle: "Data Settings",
   }),
   computed: {
     ...mapState({
-      startupDatasetPath: state => state.mod_datasetSettings.startupFolder
+      startupDatasetPath: state => state.mod_datasetSettings.startupFolder,
     }),
     ...mapGetters({
       currentNetworkDatasetSettings:
         "mod_workspace/GET_currentNetworkDatasetSettings",
-      currentNetwork: "mod_workspace/GET_currentNetwork"
-    })
+      currentNetwork: "mod_workspace/GET_currentNetwork",
+    }),
   },
 
   created() {
@@ -129,14 +125,14 @@ export default {
 
   methods: {
     ...mapActions({
-      showErrorPopup: "globalView/GP_errorPopup"
+      showErrorPopup: "globalView/GP_errorPopup",
     }),
 
     loadCurrentDatasetSettings() {
       this.datasetSettings = cloneDeep(this.currentNetworkDatasetSettings);
       this.datasetPath = getDatasetPath(this.datasetSettings);
 
-      console.log('this.datasetPath', this.datasetSettings, this.datasetPath);
+      console.log("this.datasetPath", this.datasetSettings, this.datasetPath);
 
       this.loadDataset();
     },
@@ -144,12 +140,12 @@ export default {
       this.$store.dispatch("globalView/SET_datasetSettingsPopupAction", false);
     },
     async loadDataset() {
-      const datasetId = this.datasetSettings.datasetId
+      const datasetId = this.datasetSettings.datasetId;
 
       this.isLoadingDataset = true;
       this.$store.dispatch(
         "mod_datasetSettings/setStartupFolder",
-        this.datasetPath.match(/(.*)[\/\\]/)[1] || ""
+        this.datasetPath.match(/(.*)[\/\\]/)[1] || "",
       );
 
       const fileContents = await rygg_getDatasetContent(datasetId);
@@ -158,7 +154,8 @@ export default {
         .then(res => {
           if ("errorMessage" in res) {
             this.showErrorPopup(
-              "Couldn't get model recommendation due to: " + res["errorMessage"]
+              "Couldn't get model recommendation due to: " +
+                res["errorMessage"],
             );
           }
           return res;
@@ -172,55 +169,55 @@ export default {
         this.dataset = fileContents;
       }
 
-      this.elementToFeatures = Object.values(
-        this.currentNetwork.networkElementList
-      )
-        .filter(el => el.layerSettings && el.layerSettings.Type === "IoInput")
-        .reduce(
-          (acc, element) => ({
-            ...acc,
-            [element.layerSettings.FeatureName]: {
-              layerName: element.layerName,
-              dataType:
-                this.datasetSettings.featureSpecs &&
-                this.datasetSettings.featureSpecs[
-                  element.layerSettings.FeatureName
-                ].datatype
-            }
-          }),
-          {}
-        );
+      let elementToFeatures = {};
+      Object.keys(this.datasetSettings.featureSpecs).forEach(key => {
+        let el = this.datasetSettings.featureSpecs[key];
+        elementToFeatures[key] = {
+          layerName: el.iotype,
+          dataType: el.datatype,
+        };
+      });
+
+      this.elementToFeatures = elementToFeatures;
 
       this.isLoadingDataset = false;
     },
     handleCSVDataTypeUpdates(payload) {
       this.csvData = payload;
-      if (this.currentNetworkDatasetSettings && this.currentNetworkDatasetSettings.featureSpecs) {
+      if (
+        this.currentNetworkDatasetSettings &&
+        this.currentNetworkDatasetSettings.featureSpecs
+      ) {
         this.csvData.ioTypes = Object.keys(
-          this.currentNetworkDatasetSettings.featureSpecs
-        ).map(column => this.currentNetworkDatasetSettings.featureSpecs[column].iotype);
-        this.csvData.preprocessingTypes = Object.keys(
-          this.currentNetworkDatasetSettings.featureSpecs
+          this.currentNetworkDatasetSettings.featureSpecs,
         ).map(
-          column => this.currentNetworkDatasetSettings.featureSpecs[column].preprocessing
+          column =>
+            this.currentNetworkDatasetSettings.featureSpecs[column].iotype,
+        );
+        this.csvData.preprocessingTypes = Object.keys(
+          this.currentNetworkDatasetSettings.featureSpecs,
+        ).map(
+          column =>
+            this.currentNetworkDatasetSettings.featureSpecs[column]
+              .preprocessing,
         );
       }
     },
     resetDatasetSettings() {
       this.datasetSettings = {
         randomizedPartitions: true,
-        partitions: [70, 20, 10]
+        partitions: [70, 20, 10],
       };
     },
     async replaceDataset() {
       const selectedDataset = await rygg_pickFile(
         "Choose data to load",
         this.startupDatasetPath,
-        [{extensions: ["*.csv"]}]
+        [{ extensions: ["*.csv"] }],
       );
-      
+
       if (selectedDataset && selectedDataset.path) {
-        await this.handleDataPathUpdates([selectedDataset.path])
+        await this.handleDataPathUpdates([selectedDataset.path]);
       }
     },
     async handleDataPathUpdates(dataPath) {
@@ -239,7 +236,7 @@ export default {
           randomizedPartitions: this.datasetSettings.randomizedPartitions,
           partitions: this.datasetSettings.partitions,
           featureSpecs: formatCSVTypesIntoKernelFormat(this.csvData),
-          filePath: this.datasetPath
+          filePath: this.datasetPath,
         };
 
         await renderingKernel.waitForDataReady(datasetSettings);
@@ -257,27 +254,28 @@ export default {
           if (layerSettings.Type === "IoInput") {
             layerSettings.FilePath = this.datasetPath;
 
-            layerSettings.DataType = datasetSettings.featureSpecs[layerSettings.FeatureName].datatype
+            layerSettings.DataType =
+              datasetSettings.featureSpecs[layerSettings.FeatureName].datatype;
           }
         });
         await this.$store.dispatch(
           "mod_workspace/UPDATE_currentNetwork",
-          newNetwork
+          newNetwork,
         );
 
         const updatePreviewResult = await this.$store.dispatch(
-          "mod_workspace/UPDATE_all_previews"
+          "mod_workspace/UPDATE_all_previews",
         );
         if (updatePreviewResult.response) {
           await this.$store.dispatch(
             "mod_workspace/UPDATE_currentNetwork",
-            backupCurrentNetwork
+            backupCurrentNetwork,
           );
           await this.$store.dispatch("mod_workspace/UPDATE_all_previews");
 
           this.showErrorPopup(
             "Couldn't update dataset due to: " +
-              updatePreviewResult.response.data
+              updatePreviewResult.response.data,
           );
         }
       } catch (e) {
@@ -289,19 +287,19 @@ export default {
     },
     checkDataset() {
       const columns = Object.keys(
-        this.currentNetworkDatasetSettings.featureSpecs
+        this.currentNetworkDatasetSettings.featureSpecs,
       );
 
       this.isDatasetAvailable =
         columns.length === this.csvData.columnNames.length &&
         columns.every(
-          (column, index) => column === this.csvData.columnNames[index]
+          (column, index) => column === this.csvData.columnNames[index],
         );
 
       if (this.isDatasetAvailable) {
         this.csvData.ioTypes = this.csvData.columnNames.map(
           columnName =>
-            this.currentNetworkDatasetSettings.featureSpecs[columnName].iotype
+            this.currentNetworkDatasetSettings.featureSpecs[columnName].iotype,
         );
       } else {
         this.showErrorPopup("Couldn't load new dataset");
@@ -311,8 +309,8 @@ export default {
 
     updatePreprocessingTypes(numColumn, value) {
       this.csvData.preprocessingTypes.splice(numColumn, 1, value);
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>
@@ -427,7 +425,7 @@ h5 {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
-  .form_row { 
+  .form_row {
     width: 100%;
   }
 

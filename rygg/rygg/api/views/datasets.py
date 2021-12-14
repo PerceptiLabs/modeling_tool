@@ -207,3 +207,41 @@ class DatasetViewSet(viewsets.ModelViewSet):
         sliced = itertools.islice(all_rows, 0, num_rows)
         return json_response({"file_contents": list(sliced)})
 
+    
+    
+    @action(detail=False, methods=['POST'])
+    def create_classification_dataset(self, request):
+        dataset_path = get_required_param(request, "dataset_path")
+        project_id = get_required_param(request, "project_id")
+
+        task_id, dataset = Dataset.create_classification_dataset(
+            project_id, 
+            dataset_path
+        )
+
+        response = {
+            "task_id": task_id,
+            "dataset_id": dataset.dataset_id,
+            "dataset_location": dataset.location,
+        }
+        return Response(response, 201)
+
+    
+    
+    @action(detail=False, methods=['POST'])
+    def create_segmentation_dataset(self, request):
+        image_path = get_required_param(request, "image_path")
+        mask_path = get_required_param(request, "mask_path")
+        project_id = get_required_param(request, "project_id")
+        task_id, dataset = Dataset.create_segmentation_dataset(
+            project_id, 
+            image_path,
+            mask_path
+        )
+
+        response = {
+            "task_id": task_id,
+            "dataset_location": dataset.location,
+            "dataset_id": dataset.dataset_id
+        }
+        return Response(response, 201)
