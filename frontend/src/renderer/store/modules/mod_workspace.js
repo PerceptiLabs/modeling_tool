@@ -101,7 +101,8 @@ const getters = {
       : null
   },
   GET_currentNetworkCheckpointDirectoryByModelId:(state, getters) => (modelId = null) => {
-    return checkpointDirFromProject(getters.GET_networkByNetworkId(modelId).apiMeta.location) || null;
+    const network = getters.GET_networkByNetworkId(modelId);
+    return (network && network.apiMeta ? checkpointDirFromProject(network.apiMeta.location) : null) || null;
   },
   GET_currentNetworkIndex(state, getters)  {
     return state.currentNetwork;

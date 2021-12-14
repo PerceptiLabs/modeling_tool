@@ -923,6 +923,8 @@ const actions = {
       "mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId"
     ](modelId);
 
+    if (!checkpointDirectory) return;
+
     const trainingSessionId = base64url(checkpointDirectory);
     renderingKernel
       .getTrainingStatus(modelId, trainingSessionId)

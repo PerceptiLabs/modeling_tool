@@ -74,7 +74,8 @@ export const isModelValidForTest = (model, testType) => {
 
 
 export const getModelDatasetPath = (model) => {
-  return Object.values(model.networkMeta.datasetSettings.featureSpecs)[0].csv_path; 
+
+  return model && model.networkMeta && Object.values(model.networkMeta.datasetSettings.featureSpecs)[0].csv_path; 
 };
 
 export const isModelTrained = (model) => {

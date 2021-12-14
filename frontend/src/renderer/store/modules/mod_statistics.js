@@ -32,10 +32,11 @@ const getters = {
 
 const mutations = {
   SET_selectedElArr (state, value) {
-    if (value.viewBox) {
-      value.viewBox.layerMeta.isSelected = true; 
-      state.statisticsTabs.selectedMetric = value.statistics.layerName
-      state.selectedElArr = value;
+    const {selectedMetric, ...data} = value;
+    if (data.viewBox) {
+      data.viewBox.layerMeta.isSelected = true; 
+      state.statisticsTabs.selectedMetric = selectedMetric || data.statistics.layerName
+      state.selectedElArr = data;
     }
   },
   SET_piePercents (state, value) {
@@ -62,7 +63,7 @@ const mutations = {
   setSelectedMetric(state, { placeToBeChanged, selectedMetric }) {
     isTabPlaceValid(placeToBeChanged);
     let tabs = state[placeToBeChanged];
-    
+
     const layerMetricsKeys = Object.keys(tabs.layerMetrics);
     if (layerMetricsKeys.includes(selectedMetric) || selectedMetric === "Global") {
       Vue.set(tabs, 'selectedMetric', selectedMetric);
@@ -84,24 +85,30 @@ const actions = {
       statistics: null,
       viewBox: null
     };
+    let selectedMetric = null;
 
     let net = rootGetters['mod_workspace/GET_currentNetworkSnapshotElementList'];
     for(let el in net) {
       let item = net[el];
       
-      const areStatisticsAlreadySet = elArr.statistics !== null && elArr.viewBox !== null || elArr.layerType === "Container";
+      const areStatisticsAlreadySet = !(elArr.statistics === null || (elArr.statistics !== null && item.layerType === 'IoOutput')) && elArr.viewBox !== null || elArr.layerType === "Container";
       
       if(areStatisticsAlreadySet) {
         continue
       }
-      const isTrainingOrIOComponent = elArr.statistics === null && (item.layerType === "Training" || item.layerType === 'IoOutput' || item.layerType === 'IoInput');
+      const isTrainingOrIOComponent = (elArr.statistics === null && (item.layerType === "Training" || item.layerType === 'IoOutput' || item.layerType === 'IoInput')) || (item.layerType === 'IoOutput' && elArr.statistics);
       if(isTrainingOrIOComponent) {
-        elArr.statistics = item;
+        if (elArr.statistics === null || item.layerType === 'IoOutput') {
+          elArr.statistics = item;
+          if (item.layerType === 'IoOutput') {
+            selectedMetric = 'Overview';
+          }
+        }
       } else  {
         elArr.viewBox = item;
       }
     }
-    commit('SET_selectedElArr', elArr)
+    commit('SET_selectedElArr', {...elArr, selectedMetric});
   },
 };
 
