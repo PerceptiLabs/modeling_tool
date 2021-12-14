@@ -20,7 +20,6 @@ USER 0
 WORKDIR /app
 
 # Copying directory inside docker
-ADD rygg /app/rygg
 ADD licenses /licenses
 COPY requirements.txt wait-for-db.py start.sh /app/
 
@@ -28,6 +27,7 @@ RUN pip install --upgrade pip && \
     pip install -r requirements.txt && \
     rm requirements.txt
 
+ADD rygg /app/rygg
 USER 1001
 
 HEALTHCHECK \
