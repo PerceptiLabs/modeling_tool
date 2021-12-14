@@ -14,7 +14,7 @@ from perceptilabs.caching.utils import get_preview_cache
 logging.basicConfig(
     stream=sys.stdout,
     format='%(asctime)s - %(levelname)s - %(name)s:%(lineno)d - %(message)s',
-    level=logging.INFO
+    level=os.getenv("PL_RENDER_LOG_LEVEL", "INFO"),
 )
 
 logger = logging.getLogger(__name__)
