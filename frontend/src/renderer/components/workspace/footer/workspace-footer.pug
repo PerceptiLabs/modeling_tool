@@ -15,12 +15,6 @@
   base-checkbox( :value="isMiniMapNavigatorOpened" @input="setMiniMapNavigationMutation"  data-testing-target="mini-map-checkbox") Map
   base-checkbox( v-model="isGridEnabled") Grid
 .workspace-meta-box
-  model-status(
-    v-if="(currentNetwork.networkMeta.coreStatus && currentNetwork.networkMeta.coreStatus.Status !== 'Waiting') && !statisticsIsOpen"
-    :options="{styleInlineLabel: true}"
-    :statusData="currentNetwork && currentNetwork.networkMeta.coreStatus"
-  )
-  .x-space-20
   div
     span Python {{coreVersions.python}} - TensorFlow {{coreVersions.tensorflow}}
     span.btn.python-status(
