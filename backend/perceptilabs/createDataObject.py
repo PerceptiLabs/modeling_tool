@@ -381,7 +381,11 @@ def create_data_object(
         name_list = list()
 
     data_list = [np.asarray(vec) for vec in data_list]    # if not array, convert
-    size = max(map(np.size, data_list))                  # used to make sure all arrays are equal length
+    try:
+        size = max(map(np.size, data_list))   
+    except:
+        size = 0
+                       # used to make sure all arrays are equal length
     series_list = []
 
     if size > 1:
@@ -417,20 +421,21 @@ def create_data_object(
 
     data_object = dict()
 
-    if 'bar_detailed' in type_list:
-        data_object["xLength"] = len(data_list[0])
-        data_object["series"] = type_object["data"]
-        data_object["nameList"] = name_list
-    elif 'heatmap' in type_list:
-        data_object["series"] = type_object["series"]
-        data_object["x_axis"] = type_object['x_axis']
-        data_object["y_axis"] = type_object['y_axis']
-    else:
-        data_object["xLength"] = data_list[0].size
-        data_object["series"]  = series_list
+    if size > 0:
+        if 'bar_detailed' in type_list:
+            data_object["xLength"] = len(data_list[0])
+            data_object["series"] = type_object["data"]
+            data_object["nameList"] = name_list
+        elif 'heatmap' in type_list:
+            data_object["series"] = type_object["series"]
+            data_object["x_axis"] = type_object['x_axis']
+            data_object["y_axis"] = type_object['y_axis']
+        else:
+            data_object["xLength"] = data_list[0].size
+            data_object["series"]  = series_list
 
-        if name_list:
-            data_object["legend"] = {"data": [n for n in name_list]}
+            if name_list:
+                data_object["legend"] = {"data": [n for n in name_list]}
 
     return data_object
 
