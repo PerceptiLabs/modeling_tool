@@ -1,0 +1,7 @@
+﻿apiVersion: aws-efs.managed.openshift.io/v1alpha1
+kind: SharedVolume
+metadata:
+  name: toysv
+spec:
+  accessPointID: fsap-0c68889ad6550d3f6
+  fileSystemID: fs-05ac56c02668e68ec

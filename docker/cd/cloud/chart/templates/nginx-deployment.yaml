@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: nginx
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nginx
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: nginx
+    spec:
+      {{- with .Values.imageCredentials.name }}
+      imagePullSecrets:
+        - name: {{ . }}
+      {{- end }}
+      initContainers:
+        - name: make-cache-dir
+          image: {{ .Values.bash_host.image | quote }}
+          command: ['mkdir', '-p', '/var/cache/nginx/client_temp']
+          volumeMounts:
+            - mountPath: /var/cache
+              name: nginx-cache
+          imagePullPolicy: {{ .Values.bash_host.pull_policy | default "IfNotPresent" | quote }}
+      containers:
+        - name: nginx
+          image: {{ .Values.nginx.docker_image | quote }}
+          imagePullPolicy: {{ .Values.nginx.pull_policy | default "IfNotPresent" | quote }}
+          ports:
+            - containerPort: 8080
+            - containerPort: 8443
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              name: nginx-conf
+              readOnly: true
+            - mountPath: /var/cache
+              name: nginx-cache
+            - mountPath: /var/run
+              name: nginx-cache
+      restartPolicy: Always
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: nginx-conf
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+        - name: nginx-cache
+          persistentVolumeClaim:
+            claimName: nginx-cache

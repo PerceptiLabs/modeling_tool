@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rygg-api
+  name: rygg-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rygg-api
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: rygg-api
+    spec:
+      {{- with .Values.imageCredentials.name }}
+      imagePullSecrets:
+        - name: {{ . }}
+      {{- end }}
+      initContainers:
+        - name: make-data-dir
+          image: {{ .Values.bash_host.image | quote }}
+          command: ['mkdir', '-p', '/plabs/data']
+          volumeMounts:
+            - name: plabs
+              mountPath: /plabs
+          imagePullPolicy: {{ .Values.bash_host.pull_policy | default "IfNotPresent" | quote }}
+      containers:
+        - name: rygg-api
+          {{- if .Values.rygg.docker_image_override }}
+          image: {{ .Values.rygg.docker_image_override | quote }}
+          {{- else }}
+          image: "{{ .Values.rygg.docker_repo }}:{{ .Values.pl_docker_tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.rygg.pull_policy | default "IfNotPresent" | quote }}
+          env:
+            - name: container
+              value: a
+            - name: DB_HOST
+              value: {{ .Values.db_host | quote }}
+            - name: DB_PORT
+              value: {{ .Values.db_port | quote }}
+            - name: DB_NAME
+              value: {{ .Values.db_name | quote }}
+            - name: DB_USER
+              value: {{ .Values.db_user | quote }}
+            - name: DB_PASS
+              value: {{ .Values.db_pass | quote }}
+            - name: DJANGO_DATABASE
+              value: {{ .Values.db_vendor | quote }}
+            - name: HOME
+              value: /perceptilabs
+            - name: PL_FILE_SERVING_TOKEN
+              value: thetoken
+            - name: PL_FILE_UPLOAD_DIR
+              value: /perceptilabs/Documents/Perceptilabs/data
+            - name: PL_REDIS_URL
+              value: redis://{{ .Values.redis_host }}
+            - name: PL_TUTORIALS_DATA
+              value: /tutorial_data
+            - name: PL_RYGG_LOG_LEVEL
+              value: {{ .Values.log_level }}
+          ports:
+            - containerPort: 8000
+          resources: {}
+          volumeMounts:
+            # TODO: fix the code so it doesn't use os.rename. Then let tmp be in the pod
+            - mountPath: /tmp
+              name: plabs
+            - mountPath: /perceptilabs/Documents/Perceptilabs
+              name: plabs
+      restartPolicy: Always
+      volumes:
+        - name: plabs
+          persistentVolumeClaim:
+            claimName: plabs

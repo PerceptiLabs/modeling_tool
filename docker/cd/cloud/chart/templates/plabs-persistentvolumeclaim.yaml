@@ -1,0 +1,14 @@
+﻿kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: plabs
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  {{- with .Values.rwx_storage_class }}
+  storageClassName: {{ . }}
+  {{- end }}
+  volumeMode: Filesystem

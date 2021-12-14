@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: flower
+  name: flower
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: flower
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        io.kompose.service: flower
+    spec:
+      {{- with .Values.imageCredentials.name }}
+      imagePullSecrets:
+        - name: {{ . }}
+      {{- end }}
+      containers:
+        - name: flower
+          {{- if .Values.flower.docker_image_override }}
+          image: {{ .Values.flower.docker_image_override | quote }}
+          {{- else }}
+          image: "{{ .Values.flower.docker_repo }}:{{ .Values.pl_docker_tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.flower.pull_policy | default "IfNotPresent" | quote }}
+          args:
+            - python
+            - -m
+            - celery
+            - -A
+            - perceptilabs.tasks.celery_executor
+            - flower
+            - --url_prefix=queues
+          env:
+            - name: HOME
+              value: /perceptilabs
+            - name: PL_REDIS_URL
+              value: redis://{{ .Values.redis_host }}
+          ports:
+            - containerPort: 5555
+          resources: {}
+      restartPolicy: Always

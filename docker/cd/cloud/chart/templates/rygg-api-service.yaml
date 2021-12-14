@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: rygg
+  name: rygg
+spec:
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 8000
+  selector:
+    app: rygg-api

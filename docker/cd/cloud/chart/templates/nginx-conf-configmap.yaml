@@ -1,0 +1,51 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-conf
+data:
+  nginx.conf: |
+    events {
+    }
+
+    http {
+      map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+      }
+
+      server {
+        listen 8080;
+        client_max_body_size 100M;
+        location /rygg/ {
+          proxy_pass http://rygg/;
+        }
+        location /auth/ {
+          proxy_pass http://keycloak/auth/;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+        location / {
+          proxy_pass http://frontend/;
+          proxy_set_header Host $host;
+        }
+        location /rygg_url {
+          return 200 $scheme://$host/rygg/;
+        }
+        location /rendering_kernel_url {
+          return 200 $scheme://$host/render/;
+        }
+        location /render/ {
+          proxy_pass http://render/;
+        }
+        location /queues/ {
+          proxy_pass http://flower/queues/;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+      }
+    }
+

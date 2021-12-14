@@ -47,10 +47,7 @@ def take_temp_file(tempfile_path, dest_dir, filename):
     os.makedirs(dest_dir, exist_ok=True)
 
     dest_path = os.path.join(dest_dir, filename)
-    shutil.move(tempfile_path, dest_path)
-
-    # since we just took the file from the temp dir, write an empty file there to keep any eventual deletion from failing
-    open(tempfile_path, "wb").close()
+    shutil.copyfile(tempfile_path, dest_path)
 
     return dest_path
 
