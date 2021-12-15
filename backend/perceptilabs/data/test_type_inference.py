@@ -18,6 +18,14 @@ def df():
     df = pd.DataFrame(data)
     yield df
 
+@pytest.fixture
+def segmentation_df():
+    data = {
+        'image': ['tom.jpg', 'joseph.jpg', 'krish.jpg', 'john.jpg'],
+        'mask': ['tom.png', 'joseph.png', 'krish.png', 'john.png']
+    }
+    df = pd.DataFrame(data)
+    yield df
 
 def test_identifies_text(df):
     inferrer = TypeInferrer()
@@ -93,6 +101,24 @@ def test_get_valid_and_default_datatypes(df):
     assert actual == expected
 
 
+def test_get_default_datatype(df):
+    expected = {
+        'Name': 'text',
+        'City': 'categorical',
+        'Age': 'numerical',
+        'Height': 'numerical',
+        'Gender': 'binary',
+        'Photo': 'image',
+    }
+    inferrer = TypeInferrer(max_categories=3)
+    
+    actual = {
+        column: inferrer.get_default_datatype(df[column])       
+        for column in df
+    }
+    assert actual == expected
+    
+
 def test_get_valid_and_default_datatypes_always_allow_categorical(df):
     expected = {
         'Name': (['categorical', 'text'], 1),
@@ -120,3 +146,14 @@ def test_get_valid_and_default_datatypes_but_never_allow_binary(df):
     actual = inferrer.get_valid_and_default_datatypes_for_dataframe(df)
     assert actual == expected
 
+
+def test_get_valid_and_default_datatypes_for_segmentation_data(segmentation_df):
+    expected = {
+        'image': (['image', 'mask', 'text'], 0),
+        'mask': (['image', 'mask', 'text'], 1)       
+    }
+    inferrer = TypeInferrer(max_categories=3)
+    actual = inferrer.get_valid_and_default_datatypes_for_dataframe(segmentation_df)
+    assert actual == expected
+
+    

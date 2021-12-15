@@ -18,14 +18,7 @@ class TypeInferrer:
 
     def get_valid_and_default_datatypes(self, series):
         """ Get the datatypes that are valid for this series. Also returns the index of the default one"""
-        types_by_priority = {
-            'binary': self.is_valid_binary,
-            'image': self.is_valid_image,
-            'mask': self.is_valid_image,
-            'categorical': self.is_valid_categorical,
-            'numerical': self.is_valid_numerical,
-            'text': self.is_valid_text,
-        }
+        types_by_priority = self.get_types_by_priority(series)
 
         valid_datatypes = []
         for datatype, is_valid_as_datatype in types_by_priority.items():
@@ -46,7 +39,29 @@ class TypeInferrer:
         default_index = valid_datatypes.index(default_type)
         return valid_datatypes, default_index
 
-    def get_default_datatype(self, series):
+    def get_types_by_priority(self, series):
+        if 'mask' in series.name.lower():  # Frontend passes mask/masks sometimes
+            priority_list = {
+                'mask': self.is_valid_image,
+                'binary': self.is_valid_binary,
+                'image': self.is_valid_image,
+                'categorical': self.is_valid_categorical,
+                'numerical': self.is_valid_numerical,
+                'text': self.is_valid_text,
+            }
+        else:
+            priority_list = {
+                'binary': self.is_valid_binary,
+                'image': self.is_valid_image,
+                'mask': self.is_valid_image,
+                'categorical': self.is_valid_categorical,
+                'numerical': self.is_valid_numerical,
+                'text': self.is_valid_text,
+            }
+        
+        return priority_list
+        
+    def get_default_datatype(self, series):  
         valid_datatypes, prob_idx = self.get_valid_and_default_datatypes(series)
         if valid_datatypes:
             return valid_datatypes[prob_idx]

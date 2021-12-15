@@ -300,6 +300,7 @@ export default {
     }
   },
   mounted() {
+    this.onTypeChange(this.columnSelectedType[this.elementIndex]);
     if (!this.preprocessingTypes) {
       this.onSave();
     } else {

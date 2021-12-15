@@ -725,6 +725,11 @@ export default {
         if (datasetIndex !== -1) {
           this.createdFromDatasetId = allDatasets[datasetIndex].dataset_id;
         } else {
+          console.error({
+            message: "Dataset isn't created yet",
+            location: dataPath[0],
+            allDatasets,
+          });
           const createDataset = await rygg_createDataset({
             name: dataPath[0],
             location: dataPath[0],
