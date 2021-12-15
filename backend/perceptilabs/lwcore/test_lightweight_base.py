@@ -1,7 +1,6 @@
 import os
 import pytest
 import pandas as pd
-import tempfile
 import numpy as np
 from unittest.mock import MagicMock
 
@@ -16,7 +15,6 @@ from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import FeatureSpec, DatasetSettings, Partitions
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.layers.specbase import LayerConnection
-from perceptilabs.resources.files import FileAccess
 from perceptilabs.data.utils.builder import DatasetBuilder
 
 
@@ -56,13 +54,8 @@ def data_loader_3d():
 
         data_loader = builder.get_data_loader()
         yield data_loader
+
         
-
-@pytest.fixture()
-def file_access(temp_path):
-    return FileAccess(temp_path)
-
-
 @pytest.fixture()
 def x1():
     yield [123.0, 24.0, 13.0, 45.0, -10.0]
@@ -74,17 +67,14 @@ def y1():
 
 
 @pytest.fixture()
-def csv_path(temp_path, x1, y1):
-    file_path = os.path.join(temp_path, 'data.csv')
+def df(x1, y1):
     df = pd.DataFrame({'x1': x1, 'y1': y1})
-    df.to_csv(file_path, index=False)
-    yield file_path
+    yield df
 
 
 @pytest.fixture()
-def graph_spec(csv_path):
+def graph_spec():
     gsb = GraphSpecBuilder()
-    dirpath = tempfile.mkdtemp()
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
@@ -121,9 +111,8 @@ def graph_spec(csv_path):
 
 
 @pytest.fixture()
-def graph_spec_partial(csv_path):
+def graph_spec_partial():
     gsb = GraphSpecBuilder()
-    dirpath = tempfile.mkdtemp()
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
@@ -164,9 +153,8 @@ def graph_spec_partial(csv_path):
 
 
 @pytest.fixture()
-def graph_spec_3d(csv_path):
+def graph_spec_3d():
     gsb = GraphSpecBuilder()
-    dirpath = tempfile.mkdtemp()
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
@@ -203,9 +191,8 @@ def graph_spec_3d(csv_path):
 
 
 @pytest.fixture()
-def graph_spec_wrong_output_shape(csv_path):
+def graph_spec_wrong_output_shape():
     gsb = GraphSpecBuilder()
-    dirpath = tempfile.mkdtemp()
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
@@ -236,9 +223,8 @@ def graph_spec_wrong_output_shape(csv_path):
 
 
 @pytest.fixture()
-def graph_spec_runtime_error(csv_path):
+def graph_spec_runtime_error():
     gsb = GraphSpecBuilder()
-    dirpath = tempfile.mkdtemp()
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
@@ -276,97 +262,10 @@ def graph_spec_runtime_error(csv_path):
 
 
 
-@pytest.fixture(scope='function')
-def graph_spec_pre_datawiz(temp_path_checkpoints):
-    n_classes = 10
-    n_samples = 30
-
-    #f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
-    #mat = np.random.random((n_samples, 28*28*1))
-    #np.save(f1.name, mat)
-
-    f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False)
-    mat = np.random.random((n_samples, 784))
-    df = pd.DataFrame.from_records(mat, columns=['col_'+str(x) for x in range(784)])
-    df.to_csv(f1.name, index=False)
-
-    f2 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
-    mat = np.random.randint(0, n_classes, (n_samples,))
-    np.save(f2.name, mat)
-
-    inputs_path = sanitize_path(f1.name)
-    labels_path = sanitize_path(f2.name)
-
-    input_data = DataSource(type_='file', path=inputs_path, ext='.csv')
-    label_data = DataSource(type_='file', path=labels_path, ext='.npy')
-
-    builder = GraphSpecBuilder()
-
-    # Branch 1 (Inputs)
-    builder.add_layer('DataData', settings={'id_': '1', 'sources': (input_data,)})
-    builder.add_layer('ProcessReshape', settings={'id_': '3', 'shape': (28, 28, 1)})
-    builder.add_layer('DeepLearningFC', settings={'id_': '4'})
-    builder.add_connection('1', 'output', '3', 'input')
-    builder.add_connection('3', 'output', '4', 'input')
-
-    # Branch 2 (Labels)
-    builder.add_layer('DataData', settings={'id_': '2', 'sources': (label_data,)})
-    builder.add_layer('ProcessOneHot', settings={'id_': '5'})
-    builder.add_connection('2', 'output', '5', 'input')
-
-    graph_spec = builder.build()
-    yield graph_spec
-
-    f1.close()
-    f2.close()
-
-
-@pytest.fixture(scope='function')
-def graph_spec_partial_pre_datawiz(temp_path_checkpoints):
-    n_classes = 10
-    n_samples = 30
-
-    #f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
-    #mat = np.random.random((n_samples, 28*28*1))
-    #np.save(f1.name, mat)
-
-    f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False)
-    mat = np.random.random((n_samples, 784))
-    df = pd.DataFrame.from_records(mat, columns=['col_'+str(x) for x in range(784)])
-    df.to_csv(f1.name, index=False)
-
-    f2 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
-    mat = np.random.randint(0, n_classes, (n_samples,))
-    np.save(f2.name, mat)
-
-    inputs_path = sanitize_path(f1.name)
-    labels_path = sanitize_path(f2.name)
-
-    input_data = DataSource(type_='file', path=inputs_path, ext='.csv')
-    label_data = DataSource(type_='file', path=labels_path, ext='.npy')
-
-    builder = GraphSpecBuilder()
-
-    # Branch 1 (Inputs)
-    builder.add_layer('DataData', settings={'id_': '1', 'sources': (input_data,)})
-    builder.add_layer('ProcessReshape', settings={'id_': '3', 'shape': (28, 28, 1)})
-    builder.add_layer('DeepLearningFC', settings={'id_': '4'})
-    builder.add_connection('1', 'output', '3', 'input')
-    builder.add_connection('3', 'output', '4', 'input')
-
-    # Branch 2 (Labels)
-    builder.add_layer('ProcessOneHot', settings={'id_': '5'})
-
-    graph_spec = builder.build()
-    yield graph_spec
-
-    f1.close()
-    f2.close()
 
 @pytest.fixture(scope='function')
 def graph_spec_syntax_error(temp_path_checkpoints):
     gsb = GraphSpecBuilder()
-    dirpath = tempfile.mkdtemp()
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
@@ -499,7 +398,7 @@ def test_tries_to_use_cached_value(data_loader, graph_spec):
     assert get_or_calculate.call_count > 0
 
 
-def test_preview_available_for_input_layer(file_access, csv_path, x1):
+def test_preview_available_for_input_layer(df, x1):
     input_spec = InputLayerSpec(id_='123', feature_name='x1', datatype='numerical')
     output_spec = OutputLayerSpec(id_='456', feature_name='y1', datatype='numerical')
     feature_specs = {
@@ -508,7 +407,7 @@ def test_preview_available_for_input_layer(file_access, csv_path, x1):
     }
     dataset_settings = DatasetSettings(feature_specs=feature_specs)
 
-    data_loader = DataLoader.from_csv(file_access, csv_path, dataset_settings)
+    data_loader = DataLoader(df, dataset_settings)
     lw_core = LightweightCore(data_loader=data_loader)
 
     graph_spec = GraphSpec([input_spec, output_spec])    
@@ -516,7 +415,7 @@ def test_preview_available_for_input_layer(file_access, csv_path, x1):
     assert results['123'].sample.get('output') == x1[0]
 
 
-def test_preview_available_for_output_layer(file_access, csv_path, y1):
+def test_preview_available_for_output_layer(df, y1):
     input_spec = InputLayerSpec(id_='123', feature_name='x1', datatype='numerical')
     output_spec = OutputLayerSpec(id_='456', feature_name='y1', datatype='numerical')
     feature_specs = {
@@ -525,7 +424,7 @@ def test_preview_available_for_output_layer(file_access, csv_path, y1):
     }
     dataset_settings = DatasetSettings(feature_specs=feature_specs)
 
-    data_loader = DataLoader.from_csv(file_access, csv_path, dataset_settings)
+    data_loader = DataLoader(df, dataset_settings)
     lw_core = LightweightCore(data_loader=data_loader)
 
     graph_spec = GraphSpec([input_spec, output_spec])    

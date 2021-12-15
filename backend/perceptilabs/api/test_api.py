@@ -1,7 +1,9 @@
 import os
 import pytest
+import pandas as pd
 from unittest.mock import MagicMock
 from retrying import retry
+from unittest.mock import patch
 
 from celery.contrib.pytest import (
     celery_worker, celery_app, celery_config,
@@ -43,6 +45,29 @@ def mixpanel_mock(monkeypatch):
 def user_token():
     return """eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI2YWtvOXRBdDFINlBZLXhKUzN0VWs3OXVBSVNqbkFxYjdyVGZYdklGQXBBIn0.eyJleHAiOjE2Mzk0MTkzMzIsImlhdCI6MTYzODgxNDUzMiwiYXV0aF90aW1lIjoxNjM4ODE0NTI5LCJqdGkiOiJiMzY4MTFhMi05ZGMxLTRkODktOWQ2ZS04MWU1MmM4NWQyZTgiLCJpc3MiOiJodHRwczovL2tleWNsb2FrLmRldi5wZXJjZXB0aWxhYnMuY29tOjg0NDMvYXV0aC9yZWFsbXMvdnVlLXBlcmNlcHRpbGFicyIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiI0Yzg3OTczMS01OWQzLTQ4YjQtYjFmNC00ODhmN2FkN2E4MDQiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJ2dWUtcGVyY2VwdGlsYWJzLWNsaWVudC1pZCIsIm5vbmNlIjoiODdjNzRiNzctNGM5Yy00OTMyLThjZGItN2ViNzVkMzQ3N2M5Iiwic2Vzc2lvbl9zdGF0ZSI6IjI3ODhmMGU1LTVjMjktNDhiZC1iMzEwLTViZTZlNGI2OGVmNSIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cDovL2xvY2FsaG9zdDo4MDgwIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJvcGVuaWQgZW1haWwgcHJvZmlsZSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJzdCBsb2dpbiI6ZmFsc2UsInByZWZlcnJlZF91c2VybmFtZSI6ImFudG9uLmtAcGVyY2VwdGlsYWJzLmNvbSIsImVtYWlsIjoiYW50b24ua0BwZXJjZXB0aWxhYnMuY29tIn0.fG2nvdRjIuKYt2snGNK-z1OOq0bf4cguwPQUVPztoM9vxXUwibW-Tsy1IWH7jwSypTRLCzbbDQPVN6LqgonBBJar_YbIGpGex-qbli6yrsiRJMGS1fvxA4XfMjNd3cTojercm6PdYDvQ2rBcmjrbJoBXjxWGfN0ygq9vqzY_2UDb5RUlYWbITjddReVtJcDLkDKXo-xoow8jP49vn8KX9c-pBLIhxuPZG4AmNCVOp6_-3f4BoLhrwvKSsr45kOvscfVz2uwTr5QKiYbiHLzb28qax70V144vbIvOmRw1Ny2hOLb3eol8USJBn6JGw6VDjQUPjVCMwn4IPIQGZZ1Zkg"""
 
+
+@pytest.fixture(scope='function', autouse=True)
+def rygg_mock(monkeypatch, tmp_path):
+    df = pd.DataFrame({
+        'x1': [1.0, 2.0, 3.0, 4.0],
+        'x2': [5.0, 6.0, 3.0, 9.0],
+        'y1': ['a', 'b', 'c', 'd']
+    })
+
+    location = os.path.join(tmp_path, 'data.csv')
+    df.to_csv(location, index=False)
+    
+    def get_dataset(self, dataset_id):
+        response = {
+            'location': location,
+            'name': 'MyDataset',
+            'is_perceptilabs_sourced': True                        
+        }
+        return response
+
+    from perceptilabs.rygg import RyggWrapper
+    monkeypatch.setattr(RyggWrapper, 'get_dataset', get_dataset)    
+    
 
 @pytest.fixture(scope='function')
 def client(request, celery_worker):
@@ -86,7 +111,7 @@ def dataset_settings():
             10
         ],
         "randomizedPartitions": True,
-        "filePath": "perceptilabs/api/test_data.csv",
+        "datasetId": 123,
         "randomSeed": 123      
     }
     return dict_
@@ -571,7 +596,7 @@ def test_endpoint_error_handling_automatically_adds_fields(client, user_token):
 
 def test_type_inference(client, user_token, mixpanel_mock):
     res = client.get(
-        '/datasets/type_inference?path=perceptilabs/api/test_data.csv&dataset_id=30',
+        '/datasets/type_inference?dataset_id=123',        
         headers={'Authorization': user_token}
     )
     assert res.status_code == 200

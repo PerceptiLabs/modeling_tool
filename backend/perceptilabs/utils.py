@@ -553,20 +553,6 @@ def b64decode_and_sanitize(input_):
     return sanitized
     
     
-
-def get_file_path(dataset_settings_dict):
-    """ To support older models """
-    if 'filePath' in list(dataset_settings_dict.keys()):
-        csv_path = dataset_settings_dict['filePath']
-    else:
-        feature_specs = dataset_settings_dict['featureSpecs']     
-        for key in feature_specs:
-            csv_path = feature_specs[key]['csv_path']
-            break
-    return csv_path
-    
-    
-
 def get_categories_from_postprocessing(postprocessing):
     num_categories = postprocessing.n_categories
     indices = postprocessing(np.eye(num_categories)).numpy()

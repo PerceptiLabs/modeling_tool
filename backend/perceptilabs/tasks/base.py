@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 import sentry_sdk
 
-from perceptilabs.utils import get_file_path, setup_sentry
+from perceptilabs.utils import setup_sentry
 
 logger = logging.getLogger(__name__)
 
@@ -43,11 +43,12 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
     from perceptilabs.script.base import ScriptFactory    
     from perceptilabs.resources.models import ModelAccess
     from perceptilabs.resources.epochs import EpochsAccess
-    from perceptilabs.resources.files import FileAccess
     from perceptilabs.resources.training_results import TrainingResultsAccess
     from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess    
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
+    from perceptilabs.resources.datasets import DatasetAccess            
+    from perceptilabs.rygg import RyggWrapper
     import perceptilabs.utils as utils
     import os
 
@@ -60,23 +61,25 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
 
     # TODO: all this data setup should be moved into the coreInteraface!!!
     
-    csv_file = get_file_path(dataset_settings_dict)  # TODO: move one level up        
     num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
     data_metadata = preprocessing_results_access.get_metadata(dataset_settings.compute_hash())
 
-    file_access = FileAccess(os.path.dirname(csv_file))        
-    data_loader = DataLoader.from_csv(
-        file_access,
-        csv_file,
-        dataset_settings,
-        num_repeats=num_repeats,
-        metadata=data_metadata
-    )
+    rygg = RyggWrapper.with_default_settings()
+    dataset_access = DatasetAccess(rygg)
 
-    event_tracker = EventTracker()
+    df = dataset_access.get_dataframe(
+        dataset_settings.dataset_id, fix_paths_for=dataset_settings.file_based_features)
     
+    data_loader = DataLoader(
+        df,
+        dataset_settings,
+        metadata=data_metadata,
+        num_repeats=num_repeats
+    )
+    event_tracker = EventTracker()
+
     interface = TrainingSessionInterface(
         message_broker, event_tracker, model_access, epochs_access, training_results_access)
     
@@ -103,12 +106,13 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
     from perceptilabs.script.base import ScriptFactory    
     from perceptilabs.resources.models import ModelAccess
     from perceptilabs.resources.epochs import EpochsAccess
-    from perceptilabs.resources.files import FileAccess
     from perceptilabs.resources.testing_results import TestingResultsAccess
     from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess        
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     from perceptilabs.tracking.base import EventTracker
+    from perceptilabs.resources.datasets import DatasetAccess            
+    from perceptilabs.rygg import RyggWrapper
     import perceptilabs.utils as utils
     import os
     
@@ -118,25 +122,31 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
     model_access = ModelAccess(ScriptFactory())
     epochs_access = EpochsAccess()
     testing_results_access = TestingResultsAccess()
-    preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())                
+    preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
+
+    rygg = RyggWrapper.with_default_settings()
+    dataset_access = DatasetAccess(rygg)
+
+        
     # TODO: all this data loader etup should be moved into the test interface!!!
     models = {}
     for model_id in models_info.keys():
         dataset_settings_dict = models_info[model_id]['datasetSettings']
-        csv_file = get_file_path(dataset_settings_dict)  # TODO: move one level up
         num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
         dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
         data_metadata = preprocessing_results_access.get_metadata(dataset_settings.compute_hash())
 
-        file_access = FileAccess(os.path.dirname(csv_file))        
-        data_loader = DataLoader.from_csv(
-            file_access,
-            csv_file,
+        df = dataset_access.get_dataframe(
+            dataset_settings.dataset_id, fix_paths_for=dataset_settings.file_based_features)
+
+        data_loader = DataLoader(
+            df,
             dataset_settings,
-            num_repeats=num_repeats,
-            metadata=data_metadata
+            metadata=data_metadata,
+            num_repeats=num_repeats
         )
+
 
         graph_dict = models_info[model_id]['layers'] 
         graph_spec = model_access.get_graph_spec(model_id=graph_dict)  # TODO: f/e should send an ID        
@@ -170,13 +180,14 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id,
     from perceptilabs.script.base import ScriptFactory    
     from perceptilabs.resources.models import ModelAccess
     from perceptilabs.resources.epochs import EpochsAccess
-    from perceptilabs.resources.files import FileAccess
     from perceptilabs.resources.serving_results import ServingResultsAccess
     from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess        
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     from perceptilabs.messaging.base import get_message_broker
     from perceptilabs.tracking.base import EventTracker    
+    from perceptilabs.resources.datasets import DatasetAccess            
+    from perceptilabs.rygg import RyggWrapper
     import perceptilabs.utils as utils
     import os
 
@@ -188,19 +199,23 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id,
     serving_results_access = ServingResultsAccess()
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())                
 
-    csv_file = get_file_path(dataset_settings_dict)  # TODO: move one level up        
     num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
     data_metadata = preprocessing_results_access.get_metadata(dataset_settings.compute_hash())    
 
-    file_access = FileAccess(os.path.dirname(csv_file))        
-    data_loader = DataLoader.from_csv(
-        file_access,
-        csv_file,
+
+    rygg = RyggWrapper.with_default_settings()
+    dataset_access = DatasetAccess(rygg)
+
+    df = dataset_access.get_dataframe(
+        dataset_settings.dataset_id, fix_paths_for=dataset_settings.file_based_features)
+    
+    data_loader = DataLoader(
+        df,
         dataset_settings,
-        num_repeats=num_repeats,
-        metadata=data_metadata
+        metadata=data_metadata,
+        num_repeats=num_repeats
     )
     
     event_tracker = EventTracker()
@@ -225,12 +240,16 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id,
 @handle_exceptions    
 def preprocessing_task(dataset_settings_dict, preprocessing_session_id, user_email, logrocket_url=''):
     from perceptilabs.preprocessing_interface import PreprocessingSessionInterface  # TODO: should preprocessing_interface have a better name??
+    from perceptilabs.messaging.base import get_message_broker        
     from perceptilabs.caching.utils import get_data_metadata_cache    
-    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess        
-    from perceptilabs.messaging.base import get_message_broker    
+    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess
+    from perceptilabs.resources.datasets import DatasetAccess            
+    from perceptilabs.rygg import RyggWrapper
 
+    rygg = RyggWrapper.with_default_settings()
+    dataset_access = DatasetAccess(rygg)
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
-    interface = PreprocessingSessionInterface(preprocessing_results_access)
+    interface = PreprocessingSessionInterface(dataset_access, preprocessing_results_access)
 
     interface.run(dataset_settings_dict, preprocessing_session_id, user_email, logrocket_url=logrocket_url)
     

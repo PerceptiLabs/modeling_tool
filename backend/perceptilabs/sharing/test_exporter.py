@@ -14,7 +14,6 @@ from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import FeatureSpec, DatasetSettings, Partitions
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.sharing.exporter import Exporter
-from perceptilabs.resources.files import FileAccess
 import perceptilabs.sharing.fastapi_utils as fastapi_utils
 import perceptilabs.data.utils as data_utils
 
@@ -71,9 +70,7 @@ def make_data_loader(data, working_dir):
     if data['x1']['type'] == 'image':
         for path in data['x1']['values']:
             image = np.random.randint(0, 255, data['x1']['shape'], dtype=np.uint8)
-            sk.imsave(os.path.join(working_dir, path), image)
-
-
+            sk.imsave(path, image)
 
     feature_specs = {
         'x1': FeatureSpec(iotype='input', datatype=data['x1']['type']),
@@ -86,10 +83,7 @@ def make_data_loader(data, working_dir):
         partitions=partitions,
     )
 
-    file_access = FileAccess(working_dir)
     df = pd.DataFrame({'x1': data['x1']['values'], 'y1': data['y1']['values']})
-    df = data_utils.localize_file_based_features(df, dataset_settings, file_access)
-
     dl = DataLoader(df, dataset_settings)
     return dl
 
@@ -121,7 +115,6 @@ def data_loader_image(temp_path):
 
 def make_graph_spec(data_loader):
     gsb = GraphSpecBuilder()
-    dirpath = tempfile.mkdtemp()
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',

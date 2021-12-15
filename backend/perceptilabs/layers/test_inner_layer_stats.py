@@ -9,13 +9,13 @@ import pytest
 from unittest.mock import MagicMock
 
 @pytest.fixture()
-def graph_spec(csv_path):
+def graph_spec():
     gsb = GraphSpecBuilder()
     dirpath = tempfile.mkdtemp()
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
-        settings={'datatype': 'numerical', 'feature_name': 'x1', 'file_path': csv_path, 'checkpoint_path':dirpath}
+        settings={'datatype': 'numerical', 'feature_name': 'x1'}
     )
     id2 = gsb.add_layer(
         'DeepLearningFC',
@@ -23,7 +23,7 @@ def graph_spec(csv_path):
     )
     id3 = gsb.add_layer(
         'IoOutput',
-        settings={'datatype': 'numerical', 'feature_name': 'y1', 'file_path': csv_path}
+        settings={'datatype': 'numerical', 'feature_name': 'y1'}
     )
 
     # Connect the layers

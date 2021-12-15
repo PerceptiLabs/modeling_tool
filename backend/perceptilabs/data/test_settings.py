@@ -7,7 +7,7 @@ from perceptilabs.data.settings import DatasetSettings, FeatureSpec, Partitions,
 @pytest.fixture(scope='function')
 def settings_dict():
     settings = {
-        "filePath": "~/test_data.csv",        
+        "datasetId": "123",        
         "randomizedPartitions": True,
         "randomSeed": 789,        
         "partitions": [
@@ -191,11 +191,11 @@ def test_unequal_settings_have_unequal_hash(settings_dict):
     assert s1.compute_hash() != s2.compute_hash()
 
 
-def test_datasets_with_different_names_have_unequal_hash(settings_dict):
+def test_datasets_with_different_ids_have_unequal_hash(settings_dict):
     sd1 = copy.deepcopy(settings_dict)
     sd2 = copy.deepcopy(settings_dict)
     
-    sd2['filePath'] = "~/test_data2.csv"
+    sd2["datasetId"] = "500"
     
     s1 = DatasetSettings.from_dict(sd1)
     s2 = DatasetSettings.from_dict(sd2)

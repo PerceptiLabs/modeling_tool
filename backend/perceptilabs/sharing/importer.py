@@ -21,13 +21,12 @@ class Importer:
         
         if dataset_id != original_dataset_id:
             dataset_settings_dict['datasetId'] = dataset_id
-            dataset_settings_dict['filePath'] = dataset_location
 
         new_dataset = self._dataset_access.get_name(dataset_id)                
         original_dataset = self._dataset_access.get_name(dataset_id)
         
         type_inferrer = TypeInferrer.with_default_settings()        
-        df = pd.read_csv(dataset_location)
+        df = self._dataset_access.get_dataframe(dataset_id)
         
         default_types = {
             name: type_inferrer.get_default_datatype(series)

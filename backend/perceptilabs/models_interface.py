@@ -7,15 +7,12 @@ from perceptilabs.sharing.exporter import Exporter, CompatibilityError
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.data.base import DataLoader
 from perceptilabs.graph.spec import GraphSpec
-from perceptilabs.resources.files import FileAccess
-from perceptilabs.utils import get_file_path
 from perceptilabs.utils import KernelError
 from perceptilabs.lwcore import LightweightCore
 from perceptilabs.script import ScriptFactory
 from perceptilabs.sharing.importer import Importer
 import perceptilabs.lwcore.utils as lwcore_utils
 import perceptilabs.automation.utils as automation_utils
-import perceptilabs.data.utils as data_utils
 import perceptilabs.tracking as tracking
 
 logger = logging.getLogger(__name__)
@@ -202,15 +199,18 @@ class ModelsInterface:
 
     def _get_data_loader(self, settings_dict, user_email):
         dataset_settings = DatasetSettings.from_dict(settings_dict)
-        csv_path = get_file_path(settings_dict)  # TODO: move one level up
-        
+
         data_metadata = self._preprocessing_results_access.get_metadata(
             dataset_settings.compute_hash())
         
-        file_access = FileAccess(os.path.dirname(csv_path))          
-        data_loader = DataLoader.from_csv(
-            file_access, csv_path, dataset_settings, metadata=data_metadata)
+        df = self._dataset_access.get_dataframe(
+            dataset_settings.dataset_id, fix_paths_for=dataset_settings.file_based_features)
 
+        data_loader = DataLoader(
+            df,
+            dataset_settings,
+            metadata=data_metadata
+        )
         return data_loader
 
     def get_layer_info(self, model_id, dataset_settings_dict, graph_spec_dict, user_email, layer_id=None):
@@ -276,8 +276,6 @@ class ModelsInterface:
             return graph_spec.to_dict()
             
     def _track_model_recommended(self, model_id, user_email, skipped_workspace, data_loader, graph_spec, settings_dict):
-        is_tutorial_data = data_utils.is_tutorial_data_file(settings_dict.get('filePath'))
-            
         training_size = data_loader.get_dataset_size(partition='training')
         validation_size = data_loader.get_dataset_size(partition='validation')
         test_size = data_loader.get_dataset_size(partition='test')
@@ -295,18 +293,14 @@ class ModelsInterface:
             settings_dict,
             dataset_size_bytes,
             graph_spec,
-            is_tutorial_data=is_tutorial_data,
             is_perceptilabs_sourced=is_plabs_sourced,
             dataset_id=data_loader.settings.dataset_id
         )
     
     def import_model(self, dataset_id, source_file):
-        file_access = FileAccess()
-        file_path = file_access.get_local_path(source_file)
-
         importer = Importer(self._dataset_access, self._model_archives_access)
         dataset_settings_dict, graph_spec_dict, training_settings_dict = \
-            importer.run(dataset_id, file_path)
+            importer.run(dataset_id, source_file)
         
         output = {
             'datasetSettings': dataset_settings_dict,

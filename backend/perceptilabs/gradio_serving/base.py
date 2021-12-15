@@ -10,13 +10,12 @@ import gradio as gr
 
 from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.resources.models import ModelAccess
-from perceptilabs.resources.files import FileAccess
 from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.caching.utils import get_data_metadata_cache
-from perceptilabs.utils import get_file_path
+
 
 logger = logging.getLogger(__name__)
 

@@ -14,7 +14,6 @@ from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.sharing.exporter import Exporter
 from perceptilabs.testcore.base import TestCore, ProcessResults
-from perceptilabs.resources.files import FileAccess
 
 
 @pytest.fixture()

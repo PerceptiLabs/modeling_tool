@@ -16,7 +16,7 @@ TESTING_RESULTS_REFRESH_INTERVAL = None # seconds [None == for every iteration]
 SERVING_RESULTS_REFRESH_INTERVAL = 1.0 # seconds [None == for every iteration]
 
 
-RYGG_FILE_SERVING_TOKEN = os.getenv("PL_FILE_SERVING_TOKEN")
+RYGG_FILE_SERVING_TOKEN = os.getenv("PL_FILE_SERVING_TOKEN", "12312")
 RYGG_BASE_URL = os.getenv("PL_RYGG_BASE_URL", "http://localhost:8000")
 
 

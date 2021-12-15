@@ -69,6 +69,7 @@ import { mapState, mapGetters, mapActions } from "vuex";
 import cloneDeep from "lodash.clonedeep";
 
 import { getDatasetContent as rygg_getDatasetContent } from "@/core/apiRygg";
+import { getDataset as rygg_getDataset } from "@/core/apiRygg";
 import { pickFile as rygg_pickFile } from "@/core/apiRygg";
 
 import CsvTable from "@/components/different/csv-table.vue";
@@ -78,10 +79,7 @@ import ChartSpinner from "@/components/charts/chart-spinner";
 import DataColumnOptionSidebar from "@/components/different/data-column-option-sidebar";
 import BaseGlobalPopup from "@/components/global-popups/base-global-popup";
 
-import {
-  getDatasetPath,
-  formatCSVTypesIntoKernelFormat,
-} from "@/core/helpers/model-helper";
+import { formatCSVTypesIntoKernelFormat } from "@/core/helpers/model-helper";
 import { renderingKernel } from "@/core/apiRenderingKernel";
 
 export default {
@@ -128,11 +126,12 @@ export default {
       showErrorPopup: "globalView/GP_errorPopup",
     }),
 
-    loadCurrentDatasetSettings() {
+    async loadCurrentDatasetSettings() {
       this.datasetSettings = cloneDeep(this.currentNetworkDatasetSettings);
-      this.datasetPath = getDatasetPath(this.datasetSettings);
 
-      console.log("this.datasetPath", this.datasetSettings, this.datasetPath);
+      const { data } = await rygg_getDataset(this.datasetSettings.datasetId);
+      this.datasetPath = data.location;
+      console.log('this.datasetPath', this.datasetSettings, this.datasetPath);
 
       this.loadDataset();
     },
@@ -150,7 +149,7 @@ export default {
 
       const fileContents = await rygg_getDatasetContent(datasetId);
       this.dataSetTypes = await renderingKernel
-        .getDataTypes(this.datasetPath, this.userEmail)
+        .getDataTypes(datasetId, this.userEmail)
         .then(res => {
           if ("errorMessage" in res) {
             this.showErrorPopup(
@@ -236,7 +235,6 @@ export default {
           randomizedPartitions: this.datasetSettings.randomizedPartitions,
           partitions: this.datasetSettings.partitions,
           featureSpecs: formatCSVTypesIntoKernelFormat(this.csvData),
-          filePath: this.datasetPath,
         };
 
         await renderingKernel.waitForDataReady(datasetSettings);

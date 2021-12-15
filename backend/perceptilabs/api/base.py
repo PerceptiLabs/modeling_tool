@@ -216,9 +216,8 @@ def create_app(
     @app.route('/datasets/type_inference', methods=['GET'])
     def type_inference():
         datatypes = datasets_interface.infer_datatypes(
-            request.args['path'],
-            request.args.get('dataset_id'),
-            user_email=maybe_get_email(request)
+            request.args['dataset_id'],
+            user_email=maybe_get_email(request)            
         )        
         return jsonify(datatypes)
     

@@ -112,9 +112,9 @@ export const renderingKernel = {
       })
   },
  
-  async getDataTypes(path, datasetId, userEmail) {
+  async getDataTypes(datasetId, userEmail) {
     return whenRenderingKernelReady
-      .then(rk => rk.get(`/datasets/type_inference?path=${path}&dataset_id=${datasetId}&user_email=${userEmail}`))
+      .then(rk => rk.get(`/datasets/type_inference?dataset_id=${datasetId}&user_email=${userEmail}`))
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })

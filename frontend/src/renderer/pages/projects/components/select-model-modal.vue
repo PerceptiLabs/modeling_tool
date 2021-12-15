@@ -551,7 +551,6 @@ export default {
         randomizedPartitions: this.datasetSettings.randomizedPartitions,
         partitions: this.datasetSettings.partitions,
         featureSpecs: formatCSVTypesIntoKernelFormat(this.csvData),
-        filePath: this.datasetPath,
         randomSeed: this.datasetSettings.randomSeed,
         datasetId: this.createdFromDatasetId,
         modelType: this.modelType,
@@ -741,7 +740,6 @@ export default {
 
         this.dataSetTypes = await renderingKernel
           .getDataTypes(
-            datasetContentPath,
             this.createdFromDatasetId,
             this.userEmail,
           )

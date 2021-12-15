@@ -5,10 +5,8 @@ import pandas as pd
 import sentry_sdk
 
 import perceptilabs.settings as settings    
-from perceptilabs.resources.files import FileAccess
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings
-from perceptilabs.resources.files import FileAccess
 from perceptilabs.utils import KernelError
 import perceptilabs.data.utils as data_utils
 import perceptilabs.utils as utils
@@ -18,7 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 class PreprocessingSessionInterface:
-    def __init__(self, results_access):
+    def __init__(self, dataset_access, results_access):
+        self._dataset_access = dataset_access
         self._results_access = results_access
 
     def run(self, dataset_settings_dict, preprocessing_session_id, user_email, logrocket_url=''):
@@ -42,16 +41,14 @@ class PreprocessingSessionInterface:
 
     def _run_internal(self, dataset_settings_dict, preprocessing_session_id):
         dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
-        csv_file = utils.get_file_path(dataset_settings_dict)  # TODO. move one level up
 
         num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
         
         self._results_access.set_results(
             preprocessing_session_id, 'Initializing preprocessing...')
-        
-        file_access = FileAccess(os.path.dirname(csv_file))                            
-        df = pd.read_csv(csv_file)
-        df = data_utils.localize_file_based_features(df, dataset_settings, file_access)
+
+        df = self._dataset_access.get_dataframe(
+            dataset_settings.dataset_id, fix_paths_for=dataset_settings.file_based_features)
 
         def on_status_updated(status, feature_name, total_steps, steps_completed, index=None, size=None):
             if index is not None and size:

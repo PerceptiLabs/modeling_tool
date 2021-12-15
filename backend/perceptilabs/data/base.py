@@ -191,21 +191,6 @@ class DataLoader:
         logger.info(f"Built preprocessing pipelines.")
         return pipelines, metadata
 
-    @classmethod
-    def from_csv(cls, file_access, file_id, dataset_settings, metadata=None, num_repeats=1):
-        """ Creates a DataLoader given a settings dict """
-        file_path = file_access.get_local_path(file_id)  # TODO: send file ID from F/E instead
-        df = pd.read_csv(file_path)
-        df = utils.localize_file_based_features(df, dataset_settings, file_access)
-
-        data_loader = cls(
-            df,
-            dataset_settings,
-            metadata=metadata,
-            num_repeats=num_repeats
-        )
-        return data_loader
-
     def _select_columns_by_iotype(self, df, feature_specs, iotype):
         """ Selects input or output components from the dataframe """
         assert iotype in ['input', 'target']

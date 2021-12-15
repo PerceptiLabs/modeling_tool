@@ -53,11 +53,6 @@ class TypeInferrer:
         else:
             return None
 
-    def get_valid_and_default_datatypes_for_csv(self, path):
-        """ Get the datatypes that are valid for each column in the csv """
-        df = pd.read_csv(path)
-        return self.get_valid_and_default_datatypes_for_dataframe(df)
-
     def get_valid_and_default_datatypes_for_dataframe(self, df):
         """ Get the datatypes that are valid for each dataframe
 

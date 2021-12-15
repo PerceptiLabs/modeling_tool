@@ -7,6 +7,12 @@ from pydantic import root_validator
 from perceptilabs.utils import MyPydanticBaseModel
 
 
+FILE_BASED_DATATYPES = [  # Datatypes whose value is a path to a file
+    'image',
+    'mask'
+]
+
+
 class Partitions(MyPydanticBaseModel):
     randomized: bool = False
     seed: Union[int, None] = 123
@@ -191,17 +197,19 @@ class FeatureSpec(MyPydanticBaseModel):
 
         return hasher.hexdigest()
 
+    @property
+    def is_file_based(self):
+        return self.datatype in FILE_BASED_DATATYPES
+
 
 class DatasetSettings(MyPydanticBaseModel):
     feature_specs: Dict[str, FeatureSpec] = {}
     partitions: Partitions = Partitions()
-    name: str = ''
     dataset_id: str = ''
 
     @classmethod
     def from_dict(cls, dict_):
-        dataset_id = str(dict_.get('datasetId', ''))        
-        name = dict_.get('filePath', '')
+        dataset_id = str(dict_['datasetId'])
         feature_specs = {
             feature_name: FeatureSpec.from_dict(feature_dict)
             for feature_name, feature_dict in dict_['featureSpecs'].items()
@@ -211,7 +219,6 @@ class DatasetSettings(MyPydanticBaseModel):
         return cls(
             partitions=partitions,
             feature_specs=feature_specs,
-            name=name,
             dataset_id=dataset_id
         )
 
@@ -225,7 +232,6 @@ class DatasetSettings(MyPydanticBaseModel):
     def compute_hash(self):
         hasher = hashlib.md5()
         hasher.update(self.partitions.compute_hash().encode())
-        hasher.update(self.name.encode())
         hasher.update(self.dataset_id.encode())        
         for name, spec in self.feature_specs.items():
             hasher.update(name.encode())
@@ -235,5 +241,7 @@ class DatasetSettings(MyPydanticBaseModel):
     def __getitem__(self, feature_name):
         return self.feature_specs[feature_name]
 
-
+    @property
+    def file_based_features(self):
+        return [name for name, spec in self.feature_specs.items() if spec.is_file_based]
     

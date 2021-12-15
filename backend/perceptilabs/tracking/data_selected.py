@@ -1,6 +1,4 @@
 import os
-
-from perceptilabs.data.utils import is_tutorial_data_file
 from perceptilabs.tracking.utils import get_tool_version
 
 def send_data_selected(tracker, user_email, file_path, is_plabs_sourced, dataset_id):
@@ -13,7 +11,6 @@ def send_data_selected(tracker, user_email, file_path, is_plabs_sourced, dataset
         'file_size_bytes': dataset_size_bytes,
         'file_path': file_path,
         'file_ext': file_ext,    
-        'is_tutorial_data': is_tutorial_data_file(file_path),
         'is_perceptilabs_sourced': is_plabs_sourced,
         'dataset_id': dataset_id,
         'version': get_tool_version()                

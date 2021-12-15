@@ -13,42 +13,32 @@ from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.sharing.exporter import Exporter
 from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable, OutputVisualization
-from perceptilabs.resources.files import FileAccess
 
 
 @pytest.fixture()
-def file_access(temp_path):
-    return FileAccess(temp_path)
-    
-
-@pytest.fixture()
-def csv_path(temp_path):
-    file_path = os.path.join(temp_path, 'data.csv')
-    df = pd.DataFrame({'x1': [123.0, 24.0, 13.0, 46, 52, 56, 3, 67, 32, 94], 'y1': [1, 0, 1, 0, 0, 0, 1, 1, 0, 0]})
-    df.to_csv(file_path, index=False)
-    yield file_path
-
-
-@pytest.fixture()
-def data_loader(file_access, csv_path):
+def data_loader():
+    df = pd.DataFrame({
+        'x1': [123.0, 24.0, 13.0, 46, 52, 56, 3, 67, 32, 94],
+        'y1': [1, 0, 1, 0, 0, 0, 1, 1, 0, 0]
+    })
     settings = DatasetSettings(
         feature_specs={
             'x1': FeatureSpec(datatype='numerical', iotype='input'),
             'y1': FeatureSpec(datatype='categorical', iotype='target')
         },
     )
-    dl = DataLoader.from_csv(file_access, csv_path, settings)
+    dl = DataLoader(df, settings)
     yield dl
 
 
 @pytest.fixture()
-def graph_spec_few_epochs(csv_path):
+def graph_spec_few_epochs():
     gsb = GraphSpecBuilder()
     dirpath = tempfile.mkdtemp()
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
-        settings={'datatype': 'numerical', 'feature_name': 'x1', 'file_path': csv_path, 'checkpoint_path':dirpath}
+        settings={'datatype': 'numerical', 'feature_name': 'x1'}
     )
     id2 = gsb.add_layer(
         'DeepLearningFC',
@@ -56,7 +46,7 @@ def graph_spec_few_epochs(csv_path):
     )
     id3 = gsb.add_layer(
         'IoOutput',
-        settings={'datatype': 'categorical', 'feature_name': 'y1', 'file_path': csv_path}
+        settings={'datatype': 'categorical', 'feature_name': 'y1'}
     )
 
     # Connect the layers

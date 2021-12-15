@@ -13,24 +13,16 @@ from perceptilabs.data.settings import FeatureSpec, Partitions, DatasetSettings
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.trainer import Trainer, TrainingModel
 from perceptilabs.sharing.exporter import Exporter
-from perceptilabs.resources.files import FileAccess
 
 
 @pytest.fixture()
-def file_access(temp_path):
-    return FileAccess(temp_path)
-
-
-@pytest.fixture()
-def csv_path(temp_path):
-    file_path = os.path.join(temp_path, 'data.csv')
+def df():
     df = pd.DataFrame({'x1': [123.0, 24.0, 13.0, 45.0, -10.0], 'y1': [1.0, 2.0, 3.0, 4.0, -1.0]})
-    df.to_csv(file_path, index=False)
-    yield file_path
+    yield df
 
 
 @pytest.fixture()
-def data_loader(file_access, csv_path):
+def data_loader(df):
     settings = DatasetSettings(
         feature_specs={
             'x1': FeatureSpec(datatype='numerical', iotype='input'),
@@ -38,7 +30,7 @@ def data_loader(file_access, csv_path):
         },
         partitions=Partitions(training_ratio=4/5, validation_ratio=1/5, test_ratio=0.0)
     )
-    dl = DataLoader.from_csv(file_access, csv_path, settings)
+    dl = DataLoader(df, settings)
     yield dl
 
 @pytest.fixture()
@@ -70,13 +62,13 @@ def training_settings_shuffle_data(training_settings):
 
 
 @pytest.fixture()
-def graph_spec(csv_path):
+def graph_spec():
     gsb = GraphSpecBuilder()
     dirpath = tempfile.mkdtemp()
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
-        settings={'datatype': 'numerical', 'feature_name': 'x1', 'file_path': csv_path}
+        settings={'datatype': 'numerical', 'feature_name': 'x1'}
     )
     id2 = gsb.add_layer(
         'DeepLearningFC',
@@ -84,7 +76,7 @@ def graph_spec(csv_path):
     )
     id3 = gsb.add_layer(
         'IoOutput',
-        settings={'datatype': 'numerical', 'feature_name': 'y1', 'file_path': csv_path}
+        settings={'datatype': 'numerical', 'feature_name': 'y1'}
     )
 
     # Connect the layers
@@ -103,13 +95,13 @@ def graph_spec(csv_path):
 
 
 @pytest.fixture()
-def graph_spec_faulty(csv_path):
+def graph_spec_faulty():
     gsb = GraphSpecBuilder()
     dirpath = tempfile.mkdtemp()
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
-        settings={'datatype': 'numerical', 'feature_name': 'x1', 'file_path': csv_path}
+        settings={'datatype': 'numerical', 'feature_name': 'x1'}
     )
     id2 = gsb.add_layer(
         'DeepLearningFC',
@@ -117,7 +109,7 @@ def graph_spec_faulty(csv_path):
     )
     id3 = gsb.add_layer(
         'IoOutput',
-        settings={'datatype': 'numerical', 'feature_name': 'y1', 'file_path': csv_path}
+        settings={'datatype': 'numerical', 'feature_name': 'y1'}
     )
 
     # Connect the layers
@@ -324,7 +316,7 @@ def test_trainer_custom_loss(data_loader, training_model, training_settings_cust
         pass
 
 
-def test_shuffle_is_called_for_training_but_not_for_validation(csv_path, training_model, training_settings_shuffle_data, training_session_id):
+def test_shuffle_is_called_for_training_but_not_for_validation(training_model, training_settings_shuffle_data, training_session_id):
     data_loader = MagicMock()
     data_loader.get_dataset_size.return_value = 10
 
