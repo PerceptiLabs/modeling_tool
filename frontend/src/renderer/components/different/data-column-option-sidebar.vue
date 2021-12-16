@@ -22,7 +22,7 @@ header(:class="{ 'is-open': isOpen }")
       .main-content
         .mb-20
           base-checkbox.bold.size-16(
-            v-if="showIfTypeIs(['image', 'numerical'])",
+            v-if="helper_showIfTypeIs(['image', 'numerical'])",
             v-model="options.normalize.value"
           ) Normalize
           .mt-10.image-random-option-select.d-flex.flex-column(
@@ -40,7 +40,7 @@ header(:class="{ 'is-open': isOpen }")
               v-model="options.normalize.type"
             )
               span Min Max
-        template(v-if="showIfTypeIs(['image', 'mask'])")
+        template(v-if="helper_showIfTypeIs(['image', 'mask'])")
           .mb-20
             base-checkbox.bold.size-16(v-model="options.random_flip.value") Random Flip
             .mt-10.settings-layer_section.image-random-option-select.d-flex.flex-column(
@@ -277,30 +277,9 @@ export default {
       return this.index === this.elementIndex;
     },
   },
-  created() {
-    // console.log({
-    //   columnSelectedType: this.columnSelectedType,
-    //   columnNames: this.columnNames,
-    //   elementIndex: this.elementIndex,
-    //   modelType: this.modelType,
-    //   modelTypes: this.modelTypes,
-    //   options: this.options,
-    // })
-    const isClassificationModelFirstColumn =
-      this.modelType === this.modelTypes.SEGMENTATION &&
-      this.elementIndex === 0;
-    if (isClassificationModelFirstColumn) {
-      this.options.normalize.value = true;
-      this.options.normalize.type = "min-max";
-
-      this.options.resize.value = true;
-      this.options.resize.mode = "custom";
-      this.options.resize.width = 224;
-      this.options.resize.height = 224;
-    }
-  },
   mounted() {
     this.onTypeChange(this.columnSelectedType[this.elementIndex]);
+    this.handleImageSegmentationDefaultColumnPreprocessing(); // image segmentation have other initial settings
     if (!this.preprocessingTypes) {
       this.onSave();
     } else {
@@ -338,7 +317,7 @@ export default {
     },
     onSave() {
       const saveResponse = {};
-      if (this.showIfTypeIs(["image", "mask"])) {
+      if (this.helper_showIfTypeIs(["image", "mask"])) {
         if (this.options.random_flip.value) {
           saveResponse["random_flip"] = this.options.random_flip;
         }
@@ -384,12 +363,12 @@ export default {
         }
       }
       if (
-        this.showIfTypeIs(["image", "numerical"]) &&
+        this.helper_showIfTypeIs(["image", "numerical"]) &&
         this.options.normalize.value
       ) {
         saveResponse["normalize"] = { type: this.options.normalize.type };
       }
-      if (this.showIfTypeIs(["mask"])) {
+      if (this.helper_showIfTypeIs(["mask"])) {
         saveResponse["mask"] = true;
       }
       this.$emit("handleChange", this.elementIndex, saveResponse);
@@ -401,9 +380,23 @@ export default {
         null,
       );
     },
-    toggle() {},
-    showIfTypeIs(arrOfAllowedTypes = []) {
+    helper_showIfTypeIs(arrOfAllowedTypes = []) {
       return arrOfAllowedTypes.some(el => el === this.dataTypeSelected);
+    },
+    handleImageSegmentationDefaultColumnPreprocessing() {
+      const isSegmentationModelFirstColumn =
+        this.modelType === this.modelTypes.SEGMENTATION &&
+        this.elementIndex === 0;
+      if (!isSegmentationModelFirstColumn) {
+        return;
+      }
+      this.options.normalize.value = true;
+      this.options.normalize.type = "min-max";
+
+      this.options.resize.value = true;
+      this.options.resize.mode = "custom";
+      this.options.resize.width = 224;
+      this.options.resize.height = 224;
     },
   },
 };
