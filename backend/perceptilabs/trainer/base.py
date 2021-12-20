@@ -217,8 +217,8 @@ class Trainer:
 
             yield
 
-        if not self._auto_checkpoint:  # At least save the final one.
-            if self._num_epochs_completed > 0 or self._set_num_training_batches_completed_this_epoch > 0:
+        if not self._auto_checkpoint: 
+            if self._num_epochs_completed > 0 or self._num_training_batches_completed_this_epoch > 0:
                 self._auto_save_epoch(epoch=self._num_epochs_completed)
 
         if self._num_epochs_completed == self.num_epochs:
