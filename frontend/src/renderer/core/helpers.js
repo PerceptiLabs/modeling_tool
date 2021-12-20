@@ -632,6 +632,31 @@ export const whenCeleryTaskDone = (taskId, cb, ms = 50) => {
   });
 };
 
+const formatCSVTypesIntoKernelFormat = (csvData) => {
+  const payload = {};
+  for (const [idx, val] of csvData.columnNames.entries()) {
+    const sanitizedVal = val.replace(/^\n|\n$/g, "");
+    payload[sanitizedVal] = {
+      iotype: csvData.ioTypes[idx],
+      datatype: csvData.dataTypes[idx],
+      preprocessing: csvData.preprocessingTypes[idx],
+    }
+  }
+  return payload;
+}
+
+export function makeDatasetSettings(randomizedPartitions, partitions, randomSeed, csvData, datasetId) {
+  const datasetSettings = {
+    randomizedPartitions: randomizedPartitions,
+    partitions: partitions,
+    featureSpecs: formatCSVTypesIntoKernelFormat(csvData),
+    randomSeed: randomSeed,
+    datasetId: datasetId
+  };
+  return datasetSettings;
+}
+
+
 export {
   projectPathModel,
   getDefaultProjectPathForOs,

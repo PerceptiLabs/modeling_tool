@@ -1,19 +1,5 @@
 import { getFirstElementFromObject, deepCopy, deepCloneNetwork } from "@/core/helpers";
 
-export const formatCSVTypesIntoKernelFormat = (csvData) => {
-  const payload = {};
-  for (const [idx, val] of csvData.columnNames.entries()) {
-    const sanitizedVal = val.replace(/^\n|\n$/g, "");
-    payload[sanitizedVal] = {
-      iotype: csvData.ioTypes[idx],
-      datatype: csvData.dataTypes[idx],
-      preprocessing: csvData.preprocessingTypes[idx],
-    }
-  }
-  return payload;
-}
-
-
 export const defaultNetwork = {  // TODO(anton.k): why doesn't this contain an apiMeta field?
   networkName: 'New_Model',
   networkID: '',

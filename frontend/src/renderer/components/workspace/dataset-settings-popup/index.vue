@@ -79,7 +79,7 @@ import ChartSpinner from "@/components/charts/chart-spinner";
 import DataColumnOptionSidebar from "@/components/different/data-column-option-sidebar";
 import BaseGlobalPopup from "@/components/global-popups/base-global-popup";
 
-import { formatCSVTypesIntoKernelFormat } from "@/core/helpers/model-helper";
+import { makeDatasetSettings } from "@/core/helpers";
 import { renderingKernel } from "@/core/apiRenderingKernel";
 
 export default {
@@ -231,11 +231,13 @@ export default {
     async updateDataset() {
       this.isUpdatingDataset = true;
       try {
-        const datasetSettings = {
-          randomizedPartitions: this.datasetSettings.randomizedPartitions,
-          partitions: this.datasetSettings.partitions,
-          featureSpecs: formatCSVTypesIntoKernelFormat(this.csvData),
-        };
+        const datasetSettings = makeDatasetSettings(
+          this.datasetSettings.randomizedPartitions,
+          this.datasetSettings.partitions,
+          this.datasetSettings.randomSeed,      
+          this.csvData,
+          this.datasetSettings.datasetId          
+        );      
 
         await renderingKernel.waitForDataReady(datasetSettings);
 
@@ -278,6 +280,7 @@ export default {
         }
       } catch (e) {
         this.showErrorPopup("Couldn't update dataset due to: " + e);
+        console.log("Couldn't update dataset due to: " + e);    
       } finally {
         this.isUpdatingDataset = false;
         this.closeModal();

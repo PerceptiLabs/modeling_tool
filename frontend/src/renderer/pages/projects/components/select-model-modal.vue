@@ -198,7 +198,7 @@ import {
   rygg_createSegmentationDataset,
 } from "@/core/apiRygg";
 import { renderingKernel } from "@/core/apiRenderingKernel";
-import { formatCSVTypesIntoKernelFormat } from "@/core/helpers/model-helper";
+import { makeDatasetSettings } from "@/core/helpers";
 
 import LoadDataset from "./load-dataset.vue";
 import { modelTypes } from "@/core/constants";
@@ -547,14 +547,15 @@ export default {
       // Creating the project/network entry in rygg
       const apiMeta = await this.createProjectModel(newModelParams);
 
-      const datasetSettings = {
-        randomizedPartitions: this.datasetSettings.randomizedPartitions,
-        partitions: this.datasetSettings.partitions,
-        featureSpecs: formatCSVTypesIntoKernelFormat(this.csvData),
-        randomSeed: this.datasetSettings.randomSeed,
-        datasetId: this.createdFromDatasetId,
-        modelType: this.modelType,
-      };
+
+      const datasetSettings = makeDatasetSettings(
+        this.datasetSettings.randomizedPartitions,
+        this.datasetSettings.partitions,
+        this.datasetSettings.randomSeed,	
+        this.csvData,
+        this.createdFromDatasetId
+      );
+      
       const userEmail = this.userEmail;
 
       await renderingKernel.waitForDataReady(
