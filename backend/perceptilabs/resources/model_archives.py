@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 class ModelArchivesAccess:
     def read(self, location):
+        location = location.replace('\\', '/')
         with ZipFile(location, 'r') as archive:
             model_json = archive.read('model.json').decode('utf-8')
             content = json.loads(model_json)
@@ -29,7 +30,7 @@ class ModelArchivesAccess:
             'frontendSettings': frontend_settings
         }
 
-        path = os.path.join(location, f'model_{model_id}.zip')
+        path = os.path.join(location, f'model_{model_id}.zip').replace('\\', '/')
 
         with ZipFile(path, 'w') as archive:
             model_json = json.dumps(content, indent=4)

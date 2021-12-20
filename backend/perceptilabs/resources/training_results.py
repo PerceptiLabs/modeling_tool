@@ -45,7 +45,7 @@ class TrainingResultsAccess:
         directory = b64decode_and_sanitize(training_session_id)  # For now it's just a base64 path
         
         os.makedirs(directory, exist_ok=True)
-        file_path = os.path.join(directory, self.FILE_NAME)
+        file_path = os.path.join(directory, self.FILE_NAME).replace('\\', '/')
         return file_path
         
     def remove(self, training_session_id):

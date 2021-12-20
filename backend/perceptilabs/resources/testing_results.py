@@ -40,6 +40,6 @@ class TestingResultsAccess:
         directory = b64decode_and_sanitize(testing_session_id)  # For now it's just a base64 path
         
         os.makedirs(directory, exist_ok=True)
-        file_path = os.path.join(directory, self.FILE_NAME)
+        file_path = os.path.join(directory, self.FILE_NAME).replace('\\', '/')
         return file_path
 

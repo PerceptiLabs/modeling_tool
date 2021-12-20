@@ -47,13 +47,13 @@ class EpochsAccess:
         
         directory = self._resolve_directory_path(training_session_id)
         file_path = os.path.join(directory, 'checkpoint-{epoch_id:04d}.ckpt'.format(
-            epoch_id=int(epoch_id)))
+            epoch_id=int(epoch_id))).replace('\\', '/')
         return file_path
 
     def _get_state_path(self, training_session_id, epoch_id):
         directory = self._resolve_directory_path(training_session_id)
         file_path = os.path.join(directory, 'state-{epoch_id:04d}.pkl'.format(
-            epoch_id=int(epoch_id)))
+            epoch_id=int(epoch_id))).replace('\\', '/')
         return file_path    
 
     def load_state_dict(self, training_session_id, epoch_id):
@@ -108,7 +108,7 @@ class EpochsAccess:
                 if epoch_id not in epochs:
                     epochs[epoch_id] = {'checkpoint_modified': None, 'state_modified': None}
 
-                file_path = os.path.join(directory, file_name)
+                file_path = os.path.join(directory, file_name).replace('\\', '/')
                 epochs[epoch_id][file_type + '_modified'] = os.path.getmtime(file_path)
         return epochs
     

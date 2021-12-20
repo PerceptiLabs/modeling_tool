@@ -23,7 +23,7 @@ class DatasetAccess:
     def get_location(self, dataset_id):
         data = self._rygg.get_dataset(dataset_id)                    
         try:
-            return data['location']
+            return data['location'].replace('\\', '/')
         except:
             logger.exception("Failed getting dataset location")                        
             return None
