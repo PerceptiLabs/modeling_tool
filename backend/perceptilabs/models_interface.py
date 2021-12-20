@@ -253,10 +253,13 @@ class ModelsInterface:
         graph_spec = self._model_access.get_graph_spec(model_id=graph_spec_dict) #TODO: F/E should send an ID
         layer_spec = graph_spec.nodes_by_id[layer_id]
 
-        code = self._script_factory.render_layer_code(
+        code = None
+        if layer_spec.is_inner_layer:  # only inner layers have code 
+            code = self._script_factory.render_layer_code(
                 layer_spec,
                 macro_kwargs={'layer_spec': layer_spec, 'graph_spec': graph_spec}
-        )
+            )
+            
         output = {'Output': code}
         return output
 
