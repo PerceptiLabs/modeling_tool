@@ -30,6 +30,9 @@ def validate_pipeline_arg(arg):
 
 class DataLoader:
     def __init__(self, data_frame, dataset_settings, metadata=None, num_repeats=1):
+        if data_frame is None:
+            raise ValueError("Dataframe cannot be None!")
+        
         self._dataset_settings = dataset_settings
         self._data_frame = data_frame
         self._metadata = metadata

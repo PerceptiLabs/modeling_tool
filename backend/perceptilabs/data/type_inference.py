@@ -77,6 +77,9 @@ class TypeInferrer:
         Returns:
             a mapping from a column to a tuple: (<list of valid types>, <index of default value>)
         """
+        if df is None:
+            raise ValueError("Dataframe cannot be None!")
+        
         if len(df) == 0:
             raise ValueError("Data is empty!")
 

@@ -13,6 +13,9 @@ class Importer:
         self._model_archives_access = model_archives_access
         
     def run(self, dataset_id, file_location):
+        if file_location is None:
+            raise ValueError("File location cannot be None")            
+        
         dataset_settings_dict, graph_spec_dict, training_settings_dict, frontend_settings_dict = \
             self._model_archives_access.read(file_location)
         
