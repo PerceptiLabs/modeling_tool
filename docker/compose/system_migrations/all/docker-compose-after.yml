@@ -154,6 +154,7 @@ services:
       PL_REDIS_URL: redis://redis
       PL_KERNEL_CELERY: 1
       PL_KERNEL_MODE: rendering
+      PL_RYGG_BASE_URL: http://rygg:8000
     healthcheck:
       test: curl --fail localhost:5001/healthy || exit 1
       interval: 5s
