@@ -18,5 +18,5 @@ module.exports = {
   USERFLOW_KEY: '"ct_ertrpr7nzfc5himsrvqpz4kota"',
   ENABLE_PUBLIC_DATASET: '"true"',
   ENABLE_SERVING: '"true"',
-  ENABLE_FOLDER_LOADING: '"false"',
+  ENABLE_FOLDER_LOADING: '"true"',
 }
