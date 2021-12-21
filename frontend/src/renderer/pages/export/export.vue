@@ -171,7 +171,7 @@ export default {
     };
   },
   watch: {
-    models() {
+    models(m) {
       this.filterTrainedModels();
     },
     "settings.Quantized"(value) {
@@ -183,9 +183,6 @@ export default {
       if (value) {
         this.settings.Quantized = false;
       }
-    },
-    searchValue(strSearched) {
-      console.log(strSearched);
     },
   },
 
@@ -226,10 +223,18 @@ export default {
         model.networkID,
       );
     },
-    filterTrainedModels() {
+    async filterTrainedModels() {
       if (!this.models.length) {
         this.trainedModels = [];
       }
+      let promiseArray = [];
+      for (let i = 0; i < this.models.length; i++) {
+        promiseArray.push(this.$store.dispatch(
+          "mod_api/API_getModelStatus",
+          this.models[i].networkID,
+        ));
+      }
+      await Promise.all(promiseArray);
       const payload = cloneDeep(
         this.models.filter(model => isModelTrained(model)),
       );

@@ -769,45 +769,50 @@ const actions = {
   async API_exportData({ rootGetters, getters, dispatch }, settings) {
     const userEmail = rootGetters["mod_user/GET_userEmail"];
     const modelId = settings.modelId;
-    const disassembledModel = getters.GET_disassembledModelById(settings.modelId);
-    
+    const disassembledModel = getters.GET_disassembledModelById(
+      settings.modelId,
+    );
 
     async function exportClosure() {
-      const networkName = getters.GET_networkNameById(modelId)	
-      const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](settings.modelId);       
+      const networkName = getters.GET_networkNameById(modelId);
+      const checkpointDirectory = rootGetters[
+        "mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId"
+      ](settings.modelId);
       const trainingSessionId = base64url(checkpointDirectory);
 
       console.info(settings, disassembledModel);
-      
+
       if (settings.Type != "Serve Gradio") {
-	const trainingSettings = settings.Type == 'Archive'
-	      ? deepCopy(disassembledModel.trainingSettings)
-	      : null
-	
-	const frontendSettings = settings.Type == 'Archive'
-	      ? deepCopy(disassembledModel.frontendSettings)
-	      : null
-	
+        const trainingSettings =
+          settings.Type == "Archive"
+            ? deepCopy(disassembledModel.trainingSettings)
+            : null;
+
+        const frontendSettings =
+          settings.Type == "Archive"
+            ? deepCopy(disassembledModel.frontendSettings)
+            : null;
+
         return renderingKernel.exportModel(
-	  settings,
-	  disassembledModel.datasetSettings,
-	  userEmail,
-	  modelId,
-	  disassembledModel.graphSettings,
-	  trainingSessionId,
-	  trainingSettings,
-	  frontendSettings
-	)
+          settings,
+          disassembledModel.datasetSettings,
+          userEmail,
+          modelId,
+          disassembledModel.graphSettings,
+          trainingSessionId,
+          trainingSettings,
+          frontendSettings,
+        );
       } else {
         const url = renderingKernel.waitForServedModelReady(
-	  "gradio",
-	  disassembledModel.datasetSettings,	  	  
-	  userEmail,
-	  modelId,
-	  disassembledModel.graphSettings,	  
-	  trainingSessionId,
-	  networkName
-	)
+          "gradio",
+          disassembledModel.datasetSettings,
+          userEmail,
+          modelId,
+          disassembledModel.graphSettings,
+          trainingSessionId,
+          networkName,
+        );
         return url;
       }
     }
@@ -926,7 +931,7 @@ const actions = {
     if (!checkpointDirectory) return;
 
     const trainingSessionId = base64url(checkpointDirectory);
-    renderingKernel
+    return renderingKernel
       .getTrainingStatus(modelId, trainingSessionId)
       .then(data => {
         dispatch(
@@ -935,14 +940,20 @@ const actions = {
             ...data,
             modelId: modelId,
           },
-          { root: true },
+          {
+            root: true,
+          },
         );
 
         if (data && data.Status === "Finished") {
           dispatch(
             "mod_workspace/EVENT_stopRequest",
-            { networkId: modelId },
-            { root: true },
+            {
+              networkId: modelId,
+            },
+            {
+              root: true,
+            },
           );
         }
       })
