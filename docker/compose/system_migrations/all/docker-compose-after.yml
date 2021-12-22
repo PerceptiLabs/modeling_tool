@@ -133,6 +133,7 @@ services:
     environment:
       HOME: /perceptilabs
       PL_REDIS_URL: redis://redis
+      PL_RYGG_BASE_URL: http://rygg:8000
     # with gpu
     deploy:
       resources:
