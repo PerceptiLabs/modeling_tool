@@ -1,0 +1,10 @@
+FROM registry.access.redhat.com/ubi8/nodejs-12
+
+USER 0
+WORKDIR /app
+ADD package-lock.json package.json ./
+ADD src/ ./src/
+ADD static/ ./static/
+
+RUN npm install --unsafe-perm=true --allow-root
+USER 1001

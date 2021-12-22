@@ -1,0 +1,129 @@
+version: '3.4'
+
+# parent of all services
+x-common_base: &common_base
+  restart: unless-stopped
+  environment:
+    HOME: /perceptilabs
+    container: a
+  networks:
+    - perceptilabs
+
+# All rygg-based services are based on this
+x-rygg_base: &rygg_base
+  <<: *common_base
+  image: dev/rygg:latest
+  environment:
+    PL_CREATE_BASE_UPLOAD_DIR: 1
+    DJANGO_SETTINGS_MODULE: rygg.settings
+    DJANGO_DATABASE: postgres
+    DB_NAME: rygg
+    DB_HOST: db
+    DB_USER: rygg
+    DB_PASS: rygg
+    PL_FILE_UPLOAD_DIR: /perceptilabs/Documents/Perceptilabs/data
+    PL_REDIS_URL: redis://redis
+    PL_CREATE_BASE_UPLOAD_DIR: "true"
+    PL_RYGG_LOG_LEVEL: DEBUG
+    HOME: /perceptilabs
+  depends_on:
+    db:
+      condition: service_healthy
+  volumes:
+    - ${PL_ROOT}/rygg/rygg:/app/rygg
+    - ${HOME}/Downloads/Perceptilabs_dev:/perceptilabs/Documents/Perceptilabs
+
+# All kernel-based services are based on this
+x-kernel_base: &kernel_base
+  <<: *common_base
+  image: dev/kernel:latest
+  volumes:
+    - ${PL_ROOT}/backend:/app
+    - ${HOME}/Downloads/Perceptilabs_dev:/perceptilabs/Documents/Perceptilabs
+
+services:
+  db:
+    <<: *common_base
+    image: postgres:12
+    volumes:
+      - ${HOME}/Downloads/Perceptilabs_dev/db:/var/lib/postgresql/data
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_DB: rygg
+      POSTGRES_USER: rygg
+      POSTGRES_PASSWORD: rygg
+    healthcheck:
+      test: pg_isready --username=rygg
+      interval: 1s
+      retries: 5
+      timeout: 10s
+      start_period: 1m
+
+  redis:
+    <<: *common_base
+    image: redis
+
+  rygg_startup:
+    <<: *rygg_base
+    restart: "no"
+    command: python -m django migrate --settings rygg.settings
+
+  rygg_api:
+    <<: *rygg_base
+    command: python -m django runserver 0.0.0.0:8000 --settings rygg.settings
+    depends_on:
+      rygg_startup:
+        condition: service_completed_successfully
+    ports:
+      - "8000:8000"
+
+  rygg_worker:
+    <<: *rygg_base
+    command: python -m celery -A rygg worker --queues=rygg --hostname=rygg_worker
+    depends_on:
+      rygg_startup:
+        condition: service_completed_successfully
+
+  frontend:
+    <<: *common_base
+    image: dev/frontend:latest
+    command: npm run serve-noprogress
+    environment:
+      HOST: 0.0.0.0
+    volumes:
+      - ${PL_ROOT}/frontend/src:/app/src
+
+  flower:
+    <<: *kernel_base
+    command: python -m celery -A perceptilabs.tasks.celery_executor flower --url_prefix=queues
+    environment:
+      PL_REDIS_URL: redis://redis
+      PL_RYGG_BASE_URL: http://rygg_api:8000
+
+  training:
+    <<: *kernel_base
+    command: python -m celery -A perceptilabs.tasks.celery_executor worker --hostname=training --queues=training --pool=threads
+    environment:
+      PL_REDIS_URL: redis://redis
+      PL_RYGG_BASE_URL: http://rygg_api:8000
+
+  render:
+    <<: *kernel_base
+    command: python main.py
+    environment:
+      PL_REDIS_URL: redis://redis
+      PL_RYGG_BASE_URL: http://rygg_api:8000
+      PL_KERNEL_CELERY: 1
+      PL_KERNEL_MODE: rendering
+
+  nginx:
+    <<: *common_base
+    image: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ${PWD}/nginx.conf:/etc/nginx/nginx.conf
+
+networks:
+  perceptilabs:
+    name: perceptilabs

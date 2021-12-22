@@ -83,6 +83,6 @@ class RyggRest():
     @property
     def is_enterprise(self):
         if not hasattr(self, "_is_enterprise"):
-            self._is_enterprise = self.get("/app/is_enterprise")["is_enterprise"]
+            self._is_enterprise = self.get("/app/is_enterprise/")["is_enterprise"]
 
         return self._is_enterprise

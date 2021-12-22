@@ -20,9 +20,11 @@ CLASSIFICATION_DATASET_DIR = os.path.join(os.path.dirname(__file__), "test_data"
 SEGMENTATION_IMAGE_PATH = os.path.join(os.path.dirname(__file__), 'test_data', "setA")
 SEGMENTATION_MASK_PATH = os.path.join(os.path.dirname(__file__), 'test_data', "setB")
 
-def assert_workingdir(rest, project_id):
+def assert_workingdir(rest, project_id, to_local_translator):
     if rest.is_enterprise:
-        assert os.path.isdir(rest.get_upload_dir(project_id))
+        as_remote = rest.get_upload_dir(project_id)
+        as_local = to_local_translator(as_remote)
+        assert os.path.isdir(as_local)
 
 
 def assert_task_starts(rest, task):
@@ -296,13 +298,13 @@ def test_new_dataset_round_trips_fields(rest, tmp_project, tmp_model, tmp_text_f
 
 @pytest.mark.timeout(1)
 def test_remote_categories(rest):
-    response = rest.get("/datasets/remote_categories")
+    response = rest.get("/datasets/remote_categories/")
     assert "kaggle" in response
 
 
 @pytest.mark.timeout(1)
 def test_remote_list(rest):
-    response = rest.get("/datasets/remote_with_categories")
+    response = rest.get("/datasets/remote_with_categories/")
     assert len(response["datasets"]) >= 1
     key_set = response["datasets"][0].keys()
     assert "UniqueName" in key_set
@@ -332,7 +334,7 @@ def get_large_remote_record(rest):
 
 
 def get_available_remote_datasets(rest):
-    resp = rest.get("/datasets/remote_with_categories")
+    resp = rest.get("/datasets/remote_with_categories/")
 
     for dataset in resp["datasets"]:
         if not "SizeBytes" in dataset:
@@ -372,11 +374,12 @@ def test_deleting_allows_same_name(rest, tmpdir, tmp_project):
 
 
 @pytest.mark.timeout(10)
-def test_create_dataset_from_remote(rest, tmpdir, tmp_project):
+def test_create_dataset_from_remote(rest, tmpdir, tmp_project, to_local_translator):
     # don't try this if the remote dataset is already linked to the dataset, which means that we're working on a non-test system
     test_record = get_small_remote_record(rest)
     assert test_record
 
+    count_before = rest.get(f"/datasets/")['count']
     task, dataset = DatasetClient.create_from_remote(rest, tmp_project, test_record["UniqueName"], tmpdir)
 
     # make sure the task acts as expected
@@ -403,7 +406,7 @@ def test_create_dataset_from_remote(rest, tmpdir, tmp_project):
 
     # also try fetching the list
     datasets = rest.get(f"/datasets/")
-    assert datasets['count'] == 1
+    assert datasets['count'] == count_before + 1
     filtered = filter(lambda d: d['dataset_id'] == dataset.id, datasets['results'])
     as_list = list(filtered)
     assert len(as_list) == 1
@@ -427,12 +430,18 @@ def test_create_dataset_from_remote(rest, tmpdir, tmp_project):
 
     # check that deleting the local copy makes exists_on_disk change to false
     assert dataset.exists_on_disk == True
-    shutil.rmtree(os.path.dirname(dataset.location), ignore_errors=True)
-    dataset.refresh()
-    assert dataset.exists_on_disk == False
+    dataset_local_location = to_local_translator(dataset.location)
+    parent_dir = os.path.dirname(dataset_local_location)
+    shutil.rmtree(parent_dir)
+
+    def is_file_gone_on_server():
+        dataset.refresh()
+        return not dataset.exists_on_disk
+
+    assert_eventually(is_file_gone_on_server, stop_max_delay=5000, wait_fixed=50)
 
     # make sure we didn't delete too high in the directory tree
-    assert_workingdir(rest, tmp_project.id)
+    assert_workingdir(rest, tmp_project.id, to_local_translator)
 
 @pytest.mark.timeout(1)
 @pytest.mark.usefixtures('pip_only')

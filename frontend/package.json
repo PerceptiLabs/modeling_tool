@@ -10,6 +10,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "serve": "webpack-dev-server --inline --progress --config src/build/webpack.dev.conf.js",
+    "serve-noprogress": "webpack-dev-server --config src/build/webpack.dev.conf.js",
     "dev:web": "npm run serve",
     "start:web": "npm run serve",
     "build-render": "node src/build/build.js",

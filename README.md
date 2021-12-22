@@ -45,6 +45,48 @@ cd build/docker/compose
 ```
 
 # How to run a development environment
+## As a docker-compose cluster
+This will run all of the services in development mode with code reloading.
+
+### Prerequisites
+* docker from docker.com
+* make (included with OSX & Linux, Windows get from chocolatey)
+
+### Quickstart
+Just run it and watch the logs roll by
+   ```
+  cd docker/dev
+  make dev_all
+  docker-compose up
+  # ... do stuff ...
+  <ctrl-c> or close the terminal
+  ```
+
+### In the background
+
+Use the `up` and `down` subcommands of `docker-compose`:
+  ```
+  docker-compose up -d
+  # do stuff
+  docker-compose down
+  ```
+
+To follow the logs of one service, e.g. the rendering kernel:
+  ```
+  docker-compose logs -f | grep render_1
+  ```
+
+### Tests
+To run integration tests against the docker-based services:
+* rygg: `python -m pytest -rfe --capture=tee-sys --host=localhost --port=80 --path="/rygg" --vol_map="${HOME}/Downloads/Perceptilabs_dev:/perceptilabs/Documents/Perceptilabs"`
+* kernel: TBD
+
+### When to rebuild
+* The docker files for development mode will mount your source directory into a volume so normal code changes will be picked up immediately.
+* If you change your requirements.txt file or package.json in frontend, then you need to rebuild with `make`.
+
+
+## As local scripts
 0. To just run everything (with pyenv, venv, and pip on osx or linux):
     ```
     cd dev-env

@@ -15,7 +15,7 @@ import sys
 import uuid
 from pathlib import Path
 import sentry_sdk
-from rygg import __version__    
+from rygg import __version__
 from sentry_sdk.integrations.django import DjangoIntegration
 
 def is_prod():
@@ -23,16 +23,17 @@ def is_prod():
 
 # According to Sentry, DSNs are safe to keep public
 # https://docs.sentry.io/product/sentry-basics/dsn-explainer/
-SENTRY_DSN = "https://56aaa2a9837147f9bd8778a9f4c6f878@o283802.ingest.sentry.io/6061756"
-SENTRY_ENV = "prod" if is_prod() else "dev"
+if is_prod():
+    SENTRY_DSN = "https://56aaa2a9837147f9bd8778a9f4c6f878@o283802.ingest.sentry.io/6061756"
+    SENTRY_ENV = "prod" if is_prod() else "dev"
 
-sentry_sdk.init(
-    dsn=SENTRY_DSN,
-    integrations=[DjangoIntegration()],
-    send_default_pii=True,
-    environment=SENTRY_ENV,
-    release=__version__
-)
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        send_default_pii=True,
+        environment=SENTRY_ENV,
+        release=__version__
+    )
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -68,13 +69,12 @@ SECRET_KEY = '-nj5*1agd@#(1*gcm2kd2q!*ui!kg2*yew=ata$n!sj-nnl&a7'
 
 ALLOWED_HOSTS = ['*'] if IS_CONTAINERIZED else ["localhost", "127.0.0.1"]
 
-APPEND_SLASH=True
+APPEND_SLASH=False
 
 # Application definition
 
 INSTALLED_APPS = [
     'corsheaders',
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -90,10 +90,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "request_logging.middleware.LoggingMiddleware",
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -250,6 +248,9 @@ if IS_CONTAINERIZED and (IS_SERVING or IS_WORKER):
     BASE_UPLOAD_DIR = os.path.abspath(os.getenv("PL_FILE_UPLOAD_DIR"))
     if not BASE_UPLOAD_DIR:
         raise Exception("Required environment variable PL_FILE_UPLOAD_DIR is not set.")
+
+    if os.getenv("PL_CREATE_BASE_UPLOAD_DIR"):
+        os.makedirs(BASE_UPLOAD_DIR, exist_ok=True)
 
     if not os.path.isdir(BASE_UPLOAD_DIR):
         raise Exception(f"PL_FILE_UPLOAD_DIR is set to '{BASE_UPLOAD_DIR}' but that directory doesn't exist")

@@ -9,13 +9,14 @@ from assertions import assert_eventually
 
 @pytest.mark.timeout(1)
 @pytest.mark.usefixtures('enterprise_only')
-def test_project_creates_and_deletes_dir(rest):
+def test_project_creates_and_deletes_dir(rest, to_local_translator):
     # create project
     with ProjectClient.make(rest, name="test project") as project:
         project_id = project.id
 
         project_dir = rest.get_upload_dir(project_id)
-        assert os.path.isdir(project_dir)
+        local_dir = to_local_translator(project_dir)
+        assert os.path.isdir(local_dir)
 
     assert_eventually(lambda: not os.path.isdir(project_dir), stop_max_delay=2000, wait_fixed=100)
 
@@ -97,7 +98,10 @@ def test_update_rejects_default_directory_in_enterprise(rest, tmpdir, tmp_projec
 DEFAULT_PATH = os.path.join(Path.home(), "Documents", "Perceptilabs", "Default")
 @pytest.mark.skipif(not Path.home(), reason="Default project requires a HOME directory")
 @pytest.mark.skipif(os.path.isdir(DEFAULT_PATH), reason="Default project requires a HOME directory")
-def test_get_default_mode_project(rest):
+def test_get_default_mode_project(rest, vol_map):
+    if vol_map:
+        pytest.skip("Don't run against remote machine")
+
     assert not os.path.isdir(DEFAULT_PATH)
     p = ProjectClient.get_default(rest)
     assert os.path.isdir(p.default_directory)

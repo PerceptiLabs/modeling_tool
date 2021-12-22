@@ -26,10 +26,11 @@ def test_model_requires_project(rest, tmp_project):
 
 @pytest.mark.timeout(0.2)
 @pytest.mark.usefixtures('enterprise_only')
-def test_new_model_has_extant_location(rest, tmp_project):
+def test_new_model_has_extant_location(rest, tmp_project, to_local_translator):
     with ModelClient.make(rest, name="test project", project=tmp_project.id) as model:
         model.refresh()
-        assert os.path.isdir(model.location)
+        local_location = to_local_translator(model.location)
+        assert os.path.isdir(local_location)
 
     assert_eventually(lambda: not os.path.exists(model.location), stop_max_delay=1000, wait_fixed=100)
 

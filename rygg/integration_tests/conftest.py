@@ -11,6 +11,9 @@ from clients import ProjectClient, DatasetClient, ModelClient
 # allow for specifying the host on the pytest command line
 def pytest_addoption(parser):
     parser.addoption("--host", action="store")
+    parser.addoption("--port", action="store")
+    parser.addoption("--path", action="store")
+    parser.addoption("--vol_map", action="store")
 
 
 @pytest.fixture(scope='session')
@@ -20,12 +23,38 @@ def host(request):
         return "localhost"
     return host_value
 
+@pytest.fixture(scope='session')
+def port(request):
+    port_value = request.config.option.port
+    if port_value is None:
+        return 8000
+    return port_value
 
 @pytest.fixture(scope='session')
-def rest(host):
-    with RyggRest(f"http://{host}:8000", "12312") as ret:
+def path(request):
+    return request.config.option.path or ""
+
+@pytest.fixture(scope='session')
+def rest(host, port, path):
+    url=f"http://{host}:{port}{path}"
+    with RyggRest(url, "12312") as ret:
         assert_eventually(ret.check, stop_max_delay=60000, wait_fixed=1000)
         yield ret
+
+@pytest.fixture(scope='session')
+def vol_map(request):
+    return request.config.option.vol_map or ""
+
+@pytest.fixture(scope='session')
+def to_local_translator(vol_map):
+    if not vol_map:
+        return lambda x: x
+
+    def ret(remote_dir):
+        local_prefix, remote_prefix = vol_map.split(':')
+        n = remote_dir.replace(remote_prefix, local_prefix, 1)
+        return n
+    return ret
 
 
 @pytest.fixture
@@ -100,5 +129,3 @@ def pip_only(rest):
 def enterprise_only(rest):
     if not rest.is_enterprise:
         pytest.skip("enterprise-only")
-
-
