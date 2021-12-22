@@ -24,8 +24,9 @@ def _is_valid_json(obj):
     
 
 class EventTracker:
-    def __init__(self):
+    def __init__(self, raise_errors=False):
         self._mp = Mixpanel(_TOKEN)
+        self._raise_errors = raise_errors
     
     def emit(self, event_name, user_email, properties):
         try:        
@@ -35,7 +36,9 @@ class EventTracker:
         except:
             if is_dev():
                 logger.exception("Event might not have been sent!")
-            raise
+
+            if self._raise_errors:
+                raise
             
     def _send_event(self, user_email, event_name, properties):
         self._assert_enabled()
@@ -57,8 +60,8 @@ class EventTracker:
             self._mp.people_set(
                 user_email, {'$email': user_email, '$last_login': current_time})    
         except:
-            if is_dev():
-                logger.exception("User meta might not have been set!")            
+            if self._raise_errors:
+                raise
         
     def _prepare_properties(self, properties):
         """ Drop invalid args """
@@ -73,7 +76,7 @@ class EventTracker:
 
         if _is_valid_json(new_properties):
             return new_properties
-        else:
+        else:            
             if is_dev():            
                 logger.error(f"Properties is not json serializable. No properties will be included!")
             return {}
@@ -82,3 +85,12 @@ class EventTracker:
         from unittest.mock import MagicMock
         if is_pytest() and not isinstance(self._mp.track, MagicMock):
             raise Exception("Mixpanel.track should NOT be called during pytests unless mocked!")
+
+        if is_pytest() and not isinstance(self._mp.people_set, MagicMock):
+            raise Exception(
+                "Mixpanel.people_set should NOT be called during pytests unless mocked!")
+        
+        if is_pytest() and not isinstance(self._mp.people_set_once, MagicMock):
+            raise Exception(
+                "Mixpanel.people_set_once should NOT be called during pytests unless mocked!")
+

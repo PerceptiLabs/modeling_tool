@@ -52,6 +52,30 @@ def test_event_fires_despite_all_properties_corrupt(mixpanel_mock):
         'properties': {}
     }
         
+
+@pytest.mark.parametrize("method", ['track', 'people_set', 'people_set_once'])
+@pytest.mark.parametrize("raise_errors", [True, False])
+def test_raises_errors(mixpanel_mock, method, raise_errors):
+    method_mock = getattr(mixpanel_mock, method)
+    method_mock.side_effect = ValueError(f"method '{method}' raised error")
+
+    tracker = EventTracker(raise_errors=raise_errors)
+
+    def closure():
+        tracker.emit(
+            'some-event',
+            'a@b.com',
+            properties={
+                'something-that-can-be-serialized': 'abc',
+            }
+        )
+
+    if raise_errors:
+        with pytest.raises(ValueError):  # Asserts that the error is raised
+            closure()
+    else:
+        closure() # If an error is raised the test fails with a ValueError
+
     
     
     
