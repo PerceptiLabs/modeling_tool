@@ -219,6 +219,7 @@ export const assembleModel = (datasetSettings, trainingSettings, graphSettings, 
   newNetwork.networkID = frontendSettings.apiMeta.model_id;
   newNetwork.networkName = frontendSettings.networkName;
   newNetwork.networkElementList = makeNetworkElementList(graphSettings, frontendSettings);
+  newNetwork.networkSnapshots = [deepCopy(newNetwork.networkElementList)];
 
   if (frontendSettings.networkMeta) {
     newNetwork.networkMeta = deepCopy(frontendSettings.networkMeta);

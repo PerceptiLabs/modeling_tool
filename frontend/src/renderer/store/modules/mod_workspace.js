@@ -109,7 +109,7 @@ const getters = {
   },
   GET_networkByNetworkId: (state, getters) => (modelId) =>  {
     if (!modelId) { return null; }
-    return state.workspaceContent.find(wc => parseInt(wc.networkID, 10) === parseInt(modelId, 10));
+    return state.workspaceContent.find(wc => parseInt(wc.apiMeta.model_id, 10) === parseInt(modelId, 10));
   },
   GET_currentNetworkId(state, getters) {
     return getters.GET_networkIsNotEmpty && state.workspaceContent[state.currentNetwork]
@@ -1975,7 +1975,7 @@ const actions = {
     return Promise.all(isTrainedPromises)
       .then(results => {
         const setStatisticsPromises = [];
-
+        
         for (const r of results) {
           if (r) {
             const setStatisticsPromise = dispatch('SET_openStatisticsByNetworkId', 

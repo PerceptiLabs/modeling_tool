@@ -451,8 +451,8 @@
             this.addNetworksToWorkspace(models, modelMetas);
             models.forEach(model => {
               if (model) {
-                this.chartRequestIfNeeded(model.networkID);
-                this.API_getModelStatus(model.networkID);
+                this.chartRequestIfNeeded(model.apiMeta.model_id);
+                this.API_getModelStatus(model.apiMeta.model_id);
               }
             });
 
