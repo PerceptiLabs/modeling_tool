@@ -252,16 +252,6 @@ const isWeb = () => {
   return !(navigator.userAgent.toLowerCase().indexOf(" electron/") > -1);
 };
 
-const setAppTypeRootClasses = () => {
-  if (isWeb()) {
-    document.body.classList.add("is-web");
-    document.getElementsByTagName("html")[0].classList.add("is-web");
-  } else {
-    document.body.classList.add("is-electron");
-    document.getElementsByTagName("html")[0].classList.add("is-electron");
-  }
-};
-
 const debounce = function(callback, waitInMs) {
   let timerHandle;
 
@@ -632,7 +622,7 @@ export const whenCeleryTaskDone = (taskId, cb, ms = 50) => {
   });
 };
 
-const formatCSVTypesIntoKernelFormat = (csvData) => {
+const formatCSVTypesIntoKernelFormat = csvData => {
   const payload = {};
   for (const [idx, val] of csvData.columnNames.entries()) {
     const sanitizedVal = val.replace(/^\n|\n$/g, "");
@@ -640,22 +630,36 @@ const formatCSVTypesIntoKernelFormat = (csvData) => {
       iotype: csvData.ioTypes[idx],
       datatype: csvData.dataTypes[idx],
       preprocessing: csvData.preprocessingTypes[idx],
-    }
+    };
   }
   return payload;
-}
+};
 
-export function makeDatasetSettings(randomizedPartitions, partitions, randomSeed, csvData, datasetId) {
+export function makeDatasetSettings(
+  randomizedPartitions,
+  partitions,
+  randomSeed,
+  csvData,
+  datasetId,
+) {
   const datasetSettings = {
     randomizedPartitions: randomizedPartitions,
     partitions: partitions,
     featureSpecs: formatCSVTypesIntoKernelFormat(csvData),
     randomSeed: randomSeed,
-    datasetId: datasetId
+    datasetId: datasetId,
   };
   return datasetSettings;
 }
-
+/**
+ * Determine if a value is an Object
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is an Object, otherwise false
+ */
+export function isObject(val) {
+  return val !== null && typeof val === "object";
+}
 
 export {
   projectPathModel,
@@ -680,7 +684,6 @@ export {
   isOsMacintosh,
   isElectron,
   isWeb,
-  setAppTypeRootClasses,
   debounce,
   layerBgColor,
   layerBgColorTransparent,

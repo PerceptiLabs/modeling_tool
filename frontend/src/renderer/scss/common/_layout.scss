@@ -1,42 +1,36 @@
 $sidebar-indent: 10px;
 
 html {
-	font-size: $global-font-size;
-	box-sizing: border-box;
-  &.is-web {
-    @include media('>=medium') {
-      font-size: 10px;
-    }
-    @include media('>=fullHD') {
-      font-size: .5209vw;
-    } 
+  font-size: $global-font-size;
+  box-sizing: border-box;
+  @include media(">=medium") {
+    font-size: 10px;
+    color: red;
+  }
+  @include media(">=fullHD") {
+    font-size: 0.5209vw;
+    color: blue;
   }
 }
-
-
 
 *,
 *:before,
 *:after {
-	box-sizing: inherit;
+  box-sizing: inherit;
 }
 
 * {
-	max-height: 1000000px;
+  max-height: 1000000px;
 }
 
 body,
 #app {
-	font-family: $base-font-sans-serif;
-	font-weight: normal;
-	line-height: $line-height-base;
-	color: theme-var($text-normal);
-	background: $bg-window;
+  font-family: $base-font-sans-serif;
+  font-weight: normal;
+  line-height: $line-height-base;
+  color: theme-var($text-normal);
+  background: $bg-window;
 
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-  &.is-electron {
-    overflow: hidden;
-    min-width: $base-min-width;
-  }
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

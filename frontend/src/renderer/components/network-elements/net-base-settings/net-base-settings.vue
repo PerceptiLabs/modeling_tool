@@ -52,23 +52,23 @@ export default {
       type: Array,
       default: function() {
         return ["Settings", "Code"];
-      }
+      },
     },
     currentEl: {
-      type: Object
+      type: Object,
     },
     idSetBtn: {
       type: String,
-      default: ""
+      default: "",
     },
     showPreview: {
       type: Boolean,
-      default: false
+      default: false,
     },
     showControls: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   mounted() {
     this.toSettings();
@@ -77,18 +77,18 @@ export default {
   data() {
     return {
       tabSelected: "",
-      disableSettings: false
+      disableSettings: false,
     };
   },
   computed: {
     isTutorial() {
       return this.$store.getters["mod_tutorials/getIsTutorialMode"];
-    }
+    },
   },
   watch: {
     showPreview(newVal) {
       if (newVal) this.tabSelected = "Preview";
-    }
+    },
   },
   methods: {
     coreRequest,
@@ -112,11 +112,11 @@ export default {
     },
     updateCode(name) {
       this.$emit("press-update");
-    }
+    },
     // confirmSettings() {
     //   this.$emit('press-confirm');
     // },
-  }
+  },
 };
 </script>
 
@@ -127,9 +127,6 @@ export default {
 }
 .popup_body {
   // max-width: calc(50vw - #{$w-sidebar});
-  .is-electron & {
-    max-width: calc(50vw - #{$w-sidebar});
-  }
   min-width: 29rem;
 }
 .popup_header {

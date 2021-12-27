@@ -3,19 +3,19 @@
   text-decoration: none;
   border-radius: $bdrs;
   background-color: transparent;
-  cursor: pointer;  
+  cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
   white-space: nowrap;
-  
+
   span + .icon,
   .icon + span {
     margin-left: 0.5rem;
   }
 
   &:disabled {
-    opacity: .5;
+    opacity: 0.5;
     cursor: default;
   }
   &:focus {
@@ -52,7 +52,7 @@
   }
 }
 
-.btn--primary {  
+.btn--primary {
   color: $white;
   background: $color-6;
   border: 1px solid $color-6;
@@ -60,26 +60,26 @@
   & svg > path {
     fill: $white;
   }
-                          
-  &:hover:not(:disabled) {           
-    background: white;                                  
+
+  &:hover:not(:disabled) {
+    background: white;
     color: $color-6;
-  
+
     & svg > path {
       fill: $color-6;
-    }                    
+    }
   }
 }
 
-.btn--secondary {    
+.btn--secondary {
   color: $color-6;
-  background: #D9E2FF;
-  border: 1px solid #D9E2FF;  
+  background: #d9e2ff;
+  border: 1px solid #d9e2ff;
   &:hover:not(:disabled) {
-    border: 1px solid $color-6;  
+    border: 1px solid $color-6;
     background: white;
 
-    .dark-theme & {      
+    .dark-theme & {
       border: 1px solid #ffffff !important;
       color: white !important;
       background: transparent;
@@ -88,41 +88,41 @@
 
   .dark-theme & {
     background: #333438;
-    border: 1px solid $color-6;  
+    border: 1px solid $color-6;
   }
 }
 
-.btn--outline-primary {      
+.btn--outline-primary {
   color: $color-6;
   background: theme-var($neutral-7);
-  border: 1px solid $color-6; 
+  border: 1px solid $color-6;
 }
 
 .btn--normal {
   background: theme-var($neutral-7);
-  border: $border-1; 
-    
+  border: $border-1;
+
   &:hover {
     color: $color-6;
-    border: 1px solid $color-6;  
+    border: 1px solid $color-6;
   }
 }
 
-.btn--disabled {    
-  color: #92929D !important;
-  background: #E2E2EA !important;
-  border: $border-1 !important;   
-  
+.btn--disabled {
+  color: #92929d !important;
+  background: #e2e2ea !important;
+  border: $border-1 !important;
+
   & svg > path {
-    fill: #92929D !important;
+    fill: #92929d !important;
   }
 }
 
 .btn--danger {
   color: $white;
   background: $color-danger;
-  border: 1px solid $color-danger;  
-  
+  border: 1px solid $color-danger;
+
   &:active {
     color: $color-danger;
     background: theme-var($neutral-8);
@@ -138,7 +138,7 @@
 .btn--outline-danger {
   color: $color-danger;
   background: $white;
-  border: 1px solid $color-danger;  
+  border: 1px solid $color-danger;
 
   &:hover {
     color: $white;
@@ -178,7 +178,7 @@
 
   &:hover,
   &.active {
-    background-color: $color-6 !important;    
+    background-color: $color-6 !important;
     border: 1px solid $color-6;
     color: $white;
     & svg {
@@ -191,7 +191,7 @@
   }
 
   &:disabled {
-    opacity: .25;
+    opacity: 0.25;
     cursor: default;
   }
 }
@@ -204,14 +204,8 @@
   justify-content: flex-start;
   //font-size: var(--size-layers-btn);
   font-size: 1rem;
-  .is-web & {
-    width: calc(var(--sidebar-scale-coefficient) * 6rem);
-    height: calc(var(--sidebar-scale-coefficient) * 6rem);
-  }
-  .is-electron & {
-    width: 6em;
-    height: 6em;
-  }
+  width: calc(var(--sidebar-scale-coefficient) * 6rem);
+  height: calc(var(--sidebar-scale-coefficient) * 6rem);
   &[draggable="true"] {
     cursor: grab;
     &:active {
@@ -221,13 +215,10 @@
   .icon {
     font-size: calc(var(--sidebar-scale-coefficient) * 3.3rem);
     text-shadow: $icon-shad;
-    .is-electron & {
-      font-size: 3.3em;
-    }
   }
 
   &[disabled] {
-    opacity: .5;
+    opacity: 0.5;
   }
 }
 
@@ -238,7 +229,7 @@
   align-items: center;
   justify-content: center;
   min-width: 10rem;
-  padding: .65rem .5rem;
+  padding: 0.65rem 0.5rem;
   background: $bg-grad-disable;
 
   &:hover,
@@ -285,7 +276,7 @@
   &:hover,
   &.active {
     // color: $disable-txt;
-    background: #6185EE;
+    background: #6185ee;
   }
   &.active {
     box-shadow: none;
@@ -314,7 +305,7 @@
 .btn--outline-blue {
   font-size: 1.5rem;
   background: $col-txt2;
-  padding: .7rem 2.5rem;
+  padding: 0.7rem 2.5rem;
   border: 1px solid $login-blue;
   border-radius: 2rem;
   color: inherit;
@@ -331,14 +322,14 @@
   }
 }
 
-.green-color-icon{
+.green-color-icon {
   color: $color-1;
 }
 
 .btn-menu-bar {
   padding: 4px 8px;
-  background: #3F4C70;
-  border: 1px solid #5E6F9F;
+  background: #3f4c70;
+  border: 1px solid #5e6f9f;
   box-sizing: border-box;
   border-radius: 2px;
   // filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
@@ -347,9 +338,9 @@
   font-weight: 600;
   font-size: 12px;
   line-height: 100%;
-  color: #6185EE;
+  color: #6185ee;
   background: theme-var($neutral-6);
-  border: 1px solid #6185EE;
+  border: 1px solid #6185ee;
   box-sizing: border-box;
   &.size-xs {
     padding: 1px 6px;
@@ -358,52 +349,52 @@
     margin-right: 5px;
   }
   &:hover {
-    background: #6185EE;
-    border-color: #6185EE;
+    background: #6185ee;
+    border-color: #6185ee;
     color: #fff;
   }
   &:active:hover {
-    background: #7397FE;
+    background: #7397fe;
   }
   &.active {
-    background-color: #2A2F3A;
+    background-color: #2a2f3a;
     &:hover {
-      background-color: #6185EE;
+      background-color: #6185ee;
     }
     &:active:hover {
-      background: #7397FE;
+      background: #7397fe;
     }
   }
   &.disabled {
     opacity: 0.4;
     cursor: not-allowed;
     &:hover {
-      background: #3F4C70;
-      color: #B6C7FB;
-      border-color: #5E6F9F;
+      background: #3f4c70;
+      color: #b6c7fb;
+      border-color: #5e6f9f;
     }
   }
 }
 .btn-menu-bottom-group-bar {
   button {
-    border: 1px solid #5E6F9F;
-   font-family: Nunito Sans;
-   font-weight: 600;
-   font-size: 12px;
-   line-height: 16px;
-   color: #B6C7FB;
-   background: #3F4C70;
-   &:hover {
-    background: #6185EE;
-    border-color: #6185EE;
-    color: #fff;
-  }
-   &.active {
-    background-color: #2A2F3A;
+    border: 1px solid #5e6f9f;
+    font-family: Nunito Sans;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 16px;
+    color: #b6c7fb;
+    background: #3f4c70;
     &:hover {
-      background-color: #6185EE;
+      background: #6185ee;
+      border-color: #6185ee;
+      color: #fff;
     }
-  }
+    &.active {
+      background-color: #2a2f3a;
+      &:hover {
+        background-color: #6185ee;
+      }
+    }
     &:first-child {
       border-top-left-radius: 1px;
       border-bottom-left-radius: 1px;
@@ -416,11 +407,10 @@
   button + button {
     border-left-width: 0;
   }
- 
 }
 
 .model-list-item:hover {
   .checkbox-fake {
-    border-color: #E2E2EA !important;
+    border-color: #e2e2ea !important;
   }
 }

@@ -166,7 +166,6 @@ export default {
       if (!this.delimitedDataSet || !this.delimitedDataSet.length) {
         return 0;
       }
-
       const longestRow = this.delimitedDataSet.reduce(
         (acc, curr) => (acc.length > curr.length ? acc : curr),
         [],

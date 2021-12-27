@@ -507,32 +507,28 @@ export default {
     },
     async createModelTF2X(runStatistics = false) {
       if (!this.csvData) {
-        return;
+        throw new Error("csv is required");
       }
-      this.isCreateModelLoading = true;
+
       const { modelName, modelPath } = this;
+      if (!(await this.isValidModelName(modelName))) {
+        return this.showErrorPopup(
+          `The model name "${modelName}" already exists.`,
+        );
+      }
+
+      if (!(await this.isValidDirName(modelName, modelPath))) {
+        return this.showErrorPopup(
+          `The "${modelName}" folder already exists at "${modelPath}".`,
+        );
+      }
+
+      this.isCreateModelLoading = true;
 
       this.isShowCTA = false;
       const watchTimerId = setTimeout(() => {
         this.isShowCTA = true;
       }, 3 * 60 * 1000);
-
-      // Check validity
-      if (!(await this.isValidModelName(modelName))) {
-        // TODO: showErrorPopup closes all popups, need to change this logic for UX
-        // Annoying to have to type everything in again
-        this.showErrorPopup(`The model name "${modelName}" already exists.`);
-        this.isCreateModelLoading = false;
-        return;
-      }
-
-      if (!(await this.isValidDirName(modelName, modelPath))) {
-        this.showErrorPopup(
-          `The "${modelName}" folder already exists at "${modelPath}".`,
-        );
-        this.isCreateModelLoading = false;
-        return;
-      }
 
       let newModelParams = {
         name: modelName,
@@ -547,15 +543,14 @@ export default {
       // Creating the project/network entry in rygg
       const apiMeta = await this.createProjectModel(newModelParams);
 
-
       const datasetSettings = makeDatasetSettings(
         this.datasetSettings.randomizedPartitions,
         this.datasetSettings.partitions,
-        this.datasetSettings.randomSeed,	
+        this.datasetSettings.randomSeed,
         this.csvData,
-        this.createdFromDatasetId
+        this.createdFromDatasetId,
       );
-      
+
       const userEmail = this.userEmail;
 
       await renderingKernel.waitForDataReady(
@@ -745,10 +740,7 @@ export default {
         );
 
         this.dataSetTypes = await renderingKernel
-          .getDataTypes(
-            this.createdFromDatasetId,
-            this.userEmail,
-          )
+          .getDataTypes(this.createdFromDatasetId, this.userEmail)
           .then(res => {
             if (res.error) {
               this.showErrorPopup(
