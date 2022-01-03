@@ -8,7 +8,7 @@ import {
   isTaskComplete,
   TASK_SUCCEEDED_STATE,
 } from "@/core/apiRygg.js";
-import { AZURE_BLOB_PATH_PREIFX } from "@/core/constants.js";
+import { AZURE_BLOB_PATH_PREFIX } from "@/core/constants.js";
 const namespaced = true;
 
 const state = {
@@ -18,7 +18,7 @@ const state = {
   isDatasetLoaded: false,
   isLoadingDataSet: false,
 
-  downloadingCount: 0
+  downloadingCount: 0,
 };
 
 const getters = {
@@ -26,7 +26,7 @@ const getters = {
     return name => {
       return state.datasetList.find(d => d.Name === name);
     };
-  }
+  },
 };
 
 const mutations = {
@@ -55,7 +55,7 @@ const mutations = {
   },
   changeDownloadingCount(state, isIncrease = true) {
     state.downloadingCount = state.downloadingCount + (isIncrease ? 1 : -1);
-  }
+  },
 };
 
 const actions = {
@@ -65,14 +65,14 @@ const actions = {
     try {
       let [dataList, categoryList] = await Promise.all([
         getPublicDatasets(),
-        getPublicDatasetCategories()
+        getPublicDatasetCategories(),
       ]);
 
       dataList = dataList.map(publicDataset => {
         const dataset = rootState.mod_datasets.datasets.find(
           dataset =>
             dataset.source_url ===
-            `${AZURE_BLOB_PATH_PREIFX}${publicDataset.UniqueName}`
+            `${AZURE_BLOB_PATH_PREFIX}${publicDataset.UniqueName}`,
         );
         if (dataset) {
           return {
@@ -86,8 +86,8 @@ const actions = {
               so_far: 100,
               state: TASK_SUCCEEDED_STATE,
               text: "",
-              timerId: null
-            }
+              timerId: null,
+            },
           };
         }
         return publicDataset;
@@ -121,8 +121,8 @@ const actions = {
         path,
         downloadTaskId: task_id,
         progress: 0,
-        text: ""
-      }
+        text: "",
+      },
     });
   },
 
@@ -142,7 +142,7 @@ const actions = {
       }
       commit("setDatasetDownloadStatus", {
         name,
-        status: newStatus
+        status: newStatus,
       });
     }
   },
@@ -151,17 +151,17 @@ const actions = {
     const dataset = getters.getDatasetByName(name);
     if (dataset) {
       const res = await rygg.delete(
-        `/tasks/${dataset.downloadStatus.downloadTaskId}`
+        `/tasks/${dataset.downloadStatus.downloadTaskId}`,
       );
 
       clearInterval(dataset.downloadStatus.timerId);
       commit("changeDownloadingCount", false);
       commit("setDatasetDownloadStatus", {
         name,
-        status: null
+        status: null,
       });
     }
-  }
+  },
 };
 
 export default {
@@ -169,5 +169,5 @@ export default {
   getters,
   state,
   mutations,
-  actions
+  actions,
 };

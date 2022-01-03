@@ -12,12 +12,12 @@
           :key="dataset.Name + index",
           :class="{ loading: isDatasetDownloading(dataset), loaded: dataset.downloadStatus }"
         )
-          .cell(:style="{ width: '250px' }") 
+          .cell.w-250
             strong {{ dataset['Name'] }}
-          .cell.font-small(:style="{ width: '100px' }") {{ dataset['Size'] }}
-          .cell.font-small(:style="{ width: '150px' }") {{ dataset['Industry'] }}
-          .cell.font-small(:style="{ width: '150px' }") {{ dataset['Category'] }}
-          .cell(:style="{ width: '100px' }") 
+          .cell.font-small.w-100 {{ dataset['Size'] }}
+          .cell.font-small.w-150 {{ dataset['Industry'] }}
+          .cell.font-small.w-150 {{ dataset['Category'] }}
+          .cell.w-100
             a.source-link(
               v-if="dataset['sourceUrl']",
               :href="dataset['sourceUrl']",
@@ -27,7 +27,7 @@
               img.source-icon(
                 :src="categoryList[dataset['Source']] && categoryList[dataset['Source']].iconLink"
               )
-          .cell(:style="{ width: '100px' }") 
+          .cell
             button.action-button(
               v-if="!dataset.downloadStatus",
               type="button",
@@ -48,12 +48,14 @@
             v-if="isDatasetDownloading(dataset)",
             :style="{ width: downloadProgress(dataset) + '%' }"
           )
+        .mt-50.d-flex.justify-content-center(v-if="isListEmpty") Submit a request for data&nbsp;
+          a.intercom-link(@click="$intercom.show()") here.
 </template>
 
 <script>
 import { mapActions, mapState, mapGetters } from "vuex";
 import ChartSpinner from "@/components/charts/chart-spinner";
-import { AZURE_BLOB_PATH_PREIFX, modelTypes } from "@/core/constants.js";
+import { AZURE_BLOB_PATH_PREFIX, modelTypes } from "@/core/constants.js";
 import { isFolderLoadingEnabled } from "@/core/helpers.js";
 import { isTaskComplete as rygg_isTaskComplete } from "@/core/apiRygg";
 export default {
@@ -61,13 +63,13 @@ export default {
   data: () => ({
     isFolderLoadingEnabled: isFolderLoadingEnabled(),
     filter: "",
-    modelTypes: modelTypes
+    modelTypes: modelTypes,
   }),
   props: {
     modelType: {
       type: String,
-      default: ""
-    }
+      default: "",
+    },
   },
   computed: {
     ...mapState({
@@ -75,11 +77,11 @@ export default {
       isLoadingDataSet: state => state["mod_public-datasets"].isLoadingDataSet,
       datasetList: state => state["mod_public-datasets"].datasetList,
       categoryList: state => state["mod_public-datasets"].categoryList,
-      currentProject: state => state["mod_project"].currentProject
+      currentProject: state => state["mod_project"].currentProject,
     }),
     ...mapGetters({
       projectPath: "mod_project/GET_projectPath",
-      datasets: "mod_datasets/GET_datasets"
+      datasets: "mod_datasets/GET_datasets",
     }),
     filteredList() {
       let listToBeFiltered = this.datasetList;
@@ -89,7 +91,7 @@ export default {
           switch (this.modelType) {
             case this.modelTypes.CLASSIFICATION:
               return item.Category.toLowerCase().includes(
-                "image classification"
+                "image classification",
               );
             case this.modelTypes.SEGMENTATION:
               return item.Category.toLowerCase().includes("image segmentation");
@@ -107,33 +109,36 @@ export default {
           item =>
             item.Category.toLowerCase().includes(this.filter.toLowerCase()) ||
             item.Name.toLowerCase().includes(this.filter.toLowerCase()) ||
-            item.Industry.toLowerCase().includes(this.filter.toLowerCase())
+            item.Industry.toLowerCase().includes(this.filter.toLowerCase()),
         );
       }
 
       return listToBeFiltered;
-    }
+    },
+    isListEmpty() {
+      return this.filteredList.length === 0;
+    },
   },
 
   methods: {
     ...mapActions({
       getPublicDatasetList: "mod_public-datasets/getPublicDatasetList",
       downloadDataset: "mod_public-datasets/downloadDataset",
-      deleteDownload: "mod_public-datasets/deleteDownload"
+      deleteDownload: "mod_public-datasets/deleteDownload",
     }),
     download(dataset) {
       this.downloadDataset({
         id: dataset.UniqueName,
         name: dataset.Name,
         projectId: this.currentProject,
-        path: this.projectPath + "/Datasets/" + dataset.Name
+        path: this.projectPath + "/Datasets/" + dataset.Name,
       });
     },
     useDataset(publicDataset) {
       const dataset = this.datasets.find(
         dataset =>
           dataset.source_url ===
-          `${AZURE_BLOB_PATH_PREIFX}${publicDataset.UniqueName}`
+          `${AZURE_BLOB_PATH_PREFIX}${publicDataset.UniqueName}`,
       );
       if (dataset) {
         this.$emit("loadDataset", [dataset.location]);
@@ -156,14 +161,14 @@ export default {
         dataset.downloadStatus &&
         !rygg_isTaskComplete(dataset.downloadStatus.state)
       );
-    }
+    },
   },
 
   mounted() {
     if (!this.isDatasetLoaded) {
       this.getPublicDatasetList();
     }
-  }
+  },
 };
 </script>
 
@@ -334,5 +339,22 @@ export default {
 
 .font-small {
   font-size: 0.8em;
+}
+.intercom-link {
+  cursor: pointer;
+  color: $color-6;
+  text-decoration: underline;
+}
+.w-100 {
+  width: 100px;
+}
+.w-150 {
+  width: 150px;
+}
+.w-250 {
+  width: 250px;
+}
+.mt-50 {
+  margin-top: 50px;
 }
 </style>
