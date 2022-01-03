@@ -8,11 +8,16 @@ div
     )
   .content
     //- filter should ne passed here to filter model types 
-    public-dataset-list(
-      v-if="selectedLoadOption === LoadDatasetOptions.public",
-      @loadDataset="handleDataPathUpdates",
-      :modelType="modelType"
-    )
+    template(v-if="selectedLoadOption === LoadDatasetOptions.public")
+      public-dataset-list(
+        @loadDataset="handleDataPathUpdates",
+        :modelType="modelType"
+      )
+      button.mt-20.link.back-to-previous-step(v-if="isFolderLoadingEnabled")(
+        @click="$emit('back')"
+      )
+        img(src="/static/img/back-arrow.svg")
+        | Back
     template(v-else)
       template(v-if="modelType === modelTypes.CLASSIFICATION")
         .model-local-wrapper
@@ -290,7 +295,7 @@ export default {
   margin-top: 10px;
   font-size: 10px;
 }
-.mt-10 {
+.mt-20 {
   margin-top: 20px;
 }
 .back-to-previous-step {
