@@ -57,7 +57,6 @@ Just run it and watch the logs roll by
    ```
   cd docker/dev
   make dev_all
-  export PL_ROOT=$(git rev-parse --show-toplevel)
   docker-compose up
   # ... do stuff ...
   <ctrl-c> or close the terminal
@@ -67,7 +66,6 @@ Just run it and watch the logs roll by
 
 Use the `up` and `down` subcommands of `docker-compose`:
   ```
-  export PL_ROOT=$(git rev-parse --show-toplevel)
   docker-compose up -d
   # do stuff
   docker-compose down
