@@ -32,9 +32,9 @@ class ZipTest(TestCase):
 
     @timeout(0.1)
     def test_unzipped_files_from_zipfile(self):
-        num, gen = target.unzipped_files_from_zipfile(SIMPLE_ARCHIVE_PATH, dest=self.test_dir)
-        self.assertEqual(num, 2)
-        for f in gen:
+        unzipped = target._unzipped_files_from_zipfile(SIMPLE_ARCHIVE_PATH, dest=self.test_dir)
+        self.assertEqual(len(unzipped), 2)
+        for f in unzipped:
             self.assertTrue(os.path.isfile(f))
             fn = os.path.basename(f)
             assert fn in SIMPLE_ARCHIVE_FILES
@@ -42,24 +42,26 @@ class ZipTest(TestCase):
     @timeout(0.1)
     def test_unzipped_files_from_zipfile_cancels(self):
         token = Event()
-        num, gen = target.unzipped_files_from_zipfile(SIMPLE_ARCHIVE_PATH, dest=self.test_dir, cancel_token=token)
+        unzipped = target._unzipped_files_from_zipfile(SIMPLE_ARCHIVE_PATH, dest=self.test_dir, cancel_token=token)
+        self.assertNotEqual(unzipped, None)
 
         # In a two-item sequence we'll only be able to get one if we cancel via the token
-        self.assertEqual(num, 2)
-        gen.__next__()
+        self.assertEqual(len(unzipped), 2)
+        unzipped.__next__()
         token.set()
-        self.assertRaises(CanceledError, gen.__next__)
+        self.assertRaises(CanceledError, unzipped.__next__)
 
     @timeout(0.1)
     def test_unzipped_files_from_unzip_cancels(self):
         token = Event()
-        num, gen = target.unzipped_files_from_unzip(SIMPLE_ARCHIVE_PATH, dest=self.test_dir, cancel_token=token)
+        unzipped = target._unzipped_files_from_unzip(SIMPLE_ARCHIVE_PATH, dest=self.test_dir, cancel_token=token)
+        self.assertNotEqual(unzipped, None)
 
         # In a two-item sequence we'll only be able to get one if we cancel via the token
-        self.assertEqual(num, 2)
-        gen.__next__()
+        self.assertEqual(len(unzipped), 2)
+        unzipped.__next__()
         token.set()
-        self.assertRaises(CanceledError, gen.__next__)
+        self.assertRaises(CanceledError, unzipped.__next__)
 
     @timeout(0.1)
     def test_unzipped_files_from_unzip(self):
@@ -70,11 +72,11 @@ class ZipTest(TestCase):
         expected_files = [os.path.join(self.test_dir, f) for f in SIMPLE_ARCHIVE_FILES]
 
         # execute
-        num, gen = target.unzipped_files_from_unzip(SIMPLE_ARCHIVE_PATH, dest=self.test_dir)
+        unzipped = target._unzipped_files_from_unzip(SIMPLE_ARCHIVE_PATH, dest=self.test_dir)
 
         # validation
-        self.assertEqual(num, 2)
-        self.assert_files(gen, expected_files)
+        self.assertEqual(len(unzipped), 2)
+        self.assert_files(unzipped, expected_files)
 
     @timeout(0.1)
     def test_unzip_default_dir(self):
@@ -90,8 +92,8 @@ class ZipTest(TestCase):
         expected_files = [os.path.join(expected_subdir, f) for f in SIMPLE_ARCHIVE_FILES]
 
         # execute
-        num, gen = target.unzipped_files_from_unzip(temp_zip)
+        unzipped = target._unzipped_files_from_unzip(temp_zip)
 
         # validation
-        self.assertEqual(num, 2)
-        self.assert_files(gen, expected_files)
+        self.assertEqual(len(unzipped), 2)
+        self.assert_files(unzipped, expected_files)

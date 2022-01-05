@@ -40,6 +40,8 @@ spec:
               value: /perceptilabs
             - name: PL_REDIS_URL
               value: redis://{{ .Values.redis_host }}
+            - name: FLOWER_PORT
+              value: 5555
           ports:
             - containerPort: 5555
           resources: {}

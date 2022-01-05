@@ -25,6 +25,7 @@ x-rygg_base: &rygg_base
     PL_REDIS_URL: redis://redis
     PL_CREATE_BASE_UPLOAD_DIR: "true"
     PL_RYGG_LOG_LEVEL: DEBUG
+    PL_UNZIP_TO_TMP: "true"
     HOME: /perceptilabs
   depends_on:
     db:

@@ -61,6 +61,22 @@ if DB_LOCATION or not IS_CONTAINERIZED:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+def bool_env_var(name, dflt=False):
+    val = os.getenv(name, '')
+    if not val:
+        return dflt
+
+    if val.lower() == 'true':
+        return True
+    elif val.lower() in ['false', '0']:
+        return False
+    else:
+        raise ValueError(f"Received {name}={val}. Expected boolean")
+
+
+UNZIP_TO_TMP = bool_env_var('PL_UNZIP_TO_TMP')
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 

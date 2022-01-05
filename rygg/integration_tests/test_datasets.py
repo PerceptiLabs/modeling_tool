@@ -507,7 +507,7 @@ def test_dataset_location_read_only(rest, tmpdir, tmp_project):
 
 @pytest.mark.timeout(10)
 @pytest.mark.usefixtures('pip_only')
-def test_create_classification_dataset(rest, tmp_project):
+def test_create_classification_dataset(rest, tmp_project, to_local_translator):
     task, dataset = DatasetClient.create_classification_dataset(rest, dataset_path=CLASSIFICATION_DATASET_DIR, project=tmp_project)
     # make sure the task acts as expected
     assert_task_completes(rest, task)
@@ -533,12 +533,12 @@ def test_create_classification_dataset(rest, tmp_project):
     assert dataset.exists_on_disk == False
 
     # make sure we didn't delete too high in the directory tree
-    assert_workingdir(rest, tmp_project.id)
+    assert_workingdir(rest, tmp_project.id, to_local_translator)
 
 
 @pytest.mark.timeout(10)
 @pytest.mark.usefixtures('pip_only')
-def test_create_segmentation_dataset(rest, tmp_project):
+def test_create_segmentation_dataset(rest, tmp_project, to_local_translator):
     task, dataset = DatasetClient.create_segmentation_dataset(rest, project=tmp_project, image_path=SEGMENTATION_IMAGE_PATH, mask_path=SEGMENTATION_MASK_PATH)
     # make sure the task acts as expected
     assert_task_completes(rest, task)
@@ -564,7 +564,7 @@ def test_create_segmentation_dataset(rest, tmp_project):
     assert dataset.exists_on_disk == False
 
     # make sure we didn't delete too high in the directory tree
-    assert_workingdir(rest, tmp_project.id)
+    assert_workingdir(rest, tmp_project.id, to_local_translator)
 
 @pytest.mark.timeout(0.2)
 @pytest.mark.usefixtures('enterprise_only')

@@ -55,6 +55,8 @@ spec:
               value: redis://{{ .Values.redis_host }}
             - name: PL_RENDER_LOG_LEVEL
               value: {{ .Values.log_level }}
+            - name: PL_RYGG_BASE_URL
+              value: http://rygg
           ports:
             - containerPort: 8000
           resources: {}

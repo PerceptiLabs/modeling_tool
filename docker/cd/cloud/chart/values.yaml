@@ -5,10 +5,14 @@ db_name: rygg
 db_user: rygg
 db_pass: rygg
 db_vendor: postgres
-redis_host: redis
-log_level: INFO
 
-pl_docker_tag: 8573
+redis_host: redis
+
+log_level: DEBUG
+
+unzip_to_tmp: true
+
+pl_docker_tag: latest
 keycloak:
   docker_image: quay.io/keycloak/keycloak:13.0.0
 bash_host:
@@ -29,6 +33,10 @@ training:
   docker_repo: perceptilabs.azurecr.io/kernel
 rygg:
   docker_repo: perceptilabs.azurecr.io/rygg
+
+  # Example of how to debug
+  # docker_image_override: quay.io/perceptilabs/rygg-dev:latest
+  # pull_policy: Always
 
 imageCredentials:
   name: docker-perceptilabs-azure
