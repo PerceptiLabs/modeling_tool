@@ -1,7 +1,7 @@
 ###################################################################################################
 # Base
 # Create a common image with pip requirements installed
-FROM perceptilabs.azurecr.io/cuda11.2.2-cudnn8-devel-py36-ubi8 as base
+FROM perceptilabs.azurecr.io/cuda11.2.2-cudnn8-devel-py38-ubi8 as base
 
 USER 0
 
@@ -16,10 +16,8 @@ RUN rm requirements.txt
 FROM base as build
 
 RUN yum -y update && \
-    yum -y install rsync \
-           python3-devel && \
-    ln -sf $(which python3) $(dirname $(which python3))/python
-    # Installing python3-devel can undo the link from the base image. Make sure it stays.
+    yum -y install rsync && \
+    yum clean all
 
 # add source
 # do the build in here
