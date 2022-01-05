@@ -118,13 +118,6 @@ export default {
       networkHistory:       'mod_workspace-history/GET_currentNetHistory',
       modelTrainingSettings:'mod_workspace/GET_modelTrainingSetting'
     }),
-    kernelLabel() {
-      if(this.statusLocalCore !== "online") {
-        return "Kernel is not connected";
-      } else {
-        return "Kernel is connected";
-      }
-    },
     hideLayers () {
       return this.$store.state.globalView.hideLayers
     },
@@ -137,10 +130,6 @@ export default {
     networkMode() {
       return this.currentNetMeta.netMode
     },
-    statusLocalCore() {
-      return this.$store.state.mod_api.statusLocalCore;
-    },
-
     tutorialRunButtonActive() {
       return this.$store.state.mod_tutorials.runButtonsActive
     },

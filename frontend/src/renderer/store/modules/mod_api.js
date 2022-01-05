@@ -26,7 +26,6 @@ const namespaced = true;
 
 const state = {
   instanceId: null,
-  statusLocalCore: "offline", //online
   headlessState: [],
   coreVersions: null,
 };
@@ -233,9 +232,6 @@ const getters = {
 };
 
 const mutations = {
-  SET_statusLocalCore(state, value) {
-    state.statusLocalCore = value;
-  },
   set_headlessState(state, { id, value }) {
     const headlessState = state.headlessState.find(hs => hs.id === id);
 
@@ -281,14 +277,6 @@ const actions = {
         dispatch("globalView/SET_appVersion", versions.perceptilabs, {
           root: true,
         });
-        if (state.statusLocalCore !== "online") {
-          commit("SET_statusLocalCore", "online");
-        }
-      })
-      .catch(() => {
-        if (state.statusLocalCore === "online") {
-          commit("SET_statusLocalCore", "offline");
-        }
       });
   },
   async checkRyggAvailability({ dispatch }) {

@@ -89,9 +89,6 @@ export default {
     isTrainingFailed() {
       return this.statusNetworkCore === 'Failed';
     },
-    statusLocalCore() {
-      return this.$store.state.mod_api.statusLocalCore;
-    },
   },
   methods: {
     ...mapMutations({

@@ -53,9 +53,6 @@ export default {
       isSettingInputFocused: state => state.mod_workspace.isSettingInputFocused,
       viewType: state => state.mod_workspace.viewType,
     }),
-    statusLocalCore() {
-      return this.$store.state.mod_api.statusLocalCore;
-    },
     isTutorialActive() {
       return this.isTutorialMode || this.isStoryBoard;
     },

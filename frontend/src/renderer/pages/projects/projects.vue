@@ -340,10 +340,6 @@ export default {
         this.renameId
       );
     },
-    isCoreOffline() {
-      console.log('this.$store.state.mod_api.statusLocalCore', this.$store.state.mod_api.statusLocalCore);
-      return this.$store.state.mod_api.statusLocalCore !== 'online';
-    }
   },
   watch: {
     hotKeyPressDelete() {
@@ -463,10 +459,6 @@ export default {
       return this.selectedListIds.length === 1;
     },
     openItems() {
-      if (this.isCoreOffline) {
-        this.showInfoPopup("Kernel is offline when calling 'openItems'");
-        return;
-      }
       if (!this.isAtLeastOneItemSelected()) {
         return;
       }
@@ -513,13 +505,6 @@ export default {
       );
     },
     toggleSelectedItems() {
-      if (this.isCoreOffline) {
-        this.showInfoPopup(
-          "Kernel is offline when calling 'toggleSelectedItems'"
-        );
-        return;
-      }
-
       const soemItemsAreSelected =
         this.selectedListIds.length !== this.workspaceContent.length;
       if (this.isAllItemsSelected()) {
@@ -552,12 +537,6 @@ export default {
     },
     openLoadModelPopup() {
       // this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
-      if (this.isCoreOffline) {
-        this.showInfoPopup(
-          "Kernel is offline when calling 'openLoadModelPopup'"
-        );
-        return;
-      }
       this.$store.dispatch(
         "globalView/SET_showImportNetworkfromGitHubOrLocalPopup",
         true
@@ -624,13 +603,6 @@ export default {
     },
 
     async handleContextRemoveModel() {
-      if (this.isCoreOffline) {
-        this.showInfoPopup(
-          "Kernel is offline when calling 'handleContextRemoveModel'"
-        );
-        return;
-      }
-
       const modelId = this.contextModelId;
 
       if (localStorage.getItem(LOCAL_STORAGE_HIDE_DELETE_MODAL)) {
@@ -646,13 +618,6 @@ export default {
       this.closeContext();
     },
     async handleContextUnregisterModel() {
-      if (this.isCoreOffline) {
-        this.showInfoPopup(
-          "Kernel is offline when calling 'handleContextUnregisterModel'"
-        );
-        return;
-      }
-
       const modelId = this.contextModelId;
 
       this.popupConfirm({
@@ -680,12 +645,6 @@ export default {
 
     // Rename Module
     handleContextRenameModel() {
-      if (this.isCoreOffline) {
-        this.showInfoPopup(
-          "Kernel is offline when calling 'handleContextRenameModel'"
-        );
-        return;
-      }
       this.renameId = this.contextModelId;
       this.renameValue = this.workspaceContent[
         this.get_modelIndexById
@@ -728,14 +687,6 @@ export default {
       this.isDatasetContextOpened = false;
     },
     async handleContextRemoveDataset() {
-      if (this.isCoreOffline) {
-        this.showInfoPopup(
-          "Kernel is offline when calling 'handleContextRemoveDataset'"
-        );
-        this.closeDatasetContext();
-        return;
-      }
-
       const models = this.getModelsByDataSetId(this.contextDatasetId);
 
       if (models.length > 0) {

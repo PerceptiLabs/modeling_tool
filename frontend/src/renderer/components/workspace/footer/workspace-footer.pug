@@ -17,9 +17,6 @@
 .workspace-meta-box
   div
     span Python {{coreVersions.python}} - TensorFlow {{coreVersions.tensorflow}}
-    span.btn.python-status(
-      :class="{'connected': statusLocalCore === 'online', 'disconnected': statusLocalCore === 'offline'}"
-    )
 .workspace-meta-right-box
   .workspace_meta-action
     button.btn(

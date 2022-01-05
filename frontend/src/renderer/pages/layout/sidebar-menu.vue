@@ -101,9 +101,6 @@
         GET_currentStatsIndex:  'mod_workspace/GET_currentStatsIndex',
         GET_currentTestIndex:   'mod_workspace/GET_currentTestIndex',
       }),
-      statusLocalCore() {
-        return this.$store.state.mod_api.statusLocalCore;
-      },
       isExportPageOpened() {
         return this.$route.name === 'export';
       },

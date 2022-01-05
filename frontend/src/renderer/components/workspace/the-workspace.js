@@ -175,9 +175,6 @@ export default {
     coreStatus() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus || {}
     },
-    statusLocalCore() {
-      return this.$store.state.mod_api.statusLocalCore;
-    },    
     statusTraining() {
       switch (this.statusNetworkCore) {
         case 'Training':
