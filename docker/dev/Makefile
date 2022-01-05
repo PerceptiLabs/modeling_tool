@@ -12,7 +12,10 @@ frontend_dev: require-ROOT ## make the developmet frontend image
 	cd ${ROOT}/frontend && \
 	docker build . --file Dockerfile-dev --tag=dev/frontend:latest
 
-dev_all: rygg_dev kernel_dev frontend_dev ## All dev images
+.env:
+	echo PL_ROOT=${ROOT} > .env
+
+dev_all: rygg_dev kernel_dev frontend_dev .env ## All dev images and env file
 
 
 #######################################################

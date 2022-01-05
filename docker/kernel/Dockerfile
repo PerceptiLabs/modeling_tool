@@ -1,7 +1,7 @@
 ###################################################################################################
 # Base
 # Create a common image with pip requirements installed
-FROM perceptilabs.azurecr.io/cuda11.2.2-cudnn8-devel-py38-ubi8 as base
+FROM quay.io/perceptilabs/cuda11.2.2-cudnn8-devel-py38-ubi8 as base
 
 USER 0
 
