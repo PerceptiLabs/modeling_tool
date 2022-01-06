@@ -50,7 +50,7 @@ This will run all of the services in development mode with code reloading.
 
 ### Prerequisites
 * docker from docker.com
-* make (included with OSX & Linux, Windows get from chocolatey)
+* make (included with OSX & Linux, Windows get from chocolatey à la https://stackoverflow.com/a/57042516 )
 
 ### Quickstart
 Just run it and watch the logs roll by
@@ -84,6 +84,9 @@ To run integration tests against the docker-based services:
 ### When to rebuild
 * The docker files for development mode will mount your source directory into a volume so normal code changes will be picked up immediately.
 * If you change your requirements.txt file or package.json in frontend, then you need to rebuild with `make`.
+
+### Tear-down
+* run `make clean` to tear everything down
 
 
 ## As local scripts

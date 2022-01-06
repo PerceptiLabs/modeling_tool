@@ -32,7 +32,7 @@ x-rygg_base: &rygg_base
       condition: service_healthy
   volumes:
     - ${PL_ROOT}/rygg/rygg:/app/rygg
-    - ${HOME}/Downloads/Perceptilabs_dev:/perceptilabs/Documents/Perceptilabs
+    - ${WORKING_DIR}:/perceptilabs/Documents/Perceptilabs
 
 # All kernel-based services are based on this
 x-kernel_base: &kernel_base
@@ -40,14 +40,14 @@ x-kernel_base: &kernel_base
   image: dev/kernel:latest
   volumes:
     - ${PL_ROOT}/backend:/app
-    - ${HOME}/Downloads/Perceptilabs_dev:/perceptilabs/Documents/Perceptilabs
+    - ${WORKING_DIR}:/perceptilabs/Documents/Perceptilabs
 
 services:
   db:
     <<: *common_base
     image: postgres:12
     volumes:
-      - ${HOME}/Downloads/Perceptilabs_dev/db:/var/lib/postgresql/data
+      - ${WORKING_DIR}/db:/var/lib/postgresql/data
     environment:
       PGDATA: /var/lib/postgresql/data/pgdata
       POSTGRES_DB: rygg
