@@ -1,5 +1,4 @@
 import mixPanel from 'mixpanel-browser'
-import { isElectron } from "@/core/helpers";
 import { isDevelopMode } from "@/core/constants";
 import Analytics  from '@/core/analytics'
 import { resolveProxyUrl } from "@/core/helpers/mixpanel-helper";
@@ -177,11 +176,6 @@ const actions = {
   EVENT_trainingCompleted({}, reason = '') {
     mixPanel.track('Training Completed', { 'Completed reason': reason });
     Analytics.googleAnalytics.trackCustomEvent('training-completed');
-  },
-  EVENT_trainingLayerView({}, ) {
-    if(isElectron()) {
-      mixPanel.track('Training Layer View', {'Layer Name': '', 'Chart Type': ''});
-    }
   },
   /* Training/test view tab */
   EVENT_viewboxMetricSelect({}, { view = 'Statistics', layerType = '', selectedMetric = '' }) {

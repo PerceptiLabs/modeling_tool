@@ -50,7 +50,6 @@
 </template>
 
 <script>
-import { isWeb } from "@/core/helpers";
 import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
 import BaseAccordion    from "@/components/base/accordion.vue";
 import ViewLoading from '@/components/different/view-loading.vue'

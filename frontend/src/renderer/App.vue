@@ -6,7 +6,6 @@
     div.d-flex.app-page
       sidebar-menu
       router-view.flex-1
-    update-popup(v-if="isElectron")
     the-info-popup(v-if="showPopup")
     confirm-popup
     delete-confirm-popup
@@ -26,7 +25,7 @@
 </template>
 
 <script>
-  import { isWeb, isElectron, isOsMacintosh, isBrowserChromeOrFirefox} from "@/core/helpers";
+  import { isOsMacintosh, isBrowserChromeOrFirefox} from "@/core/helpers";
   import CreateIssuePopup         from '@/components/global-popups/create-issues-popup.vue';
   import TutorialsChecklist       from '@/components/tutorial/tutorial-checklist.vue';
   import TutorialNotification from "@/components/different/tutorial-notification.vue";
@@ -42,7 +41,6 @@
   import { assembleModel } from "@/core/helpers/model-helper";
   import SidebarMenu            from '@/pages/layout/sidebar-menu.vue';
   import AppHeader              from '@/components/app-header/app-header.vue';
-  import UpdatePopup            from '@/components/global-popups/update-popup/update-popup.vue'
   import PiPyPopupUpdate        from "@/components/global-popups/update-popup/pipy-update-popup.vue";
   import TheInfoPopup           from "@/components/global-popups/the-info-popup.vue";
   import ConfirmPopup           from "@/components/global-popups/confirm-popup.vue";
@@ -60,8 +58,7 @@
     components: {
       SidebarMenu,
       ModalPagesEngine,
-      // HeaderLinux, HeaderWin, HeaderMac,
-      UpdatePopup, TheInfoPopup, ConfirmPopup, DeleteConfirmPopup, CreateIssuePopup, PiPyPopupUpdate, AboutAppPopup, AddCardPopup,
+      TheInfoPopup, ConfirmPopup, DeleteConfirmPopup, CreateIssuePopup, PiPyPopupUpdate, AboutAppPopup, AddCardPopup,
       AppHeader,
       TutorialsChecklist, TutorialNotification
     },
@@ -157,21 +154,11 @@
 
       if(!this.user) this.cloud_userGetProfile();
 
-      setTimeout(() => {
-        this.$store.dispatch('mod_api/API_getOutputDim');
-      }, 1000);
     },
     beforeDestroy() {
       window.removeEventListener('online',  this.updateOnlineStatus);
       window.removeEventListener('offline', this.updateOnlineStatus);
       document.removeEventListener('keydown', this.disableHotKeys);
-    },
-    data() {
-      return {
-        showMacHeader: true,
-        isWeb: isWeb(),
-        isElectron: isElectron(),
-      }
     },
     computed: {
       ...mapState({
@@ -199,9 +186,6 @@
       }),
       workspaceContent() {
         return this.$store.state['mod_workspace'].workspaceContent;
-      },
-      showNotAvailable() {
-        return this.$store.state.mod_autoUpdate.showNotAvailable
       },
       showNewModelPopup() {
         return this.$store.state.globalView.globalPopup.showNewModelPopup;

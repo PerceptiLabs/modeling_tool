@@ -12,7 +12,6 @@
   import TheSidebar         from '@/components/the-sidebar.vue'
   import TheWorkspace       from '@/components/workspace/the-workspace.vue'
   import { shouldHideSidebar, calculateSidebarScaleCoefficient } from "@/core/helpers";
-  import { isWeb } from "@/core/helpers";
   import { GITHUB_GET_TOKEN_BY_CODE_URL } from "@/core/constants";
   import axios from 'axios';
 
@@ -48,15 +47,11 @@
       this.showPage = true;
       this.set_appIsOpen(true);
       window.addEventListener("resize",  this.resizeEv, false);
-      if(isWeb()) {
-        window.addEventListener('beforeunload', this.beforeUnload);
+      window.addEventListener('beforeunload', this.beforeUnload);
+      if(shouldHideSidebar()) {
+        this.setSidebarStateAction(false);
       }
-      if(isWeb()) {
-        if(shouldHideSidebar()) {
-          this.setSidebarStateAction(false);
-        }
-        calculateSidebarScaleCoefficient(); 
-      }
+      calculateSidebarScaleCoefficient(); 
       if(localStorage.hasOwnProperty('isMiniMapNavigatorOpened')) {
         const mapValue = localStorage.getItem('isMiniMapNavigatorOpened') === 'true';
         this.setMiniMapNavigationMutation(mapValue);
@@ -64,9 +59,7 @@
     },
     beforeDestroy() {
       window.removeEventListener("resize", this.resizeEv, false);
-      if(isWeb()) {
-        window.removeEventListener('beforeunload', this.beforeUnload);
-      }
+      window.removeEventListener('beforeunload', this.beforeUnload);
       this.set_appIsOpen(false);
     },
     data() {

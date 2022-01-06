@@ -1,8 +1,6 @@
 import store            from '@/store'
 import axios            from 'axios'
 import { baseUrlCloud } from '@/core/constants.js'
-import {isElectron} from "@/core/helpers";
-
 
 const requestCloudApi = function (method, path, data, params) {
   return Promise.reject({
@@ -72,10 +70,6 @@ function CloudAPI_updateToken() {
       return tokens
     })
     .catch((error)=> {
-      if(isElectron()) {
-        store.dispatch('mod_events/EVENT_logOut', false, {root: true});
-        store.dispatch('globalView/GP_errorPopup', 'Your session has ended. Please login again.');
-      }
       console.log(error);
     })
 }

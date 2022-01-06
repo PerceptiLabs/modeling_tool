@@ -254,11 +254,9 @@ import ModelStatus from "@/components/different/model-status.vue";
 import WorkspaceLoadNetwork from "@/components/global-popups/workspace-load-network.vue";
 import ImportModel from "@/components/global-popups/import-model-popup.vue";
 
-import { mapActions, mapMutations, mapState, mapGetters } from "vuex";
-import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
+import { mapActions, mapState, mapGetters } from "vuex";
 import { assembleModel }                  from "@/core/helpers/model-helper";
 import { deepCopy } from "@/core/helpers";
-import cloneDeep from "lodash.clonedeep";
 import { getModelJson as rygg_getModelJson } from "@/core/apiRygg";
 import { getNextModelName as rygg_getNextModelName } from "@/core/apiRygg";
 import { uploadDatasetToFileserver as rygg_uploadDatasetToFileserver } from "@/core/apiRygg";

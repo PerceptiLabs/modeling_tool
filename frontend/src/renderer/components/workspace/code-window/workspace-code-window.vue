@@ -226,7 +226,6 @@ export default {
         hasUnsavedChanges: false 
       });
       this.$store.dispatch('mod_workspace/SET_elementSettings', {settings: deepCopy(saveSettings)});
-      this.$store.dispatch('mod_api/API_getOutputDim');
       
       this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.currentEl.layerId, {root: true})
     },

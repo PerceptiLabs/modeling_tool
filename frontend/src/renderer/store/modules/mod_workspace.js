@@ -632,7 +632,6 @@ const mutations = {
     const streamLinedNetwork = disassembleModel(newNetwork);          
     rygg_saveModelJson(streamLinedNetwork)
     
-    dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
     function findNetId(newNet, netList) {
       let indexId = netList.findIndex((el)=> el.networkID === newNet.networkID);
       return indexId;
@@ -786,13 +785,6 @@ const mutations = {
     let zoomFrom = network.networkMeta.zoom;
     let zoomTo = getters.GET_currentNetwork.networkMeta.zoomSnapshot;
     let clonedNetworkElementList = network.networkElementList;
-    let was = [];
-    Object.keys(clonedNetworkElementList).map(elId => {
-      was[elId] = {
-        top: clonedNetworkElementList[elId].layerMeta.position.top,
-        left: clonedNetworkElementList[elId].layerMeta.position.left,
-      };
-    });
     
     Object.keys(clonedNetworkElementList).map(elId => {
       clonedNetworkElementList[elId].layerMeta.position.top = (clonedNetworkElementList[elId].layerMeta.position.top / zoomFrom) * zoomTo;
@@ -802,19 +794,7 @@ const mutations = {
     if (!getters.GET_currentNetwork.networkSnapshots) {
       Vue.set(getters.GET_currentNetwork, 'networkSnapshots', []);
     }
-    let is = [];
-    Object.keys(clonedNetworkElementList).map(elId => {
-      is[elId] = {
-        top: clonedNetworkElementList[elId].layerMeta.position.top,
-        left: clonedNetworkElementList[elId].layerMeta.position.left,
-      };
-    });
-    console.log({
-      zoomFrom,
-      zoomTo,
-      was,
-      is,
-    });
+   
     getters.GET_currentNetwork.networkSnapshots.splice(0, 1, clonedNetworkElementList);
   },
   set_statusNetworkCore(state, {getters, value}) {
@@ -1061,13 +1041,8 @@ const mutations = {
     // state.workspaceContent[state.currentNetwork].networkElementList = {...net};
     dispatch('ReplaceNetworkElementList', {...net});
     dispatch('SET_isOpenElement', false);
-    dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true})
-    .then(() => {
-      dispatch('mod_api/API_getBatchPreviewSample', getBatchPreviewPayload, {root: true})
-      // dispatch('mod_api/API_getOutputDim', null, { root: true });
-    });
+    dispatch('mod_api/API_getBatchPreviewSample', getBatchPreviewPayload, {root: true})
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
-    // dispatch('mod_api/API_getOutputDim', null, {root: true});
     function deleteElement(list) {
       list.forEach((el)=> {
         if(el.componentName === 'LayerContainer') {
@@ -1134,7 +1109,6 @@ const mutations = {
     // currentElement(stopID).connectionIn.push(startID.toString());
     state.startArrowID = null;
 
-    dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true})
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
   delete_arrow(state,{dispatch, arrow}) {
@@ -1155,7 +1129,6 @@ const mutations = {
     // currentElement(startID).connectionArrow = newConnectionArrow;
     elStop.inputs[arrow.stopIds.variable].reference_layer_id = null;
     elStop.inputs[arrow.stopIds.variable].reference_var_id = null;
-    dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true})
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
   DELETE_copyProperty(state, id) {
@@ -1699,7 +1672,6 @@ const mutations = {
     let el = currentElement(payload.layerId).outputs[payload.outputVariableId]
     el.reference_var = payload.variableName;
     el.name = payload.variableName;
-    ctx.dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
   },
   ADD_outputVariableMutation(state, payload) {
     let el = currentElement(payload.layerId)
@@ -1726,14 +1698,12 @@ const mutations = {
 
     }
     dispatch('mod_events/EVENT_calcArray', null, { root: true });
-    dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
     Vue.delete(el.outputs, [payload.outputVariableId]);
   },
 
   EDIT_inputVariableValue(state, { payload, dispatch }) {
     let el = currentElement(payload.layerId).inputs[payload.inputVariableId];
     el.name = payload.value;
-    dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
   },
   ADD_inputVariableMutation(state, payload) {
     let el = currentElement(payload.layerId)
@@ -1746,7 +1716,6 @@ const mutations = {
   DELETE_inputVariableMutation(state, {payload, dispatch }) {
     let el = currentElement(payload.layerId);
     dispatch('mod_events/EVENT_calcArray', null, { root: true });
-    dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
     Vue.delete(el.inputs, [payload.inputVariableId]);
   },
 
@@ -1769,8 +1738,6 @@ const mutations = {
     if (!getters.GET_networkByNetworkId(networkId)) { return; }
     const networkList = getters.GET_networkByNetworkId(networkId).networkElementList;
     
-    console.log('setChartComponentLoadingStateMutation', descendants, networkList, networkId, value);
-
     descendants.forEach(componentId => {
       if(networkList[componentId] && networkList[componentId].chartDataIsLoading !== undefined) {
         if(value) { // is should increment
@@ -1866,7 +1833,9 @@ const actions = {
   cleanupUnnecessaryArrowsAction({getters}){
     commit('cleanupUnnecessaryArrowsMutation', {getters})
   },
-  updateForwardBackwardConnectionsAction({commit, getters}, payload){
+  updateForwardBackwardConnectionsAction({ commit, getters }, payload) {
+    
+    console.error("updateForwardBackwardConnectionsAction", payload);
     commit('updateForwardBackwardConnectionsMutation', {getters, payload})
   },
   //---------------
@@ -2298,7 +2267,6 @@ const actions = {
   DELETE_element({commit, getters, dispatch}) {
     if(getters.GET_networkIsOpen) {
       commit('delete_element', {getters, dispatch});
-      // dispatch('mod_api/API_getOutputDim', null, {root: true});
     }
 
     dispatch('mod_workspace-changes/updateUnsavedChanges', {
@@ -2371,13 +2339,15 @@ const actions = {
   SET_historyStep({commit, dispatch}, value) {
     commit('set_historyStep', {value, dispatch});
   },
-  SET_NetworkChartData({ commit }, {layerId, payload}) {
-    payload.series = payload.series.map(serie => {
-      if(serie.type === 'rgba') {
-        serie.data = JSON.stringify(serie.data);
-      }
-      return serie;
-    })
+  SET_NetworkChartData({ commit }, { layerId, payload }) {
+    if (payload.series) {
+      payload.series = payload.series.map(series => {
+        if (series.type === "rgba") {
+          series.data = JSON.stringify(series.data);
+        }
+        return series;
+      });
+    }
     
     commit('SET_NetworkChartDataMutation', {layerId, payload});
   },

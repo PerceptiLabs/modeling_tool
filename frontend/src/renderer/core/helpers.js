@@ -245,13 +245,6 @@ const parseJWT = jwt => {
   }
 };
 
-const isElectron = () => {
-  return navigator.userAgent.toLowerCase().indexOf(" electron/") > -1;
-};
-const isWeb = () => {
-  return !(navigator.userAgent.toLowerCase().indexOf(" electron/") > -1);
-};
-
 const debounce = function(callback, waitInMs) {
   let timerHandle;
 
@@ -682,8 +675,6 @@ export {
   calculateSidebarScaleCoefficient,
   parseJWT,
   isOsMacintosh,
-  isElectron,
-  isWeb,
   debounce,
   layerBgColor,
   layerBgColorTransparent,

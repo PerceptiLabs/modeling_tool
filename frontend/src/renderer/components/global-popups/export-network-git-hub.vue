@@ -43,7 +43,6 @@
 </template>
 
 <script>
-import { isWeb } from "@/core/helpers"
 import { extractGithubUsernameFromURL } from "@/core/helpers/github-helper.js"
 import { mapGetters } from 'vuex'
 import { GITHUB_AUTHORIZE_URL } from '@/core/constants.js'

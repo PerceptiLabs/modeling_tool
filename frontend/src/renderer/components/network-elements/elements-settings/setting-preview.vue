@@ -112,7 +112,6 @@ export default {
     ...mapActions({
       api_getVariableList: "mod_api/API_getPreviewVariableList",
       api_getPreviewSample: "mod_api/API_getPreviewSample",
-      api_getOutputDim: "mod_api/API_getOutputDim"
     }),
     toSettings() {
       this.$emit("to-settings");

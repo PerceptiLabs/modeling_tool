@@ -2,9 +2,6 @@ import { coreRequest } from "@/core/apiWeb.js";
 import { renderingKernel } from "@/core/apiRenderingKernel.js";
 import {
   deepCopy,
-  parseJWT,
-  isWeb,
-  isEnvDataWizardEnabled,
   checkpointDirFromProject,
 } from "@/core/helpers.js";
 import { ryggAvailability } from "@/core/apiRygg.js";
@@ -20,6 +17,8 @@ import {
 import cloneDeep from "lodash.clonedeep";
 import { v4 as uuidv4 } from "uuid";
 import base64url from "base64url";
+import { attachForwardAndBackwardConnectionsToNetwork } from "@/core/modelHelpers";
+import { deepCloneNetwork  } from "@/core/helpers";
 
 const namespaced = true;
 //let pauseAction = 'Pause';
@@ -38,9 +37,11 @@ const getters = {
     return rootGetters["mod_workspace/GET_currentNetworkId"];
   },
   GET_coreNetwork(state, getters, rootState, rootGetters) {
-    const network = rootGetters["mod_workspace/GET_currentNetwork"];
+    const network = deepCloneNetwork(rootGetters["mod_workspace/GET_currentNetwork"]);
     let layers = {};
-    const rootPath = network.networkRootFolder;
+    network.networkElementList = attachForwardAndBackwardConnectionsToNetwork(
+      network.networkElementList,
+    );
     for (let layer in network.networkElementList) {
       const el = network.networkElementList[layer];
       if (el.componentName === "LayerContainer") continue;
@@ -66,19 +67,6 @@ const getters = {
         checkpointPath.path = network.apiMeta.location + "/checkpoint";
       }
 
-      // const namesConnectionOut = [];
-      // const namesConnectionIn = [];
-
-      // el.connectionOut.forEach(id => {
-      //   const name =  network.networkElementList[id].layerName;
-      //   namesConnectionOut.push([id, name])
-      // });
-
-      // el.connectionIn.forEach(id => {
-      //   const name =  network.networkElementList[id].layerName;
-      //   namesConnectionIn.push([id, name])
-      // });
-
       /*prepare elements*/
       layers[el.layerId] = {
         Name: el.layerName,
@@ -99,15 +87,21 @@ const getters = {
     const network = rootGetters["mod_workspace/GET_networkByNetworkId"](id);
     return network.networkName;
   },
-  GET_disassembledModelById: (state, getters, rootState, rootGetters) => (id) => {
-    const network = rootGetters['mod_workspace/GET_networkByNetworkId'](id);
+  GET_disassembledModelById: (state, getters, rootState, rootGetters) => id => {
+    const network = rootGetters["mod_workspace/GET_networkByNetworkId"](id);
     const disNetwork = disassembleModel(network);
     return disNetwork;
-  },  
-  GET_coreNetworkById: (state, getters, rootState, rootGetters) => (id) => {
+  },
+  GET_coreNetworkById: (state, getters, rootState, rootGetters) => id => {
     // TODO: refactor to use model-helpers
-    const network = rootGetters['mod_workspace/GET_networkByNetworkId'](id);
+    const network = deepCloneNetwork(rootGetters[
+      "mod_workspace/GET_networkByNetworkId"
+    ](id));
     let layers = {};
+
+    network.networkElementList = attachForwardAndBackwardConnectionsToNetwork(
+      network.networkElementList,
+    );
 
     for (let layer in network.networkElementList) {
       const el = network.networkElementList[layer];
@@ -211,11 +205,14 @@ const getters = {
   },
   // maybe another flag for within or not alayerId
   GET_descendentsIds: (state, getters) => (pivotLayer, withPivot = true) => {
-    const networkList = getters.GET_coreNetworkElementList;
+    const networkList = attachForwardAndBackwardConnectionsToNetwork(
+      getters.GET_coreNetworkElementList
+    );
     let listIds = getDescendants(pivotLayer, []);
     if (withPivot) {
       listIds.push(pivotLayer.layerId);
     }
+    console.log('listIds', listIds);
     return listIds;
     function getDescendants(networkElement, dataIds) {
       if (networkElement.forward_connections.length === 0) {
@@ -951,18 +948,6 @@ const actions = {
         }
       });
   },
-
-  API_setHeadless({ commit, getters, rootGetters }, value) {
-    // Checking headless state and only sending if:
-    // - different or
-    // - never sent before
-
-    // This is because the Kernel can current not handle a request
-    // that sets the same state (i.e. true -> true).
-
-    console.error("API_setHeadless is deprecated!");
-  },
-
   API_updateResults({ rootGetters, dispatch, commit, rootState }, payload) {
     const networkId =
       payload && payload.networkIndex !== undefined
@@ -1011,7 +996,6 @@ const actions = {
       payload = {};
     }
 
-    const networkList = getters.GET_coreNetworkElementList;
     const networkId = rootGetters["mod_workspace/GET_currentNetworkId"];
     const userEmail = rootGetters["mod_user/GET_userEmail"];
     let net = cloneDeep(getters.GET_coreNetwork);
@@ -1118,7 +1102,6 @@ const actions = {
           { descendants: Object.keys(payload), value: false, networkId },
           { root: true },
         );
-        dispatch("mod_events/EVENT_calcArray", null, { root: true });
         dispatch("mod_workspace/SET_networkSnapshot", {}, { root: true });
       });
   },
@@ -1126,7 +1109,9 @@ const actions = {
     { getters, dispatch, rootGetters },
     layerId,
   ) {
-    const networkList = getters.GET_coreNetworkElementList;
+    const networkList = attachForwardAndBackwardConnectionsToNetwork(
+        getters.GET_coreNetworkElementList
+      );
     const pivotLayer = networkList[layerId];
     let descendants = getDescendants(pivotLayer, []);
     const userEmail = rootGetters["mod_user/GET_userEmail"];

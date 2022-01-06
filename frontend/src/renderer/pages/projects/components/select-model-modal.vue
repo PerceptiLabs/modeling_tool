@@ -583,7 +583,7 @@ export default {
           );
           return null;
         });
-
+        
       if (!modelRecommendation) {
         this.closeModal(false);
       }

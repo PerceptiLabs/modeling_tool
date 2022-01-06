@@ -86,10 +86,6 @@ export default {
       return;
     }
 
-    await this.$store.dispatch("mod_events/EVENT_IOGenerateAction", null, {
-      root: true
-    });
-
     await this.getAllPreviews();
 
     this.launchTheResizeObserver();
@@ -193,9 +189,6 @@ export default {
     eventCalcArrow() {
       return this.$store.state.mod_events.calcArray;
     },
-    // eventIOGenerate() {
-    //   return this.$store.state.mod_events.eventIOGenerate
-    // },
     preArrow() {
       return this.$store.state.mod_workspace.preArrow;
     },
@@ -266,10 +259,6 @@ export default {
         }
       }
     }
-
-    // eventIOGenerate() {
-    //   this.generateForwardAndBackwardConnections();
-    // }
   },
   methods: {
     ...mapMutations({
@@ -545,7 +534,6 @@ export default {
             connection.stopIds.layer
           );
         });
-      this.$store.dispatch("mod_api/API_getOutputDim");
       focusArray.blur();
       this.clearArrowFocus();
     },

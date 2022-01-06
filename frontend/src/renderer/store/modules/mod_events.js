@@ -1,7 +1,6 @@
 import router         from "@/router";
 import { keycloak }   from '@/main.js';
 import {
-  isElectron,
   projectPathModel,
   eraseCookie,
 } from "@/core/helpers";
@@ -15,10 +14,6 @@ const state = {
   saveNetwork: 0,
   saveNetworkAs: 0,
   eventResize: 0,
-  // is used for calculate from input/output of network component the backward and forward connections
-  // is should be increment when
-  // arrow is created/deleted, element/s is deleted.
-  eventIOGenerate: 0,
   globalPressKey: {
     del: 0,
     esc: 0
@@ -50,9 +45,6 @@ const getters = {
 }
 
 const mutations = {
-  set_eventIOGenerate(state){
-    state.eventIOGenerate++;
-  },
   set_calcArray(state) {
     state.calcArray++
   },
@@ -94,12 +86,6 @@ const mutations = {
   },
 };
 const actions = {
-  EVENT_IOGenerateAction(ctx){
-    return new Promise(resolve => {
-      ctx.commit('set_eventIOGenerate');
-      resolve();
-    })
-  },
   EVENT_calcArray({commit}) {
     commit('set_calcArray')
   },

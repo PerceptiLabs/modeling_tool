@@ -16,7 +16,7 @@
             p(v-if="isText && !comingSoonPopup" v-html="popupText") 
             p(v-else-if="isText && comingSoonPopup") This feature is coming soon. For suggestions on new features, hit us up on:&ensp;
               a.btn.btn--link.text-primary(@click="goToLink('https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk')") slack
-            div(v-else-if="coreNotFoundPopup && isWeb")
+            div(v-else-if="coreNotFoundPopup")
               p
                 | It seems we can not find any running kernel on your local machine.
                 | Download the kernel by "pip install perceptilabs" and then
@@ -44,7 +44,6 @@
 
   import BaseGlobalPopup from "@/components/global-popups/base-global-popup";
   import { goToLink }    from '@/core/helpers.js'
-  import {isWeb} from "@/core/helpers";
   import ErrorCta from '@/components/error-cta.vue'
   export default {
     name: "TheInfoPopup",
@@ -55,7 +54,6 @@
           'text-error': false,
           'text-primary': false
         },
-        isWeb: isWeb(),
       }
     },
     computed: {
