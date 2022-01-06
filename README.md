@@ -73,7 +73,7 @@ Use the `up` and `down` subcommands of `docker-compose`:
 
 To follow the logs of one service, e.g. the rendering kernel:
   ```
-  docker-compose logs -f | grep render_1
+  docker-compose logs -f render
   ```
 
 ### Tests
