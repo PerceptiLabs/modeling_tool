@@ -74,15 +74,15 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
         {% endcall %}
 
         {% call indented_if(layer_spec.version == 'RNN') %}
-            self.recurrent = tf.keras.layers.SimpleRNN(units=self._neurons, activation=self._activation, kernel_initializer='glorot_uniform', return_state={{layer_spec.return_sequence}})
+            self.recurrent = tf.keras.layers.SimpleRNN(units=self._neurons, activation=self._activation, kernel_initializer='glorot_uniform', return_sequences={{layer_spec.return_sequence}})
         {% endcall %}
 
         {% call indented_if(layer_spec.version == 'GRU') %}
-            self.recurrent = tf.keras.layers.GRU(units=self._neurons, activation=self._activation, kernel_initializer='glorot_uniform', return_state={{layer_spec.return_sequence}})
+            self.recurrent = tf.keras.layers.GRU(units=self._neurons, activation=self._activation, kernel_initializer='glorot_uniform', return_sequences={{layer_spec.return_sequence}})
         {% endcall %}
 
         {% call indented_if(layer_spec.version == 'LSTM') %}
-            self.recurrent = tf.keras.layers.LSTM(units=self._neurons, activation=self._activation, kernel_initializer='glorot_uniform', return_state={{layer_spec.return_sequence}})
+            self.recurrent = tf.keras.layers.LSTM(units=self._neurons, activation=self._activation, kernel_initializer='glorot_uniform', return_sequences={{layer_spec.return_sequence}})
         {% endcall %}      
 
     def get_config(self) -> Dict[str, Picklable]:
