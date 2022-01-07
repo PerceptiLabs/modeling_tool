@@ -7,7 +7,6 @@
 class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisualizer):
     def __init__(self):
         super().__init__()
-        self._n_neurons = {{layer_spec.n_neurons}}
         self._variables = {}
 
     def call(self, inputs, training=True):
