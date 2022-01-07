@@ -81,6 +81,16 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
     def get_queryset():
         return Dataset.available_objects.filter(project__is_removed=False)
 
+    def unregister(dataset_id):
+        Dataset.get_by_id(dataset_id).delete()
+
+    def delete_from_disk(dataset):
+        if os.path.isfile(dataset.location):
+            full_path = dataset.location
+        elif os.path.isdir(dataset.location):
+            full_path = dataset.location
+        delete_path_async(dataset.project.project_id, full_path)
+
     @property
     def exists_on_disk(self):
         return os.path.isfile(self.location)
@@ -102,7 +112,6 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
             raise Exception("Attempt to read contents before completion")
 
         return get_text_lines(self.location, num_rows=num_rows)
-
 
     def __str__(self):
         return f"{self.name} ({self.dataset_id})"
@@ -240,10 +249,6 @@ def dataset_pre_save(sender, **kwargs):
 def dataset_post_save(sender, **kwargs):
     ds = kwargs["instance"]
     if ds.is_removed:
-        # we don't know the root dir except for files with a source_url, so only delete them
-        if not ds.is_perceptilabs_sourced:
-            return
-
         # after unpacking, remote datasets have their path edited. Take that into account
         if os.path.isfile(ds.location):
             full_path = os.path.dirname(ds.location)

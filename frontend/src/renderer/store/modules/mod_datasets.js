@@ -1,18 +1,19 @@
 import {
   getDatasets as rygg_getDatasets,
   deleteDataset as rygg_deleteDataset,
-  unregisterModel as rygg_unregisterModel
+  unregisterDataset as rygg_unregisterDataset,
+  unregisterModel as rygg_unregisterModel,
 } from "@/core/apiRygg.js";
 const namespaced = true;
 
 const state = {
-  datasets: []
+  datasets: [],
 };
 
 const getters = {
   GET_datasets(state) {
     return state.datasets;
-  }
+  },
 };
 const mutations = {
   SET_datasets(state, value) {
@@ -21,7 +22,7 @@ const mutations = {
 
   DELETE_dataset(state, datasetId) {
     state.datasets = state.datasets.filter(
-      dataset => dataset.dataset_id !== datasetId
+      dataset => dataset.dataset_id !== datasetId,
     );
   },
 
@@ -29,10 +30,10 @@ const mutations = {
     state.datasets = state.datasets.map(dataset => {
       return {
         ...dataset,
-        models: dataset.models.filter(model => model !== modelId)
+        models: dataset.models.filter(model => model !== modelId),
       };
     });
-  }
+  },
 };
 
 const actions = {
@@ -45,18 +46,23 @@ const actions = {
         return {
           ...dataset,
           name: dataset.name.replace(/\\/g, "/"),
-          location: dataset.location.replace(/\\/g, "/")
+          location: dataset.location.replace(/\\/g, "/"),
         };
-      })
+      }),
     );
     return data;
   },
 
   async deleteDataset({ commit, dispatch }, datasetId) {
     await rygg_deleteDataset(datasetId);
-
+    console.log(`Dataset ${datasetId} has been deleted`);
     commit("DELETE_dataset", datasetId);
     dispatch("mod_public-datasets/getPublicDatasetList", null, { root: true });
+  },
+
+  async unregisterDataset(ctx, datasetId) {
+    await rygg_unregisterDataset(datasetId);
+    ctx.commit("DELETE_dataset", datasetId);
   },
 
   deleteModel({ commit }, modelId) {
@@ -73,7 +79,7 @@ const actions = {
 
       dispatch("deleteModel", modelId);
     }
-  }
+  },
 };
 
 export default {
@@ -81,5 +87,5 @@ export default {
   namespaced,
   state,
   mutations,
-  actions
+  actions,
 };

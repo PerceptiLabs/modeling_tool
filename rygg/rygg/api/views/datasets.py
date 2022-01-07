@@ -60,6 +60,22 @@ class DatasetViewSet(viewsets.ModelViewSet):
         self.alias_project_id(request)
         return super().create(request)
 
+    @action(detail=True, methods=['DELETE'])
+    def delete(self, request, pk):
+        ds = Dataset.get_by_id(pk)
+        if not ds:
+            raise HTTPExceptions.NOT_FOUND
+        Dataset.unregister(dataset_id=pk)
+        Dataset.delete_from_disk(dataset=ds)
+        return Response(None, 204)
+
+    @action(detail=True, methods=['DELETE'])
+    def unregister(self, request, pk):
+        ds = Dataset.get_by_id(pk)
+        if not ds:
+            raise HTTPExceptions.NOT_FOUND
+        Dataset.unregister(dataset_id=pk)
+        return Response(None, 204)
 
     def update(self, request, **kwargs):
         protect_read_only_enterprise_field(request, 'location')

@@ -454,7 +454,7 @@ export const getDatasets = async filename => {
 export const deleteDataset = async datasetId => {
   try {
     const fs = await whenHaveFileservingToken();
-    return await fs.delete(`datasets/${datasetId}`);
+    return await fs.delete(`datasets/${datasetId}/delete/`);
   } catch (e) {
     return Promise.reject(e);
   }
@@ -475,6 +475,20 @@ export const unregisterModel = async (datasetId, modelId) => {
   }
 };
 
+/**
+ *
+ * @param {number} datasetId
+ * @param {number} modelId
+ * @returns {Promise<AxiosResponse<any>>}
+ */
+export const unregisterDataset = async datasetId => {
+  try {
+    const fs = await whenHaveFileservingToken();
+    return await fs.delete(`datasets/${datasetId}/unregister/`);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 /**
  *
  * @param {number} id
