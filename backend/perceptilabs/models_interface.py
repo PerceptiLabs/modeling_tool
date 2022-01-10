@@ -107,8 +107,7 @@ class ModelsInterface:
         return self._epochs_access.has_saved_epoch(
             training_session_id, require_trainer_state=False)
         
-    def export(self, options, model_id, graph_spec_dict, dataset_settings_dict, training_session_id, user_email, training_settings_dict, frontend_settings):
-
+    def _export_internal(self, options, model_id, graph_spec_dict, dataset_settings_dict, training_session_id, user_email, training_settings_dict, frontend_settings):
         if options['Type'] == 'Archive':
             return self._export_as_archive(
                 model_id,
@@ -123,7 +122,13 @@ class ModelsInterface:
             if self.has_checkpoint(model_id, training_session_id):
                 return self._export_after_training(options, model_id, graph_spec_dict, dataset_settings_dict, training_session_id, user_email)
             else:
-                return self._export_while_training(options, model_id, training_session_id)            
+                return self._export_while_training(options, model_id, training_session_id)
+
+    def export(self, *args, **kwargs):
+        try:
+            return self._export_internal(*args, **kwargs)
+        except Exception as e:
+            raise KernelError.from_exception(e, message=f'Model export failed')            
 
     def _export_while_training(self, options, model_id, training_session_id):
         export_path = os.path.join(options['Location'], options['name'])
@@ -142,47 +147,36 @@ class ModelsInterface:
         return f"Model is running: export requested to {export_path}. This may take a moment."
         
     def _export_after_training(self, options, model_id, graph_spec_dict, dataset_settings_dict, training_session_id, user_email):        
-        try:
-            graph_spec = self._model_access.get_graph_spec(
-                model_id=graph_spec_dict) #TODO: F/E should send an ID
-            
-            data_loader = self._get_data_loader(dataset_settings_dict, user_email)
+        graph_spec = self._model_access.get_graph_spec(
+            model_id=graph_spec_dict) #TODO: F/E should send an ID
+        
+        data_loader = self._get_data_loader(dataset_settings_dict, user_email)
+        
+        epoch_id = self._epochs_access.get_latest(
+            training_session_id=training_session_id,  
+            require_checkpoint=True,
+            require_trainer_state=False
+        )
+        
+        checkpoint_path = self._epochs_access.get_checkpoint_path(
+            training_session_id=training_session_id,
+            epoch_id=epoch_id
+        )
+        training_model = self._model_access.get_training_model(
+            graph_spec.to_dict(),  # TODO. f/e should send an ID
+            checkpoint_path=checkpoint_path
+        )
 
-            epoch_id = self._epochs_access.get_latest(
-                training_session_id=training_session_id,  
-                require_checkpoint=True,
-                require_trainer_state=False
-            )
+        exporter = Exporter(graph_spec, training_model, data_loader)
 
-            checkpoint_path = self._epochs_access.get_checkpoint_path(
-                training_session_id=training_session_id,
-                epoch_id=epoch_id
-            )
-            training_model = self._model_access.get_training_model(
-                graph_spec.to_dict(),  # TODO. f/e should send an ID
-                checkpoint_path=checkpoint_path
-            )
+        export_path = os.path.join(options['Location'], options['name'])
+        mode = self._get_export_mode(options)
+        exporter.export(export_path, mode=mode)
 
-            def on_model_exported():
-                tracking.send_model_exported(
-                    self._event_tracker, user_email, model_id)
-            
-            exporter = Exporter(
-                graph_spec, training_model, data_loader,
-                on_model_exported=on_model_exported
-            )
-            
-            export_path = os.path.join(options['Location'], options['name'])
-            mode = self._get_export_mode(options)
-            exporter.export(export_path, mode=mode)
-
-        except CompatibilityError:
-            return "Model not compatible."
-        except Exception as e:
-            logging.exception("Model export failed")
-            return f"Model export failed"
-        else:
-            return f"Model exported to '{export_path}'"
+        tracking.send_model_exported(
+            self._event_tracker, user_email, model_id)
+        
+        return f"Model exported to '{export_path}'"
 
     def _get_export_mode(self, export_settings):
         type_ = export_settings['Type']
@@ -313,22 +307,17 @@ class ModelsInterface:
         return output
 
     def _export_as_archive(self, model_id, location, dataset_settings_dict, graph_spec_dict, user_email, training_settings_dict, frontend_settings):
-        try:
-            path = self._model_archives_access.write(
-                model_id,
-                location,
-                dataset_settings_dict,
-                graph_spec_dict,
-                training_settings_dict,
-                frontend_settings
-            )
-        except Exception as e:
-            logging.exception("Model export failed")
-            return f"Model export failed"
-        else:
-            tracking.send_model_exported(
-                self._event_tracker, user_email, model_id)            
-            return f"Model exported to '{path}'"
+        path = self._model_archives_access.write(
+            model_id,
+            location,
+            dataset_settings_dict,
+            graph_spec_dict,
+            training_settings_dict,
+            frontend_settings
+        )
+        tracking.send_model_exported(
+            self._event_tracker, user_email, model_id)            
+        return f"Model exported to '{path}'"
             
             
             

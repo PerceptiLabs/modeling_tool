@@ -809,10 +809,18 @@ const actions = {
     };
 
     return exportClosure()
-      .then(data => {
+      .then(res => {
         // dispatch('globalView/GP_infoPopup', data, {root: true});
-        trackerData.result = "success";
-        return Promise.resolve(data);
+
+        if (res && res.error) {
+	  const message = res.error.message + "\n\n" + res.error.details
+          dispatch("globalView/GP_errorPopup", message, { root: true });
+          trackerData.result = "success";	  
+        } else {
+          trackerData.result = "error";	  
+	}
+	
+        return Promise.resolve(res);
       })
       .catch(err => {
         console.error(err);
