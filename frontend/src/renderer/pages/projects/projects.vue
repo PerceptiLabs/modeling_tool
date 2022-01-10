@@ -621,7 +621,7 @@ export default {
       this.contextDatasetId = null;
       this.isDatasetContextOpened = false;
     },
-    async handleContextRemoveDataset() {
+    async handleContextRemoveDataset(datasetId) {
       const models = this.getModelsByDataSetId(this.contextDatasetId);
 
       if (models.length > 0) {

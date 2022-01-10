@@ -4,7 +4,6 @@
   .d-flex.app-page
     sidebar-menu
     router-view.flex-1
-  update-popup(v-if="isElectron")
   the-info-popup(v-if="showPopup")
   confirm-popup
   PiPyPopupUpdate(v-if="showPiPyNotification")
@@ -23,8 +22,6 @@
 </template>
 <script>
 import {
-  isWeb,
-  isElectron,
   isOsMacintosh,
   isBrowserChromeOrFirefox,
 } from "@/core/helpers";
@@ -189,8 +186,6 @@ export default {
   data() {
     return {
       showMacHeader: true,
-      isWeb: isWeb(),
-      isElectron: isElectron(),
     };
   },
   computed: {
