@@ -307,7 +307,6 @@ export default {
       createdFromDatasetId: null,
       isShowCTA: false,
       buildingPreProcessingStatus: "Building preprocessing pipelines...",
-      createdFromDatasetId: null,
       modelType: "",
       imageClassificationFolderPath: null,
       imageSegmentationImageFolderPath: null,

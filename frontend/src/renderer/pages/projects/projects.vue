@@ -18,14 +18,6 @@ div
   .project-wrapper(v-show="!showNewModelPopup")
     .header-controls
       .left-side
-        .button-container.mr-20(v-if="isEnterpriseMode")
-          button.btn.btn--primary(
-            @click="loadDataset",
-            :data-tutorial-target="'tutorial-model-hub-new-button'"
-          )
-            span.btn-round-icon
-              img(src="/static/img/add-button.svg")
-            span.left-header-btn-text Load Dataset
         .button-container
           button.btn.btn--primary(
             @click="handleAddNetworkModal",
@@ -226,10 +218,9 @@ import { mapActions, mapState, mapGetters } from "vuex";
 import { assembleModel }                  from "@/core/helpers/model-helper";
 import { getModelJson as rygg_getModelJson } from "@/core/apiRygg";
 import { getNextModelName as rygg_getNextModelName } from "@/core/apiRygg";
-import { uploadDatasetToFileserver as rygg_uploadDatasetToFileserver } from "@/core/apiRygg";
-import { getTaskStatus as rygg_getTaskStatus } from "@/core/apiRygg";
-import { isTaskComplete as rygg_isTaskComplete } from "@/core/apiRygg";
-import { pickFile as rygg_pickFile } from "@/core/apiRygg";
+import {
+  pickFile as rygg_pickFile,
+} from "@/core/apiRygg";
 import { renderingKernel } from "@/core/apiRenderingKernel.js";
 import { arrayIncludeOrOmit } from "@/core/helpers";
 import {
@@ -283,7 +274,6 @@ export default {
       isEnterpriseMode: "globalView/get_isEnterpriseApp",
       allDatasets: "mod_datasets/GET_datasets",
       projectPath: "mod_project/GET_projectPath",
-      defaultTemplate: "mod_workspace/GET_defaultNetworkTemplate",
     }),
     ...mapState({
       currentProjectId: state => state.mod_project.currentProject,
@@ -840,46 +830,14 @@ export default {
       });
       this.dataSetIsOpenedStateArray = temp;
     },
-
-    async checkTask(taskId, datasetId, interval) {
-      delete this.timeoutIds[taskId];
-
-      const taskStatus = await rygg_getTaskStatus(taskId);
-
-      // TODO: Placeholder for a proper progress bar
-      console.log("Task Progress", taskStatus);
-
-      // get the task status from rygg
-      if (rygg_isTaskComplete(taskStatus.state)) {
-        // if the task is complete, then refresh the dataset list
-        await this.refreshDatasets();
-      } else {
-        // if the task is ongoing, then restart a timeout
-        this.timeoutIds[taskId] = setTimeout(
-          this.checkTask,
-          interval,
-          taskId,
-          datasetId,
-          interval,
-        );
-      }
-    },
-    loadDataset() {
-      const fileInput = document.createElement("input");
-      fileInput.setAttribute("type", "file");
-      fileInput.setAttribute("accept", ".csv,.zip");
-      fileInput.addEventListener("change", async e => {
-        const file = e.target.files[0];
-        const res = await rygg_uploadDatasetToFileserver(file);
-        if (res) {
-          const {
-            data: { task_id, dataset_id },
-          } = res;
-          this.checkTask(task_id, dataset_id, 1000); // no await. Just let it run
-        }
-      });
-      fileInput.click();
-    },
+  },
+  created() {
+    // Adding this because of reloads on this page
+    // When the stats and test views are their own routes,
+    // a better alternative would be to put a lot of the
+    // following in the router.
+    this.setCurrentView("tutorial-model-hub-view");
+    this.expandDatasetsModels();
   },
   filters: {
     datasetFormat(val) {

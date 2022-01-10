@@ -596,7 +596,7 @@ export function strShortener(string, length = 20) {
  * @param {number} ms
  * @returns
  */
-export const whenCeleryTaskDone = (taskId, cb, ms = 50) => {
+export const whenCeleryTaskDone = (taskId, cb = () => null, ms = 50) => {
   return new Promise(resolve => {
     if (!taskId) {
       return resolve();

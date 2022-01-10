@@ -2,7 +2,6 @@ import {mapActions, mapGetters, mapMutations, mapState} from 'vuex';
 import saveNet    from './workspace-save-net.js'
 import scaleNet   from './workspace-scale.js'
 import spinnerNet from './workspace-spinner.js'
-import helpersNet from './workspace-helpers.js'
 import {debounce, isEnvDataWizardEnabled} from '@/core/helpers'
 
 import { googleAnalytics }        from '@/core/analytics';
@@ -37,7 +36,7 @@ import DatasetSettingsPopup   from '@/components/workspace/dataset-settings-popu
 
 export default {
   name: 'WorkspaceContent',
-  mixins: [saveNet, scaleNet, spinnerNet, helpersNet],
+  mixins: [saveNet, scaleNet, spinnerNet],
   components: {
     WorkspaceToolbar, StatisticsToolbar,
     NetworkField, TextEditable,

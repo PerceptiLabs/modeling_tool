@@ -12,6 +12,9 @@ import {
   pickDirectory as rygg_pickDirectory,
   pickFile as rygg_pickFile,
 } from "@/core/apiRygg.js";
+import { whenCeleryTaskDone } from "@/core/helpers";
+import { uploadDatasetToFileserver as rygg_uploadDatasetToFileserver } from "@/core/apiRygg";
+import { getDataset as rygg_getDataset } from "@/core/apiRygg";
 import { mapState } from "vuex";
 export default {
   name: "CreateModelPicker",
@@ -30,6 +33,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    isEnterpriseMode: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     ...mapState({
@@ -45,26 +52,55 @@ export default {
       }
     },
     async selectFolder() {
-      this.isWaitingToPick = true;
-      const { path } = await rygg_pickDirectory(this.label);
-      this.isWaitingToPick = false;
-      if (path) {
-        this.pathLocation = path;
-        this.$emit("onPick", path);
+      try {
+        this.isWaitingToPick = true;
+        const { path } = await rygg_pickDirectory(this.label);
+        if (path) this.sendPath(path);
+      } finally {
+        this.isWaitingToPick = false;
       }
     },
     async selectFile() {
-      this.isWaitingToPick = true;
-      const { path } = await rygg_pickFile(
-        this.label,
-        this.startupDatasetPath,
-        [{ extensions: ["*.csv"] }],
-      );
-      this.isWaitingToPick = false;
-      if (path) {
-        this.pathLocation = path;
-        this.$emit("onPick", path);
+      if (this.isEnterpriseMode) {
+        return this.enterpriseSelect();
       }
+      try {
+        this.isWaitingToPick = true;
+        const { path } = await rygg_pickFile(
+          this.label,
+          this.startupDatasetPath,
+          [{ extensions: ["*.csv"] }],
+        );
+        if (path) this.sendPath(path);
+      } finally {
+        this.isWaitingToPick = false;
+      }
+    },
+    async enterpriseSelect() {
+      try {
+        this.isWaitingToPick = true;
+        const fileInput = document.createElement("input");
+        fileInput.setAttribute("type", "file");
+        fileInput.setAttribute("accept", ".csv,.zip");
+        fileInput.addEventListener("change", async e => {
+          const file = e.target.files[0];
+          const {
+            data: { task_id, dataset_id },
+          } = await rygg_uploadDatasetToFileserver(file);
+          await whenCeleryTaskDone(task_id, e => console.log(e));
+          const {
+            data: { location: path },
+          } = await rygg_getDataset(dataset_id);
+          if (path) this.sendPath(path);
+        });
+        fileInput.click();
+      } finally {
+        this.isWaitingToPick = false;
+      }
+    },
+    sendPath(path) {
+      this.pathLocation = path;
+      this.$emit("onPick", path);
     },
   },
 };

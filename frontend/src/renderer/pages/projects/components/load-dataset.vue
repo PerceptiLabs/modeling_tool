@@ -47,6 +47,7 @@ div
             :disabled="isImageClassificationNextButtonDissabled",
             @click="$emit('handleImageClassificationNext')"
           ) Next
+
       template(v-if="modelType === modelTypes.SEGMENTATION")
         .model-local-wrapper
           .d-flex
@@ -95,6 +96,7 @@ div
             :disabled="isImageSegmentationNextButtonDisabled",
             @click="$emit('handleImageSegmentationNext')"
           ) Next
+
       template(v-if="modelType === modelTypes.MULTI_MODAL")
         .model-local-wrapper
           .d-flex
@@ -114,7 +116,8 @@ div
           create-model-picker(
             label="Select .csv",
             @onPick="$emit('handleMultiModalCsvPicker', $event)",
-            :pickCsv="true"
+            :pickCsv="true",
+            :isEnterpriseMode="isEnterpriseMode"
           )
         .d-flex.justify-content-between
           button.link.back-to-previous-step(@click="$emit('back')")
@@ -140,6 +143,7 @@ import PublicDatasetList from "./public-dataset-list";
 import CreateModelPicker from "./create-model-picker.vue";
 import { modelTypes } from "@/core/constants";
 import { isFolderLoadingEnabled } from "@/core/helpers";
+import { mapGetters } from "vuex";
 const LoadDatasetOptions = {
   public: "Public",
   local: "Local",
@@ -181,6 +185,11 @@ export default {
       type: Boolean,
       default: false,
     },
+  },
+  computed: {
+    ...mapGetters({
+      isEnterpriseMode: "globalView/get_isEnterpriseApp",
+    }),
   },
   methods: {
     onSelectLoadOption(ev) {
