@@ -36,7 +36,6 @@ div
             @input="toggleSelectedItems"
           )
             | All datasets
-        .column-2
         .column-3 Training Status
         .column-4 Duration
         .column-5 Test Available
@@ -86,13 +85,8 @@ div
                 )
               .editable-field.model-name-wrapper
                 bdi {{ dataset.name | datasetFormat }}
-
-            .column-2
-              strong(v-if="dataset.exists_on_disk === false") (Missing Data)
-            .column-3
-            .column-4
-            .column-5
-            .column-6
+                | &nbsp;
+                strong(v-if="dataset.exists_on_disk === false") (Missing Data)
             .column-7.d-flex
               .new-model-btn(
                 v-tooltip:networkElement="'Experimental'",
@@ -145,8 +139,6 @@ div
                   span Unsaved
                   .indicator-circle
 
-              .column-2
-                |
               .column-3
                 model-status(
                   :statusData="model.networkMeta.coreStatus",
@@ -946,7 +938,6 @@ $header-height: 60px;
     position: relative;
     margin-right: auto;
     padding-left: 80px;
-    max-width: 300px;
     min-width: 300px;
     width: 300px;
   }
@@ -1047,7 +1038,7 @@ $header-height: 60px;
   .column-1 {
     display: flex;
     justify-content: flex-start;
-    width: 100%;
+    flex: 1;
     .btn-checkbox {
       position: absolute;
       left: 41px;
