@@ -29,7 +29,7 @@ base-global-popup.z-100(
             a.btn.btn--link.text-primary(
               @click="goToLink('https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk')"
             ) slack
-          div(v-else-if="coreNotFoundPopup && isWeb")
+          div(v-else-if="coreNotFoundPopup")
             p
               | It seems we can not find any running kernel on your local machine.
               | Download the kernel by "pip install perceptilabs" and then

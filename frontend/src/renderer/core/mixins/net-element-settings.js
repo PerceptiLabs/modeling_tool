@@ -106,6 +106,7 @@ const netElementSettings = {
       };
       this.$store.dispatch('mod_workspace/SET_elementSettings', {settings: deepCopy(saveSettings), pushOntoHistory});
       this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.currentEl.layerId);
+      this.$store.dispatch('mod_workspace-changes/updateUnsavedChanges', {networkId: this.$store.getters['mod_workspace/GET_currentNetworkId'], value: true});
       this.$store.dispatch('mod_tracker/EVENT_applyLayerSettings', {
         componentName: this.currentEl.componentName, 
         tabName
