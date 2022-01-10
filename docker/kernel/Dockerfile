@@ -72,4 +72,4 @@ ENV PL_KERNEL_TRAINER=standard
 
 # TODO: add healthcheck for websocket and REST apis
 
-CMD ["python3.6", "-u", "main.py"]
+CMD ["python3.8", "-u", "main.py"]
