@@ -555,7 +555,7 @@ export default {
 
       this.popupConfirm({
         type: "DANGER",
-        text: `Are you sure you want to unregister ${modelName} model from Model Hub?`,
+        text: `Are you sure you want to unregister ${modelName} model from Overview?`,
         ok: () => {
           this.$store.dispatch("mod_workspace/UNREGISTER_networkById", modelId);
         },
