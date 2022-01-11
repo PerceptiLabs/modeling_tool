@@ -58,6 +58,7 @@ import ChartSpinner from "@/components/charts/chart-spinner";
 import { AZURE_BLOB_PATH_PREFIX, modelTypes } from "@/core/constants.js";
 import { isFolderLoadingEnabled } from "@/core/helpers.js";
 import { isTaskComplete as rygg_isTaskComplete } from "@/core/apiRygg";
+import { debounce } from "@/core/helpers";
 export default {
   components: { ChartSpinner },
   data: () => ({
@@ -69,6 +70,11 @@ export default {
     modelType: {
       type: String,
       default: "",
+    },
+  },
+  watch: {
+    filter: function(value) {
+      this.sendSearchingValueToMixPanel(value, this.$store); // sent store to dispatch ev
     },
   },
   computed: {
@@ -162,6 +168,12 @@ export default {
         !rygg_isTaskComplete(dataset.downloadStatus.state)
       );
     },
+    sendSearchingValueToMixPanel: debounce((value, store) => {
+      const isNotEmptyValue = value.length !== 0;
+      if (isNotEmptyValue) {
+        store.dispatch("mod_tracker/TRACK_datasetSearch", value);
+      }
+    }, 1000),
   },
 
   mounted() {
