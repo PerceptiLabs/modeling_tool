@@ -1,9 +1,6 @@
 import { coreRequest } from "@/core/apiWeb.js";
 import { renderingKernel } from "@/core/apiRenderingKernel.js";
-import {
-  deepCopy,
-  checkpointDirFromProject,
-} from "@/core/helpers.js";
+import { deepCopy, checkpointDirFromProject } from "@/core/helpers.js";
 import { ryggAvailability } from "@/core/apiRygg.js";
 import { pathSlash, sessionStorageInstanceIdKey } from "@/core/constants.js";
 import { disassembleModel } from "@/core/helpers/model-helper";
@@ -18,7 +15,7 @@ import cloneDeep from "lodash.clonedeep";
 import { v4 as uuidv4 } from "uuid";
 import base64url from "base64url";
 import { attachForwardAndBackwardConnectionsToNetwork } from "@/core/modelHelpers";
-import { deepCloneNetwork  } from "@/core/helpers";
+import { deepCloneNetwork } from "@/core/helpers";
 
 const namespaced = true;
 //let pauseAction = 'Pause';
@@ -37,7 +34,9 @@ const getters = {
     return rootGetters["mod_workspace/GET_currentNetworkId"];
   },
   GET_coreNetwork(state, getters, rootState, rootGetters) {
-    const network = deepCloneNetwork(rootGetters["mod_workspace/GET_currentNetwork"]);
+    const network = deepCloneNetwork(
+      rootGetters["mod_workspace/GET_currentNetwork"],
+    );
     let layers = {};
     network.networkElementList = attachForwardAndBackwardConnectionsToNetwork(
       network.networkElementList,
@@ -94,9 +93,9 @@ const getters = {
   },
   GET_coreNetworkById: (state, getters, rootState, rootGetters) => id => {
     // TODO: refactor to use model-helpers
-    const network = deepCloneNetwork(rootGetters[
-      "mod_workspace/GET_networkByNetworkId"
-    ](id));
+    const network = deepCloneNetwork(
+      rootGetters["mod_workspace/GET_networkByNetworkId"](id),
+    );
     let layers = {};
 
     network.networkElementList = attachForwardAndBackwardConnectionsToNetwork(
@@ -151,9 +150,13 @@ const getters = {
     rootState,
     rootGetters,
   ) => (loadCheckpoint = false) => {
-    const network = rootGetters["mod_workspace/GET_currentNetwork"];
+    const network = deepCloneNetwork(
+      rootGetters["mod_workspace/GET_currentNetwork"],
+    );
     let layers = {};
-    const rootPath = network.networkRootFolder;
+    network.networkElementList = attachForwardAndBackwardConnectionsToNetwork(
+      network.networkElementList,
+    );
     for (let layer in network.networkElementList) {
       const el = network.networkElementList[layer];
       if (el.componentName === "LayerContainer") continue;
@@ -206,13 +209,12 @@ const getters = {
   // maybe another flag for within or not alayerId
   GET_descendentsIds: (state, getters) => (pivotLayer, withPivot = true) => {
     const networkList = attachForwardAndBackwardConnectionsToNetwork(
-      getters.GET_coreNetworkElementList
+      getters.GET_coreNetworkElementList,
     );
     let listIds = getDescendants(pivotLayer, []);
     if (withPivot) {
       listIds.push(pivotLayer.layerId);
     }
-    console.log('listIds', listIds);
     return listIds;
     function getDescendants(networkElement, dataIds) {
       if (networkElement.forward_connections.length === 0) {
@@ -261,20 +263,18 @@ const actions = {
       action: "version",
       value: "",
     };
-    return renderingKernel
-      .getVersion()
-      .then(versions => {
-        commit("SET_coreVersions", {
-          python: versions.python
-            .split(".")
-            .slice(0, 2)
-            .join("."),
-          tensorflow: versions.tensorflow,
-        });
-        dispatch("globalView/SET_appVersion", versions.perceptilabs, {
-          root: true,
-        });
+    return renderingKernel.getVersion().then(versions => {
+      commit("SET_coreVersions", {
+        python: versions.python
+          .split(".")
+          .slice(0, 2)
+          .join("."),
+        tensorflow: versions.tensorflow,
       });
+      dispatch("globalView/SET_appVersion", versions.perceptilabs, {
+        root: true,
+      });
+    });
   },
   async checkRyggAvailability({ dispatch }) {
     const resp = await ryggAvailability();
@@ -813,13 +813,13 @@ const actions = {
         // dispatch('globalView/GP_infoPopup', data, {root: true});
 
         if (res && res.error) {
-	  const message = res.error.message + "\n\n" + res.error.details
+          const message = res.error.message + "\n\n" + res.error.details;
           dispatch("globalView/GP_errorPopup", message, { root: true });
-          trackerData.result = "success";	  
+          trackerData.result = "success";
         } else {
-          trackerData.result = "error";	  
-	}
-	
+          trackerData.result = "error";
+        }
+
         return Promise.resolve(res);
       })
       .catch(err => {
@@ -1118,8 +1118,8 @@ const actions = {
     layerId,
   ) {
     const networkList = attachForwardAndBackwardConnectionsToNetwork(
-        getters.GET_coreNetworkElementList
-      );
+      getters.GET_coreNetworkElementList,
+    );
     const pivotLayer = networkList[layerId];
     let descendants = getDescendants(pivotLayer, []);
     const userEmail = rootGetters["mod_user/GET_userEmail"];
