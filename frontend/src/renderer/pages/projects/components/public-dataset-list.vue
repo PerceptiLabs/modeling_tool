@@ -133,6 +133,10 @@ export default {
       deleteDownload: "mod_public-datasets/deleteDownload",
     }),
     download(dataset) {
+      this.$store.dispatch("mod_tracker/TRACK_datasetDownload", {
+        UniqueName: dataset.UniqueName,
+        name: dataset.Name,
+      });
       this.downloadDataset({
         id: dataset.UniqueName,
         name: dataset.Name,

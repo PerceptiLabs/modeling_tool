@@ -1,4 +1,4 @@
-import mixPanel from 'mixpanel-browser'
+import mixPanel from "mixpanel-browser";
 import { isDevelopMode } from "@/core/constants";
 import Analytics from "@/core/analytics";
 import { resolveProxyUrl } from "@/core/helpers/mixpanel-helper";
@@ -178,11 +178,11 @@ const actions = {
     mixPanel.track("Training Start", data);
   },
   EVENT_trainingStop() {
-    mixPanel.track('Training Stop');
+    mixPanel.track("Training Stop");
   },
-  EVENT_trainingCompleted({}, reason = '') {
-    mixPanel.track('Training Completed', { 'Completed reason': reason });
-    Analytics.googleAnalytics.trackCustomEvent('training-completed');
+  EVENT_trainingCompleted({}, reason = "") {
+    mixPanel.track("Training Completed", { "Completed reason": reason });
+    Analytics.googleAnalytics.trackCustomEvent("training-completed");
   },
   /* Training/test view tab */
   EVENT_viewboxMetricSelect(
@@ -254,8 +254,10 @@ const actions = {
   TRACK_toggleIntercom({}, data) {
     mixPanel.track("Toggle Intercom", data);
   },
-
   /* data wizard */
+  TRACK_datasetDownload(_, payload) {
+    mixPanel.track("Dataset download", payload);
+  },
   TRACK_datasetSearch(_, value) {
     mixPanel.track("Dataset search", { value });
   },
