@@ -77,7 +77,7 @@ rygg/tasks/threaded.py
 rygg/tasks/util.py
 rygg/utils/__init__.py
 rygg/utils/collections.py
-rygg/utils/threading.py
+rygg/utils/threading_.py
 rygg/urls.py
 rygg/urls.py
 rygg/wsgi.py

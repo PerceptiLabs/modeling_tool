@@ -9,7 +9,7 @@ import shutil
 import sys
 
 from rygg.files.utils.subprocesses import run_and_terminate, CanceledError
-from rygg.utils.threading import async_map
+from rygg.utils.threading_ import async_map
 from rygg.utils.collections import PresizedIterator
 from rygg.settings import UNZIP_TO_TMP
 
