@@ -56,9 +56,10 @@ const mutations = {
     isTabPlaceValid(placeToBeChanged);
     let tabs = state[placeToBeChanged];
     const layerMetricsKeys = Object.keys(tabs.layerMetrics);
-    const value = layerMetricsKeys && Object.keys(tabs.layerMetrics)[0] || '';
-     
-    Vue.set(tabs, 'selectedMetric', value);
+    if (layerMetricsKeys && !layerMetricsKeys.includes(tabs.selectedMetric)) {
+      const value = layerMetricsKeys && layerMetricsKeys[0] || '';
+      Vue.set(tabs, 'selectedMetric', value);
+    }
   },
   setSelectedMetric(state, { placeToBeChanged, selectedMetric }) {
     isTabPlaceValid(placeToBeChanged);
