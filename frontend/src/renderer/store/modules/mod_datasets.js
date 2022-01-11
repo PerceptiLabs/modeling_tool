@@ -55,7 +55,6 @@ const actions = {
 
   async deleteDataset({ commit, dispatch }, datasetId) {
     await rygg_deleteDataset(datasetId);
-    console.log(`Dataset ${datasetId} has been deleted`);
     commit("DELETE_dataset", datasetId);
     dispatch("mod_public-datasets/getPublicDatasetList", null, { root: true });
   },

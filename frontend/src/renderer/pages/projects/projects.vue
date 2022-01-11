@@ -207,12 +207,10 @@ import WorkspaceLoadNetwork from "@/components/global-popups/workspace-load-netw
 import ImportModel from "@/components/global-popups/import-model-popup.vue";
 
 import { mapActions, mapState, mapGetters } from "vuex";
-import { assembleModel }                  from "@/core/helpers/model-helper";
+import { assembleModel } from "@/core/helpers/model-helper";
 import { getModelJson as rygg_getModelJson } from "@/core/apiRygg";
 import { getNextModelName as rygg_getNextModelName } from "@/core/apiRygg";
-import {
-  pickFile as rygg_pickFile,
-} from "@/core/apiRygg";
+import { pickFile as rygg_pickFile } from "@/core/apiRygg";
 import { renderingKernel } from "@/core/apiRenderingKernel.js";
 import { arrayIncludeOrOmit } from "@/core/helpers";
 import {
@@ -414,10 +412,10 @@ export default {
         .map(ds => ds.name)
         .join(`, `);
 
-      let removeMessageStr = `Are you sure you want to delete ${
+      let removeMessageStr = `Are you sure you want to unregister ${
         datasetsToDeleteNames ? `${datasetsToDeleteNames} ` : ""
       }
-      ${datasetsToDeleteNames && modelsToDeleteNames ? " and " : ""}
+      ${datasetsToDeleteNames && modelsToDeleteNames ? " and delete " : ""}
       ${modelsToDeleteNames ? `${modelsToDeleteNames} ` : ""}`;
 
       this.popupConfirm({
@@ -430,7 +428,7 @@ export default {
             }
             for (let datasetId of this.selectedDatasetIds) {
               await this.$store.dispatch(
-                "mod_datasets/deleteDataset",
+                "mod_datasets/unregisterDataset",
                 datasetId,
               );
             }
@@ -438,19 +436,7 @@ export default {
             this.selectedDatasetIds = [];
           };
 
-          if (datasetsToDeleteNames) {
-            this.$nextTick(() => {
-              this.popupConfirm({
-                type: "DANGER",
-                text: `You are about to remove one or more of your own datasets <br/> from your hard drive, are you SURE you want to do this?`,
-                ok: async () => {
-                  remove();
-                },
-              });
-            });
-          } else {
-            remove();
-          }
+          remove();
         },
       });
     },
