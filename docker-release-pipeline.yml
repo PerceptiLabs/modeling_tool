@@ -1,6 +1,9 @@
 trigger:
 - master
 
+pool:
+  vmimage: ubuntu-latest
+
 parameters:
   - name: build_id_to_deploy
     displayName: Build ID to deploy
@@ -29,8 +32,7 @@ jobs:
   - job: dockerrelease
     displayName: Release Docker
     dependsOn: checkvars
-    pool:
-      vmimage: ubuntu-latest
+
     strategy:
       matrix:
         kernel:
@@ -82,9 +84,6 @@ jobs:
   - job: pushfiles
     displayName: Publish files to Azure storage
     dependsOn: checkvars
-    pool:
-      # has to be on Windows because the AzureFileCopy tasks below only work on windows hosts
-      vmImage: windows-latest
     steps:
 
       - task: DownloadBuildArtifacts@0
@@ -119,23 +118,28 @@ jobs:
           DOCKER_USERNAME: enterpriseuser
           PL_VERSION: $(Build.SourceBranchName)
 
-
-      - task: AzureFileCopy@4
+      - task: AzureCLI@2
         displayName: publish the installation files to $(Build.SourceBranchName)
+        displayName: publish the installation files to $(Build.BuildId)
         inputs:
-          SourcePath: '$(System.ArtifactsDirectory)/installation/**'
-          azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
-          Destination: 'AzureBlob'
-          storage: 'perceptilabs'
-          ContainerName: 'enterprise'
-          BlobPrefix: '$(Build.SourceBranchName)/'
+          azureSubscription: 'Perceptilabs Azure'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az storage blob upload --account-name=perceptilabs --container-name=enterprise --file=$(System.ArtifactsDirectory)/installation/system_migrations.tar.gz --name=$(Build.SourceBranchName)/system_migrations.tar.gz
+            az storage blob upload --account-name=perceptilabs --container-name=enterprise --file=$(System.ArtifactsDirectory)/installation/install_perceptilabs_enterprise --name=$(Build.SourceBranchName)/install_perceptilabs_enterprise
+          addSpnToEnvironment: true
+          useGlobalConfig: true
 
-      - task: AzureFileCopy@4
+      - task: AzureCLI@2
         displayName: publish the installation files to latest
+        condition: eq(${{ variables['savetolatest'] }}, true)
         inputs:
-          SourcePath: '$(System.ArtifactsDirectory)/installation/**'
-          azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
-          Destination: 'AzureBlob'
-          storage: 'perceptilabs'
-          ContainerName: 'enterprise'
-          BlobPrefix: 'latest/'
+          azureSubscription: 'Perceptilabs Azure'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az storage blob upload --account-name=perceptilabs --container-name=enterprise --file=$(System.ArtifactsDirectory)/installation/system_migrations.tar.gz --name=latest/system_migrations.tar.gz
+            az storage blob upload --account-name=perceptilabs --container-name=enterprise --file=$(System.ArtifactsDirectory)/installation/install_perceptilabs_enterprise --name=latest/install_perceptilabs_enterprise
+          addSpnToEnvironment: true
+          useGlobalConfig: true
