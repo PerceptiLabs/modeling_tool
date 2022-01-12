@@ -132,7 +132,6 @@ jobs:
 
       - task: AzureCLI@2
         displayName: publish the installation files to latest
-        condition: eq(${{ variables['savetolatest'] }}, true)
         inputs:
           azureSubscription: 'Perceptilabs Azure'
           scriptType: 'bash'
