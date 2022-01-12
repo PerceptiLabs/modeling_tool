@@ -78,6 +78,7 @@ import "@/core/plugins/eCharts.js";
 import "@/core/plugins/intercom.js";
 import userflow from "userflow.js";
 import { renderingKernel } from "@/core/apiRenderingKernel";
+import { isNoKeyCloakEnabled } from "@/core/helpers";
 
 Vue.component("base-checkbox", BaseCheckbox);
 Vue.component("base-radio", BaseRadiobutton);
@@ -219,7 +220,7 @@ function renderNoInternetConnectionPage() {
     const loggedInUser = getCookie("loggedInUser");
     const isKeycloakReachable = await keyCloak.isReachable();
 
-    if (process.env.NO_KC == "true") {
+    if (isNoKeyCloakEnabled()) {
       demo();
     } else if (isKeycloakReachable) {
       login();

@@ -1,4 +1,9 @@
-import { deepCloneNetwork, deepCopy, isLocalStorageAvailable }  from "@/core/helpers.js";
+import {
+  deepCloneNetwork,
+  deepCopy,
+  isLocalStorageAvailable,
+  isNoKeyCloakEnabled,
+} from "@/core/helpers.js";
 
 const namespaced = true;
 
@@ -40,7 +45,7 @@ const getters = {
     return !info ? 'Guest' : info.email
   },
   GET_userProfile(state) {
-    return process.env.NO_KC ? null : state.userProfile;
+    return isNoKeyCloakEnabled() ? null : state.userProfile;
   },
   GET_LOCAL_userInfo(state, getters) {
     if(state.getLocalUserList) {

@@ -3,17 +3,23 @@ import store from '@/store';
 
 import { KEYCLOAK_URL_CONFIG_PATH, KEYCLOAK_REALM_PATH } from "@/core/constants";
 import { whenUrlIsResolved } from '@/core/urlResolver';
+import { isNoKeyCloakEnabled } from "./helpers";
 
 const whenKeyCloakReady = () =>
-  process.env.NO_KC === 'true' ? Promise.reject() :
-    whenUrlIsResolved(KEYCLOAK_URL_CONFIG_PATH, process.env.KEYCLOAK_BASE_URL)
-      .then(url => {
+  isNoKeyCloakEnabled()
+    ? Promise.reject()
+    : whenUrlIsResolved(
+        KEYCLOAK_URL_CONFIG_PATH,
+        process.env.KEYCLOAK_BASE_URL,
+      ).then(url => {
         let ret = axios.create();
-        ret.defaults.baseURL = url
+        ret.defaults.baseURL = url;
         ret.defaults.headers.common["Content-Type"] = `application/json`;
-        ret.defaults.headers.common['Authorization'] = `Bearer ${store.getters['mod_user/GET_userToken']}`;
-        ret.defaults.params = {}
-        return ret
+        ret.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${store.getters["mod_user/GET_userToken"]}`;
+        ret.defaults.params = {};
+        return ret;
       });
 
 export const keyCloak = {

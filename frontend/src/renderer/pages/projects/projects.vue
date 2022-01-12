@@ -212,7 +212,7 @@ import { getModelJson as rygg_getModelJson } from "@/core/apiRygg";
 import { getNextModelName as rygg_getNextModelName } from "@/core/apiRygg";
 import { pickFile as rygg_pickFile } from "@/core/apiRygg";
 import { renderingKernel } from "@/core/apiRenderingKernel.js";
-import { arrayIncludeOrOmit } from "@/core/helpers";
+import { arrayIncludeOrOmit, isNoKeyCloakEnabled } from "@/core/helpers";
 import {
   convertModelRecommendationToVisNodeEdgeList,
   createVisNetwork,
@@ -244,7 +244,7 @@ export default {
       // for renaming models
       renameId: null,
       renameValue: null,
-      showUser: !process.env.NO_KC,
+      showUser: !isNoKeyCloakEnabled(),
       dataSetIsOpenedStateArray: [],
     };
   },

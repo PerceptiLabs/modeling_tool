@@ -552,6 +552,10 @@ export const isFolderLoadingEnabled = () => {
   return process.env.ENABLE_FOLDER_LOADING === "true";
 };
 
+export const isNoKeyCloakEnabled = () => {
+  return process.env.NO_KC === "true";
+};
+
 export const getFirstElementFromObject = data => {
   if (!data) throw new Error("No object passed");
   return data[Object.keys(data)[0]];

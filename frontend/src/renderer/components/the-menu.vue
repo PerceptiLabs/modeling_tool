@@ -30,7 +30,7 @@ import {
   MODAL_PAGE_PROJECT,
   PERCEPTILABS_DOCUMENTATION_URL,
 } from "@/core/constants.js";
-import { goToLink, isOsMacintosh } from "@/core/helpers.js";
+import { goToLink, isOsMacintosh, isNoKeyCloakEnabled } from "@/core/helpers.js";
 
 export default {
   name: "TheMenu",
@@ -57,7 +57,7 @@ export default {
       return this.isTutorialMode || this.isStoryBoard;
     },
     showExport() {
-      return !process.env.NO_KC;
+      return !isNoKeyCloakEnabled();
     },
     openApp() {
       return this.$store.state.globalView.appIsOpen;
