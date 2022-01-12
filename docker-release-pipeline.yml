@@ -120,7 +120,6 @@ jobs:
 
       - task: AzureCLI@2
         displayName: publish the installation files to $(Build.SourceBranchName)
-        displayName: publish the installation files to $(Build.BuildId)
         inputs:
           azureSubscription: 'Perceptilabs Azure'
           scriptType: 'bash'
