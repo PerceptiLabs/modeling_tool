@@ -20,7 +20,7 @@ def _default_dest(zipfile) -> str:
     return os.path.join(os.path.dirname(zipfile), os.path.splitext(zipfile)[0])
 
 
-def _unzipped_files_from_zipfile(zipfile_name: str, dest: Optional[str]=None, cancel_token=Event()) -> PresizedIterator[str]:
+def _unzipped_files_from_zipfile(zipfile_name, dest=None, cancel_token=Event()):
     with ZipFile(zipfile_name, 'r') as zip:
         files = zip.namelist()
 
@@ -70,7 +70,7 @@ def _unzipped_files_from_unzip(zipfile: str, dest: Optional[str]=None, cancel_to
         _get_items_from_unzip(zipfile, dest=dest, cancel_token=cancel_token))
 
 
-def _copied_files_from_unzip(zipfile, dest: Optional[str]=None, cancel_token=Event()) -> PresizedIterator[str]:
+def _copied_files_from_unzip(zipfile, dest=None, cancel_token=Event()):
     if not dest:
         dest = _default_dest(zipfile)
 
@@ -126,7 +126,7 @@ def _get_unzipper():
         return _unzipped_files_from_zipfile
 
 
-def unzipped_files(zipfile: str, dest: Optional[str]=None, cancel_token=Event()) -> PresizedIterator[str]:
+def unzipped_files(zipfile: str, dest=None, cancel_token=Event()):
     if not os.path.isfile(zipfile):
         raise FileNotFoundError(zipfile)
 
