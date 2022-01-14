@@ -96,13 +96,26 @@ export default {
     display: flex;
     flex-direction: column;
     max-width: $w-sidebar;
+    min-width: $w-sidebar;
     grid-area: sidebar;
-    transition: max-width .3s;
+    transition: min-width .3s, max-width .3s !important;
     background-color: $bg-toolbar-2;
     border: $border-1;
     height: calc(100vh - #{$remaining});
+
     &.page_sidebar--hide {
       max-width: 0;
+      min-width: 0;
+      transition: min-width .3s, max-width .3s !important;
+      overflow: hidden;
+    }
+
+    &:not(.page_sidebar--hide) {
+      animation: hide-scroll 0.3s;
+    }
+
+    @keyframes hide-scroll {
+      from, to { overflow: hidden; } 
     }
   }
   .sidebar_tabset {
