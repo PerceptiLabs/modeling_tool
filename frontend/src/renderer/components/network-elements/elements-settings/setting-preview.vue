@@ -11,7 +11,7 @@
     )
   .chart-spinner-wrapper(v-if="showLoadingSpinner")
     chart-spinner(:invert="true")
-  .chart-container(v-if="!showLoadingSpinner", style="overflow: hidden")
+  .chart-container(v-if="!showLoadingSpinner && shouldShowPreview", style="overflow: hidden")
     transition(name="slide-fade")
       chart-switch.data-settings_chart(
         v-show="shouldShowPreview",
