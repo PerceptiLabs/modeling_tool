@@ -26,23 +26,38 @@ class GraphSpec(AbstractGraphSpec):
 
     @classmethod
     def from_dict(cls, dict_):
-        if 'Layers' in dict_:
-            dict_ = dict_['Layers']
+        try:
+            if not isinstance(dict_, dict):
+                raise ValueError(f"Expected a dict but got type {type(dict_)}")       
+            
+            if 'Layers' in dict_:
+                dict_ = dict_['Layers']
+                
+            layer_specs = [
+                cls._parse_layer_spec(id_, spec_dict)
+                for id_, spec_dict in dict_.items()
+            ]
+            return cls(layer_specs)
+        except:
+            logger.exception(f"Loading graph spec from dict failed. Content: {dict_}")
+            raise
 
-        layer_specs = []
-        for id_, json_layer in dict_.items():
-            type_ = json_layer['Type']
-            layer_spec_dict = dict_[id_]
-            try:
-                layer_def = get_layer_definition(type_)
-                layer_spec = layer_def.spec_class.from_dict(id_, layer_spec_dict)
-                layer_specs.append(layer_spec)
-            except:
-                from perceptilabs.utils import stringify
-                logger.error("Failed building layer from dict: {}".format(stringify(layer_spec_dict)))
-                raise
-
-        return cls(layer_specs)
+    @staticmethod
+    def _parse_layer_spec(id_, spec_dict):
+        if not isinstance(spec_dict, dict):
+            raise ValueError(
+                f"Expected a dict but got type {type(spec_dict)} for layer with ID {id_}")
+        
+        try:        
+            type_ = spec_dict['Type']
+            layer_def = get_layer_definition(type_)
+            layer_spec = layer_def.spec_class.from_dict(id_, spec_dict)            
+        except:
+            from perceptilabs.utils import stringify
+            logger.error("Failed building layer from dict: {}".format(stringify(spec_dict)))
+            raise
+        else:
+            return layer_spec        
 
     @property
     def layers(self) -> List[LayerSpec]:
