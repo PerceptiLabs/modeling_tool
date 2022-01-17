@@ -35,11 +35,19 @@ class TrainingResultsAccess:
 
         path = self._get_path(training_session_id)
         if not os.path.isfile(path):
+            logger.error(f"Invalid training results path: {path} for training session id {training_session_id}")
             return None
+
+        results_dict = {}
         with FileLock(path+'.lock'):
             with open(path, 'rb') as f:
                 results_dict = pickle.load(f)
-                return results_dict        
+
+        if not results_dict:
+            logger.error(f"Invalid training results for training session id {training_session_id}. No content found.")
+            return None
+        
+        return results_dict        
 
     def _get_path(self, training_session_id):
         directory = b64decode_and_sanitize(training_session_id)  # For now it's just a base64 path
