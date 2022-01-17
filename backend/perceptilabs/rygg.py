@@ -16,7 +16,7 @@ class RyggWrapper:
             return res.json()
         except:
             logger.exception("Error in get_dataset")
-            return {}
+            raise
 
     @classmethod
     def with_default_settings(cls):

@@ -18,7 +18,7 @@ class DatasetAccess:
             return bool(data['is_perceptilabs_sourced'])
         except:
             logger.exception("Failed checking if dataset is perceptilabs sourced")
-            return None
+            raise
 
     def get_location(self, dataset_id):
         data = self._rygg.get_dataset(dataset_id)                    
@@ -26,7 +26,7 @@ class DatasetAccess:
             return data['location'].replace('\\', '/')
         except:
             logger.exception("Failed getting dataset location")                        
-            return None
+            raise
 
     def get_name(self, dataset_id):
         data = self._rygg.get_dataset(dataset_id)                    
@@ -34,8 +34,8 @@ class DatasetAccess:
             return data['name']
         except:
             logger.exception("Failed getting dataset name")            
-            return None
-
+            raise
+            
     def get_dataframe(self, dataset_id, fix_paths_for=None):
         try:
             location = self.get_location(dataset_id)
@@ -51,7 +51,7 @@ class DatasetAccess:
             return df
         except:
             logger.exception("Failed getting dataframe")
-            return None
+            raise
         
         return df
         
