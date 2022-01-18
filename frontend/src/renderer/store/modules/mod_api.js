@@ -2,13 +2,9 @@ import { coreRequest } from "@/core/apiWeb.js";
 import { renderingKernel } from "@/core/apiRenderingKernel.js";
 import { deepCopy, checkpointDirFromProject } from "@/core/helpers.js";
 import { ryggAvailability } from "@/core/apiRygg.js";
-import { pathSlash, sessionStorageInstanceIdKey } from "@/core/constants.js";
+import { sessionStorageInstanceIdKey } from "@/core/constants.js";
 import { disassembleModel } from "@/core/helpers/model-helper";
-
-import { createCoreNetwork } from "@/core/helpers";
-
 import {
-  getModelJson as rygg_getModelJson,
   doesDirExist as rygg_doesDirExist,
 } from "@/core/apiRygg";
 import cloneDeep from "lodash.clonedeep";
@@ -18,7 +14,6 @@ import { attachForwardAndBackwardConnectionsToNetwork } from "@/core/modelHelper
 import { deepCloneNetwork } from "@/core/helpers";
 
 const namespaced = true;
-//let pauseAction = 'Pause';
 
 const state = {
   instanceId: null,
@@ -88,6 +83,9 @@ const getters = {
   },
   GET_disassembledModelById: (state, getters, rootState, rootGetters) => id => {
     const network = rootGetters["mod_workspace/GET_networkByNetworkId"](id);
+    network.networkElementList = attachForwardAndBackwardConnectionsToNetwork(
+      network.networkElementList,
+    );
     const disNetwork = disassembleModel(network);
     return disNetwork;
   },

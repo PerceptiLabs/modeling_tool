@@ -109,7 +109,7 @@ export const renderingKernel = {
     return whenRenderingKernelReady
       .then(rk => rk.get(`/inference/serving/${servingSessionId}/status`))
       .then(res => {
-        return res.data["url"];
+        return res.data && res.data["url"];
       })
       .catch(err => {
         console.error(err);
