@@ -10,6 +10,18 @@ import time
 import platform
 import pkg_resources
 import io
+import sentry_sdk  # NOTE: the runner does not have its own requirements.txt, so we're piggy-backing off of Rygg/Kernel having sentry as a dependency
+
+SENTRY_DSN = "https://254212f937004cd7bb07d72e779a6eb5@o283802.ingest.sentry.io/6149913"
+
+
+sentry_sdk.init(
+    dsn=SENTRY_DSN,
+    integrations=[],
+    send_default_pii=True,
+    environment="prod"
+)    
+
 
 PYTHON = sys.executable
 
@@ -161,6 +173,7 @@ class PortPoller:
                 print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Waiting for services to listen on these ports:")
                 for s, p in unresponsive:
                     print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC}    {s} on port {p}")
+
             time.sleep(interval_secs)
 
 
@@ -188,6 +201,7 @@ def start(verbosity):
         watch(procs)
     except Exception as e:
         print(e)
+        sentry_sdk.capture_exception(e)
         stop(procs)
 
 
