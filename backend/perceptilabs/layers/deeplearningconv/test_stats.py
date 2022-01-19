@@ -3,12 +3,26 @@ import numpy as np
 from perceptilabs.layers.deeplearningconv.stats import ConvPreviewStats
 from perceptilabs.layers.deeplearningconv.stats import ConvOutputStats
 
-def test_conv_preview_content():
-    sample = np.random.random((224,224,11))
+def test_conv_preview_content_1d():
+    sample = np.random.random((224, 11))
     preview_content = ConvPreviewStats().get_preview_content(sample)
-    assert preview_content[1] == (224, 224,11)
+    assert preview_content[1] == (224, 11)
     assert not preview_content[2]
 
+
+def test_conv_preview_content_2d():
+    sample = np.random.random((224, 224, 11))
+    preview_content = ConvPreviewStats().get_preview_content(sample)
+    assert preview_content[1] == (224, 224, 11)
+    assert not preview_content[2]
+
+    
+def test_conv_preview_content_3d():
+    sample = np.random.random((224, 224, 224, 11))
+    preview_content = ConvPreviewStats().get_preview_content(sample)
+    assert preview_content[1] == (224, 224, 224, 11)
+    assert not preview_content[2]
+    
 
 def test_stats_objects_are_equal_when_args_are_equal():
     outputs1 = np.array([0.5,0.4])

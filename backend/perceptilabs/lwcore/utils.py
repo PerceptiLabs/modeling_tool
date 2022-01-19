@@ -106,16 +106,23 @@ def _get_layer_content(layer_spec, lw_results, skip_previews=False):
     preview_content = None
     layer_sample_data_points = None
 
-    if (not layer_results.has_errors) and (not skip_previews):
+
+    def get_stats_object(layer_spec):
+        if layer_spec.type_ == 'DeepLearningConv':
+            return ConvPreviewStats()
+        elif layer_spec.type_ == 'UNet':
+            return UnetPreviewStats()
+        elif layer_spec.type_ == 'IoOutput' and layer_spec.datatype == 'mask':
+            return MaskPreviewStats()
+        else:
+            return PreviewStats()
+    
+
+    if (error is None) and (not layer_results.has_errors) and (not skip_previews):
         try:
-            if layer_spec.type_ == 'DeepLearningConv':
-                sample_data, sample_layer_shape, type_list = ConvPreviewStats().get_preview_content(sample)
-            elif layer_spec.type_ == 'UNet':
-                sample_data, sample_layer_shape, type_list = UnetPreviewStats().get_preview_content(sample)
-            elif layer_spec.type_ == 'IoOutput' and layer_spec.datatype == 'mask':
-                sample_data, sample_layer_shape, type_list = MaskPreviewStats().get_preview_content(sample)
-            else:
-                sample_data, sample_layer_shape, type_list = PreviewStats().get_preview_content(sample)                    
+            stats_obj = get_stats_object(layer_spec)
+            sample_data, sample_layer_shape, type_list = stats_obj.get_preview_content(sample)
+            
             preview_content = {
                 'data': sample_data,
                 'data_shape': sample_layer_shape,
