@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class BaseStrategy(ABC):
     @abstractmethod
-    def run(self, layer_spec, graph_spec, input_results, line_offset=None):
+    def run(self, layer_spec, graph_spec, input_results, random_number_generator, line_offset=None):
         raise NotImplementedError
 
     @staticmethod
@@ -47,7 +47,7 @@ class BaseStrategy(ABC):
 
     
 class DefaultStrategy(BaseStrategy):
-    def run(self, layer_spec, graph_spec, input_results, line_offset=None):    
+    def run(self, layer_spec, graph_spec, input_results, random_number_generator, line_offset=None):    
         return self.get_default()
 
 
@@ -55,15 +55,15 @@ class JinjaLayerStrategy(BaseStrategy):
     def __init__(self, script_factory):
         self._script_factory = script_factory
 
-    def run(self, layer_spec, graph_spec, input_results, line_offset=None):
+    def run(self, layer_spec, graph_spec, input_results, random_number_generator, line_offset=None):
         layer_class, line_offset, code_error, instantiation_error = self._get_layer_class(layer_spec, graph_spec, input_results)
         if layer_class is None:
             return self.get_default(code_error=code_error, instantiation_error=instantiation_error)
         else:
-            return self._run_internal(layer_spec, graph_spec, layer_class, input_results, line_offset=line_offset)
+            return self._run_internal(layer_spec, graph_spec, layer_class, input_results, random_number_generator, line_offset=line_offset)
 
     @abstractmethod
-    def _run_internal(self, layer_spec, graph_spec, layer_class, input_results, line_offset):
+    def _run_internal(self, layer_spec, graph_spec, layer_class, input_results, random_number_generator, line_offset):
         raise NotImplementedError
     
     def _get_layer_code(self, layer_id, layer_spec, graph_spec):

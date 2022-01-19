@@ -1,4 +1,5 @@
 import logging
+import hashlib
 
 import numpy as np
 import tensorflow as tf
@@ -12,7 +13,7 @@ from perceptilabs.lwcore.utils import exception_to_error
 logger = logging.getLogger(__name__)
 
 class Tf2xInnerStrategy(JinjaLayerStrategy):
-    def _run_internal(self, layer_spec, graph_spec, layer_class, input_results, line_offset=None):
+    def _run_internal(self, layer_spec, graph_spec, layer_class, input_results, random_number_generator, line_offset=None):
         """ Returns a LayerResults obj. containing shapes and previews for a layer
 
         Args:
@@ -25,7 +26,8 @@ class Tf2xInnerStrategy(JinjaLayerStrategy):
             an instance of LayerResults 
         """
         try:
-            layer_instance = self._instantiate_layer(layer_class, layer_spec.name)
+            layer_instance = self._instantiate_layer(
+                layer_class, layer_spec.name, random_number_generator)
             input_tensors, has_missing_inputs = self._get_input_tensors(layer_spec, input_results)
 
             if has_missing_inputs:
@@ -39,10 +41,12 @@ class Tf2xInnerStrategy(JinjaLayerStrategy):
 
     def _make_results(self, layer_instance, input_tensors, layer_name):
         """ Evaluate the tensors of a layer and put them in the results struct """
+
         try:
             _ = layer_instance(input_tensors) # Note: we use the SAMPLE tensors and NOT the actual OUTPUT tensors 
             sample_tensors = layer_instance.get_sample()
-
+            self._maybe_print_weights_hash(layer_name, layer_instance)
+            
             outputs = {
                 key: tensor.numpy()[0] # Drop batch dimension
                 for key, tensor in sample_tensors.items()
@@ -66,6 +70,16 @@ class Tf2xInnerStrategy(JinjaLayerStrategy):
             )
             return results
 
+    def _maybe_print_weights_hash(self, layer_name, layer_instance):
+        hasher = hashlib.md5()
+
+        if layer_instance.trainable_variables:
+            for key, value in layer_instance.trainable_variables.items():
+                hasher.update(key.encode())
+                hasher.update(value.numpy().tobytes())
+
+            logger.info(f"Weights hash for {layer_name}: {hasher.hexdigest()}")
+
     def _get_input_tensors(self, layer_spec, input_results):
         """ Transforms LayerResults of input layers into tf.Tensors """
         input_tensors = {}
@@ -86,8 +100,15 @@ class Tf2xInnerStrategy(JinjaLayerStrategy):
         """ Returns false if some required variable is missing """
         return sample is None or source_var not in sample    
 
-    def _instantiate_layer(self, layer_class, layer_name):
-        """ Instantiate class and log errors """
+    def _instantiate_layer(self, layer_class, layer_name, random_number_generator):
+        """ Instantiate class and log errors """        
+        if random_number_generator:
+            seed = random_number_generator.uniform(shape=(), minval=None, maxval=None, dtype=tf.int32).numpy()
+            tf.random.set_seed(seed)
+            logger.info(f"TensorFlow random seed set to {seed} before instantiating layer {layer_name}")
+        else:
+            logger.info(f"TensorFlow random seed not set before instantiating layer {layer_name}")
+            
         try:
             layer_instance = layer_class()
         except Exception as e:

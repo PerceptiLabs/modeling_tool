@@ -111,6 +111,61 @@ def graph_spec():
 
 
 @pytest.fixture()
+def graph_spec_pair():
+
+    def create(n_neurons):
+    
+        # Create the second network
+        gsb = GraphSpecBuilder()    
+        id1 = gsb.add_layer(
+            'IoInput',
+            settings={'id_': 'input0', 'datatype': 'image', 'feature_name': 'x'}
+        )
+        id2 = gsb.add_layer(
+            'DeepLearningFC',
+            settings={'id_': 'fc0', 'n_neurons': 10}
+        )    
+        id3 = gsb.add_layer(
+            'DeepLearningFC',
+            settings={'id_': 'fc1', 'n_neurons': n_neurons}
+        )    
+        id4 = gsb.add_layer(
+            'DeepLearningFC',
+            settings={'id_': 'fc2', 'n_neurons': 1}
+        )    
+        id5 = gsb.add_layer(
+            'IoOutput',
+            settings={'id_': 'output0', 'datatype': 'categorical', 'feature_name': 'y'}
+        )
+
+        # Connect the layers
+        gsb.add_connection(
+            source_id=id1, source_var='output',
+            dest_id=id2, dest_var='input'
+        )
+        gsb.add_connection(
+            source_id=id2, source_var='output',
+            dest_id=id3, dest_var='input'
+        )
+        gsb.add_connection(
+            source_id=id3, source_var='output',
+            dest_id=id4, dest_var='input'
+        )
+        gsb.add_connection(
+            source_id=id4, source_var='output',
+            dest_id=id5, dest_var='input'
+        )
+        return gsb.build()
+
+
+    gs1 = create(n_neurons=1)
+    gs2 = create(n_neurons=2)    
+    
+    return (gs1, gs2)
+
+
+
+@pytest.fixture()
 def graph_spec_partial():
     gsb = GraphSpecBuilder()
     # Create the layers
@@ -458,4 +513,30 @@ def test_output_layer_raises_error_if_inputs_shape_doesnt_match(data_loader, gra
     assert results['2'].has_errors
 
 
+def test_two_runs_give_same_results(data_loader, graph_spec):
+    lw_core = LightweightCore(data_loader)
+    
+    res1 = lw_core.run(graph_spec)
+    res2 = lw_core.run(graph_spec)
 
+    assert res1['input0'] == res2['input0']
+    assert res1['reshape0'] == res2['reshape0']
+    assert res1['fc0'] == res2['fc0']
+    assert res1['output0'] == res2['output0']                
+
+
+def test_changing_settings_doesnt_affect_previous_layers(data_loader, graph_spec_pair):
+    gs1, gs2 = graph_spec_pair
+    lw_core = LightweightCore(data_loader)
+
+    res1 = lw_core.run(gs1)
+    res2 = lw_core.run(gs2)
+
+    assert res1['input0'] == res2['input0']
+    assert res1['fc0'] == res2['fc0']
+    assert res1['fc1'] != res2['fc1']    
+    assert res1['fc2'] != res2['fc2']
+    assert res1['output0'] == res2['output0']                
+    
+
+    

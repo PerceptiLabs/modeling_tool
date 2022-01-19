@@ -10,6 +10,7 @@ from collections import namedtuple
 import numpy as np
 from tempfile import NamedTemporaryFile
 from typing import Tuple, Dict, List
+import tensorflow as tf
 
 from perceptilabs.utils import stringify, add_line_numbering, Timer
 from perceptilabs.graph.splitter import GraphSplitter
@@ -39,8 +40,11 @@ class LightweightCore:
         self._script_factory = ScriptFactory()
         self._data_loader = data_loader
 
-    def run(self, graph_spec):
+    def run(self, graph_spec, seed=123):
         t0 = time.perf_counter()
+
+        random_number_generator = None if seed is None else tf.random.Generator.from_seed(seed)
+
         subgraph_specs = graph_spec.split(GraphSplitter())
         all_results = {}
         all_durations = {}
@@ -50,7 +54,9 @@ class LightweightCore:
         dataset_hash = self._data_loader.settings.compute_hash() if self._data_loader else ''
 
         for subgraph_spec in subgraph_specs:
-            subgraph_results, subgraph_durations, subgraph_used_cache = self._run_subgraph(subgraph_spec, data_batch, dataset_hash)
+            subgraph_results, subgraph_durations, subgraph_used_cache = self._run_subgraph(
+                subgraph_spec, data_batch, dataset_hash, random_number_generator)
+            
             all_results.update(subgraph_results)
             all_durations.update(subgraph_durations)
             all_used_cache.update(subgraph_used_cache)
@@ -62,12 +68,13 @@ class LightweightCore:
         self._maybe_print_results(graph_spec, all_results)
         return all_results
 
-    def _run_subgraph(self, subgraph_spec, data_batch, dataset_hash):
+    def _run_subgraph(self, subgraph_spec, data_batch, dataset_hash, random_number_generator):
         all_results = {}
         all_durations = {}
         all_used_cache = {}
         for layer_spec in subgraph_spec.get_ordered_layers():
-            layer_result, durations, used_cache = self._get_layer_results(layer_spec, subgraph_spec, all_results, data_batch, dataset_hash)
+            layer_result, durations, used_cache = self._get_layer_results(
+                layer_spec, subgraph_spec, all_results, data_batch, dataset_hash, random_number_generator)
 
             if logger.isEnabledFor(logging.DEBUG) and layer_result.has_errors:
                 print_result_errors(layer_spec, layer_result)
@@ -88,7 +95,7 @@ class LightweightCore:
         return ['previews', hasher.hexdigest()]
 
 
-    def _get_layer_results(self, layer_spec, subgraph_spec, ancestor_results, data_batch, dataset_hash):
+    def _get_layer_results(self, layer_spec, subgraph_spec, ancestor_results, data_batch, dataset_hash, random_number_generator):
         timer = Timer()
         desc = f"layer {layer_spec.id_} [{layer_spec.type_}]."
         data_batch_hash = self._compute_batch_data_hash(data_batch)
@@ -96,7 +103,8 @@ class LightweightCore:
 
         def calculate_result():
             with timer.wrap('compute'):
-                return self._compute_layer_results(layer_spec, subgraph_spec, ancestor_results, data_batch)
+                return self._compute_layer_results(
+                    layer_spec, subgraph_spec, ancestor_results, data_batch, random_number_generator)
 
 
         with timer.wrap('all'):
@@ -110,7 +118,7 @@ class LightweightCore:
         durations = {**durations, 'used_cache': used_cache, 'type': layer_spec.type_}
         return layer_result, durations, used_cache
 
-    def _compute_layer_results(self, layer_spec, graph_spec, all_results, data_batch):
+    def _compute_layer_results(self, layer_spec, graph_spec, all_results, data_batch, random_number_generator):
         """ Find and invoke a strategy for computing the results of a layer """
         input_results = {
             from_id: all_results[from_id]
@@ -119,7 +127,7 @@ class LightweightCore:
         strategy = self._get_layer_strategy(layer_spec, data_batch, self._script_factory)
 
         try:
-            results = strategy.run(layer_spec, graph_spec, input_results)
+            results = strategy.run(layer_spec, graph_spec, input_results, random_number_generator)
         except:
             logger.exception(f"Failed running strategy '{strategy.__class__.__name__}' on layer {layer_spec.id_}")
             raise
