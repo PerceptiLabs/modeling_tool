@@ -26,5 +26,5 @@ module.exports = merge(prodEnv, {
   ENABLE_BILLING_LINK: '"true"',
   ENABLE_SERVING: '"true"',
   ENABLE_FOLDER_LOADING: '"true"',
-  NO_KC: '"false"',
+  NO_KC: '"true"',
 });
