@@ -6,7 +6,7 @@ div
         v-for="(tab, i) in tabSet",
         :key="tab.i",
         :class="{ disable: tabSelected != tab }",
-        :disabled="(tab === 'Code' && isTutorial) || disableSettings",
+        :disabled="(tab === 'Code') || disableSettings",
         @click="setTab(tab)"
       )
         h4(v-html="tab")
@@ -26,7 +26,6 @@ div
           button.btn.btn--primary.btn--disabled(
             type="button",
             @click="hideAllWindow",
-            :disabled="isTutorial"
           ) Cancel
           button.btn.btn--primary(
             type="button",
@@ -79,11 +78,6 @@ export default {
       tabSelected: "",
       disableSettings: false,
     };
-  },
-  computed: {
-    isTutorial() {
-      return this.$store.getters["mod_tutorials/getIsTutorialMode"];
-    },
   },
   watch: {
     showPreview(newVal) {

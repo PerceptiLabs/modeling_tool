@@ -192,9 +192,6 @@ const actions = {
   NET_trainingDone({ commit, dispatch }) {
     commit("GP_showNetResult", true);
     dispatch("mod_api/API_getBatchPreviewSample", null, { root: true });
-    dispatch("mod_tutorials/setCurrentView", "tutorial-general-results-view", {
-      root: true,
-    });
     dispatch("mod_workspace/SET_openTest", false, { root: true });
   },
   SET_onlineStatus({ commit }, value) {

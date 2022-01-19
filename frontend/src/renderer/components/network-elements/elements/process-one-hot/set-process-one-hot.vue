@@ -14,7 +14,7 @@
 <script>
 import mixinSet from "@/core/mixins/net-element-settings.js";
 import mixinFocus from "@/core/mixins/net-element-settings-input-focus.js";
-import { mapGetters, mapActions } from "vuex";
+import { mapActions } from "vuex";
 
 export default {
   name: "SetProcessOneHot",
@@ -32,11 +32,6 @@ export default {
   },
   mounted() {
     this.saveSettingsToStore("Settings");
-  },
-  computed: {
-    ...mapGetters({
-      isTutorialMode: "mod_tutorials/getIsTutorialMode"
-    })
   },
   methods: {
     ...mapActions({

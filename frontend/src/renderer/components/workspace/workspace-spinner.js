@@ -26,7 +26,6 @@ const workspaceSpinner = {
   methods: {
     ...mapActions({
       pauseTraining:        'mod_api/API_pauseTraining',
-      tutorialStatTabSetup: 'mod_tutorials/tutorial-statistics-tabs-setup'
     }),
     watch_doShowCharts() {
       if (this.counterHideSpinner > 1) {
@@ -34,7 +33,6 @@ const workspaceSpinner = {
         this.counterHideSpinner = 0
 
         this.$nextTick(() => {
-          this.tutorialStatTabSetup();
           // is used for zoom map on statistics page
           this.$store.dispatch('mod_workspace/SET_zoomToFitMapInStatistics');
         });

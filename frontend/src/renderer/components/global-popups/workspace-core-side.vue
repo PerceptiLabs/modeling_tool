@@ -42,7 +42,6 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode:   'mod_tutorials/getIsTutorialMode',
       currentNetwork:   'mod_workspace/GET_currentNetwork',
       networkHasErrors: 'mod_workspace-notifications/getHasErrors'
     }),
@@ -64,8 +63,6 @@ export default {
       SET_openTest:             'mod_workspace/SET_openTest',
       SET_networkSnapshot:      'mod_workspace/SET_networkSnapshot',
       setViewType:              'mod_workspace/setViewType',
-      setCurrentView:           'mod_tutorials/setCurrentView',
-      setChecklistItemComplete: 'mod_tutorials/setChecklistItemComplete',
     }),    
     closePopup() {
       this.GP_showCoreSideSettings(false);
@@ -74,7 +71,6 @@ export default {
       this.tabSelected = i;
     },
     cancelTraining() {
-      this.setCurrentView('tutorial-workspace-view');
       this.closePopup();
     },
     startTraining(withWeights = false) {
@@ -92,10 +88,6 @@ export default {
           this.set_showTrainingSpinner(true);
           this.setSidebarStateAction(false);
           this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
-          if(!this.networkHasErrors(this.currentNetwork.networkID)) {
-            this.setChecklistItemComplete({ itemId: 'startTraining' });
-          }
-          this.setCurrentView('tutorial-statistics-view');
         });
     }
   }

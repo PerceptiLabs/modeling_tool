@@ -54,15 +54,11 @@
     computed: {
       ...mapGetters({
         user:               'mod_user/GET_userProfile',
-        isTutorialMode:     'mod_tutorials/getIsTutorialMode',
-        getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',
-
       })
     },
     methods: {
       ...mapActions({
         popupConfirm:     'globalView/GP_confirmPopup',
-        setNextStep:      'mod_tutorials/setNextStep',
       }),
       toggleProfile(visible = null) {
         if(visible)

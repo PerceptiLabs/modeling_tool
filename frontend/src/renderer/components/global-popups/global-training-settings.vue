@@ -11,7 +11,7 @@
           info-tooltip(
             text="Number of times you want to run through the entire dataset. The more number of times, the better the model will learn you training data. Just be aware that training too long may overfit your model to your training data."
           ) Epochs:
-        #tutorial_epochs.form_input(data-tutorial-hover-info)
+        #tutorial_epochs.form_input
           input.normalize-inputs(
             type="number"
             name="Epochs"
@@ -74,7 +74,7 @@
           info-tooltip(
             text="The exponential decay rate for the 1st moment estimates"
           ) Beta1:
-        .form_input(data-tutorial-hover-info)
+        .form_input
           input.normalize-inputs(
             type="number"
             name="Beta1"
@@ -87,7 +87,7 @@
           info-tooltip(
             text="The exponential decay rate for the 2nd moment estimates"
           ) Beta2:
-        .form_input(data-tutorial-hover-info)
+        .form_input
           input.normalize-inputs(
             type="number"
             name="Beta2"
@@ -101,7 +101,7 @@
           info-tooltip(
             text="Accelerates the gradient descent in the relevant direction and dampens oscillations"
           ) Momentum:
-        .form_input(data-tutorial-hover-info)
+        .form_input
           input.normalize-inputs(
             type="number"
             name="Momentum"

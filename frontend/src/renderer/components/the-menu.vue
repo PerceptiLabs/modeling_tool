@@ -4,7 +4,6 @@ nav.app-header_nav(v-hotkey="keymap")
     li.header-nav_item(v-for="(item, i) in navMenu", :key="i")
       button.btn.btn--link.header-nav_btn(type="button", v-if="item.visible") {{ item.label }}
       ul.header-nav_sublist.sublist--top(
-        :data-tutorial-marker="'MenuItem_' + item.label",
         :data-testing-target="'MenuItem_' + item.label"
       )
         li.header-nav_item(
@@ -42,7 +41,6 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode: "mod_tutorials/getIsTutorialMode",
       isLogin: "mod_user/GET_userIsLogin",
       networkHistory: "mod_workspace-history/GET_currentNetHistory",
       isDefaultProjectMode: "mod_project/GET_isDefaultProjectMode",
@@ -53,9 +51,6 @@ export default {
       isSettingInputFocused: state => state.mod_workspace.isSettingInputFocused,
       viewType: state => state.mod_workspace.viewType,
     }),
-    isTutorialActive() {
-      return this.isTutorialMode || this.isStoryBoard;
-    },
     showExport() {
       return !isNoKeyCloakEnabled();
     },
@@ -109,7 +104,6 @@ export default {
     ...mapMutations({
       saveNetwork: "mod_events/set_saveNetwork",
       saveNetworkAs: "mod_events/set_saveNetworkAs",
-      setTutorialMode: "mod_tutorials/setTutorialMode",
     }),
     ...mapActions({
       infoPopup: "globalView/GP_infoPopup",
@@ -124,7 +118,6 @@ export default {
       toPrevStepHistoryMutation: "mod_workspace-history/TO_prevStepHistory",
       toNextStepHistoryMutation: "mod_workspace-history/TO_nextStepHistory",
       setActivePageAction: "modal_pages/setActivePageAction",
-      setCurrentView: "mod_tutorials/setCurrentView",
     }),
     HCSelectAll() {
       if (!this.isSettingInputFocused) {

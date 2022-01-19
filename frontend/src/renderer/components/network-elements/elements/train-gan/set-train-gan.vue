@@ -3,7 +3,7 @@ div
   .settings-layer_section
     .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
       .form_label Switch:
-      #tutorial_labels.form_input(data-tutorial-hover-info)
+      #tutorial_labels.form_input
         base-select(
           v-model="settings.switch_layer",
           :select-options="allSwitchLayers"
@@ -11,7 +11,7 @@ div
   .settings-layer_section
     .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
       .form_label Real Data:
-      #tutorial_labels.form_input(data-tutorial-hover-info)
+      #tutorial_labels.form_input
         base-select(
           v-model="settings.real_data_layer",
           :select-options="allRealDataLayers"
@@ -29,7 +29,7 @@ div
   // .settings-layer_section
   //   .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
   //     .form_label Cost function:
-  //     #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
+  //     #tutorial_cost-function.tutorial-relative.form_input
   //       base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
   //         span Cross-Entropy
   //       base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
@@ -48,7 +48,7 @@ div
   .settings-layer_section
     .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
       .form_label Optimizer:
-      #tutorial_optimizer.form_input(data-tutorial-hover-info)
+      #tutorial_optimizer.form_input
         base-radio(
           group-name="group1",
           value-input="ADAM",
@@ -124,7 +124,7 @@ div
   .settings-layer_section
     .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
       .form_label Learning rate:
-      #tutorial_learning_rate.form_input(data-tutorial-hover-info)
+      #tutorial_learning_rate.form_input
         input(
           type="number",
           v-model="settings.Learning_rate",
@@ -144,9 +144,7 @@ div
   .settings-layer_section
     .form_row
       .form_label Additional Stop Condition:
-      #tutorial_stop-condition.tutorial-relative.form_input(
-        data-tutorial-hover-info
-      )
+      #tutorial_stop-condition.tutorial-relative.form_input
         base-radio(
           group-name="group2",
           value-input="Epochs",
@@ -253,7 +251,6 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode: "mod_tutorials/getIsTutorialMode",
       currentNetworkList: "mod_workspace/GET_currentNetworkElementList"
     })
   },

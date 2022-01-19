@@ -21,7 +21,6 @@ div
         .button-container
           button.btn.btn--primary(
             @click="handleAddNetworkModal",
-            :data-tutorial-target="'tutorial-model-hub-new-button'"
           )
             span.btn-round-icon
               img(src="/static/img/add-button.svg")
@@ -260,7 +259,6 @@ export default {
     ...mapGetters({
       user: "mod_user/GET_userProfile",
       currentProject: "mod_project/GET_project",
-      getCurrentStepCode: "mod_tutorials/getCurrentStepCode",
       isEnterpriseMode: "globalView/get_isEnterpriseApp",
       allDatasets: "mod_datasets/GET_datasets",
       projectPath: "mod_project/GET_projectPath",
@@ -285,19 +283,6 @@ export default {
     },
   },
   watch: {
-    getCurrentStepCode: {
-      handler(newVal, oldVal) {
-        if (!this.isTutorialMode) {
-          return;
-        }
-        if (newVal !== "tutorial-model-hub-new-button") {
-          return;
-        }
-
-        this.activateCurrentStep();
-      },
-      immediate: true,
-    },
     "allDatasets.length": {
       handler(newVal, oldVal) {
         if (newVal !== 0 && newVal !== oldVal) {
@@ -318,8 +303,6 @@ export default {
       setActivePageAction: "modal_pages/setActivePageAction",
       delete_networkById: "mod_workspace/DELETE_networkById",
       closeStatsTestViews: "mod_workspace/SET_statisticsAndTestToClosed",
-      setCurrentView: "mod_tutorials/setCurrentView",
-      setNextStep: "mod_tutorials/setNextStep",
       deleteDataset: "mod_datasets/deleteDataset",
       refreshDatasets: "mod_datasets/getDatasets",
       SET_openStatistics: "mod_workspace/SET_openStatistics",
@@ -350,10 +333,6 @@ export default {
         // this.SET_openStatistics(false);
         // this.SET_openTest(false);
         this.$router.push({ name: "app" });
-
-        this.$nextTick(() => {
-          this.setCurrentView("tutorial-workspace-view");
-        });
       }
     },
     openTemplate(path) {
@@ -467,11 +446,6 @@ export default {
       }
     },
     handleAddNetworkModal() {
-      this.setNextStep({
-        currentStep: "tutorial-model-hub-new-button",
-        activateNextStep: false, // or extra notification will appear
-      });
-
       // open modal
       this.popupNewModel(true);
     },
@@ -814,7 +788,6 @@ export default {
     // When the stats and test views are their own routes,
     // a better alternative would be to put a lot of the
     // following in the router.
-    this.setCurrentView("tutorial-model-hub-view");
     this.expandDatasetsModels();
   },
   filters: {

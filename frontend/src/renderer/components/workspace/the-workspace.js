@@ -114,7 +114,6 @@ export default {
   },
   computed: {
     ...mapGetters({
-      currentSelectedEl:  'mod_workspace/GET_currentSelectedEl',
       currentElList:      'mod_workspace/GET_currentNetworkElementList',
       testIsOpen:         'mod_workspace/GET_testIsOpen',
       statusNetworkCore:  'mod_workspace/GET_networkCoreStatus',
@@ -123,15 +122,10 @@ export default {
       currentStatsIndex:  'mod_workspace/GET_currentStatsIndex',
       currentTestIndex:   'mod_workspace/GET_currentTestIndex',
       getViewType:        'mod_workspace/GET_viewType',
-
-      isTutorialMode:     'mod_tutorials/getIsTutorialMode',
-      getShowTutorialTips:'mod_tutorials/getShowTutorialTips',
-      getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',
       emptyNavigationMode:'mod_empty-navigation/getEmptyScreenMode',
       isTraining:         'mod_workspace/GET_networkIsTraining',
       currentNetwork:     'mod_workspace/GET_currentNetwork',
       getIsWorkspaceDragEvent: 'mod_events/getIsWorkspaceDragEvent',
-      
       modelTrainingSettings:'mod_workspace/GET_modelTrainingSetting'
     }),
     ...mapState({
@@ -292,15 +286,6 @@ export default {
           
         this.net_trainingDone();
         this.event_startDoRequest(false);
-        this.setChecklistItemComplete({ itemId: 'finishTraining' });
-      }
-    },
-    currentSelectedEl(newStatus) {
-      if(newStatus.length > 0
-        && this.isTutorialMode
-        && this.tutorialActiveStep === 'training'
-      ) {
-        // add tutorial trigger here
       }
     },
     workspace(newVal) {
@@ -329,19 +314,6 @@ export default {
       this.isNeedWait
         ? this.currentData = this.buffer
         : null
-    },
-    getCurrentStepCode: {
-      handler(newVal, oldVal) {
-        if (!this.getShowTutorialTips) {
-          this.deactivateCurrentStep();
-          return;
-        } else if (newVal === 'tutorial-workspace-layer-data' && isEnvDataWizardEnabled()) {
-          this.setNextStep({
-            currentStep: 'tutorial-workspace-layer-data'
-          })
-        }
-      },
-      immediate: true
     },
     statusTraining() {
       switch (this.statusNetworkCore) {
@@ -389,10 +361,6 @@ export default {
       event_startDoRequest:       'mod_workspace/EVENT_startDoRequest',
       set_chartRequests:          'mod_workspace/SET_chartsRequestsIfNeeded',
       closeStatsTestViews:        'mod_workspace/SET_statisticsAndTestToClosed',
-      activateCurrentStep:        'mod_tutorials/activateCurrentStep',
-      setNextStep:                'mod_tutorials/setNextStep',
-      deactivateCurrentStep:      'mod_tutorials/deactivateCurrentStep',
-      setChecklistItemComplete:   'mod_tutorials/setChecklistItemComplete',
       pushSnapshotToHistory:      'mod_workspace-history/PUSH_newSnapshot',
       setNotificationWindowState: 'mod_workspace-notifications/setNotificationWindowState',
       popupNewModel:              'globalView/SET_newModelPopup',
@@ -452,12 +420,6 @@ export default {
       return this.$store.getters['mod_workspace-changes/get_hasUnsavedChanges'](networkId);
 
     },
-    // resize(newRect, i) {s
-    //   //console.log(newRect);
-    //   //console.log(i);
-    //   // this.network[i].meta.top = newRect.top;
-    //   // this.network[i].meta.left = newRect.left;
-    // },
     setTabNetwork(index) {
       this.set_showTrainingSpinner(false);
       this.set_currentNetwork(index);
@@ -766,10 +728,6 @@ export default {
           if (result.hasCheckpoint) {
             this.trainStartWithCheckpoint();
 
-            this.$nextTick(() => {
-              this.setNextStep({currentStep:'tutorial-workspace-start-training'});
-              this.$store.dispatch('mod_tutorials/setCurrentView', 'tutorial-core-side-view');
-            });
           } else {
             this.trainStartWithoutCheckpoint();
           }
@@ -804,16 +762,6 @@ export default {
           this.$store.dispatch('mod_workspace/SET_openTest', null);
           this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
           this.$store.dispatch('globalView/hideSidebarAction', false);
-
-          if (!this.$store.getters['mod_workspace-notifications/getHasErrors'](this.currentNetwork.networkID)) {
-            this.$store.dispatch('mod_tutorials/setChecklistItemComplete', { itemId: 'startTraining' });
-          }
-          this.$store.dispatch('mod_tutorials/setCurrentView', 'tutorial-statistics-view');
-
-          this.$nextTick(() => {
-            this.setNextStep({currentStep:'tutorial-workspace-start-training'});
-            this.$store.dispatch('mod_tutorials/setCurrentView', 'tutorial-statistics-view');
-          });
         });
     },
     validateNetwork() {

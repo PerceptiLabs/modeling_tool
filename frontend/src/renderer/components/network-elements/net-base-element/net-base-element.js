@@ -87,7 +87,6 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode: "mod_tutorials/getIsTutorialMode",
       isTraining: "mod_workspace/GET_networkIsTraining",
       editIsOpen: "mod_workspace/GET_networkIsOpen",
       currentSelectedEl: "mod_workspace/GET_currentSelectedEl",
@@ -200,11 +199,6 @@ export default {
     },
     isSelectedEl(newVal) {
       newVal ? this.mousedownOutsideBefore() : null;
-    },
-    "$store.state.mod_events.globalPressKey.esc": {
-      handler() {
-        // if(!this.isTutorialMode) this.hideAllWindow();
-      }
     },
     "$store.state.mod_events.globalPressKey.del": {
       handler() {

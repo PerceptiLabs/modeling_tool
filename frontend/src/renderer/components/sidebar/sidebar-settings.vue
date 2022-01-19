@@ -165,7 +165,6 @@ export default {
   methods: {
     ...mapActions({
       popupConfirm: "globalView/GP_confirmPopup",
-      setNextStep: "mod_tutorials/setNextStep"
     }),
     onOpenCodeButtonClick() {
       if (this.codeWindowState && this.hasUnsavedChanges) {
@@ -184,8 +183,6 @@ export default {
       if (!this.selectedEl) {
         return;
       }
-
-      this.setNextStep({ currentStep: "tutorial-workspace-settings" });
 
       this.$store.dispatch("mod_workspace-code-editor/openEditor", {
         networkId: this.currentNetworkId,

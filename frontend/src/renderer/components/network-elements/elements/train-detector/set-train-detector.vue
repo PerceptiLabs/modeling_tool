@@ -3,7 +3,7 @@ div
   .settings-layer_section
     .form_row
       .form_label(v-tooltip-interactive:right="interactiveInfo.epochs") Epochs:
-      #tutorial_epochs.form_input(data-tutorial-hover-info)
+      #tutorial_epochs.form_input
         input(
           type="number",
           v-model="settings.Epochs",
@@ -13,7 +13,7 @@ div
   .settings-layer_section
     .form_row
       .form_label(v-tooltip-interactive:right="interactiveInfo.grid_size") Grid Size:
-      #tutorial_grid_size.form_input(data-tutorial-hover-info)
+      #tutorial_grid_size.form_input
         input(
           type="number",
           v-model="settings.grid_size",
@@ -23,7 +23,7 @@ div
   .settings-layer_section
     .form_row
       .form_label(v-tooltip-interactive:right="interactiveInfo.batch_size") Batch Size:
-      #tutorial_batch_size.form_input(data-tutorial-hover-info)
+      #tutorial_batch_size.form_input
         input(
           type="number",
           v-model="settings.batch_size",
@@ -33,7 +33,7 @@ div
   .settings-layer_section
     .form_row
       .form_label(v-tooltip-interactive:right="interactiveInfo.num_box") Number of Boxes:
-      #tutorial_num_box.form_input(data-tutorial-hover-info)
+      #tutorial_num_box.form_input
         input(
           type="number",
           v-model="settings.num_box",
@@ -43,7 +43,7 @@ div
   .settings-layer_section
     .form_row
       .form_label(v-tooltip-interactive:right="interactiveInfo.threshold") Threshold:
-      #tutorial_threshold.form_input(data-tutorial-hover-info)
+      #tutorial_threshold.form_input
         input(
           type="number",
           v-model="settings.threshold",
@@ -54,18 +54,18 @@ div
     .form_row
       .form_label(v-tooltip-interactive:right="interactiveInfo.lambda_class") λ
         sub classification:
-      #tutorial_lambda_class.form_input(data-tutorial-hover-info)
+      #tutorial_lambda_class.form_input
         input(type="number", v-model="settings.lambda_class")
   .settings-layer_section
     .form_row
       .form_label(v-tooltip-interactive:right="interactiveInfo.lambda_noobj") λ
         sub non object:
-      #tutorial_lambda_noobj.form_input(data-tutorial-hover-info)
+      #tutorial_lambda_noobj.form_input
         input(type="number", v-model="settings.lambda_noobj")
   .settings-layer_section
     .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
       .form_label Optimizer:
-      #tutorial_optimizer.form_input(data-tutorial-hover-info)
+      #tutorial_optimizer.form_input
         base-radio(
           group-name="group1",
           value-input="ADAM",
@@ -123,7 +123,7 @@ div
       .form_row
         .form_label(v-tooltip-interactive:right="interactiveInfo.lambda_class") λ
           sub classification:
-        #tutorial_lambda_class.form_input(data-tutorial-hover-info)
+        #tutorial_lambda_class.form_input
           input(
             type="number",
             v-model="settings.lambda_class",
@@ -134,7 +134,7 @@ div
       .form_row
         .form_label(v-tooltip-interactive:right="interactiveInfo.lambda_noobj") λ
           sub non object:
-        #tutorial_lambda_noobj.form_input(data-tutorial-hover-info)
+        #tutorial_lambda_noobj.form_input
           input(
             type="number",
             v-model="settings.lambda_noobj",
@@ -163,7 +163,7 @@ div
   .settings-layer_section
     .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
       .form_label Learning rate:
-      #tutorial_learning_rate.form_input(data-tutorial-hover-info)
+      #tutorial_learning_rate.form_input
         input(
           type="number",
           v-model="settings.Learning_rate",
@@ -173,9 +173,7 @@ div
   .settings-layer_section
     .form_row
       .form_label Additional Stop Condition:
-      #tutorial_stop-condition.tutorial-relative.form_input(
-        data-tutorial-hover-info
-      )
+      #tutorial_stop-condition.tutorial-relative.form_input
         base-radio(
           group-name="group2",
           value-input="Epochs",
@@ -303,7 +301,6 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode: "mod_tutorials/getIsTutorialMode",
       currentNetworkList: "mod_workspace/GET_currentNetworkElementList"
     }),
     inputId() {

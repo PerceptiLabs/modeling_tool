@@ -17,7 +17,7 @@
 
 <script>
 import ChartSwitch from "@/components/charts/chart-switch.vue";
-import { mapActions, mapGetters } from "vuex";
+import { mapActions } from "vuex";
 export default {
   name: "SidebarSettingPreview",
   inject: [],
@@ -34,9 +34,6 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      isTutorialMode: "mod_tutorials/getIsTutorialMode"
-    }),
     layerId() {
       return this.currentEl.layerId;
     },

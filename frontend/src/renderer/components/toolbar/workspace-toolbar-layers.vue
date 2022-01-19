@@ -10,7 +10,6 @@
   )
     .layer-list-header(
       :class="[{ active: showElementsInLayer(layer) }]",
-      :data-tutorial-marker="'LayerMenuItem_' + layer.tooltip"
     )
       .layer-list-header-label.bold {{ layer.tooltip }}
       svg(
@@ -34,7 +33,6 @@
         @mouseenter="mouseOver(element)",
         @mouseleave="mouseOut",
         @mousedown="onLayerClick($event, element)",
-        :data-tutorial-target="element === 'DataData' ? 'tutorial-workspace-layer-data' : ''",
         ref="referenceMenuItem"
       )
         component(
@@ -46,7 +44,6 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from "vuex";
 import { generateID, isEnvDataWizardEnabled } from "@/core/helpers.js";
 
 import DeepLearningFC from "@/components/network-elements/elements/deep-learning-fc/view-deep-learning-fc.vue";
@@ -185,9 +182,6 @@ export default {
     };
   },
   methods: {
-    ...mapActions({
-      setNextStep: "mod_tutorials/setNextStep",
-    }),
     toggleElList(idx) {
       if (this.layersbarList[idx].showEl) {
         this.layersbarList[idx].showEl = false;
@@ -199,7 +193,6 @@ export default {
         );
       }
 
-      this.setNextStep({ currentStep: "tutorial-workspace-layer-menu" });
     },
     handleFocusOut() {
       this.layersbarList.forEach((item) => {
@@ -409,15 +402,7 @@ export default {
       if (layer.tooltip !== "Data") {
         return layer.showEl;
       }
-
-      if (
-        this.getShowTutorialTips &&
-        this.getCurrentStepCode === "tutorial-workspace-layer-data"
-      ) {
-        return true;
-      } else {
-        return layer.showEl;
-      }
+      return layer.showEl;
     },
     handleClickWithoutElementSelected(event) {
       if (this.clickedElementName === null && this.clonedElement === null) {
@@ -446,10 +431,6 @@ export default {
     },
   },
   computed: {
-    ...mapGetters({
-      getCurrentStepCode: "mod_tutorials/getCurrentStepCode",
-      getShowTutorialTips: "mod_tutorials/getShowTutorialTips",
-    }),
     networkScale() {
       return this.$store.getters["mod_workspace/GET_currentNetworkZoom"];
     },
@@ -462,27 +443,6 @@ export default {
     if (!isEnvDataWizardEnabled()) {
       return;
     }
-
-    // const ioDropdown = {
-    //   tooltip: 'IO',
-    //   tooltip_interactive: {
-    //     title: 'IO',
-    //     text: 'IO components'
-    //   },
-    //   layerClass: 'net-element-custom',
-    //   iconClass: 'icon-train-group',
-    //   childListClass: '',
-    //   showEl: false,
-    //   networkElements: [ 'IoInput', 'IoOutput' ],
-    //   id:'tutorial_io',
-    //   color: 'rgba(204, 204, 204, 0.7)',
-    //   borderColor: 'rgba(204, 204, 204, 0.2)',
-    //   bottomColor: 'rgba(204, 204, 204, 0.4)'
-    // }
-    //
-    // if (!this.layersbarList.some(listItem => listItem.tooltip === 'IO')) {
-    //   this.layersbarList.push(ioDropdown);
-    // }
   },
 };
 </script>

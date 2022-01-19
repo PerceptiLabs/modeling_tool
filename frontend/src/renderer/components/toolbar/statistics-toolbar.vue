@@ -100,7 +100,6 @@ export default {
       stopTraining:         'mod_api/API_stopTraining',
       skipValidTraining:    'mod_api/API_skipValidTraining',
       SET_openStatistics:   'mod_workspace/SET_openStatistics',
-      setCurrentView:       'mod_tutorials/setCurrentView',
       showInfoPopup:        'globalView/GP_infoPopup',
 
       API_startTraining:        'mod_api/API_startTraining',
@@ -146,7 +145,6 @@ export default {
       this.$store.dispatch('mod_workspace/setViewType', 'model');
       this.$store.dispatch("mod_workspace/SET_currentModelIndex", this.currentNetworkIndex);      
       this.$store.commit('mod_workspace/update_network_meta', {key: 'hideModel', networkID: this.currentNetwork.networkID, value: false});
-      this.setCurrentView('tutorial-workspace-view');
     },
   }
 }

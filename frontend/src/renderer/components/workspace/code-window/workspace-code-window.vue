@@ -186,7 +186,6 @@ export default {
       }
     },
     closeWindow() {
-      this.$store.dispatch('mod_tutorials/setNextStep', {currentStep: 'tutorial-workspace-settings-code'});
       this.$store.dispatch('mod_workspace-code-editor/closeEditor', { networkId: this.networkId });
     },
     onContentChange(content) {

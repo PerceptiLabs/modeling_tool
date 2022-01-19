@@ -49,7 +49,6 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode: "mod_tutorials/getIsTutorialMode",
       statisticsOrTestIsOpen: "mod_workspace/GET_statisticsOrTestIsOpen"
     }),
     enableDrag() {

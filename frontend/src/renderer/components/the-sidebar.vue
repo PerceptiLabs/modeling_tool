@@ -1,5 +1,5 @@
 <template lang="pug">
-  aside.page_sidebar(:class="{'page_sidebar--hide': !hideSidebar, 'tutorial-active': activeStepStoryboard === 3}")
+  aside.page_sidebar(:class="{'page_sidebar--hide': !hideSidebar}")
     .sidebar_tab
       sidebar-layers(:class="showTraining ? 'training' : ''")
       sidebar-settings  
@@ -66,9 +66,6 @@ export default {
     showTraining() {
       return this.statisticsIsOpen ? true : false
     },
-    activeStepStoryboard() {
-      return this.$store.state.mod_tutorials.activeStepStoryboard
-    }
   },
   methods: {
     ...mapActions({

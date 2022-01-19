@@ -72,9 +72,7 @@
 
 
 <script>
-import { coreRequest } from '@/core/apiWeb.js';
 import { filePickerStorageKey } from '@/core/constants.js';
-import { mapGetters } from "vuex";
 import { getFolderContent as rygg_getFolderContent } from '@/core/apiRygg';
 import mixinFocus from '@/core/mixins/net-element-settings-input-focus.js';
 const breadcrumbCharacterLength = 58;
@@ -141,15 +139,11 @@ export default {
     }
 
     this.fetchPathInformation(path)
-          .then(response => {
-            if (response == false) {
-              this.fetchPathInformation('');
-            }
-          });
-    
-    
-
-    
+      .then(response => {
+        if (response == false) {
+          this.fetchPathInformation('');
+        }
+      });
   },
   methods: {
     onNavigateToClick() {
@@ -364,9 +358,6 @@ export default {
 
       return false;
     },
-    ...mapGetters({
-      isTutorialMode: 'mod_tutorials/getIsTutorialMode',
-    })
   }
 }
 </script>

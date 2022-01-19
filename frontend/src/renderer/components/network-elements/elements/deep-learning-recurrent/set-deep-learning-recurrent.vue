@@ -13,7 +13,7 @@ div
   .settings-layer_section
     .form_row(v-tooltip-interactive:right="interactiveInfo.activationFunction")
       .form_label Activation function:
-      #tutorial_activation_function.form_input(data-tutorial-hover-info)
+      #tutorial_activation_function.form_input
         base-radio(
           group-name="group1",
           value-input="None",

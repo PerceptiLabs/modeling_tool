@@ -21,7 +21,7 @@ div
       .form_row(v-tooltip-interactive:right="interactiveInfo.neurons")
         .form_label Attention Type:
         .form_input
-          .form_input(data-tutorial-hover-info)
+          .form_input
             base-radio(
               group-name="atten_type",
               :value-input="'add'",
@@ -37,7 +37,7 @@ div
     .settings-layer_section
       .form_row
         .form_label Attention Activation:
-        .form_input(data-tutorial-hover-info)
+        .form_input
           base-radio(
             group-name="atten_activation",
             value-input="ReLU",
@@ -101,7 +101,7 @@ div
   .settings-layer_section
     .form_row
       .form_label Activation:
-      .form_input(data-tutorial-hover-info)
+      .form_input
         base-radio(
           group-name="activation",
           value-input="ReLU",
@@ -135,7 +135,7 @@ div
   .settings-layer_section
     .form_row
       .form_label Output Activation:
-      .form_input(data-tutorial-hover-info)
+      .form_input
         base-radio(
           group-name="output_activation",
           :value-input="false",
@@ -185,7 +185,7 @@ div
   .settings-layer_section
     .form_row
       .form_label Pool:
-      .form_input(data-tutorial-hover-info)
+      .form_input
         base-radio(
           group-name="pool",
           :value-input="false",
@@ -207,7 +207,7 @@ div
   .settings-layer_section
     .form_row
       .form_label Unpool:
-      .form_input(data-tutorial-hover-info)
+      .form_input
         base-radio(
           group-name="unpool",
           :value-input="false",
@@ -229,7 +229,7 @@ div
   .settings-layer_section
     .form_row
       .form_label Backbone:
-      .form_input(data-tutorial-hover-info)
+      .form_input
         base-select(
           selectPlaceholder="None",
           v-model="settings.backbone",

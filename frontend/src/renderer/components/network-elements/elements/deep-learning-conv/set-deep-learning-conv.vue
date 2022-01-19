@@ -268,9 +268,6 @@ div
 <script>
 import mixinSet from "@/core/mixins/net-element-settings.js";
 import mixinSetValidators from "@/core/mixins/net-element-settings-validators.js";
-
-import { mapGetters, mapActions } from "vuex";
-import isEqual from "lodash.isequal";
 import { isEnvDataWizardEnabled } from "@/core/helpers";
 
 export default {
@@ -359,9 +356,6 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      isTutorialMode: "mod_tutorials/getIsTutorialMode"
-    }),
     isTF2XEnabled() {
       return isEnvDataWizardEnabled();
     },

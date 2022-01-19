@@ -1,7 +1,6 @@
 <template lang="pug">
   aside
     .main_toolbar(
-      :class="{'tutorial-active': activeStepStoryboard === 4}"
       v-if="!statisticsIsOpen && !testIsOpen")
 
       ul.toolbar_list
@@ -105,8 +104,6 @@ export default {
       showGlobalTrainingSettingsPopup:    state => state.globalPopup.showGlobalTrainingSettingsPopup.isOpen
     }),
     ...mapGetters({
-      interactiveInfoStatus:'mod_tutorials/getInteractiveInfo',
-      isTutorialMode:       'mod_tutorials/getIsTutorialMode',
       currentNetwork:       'mod_workspace/GET_currentNetwork',
       currentElList:        'mod_workspace/GET_currentNetworkElementList',
       isTraining:           'mod_workspace/GET_networkIsTraining',
@@ -129,12 +126,6 @@ export default {
     },
     networkMode() {
       return this.currentNetMeta.netMode
-    },
-    tutorialRunButtonActive() {
-      return this.$store.state.mod_tutorials.runButtonsActive
-    },
-    activeStepStoryboard() {
-      return this.$store.state.mod_tutorials.activeStepStoryboard
     },
     confirmPopupAnswer() {
       return this.$store.state.globalView.confirmPopupAnswer
@@ -178,7 +169,6 @@ export default {
   },
   methods: {
     ...mapMutations({
-      setInteractiveInfo:     'mod_tutorials/SET_interactiveInfo',
       set_showTrainingSpinner:'mod_workspace/SET_showStartTrainingSpinner',
       set_hideLayers:         'globalView/SET_hideLayers',
       GP_showCoreSideSettings:'globalView/GP_showCoreSideSettings',
@@ -186,12 +176,9 @@ export default {
     ...mapActions({
       popupConfirm:         'globalView/GP_confirmPopup',
       showInfoPopup:        'globalView/GP_infoPopup',
-      removeTooltip:        'mod_tutorials/removeTooltip',
       set_netMode:          'mod_workspace/SET_netMode',
       toPrevStepHistory:    'mod_workspace-history/TO_prevStepHistory',
       toNextStepHistory:    'mod_workspace-history/TO_nextStepHistory',
-      setCurrentView:       'mod_tutorials/setCurrentView',
-      setNextStep:          'mod_tutorials/setNextStep',
       SET_openStatistics:   'mod_workspace/SET_openStatistics',
       set_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
       SET_openTest:         'mod_workspace/SET_openTest',
@@ -240,16 +227,11 @@ export default {
     setNetMode(type, tutorial_id) {
       this.set_netMode(type);
     },
-    toggleInteractiveInfo() {
-      this.removeTooltip();
-      this.setInteractiveInfo(!this.interactiveInfoStatus);
-    },
     toHomePage() {
       this.$router.push({name: 'projects'});
     },
     toggleModelPreviews() {
       this.$store.dispatch('mod_tracker/EVENT_toolbarPreviewButtonToggle', !this.showModelPreviews);
-      this.setNextStep({currentStep:'tutorial-workspace-preview-toggle'});
       this.$store.dispatch('mod_workspace/TOGGLE_showModelPreviews');
     },
     toggleModelWeights() {

@@ -221,7 +221,6 @@
         setStatisticsAvailability:'mod_workspace/setStatisticsAvailability',
         setCheckpointAvailability:'mod_workspace/setCheckpointAvailability',
         closeStatsTestViews:  'mod_workspace/SET_statisticsAndTestToClosed',
-        setCurrentView:     'mod_tutorials/setCurrentView',
         showInfoPopup:       'globalView/GP_infoPopup',
       }),
       resetModelIndexes() {
@@ -279,10 +278,6 @@
       },
       toSettings() {
         this.$router.push({name: 'settings'});
-
-        this.$nextTick(() => {
-          this.setCurrentView('');
-        });
       },
       toModelStatistic() {
         // setStatisticsAvailability calls isTrained for each networks
@@ -333,12 +328,6 @@
             this.SET_openStatistics(true);
             this.set_chartRequests(item.networkID);
           });
-
-        this.$nextTick(() => {
-          if (!this.showNewModelPopup) {
-            this.setCurrentView('tutorial-statistics-view');
-          }
-        });
       },
       isOnStatisticsView() {
         return this.currentNetwork.networkMeta.openStatistics === true
@@ -384,12 +373,6 @@
         this.SET_currentNetwork(this.GET_currentModelIndex);
 
         this.closeStatsTestViews({ networkId: this.currentNetwork.networkID });
-
-        this.$nextTick(() => {
-          if (!this.showNewModelPopup) {
-            this.setCurrentView('tutorial-workspace-view');
-          }
-        });
       },
       isOnTestPage() {
         return this.$route.name === 'test';

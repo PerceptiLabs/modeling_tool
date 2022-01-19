@@ -3,7 +3,7 @@ div
   .settings-layer_section
     .form_row
       .form_label(v-tooltip-interactive:right="interactiveInfo.epochs") Epochs:
-      #tutorial_epochs.form_input(data-tutorial-hover-info)
+      #tutorial_epochs.form_input
         input(
           type="number",
           v-model="settings.Epochs",
@@ -22,9 +22,7 @@ div
   .settings-layer_section
     .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
       .form_label Loss function:
-      #tutorial_cost-function.tutorial-relative.form_input(
-        data-tutorial-hover-info
-      )
+      #tutorial_cost-function.tutorial-relative.form_input
         base-radio(
           group-name="group",
           value-input="Cross_entropy",
@@ -62,7 +60,7 @@ div
   .settings-layer_section
     .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
       .form_label Optimizer:
-      #tutorial_optimizer.form_input(data-tutorial-hover-info)
+      #tutorial_optimizer.form_input
         base-radio(
           group-name="group1",
           value-input="ADAM",
@@ -144,7 +142,7 @@ div
   .settings-layer_section
     .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
       .form_label Learning rate:
-      #tutorial_learning_rate.form_input(data-tutorial-hover-info)
+      #tutorial_learning_rate.form_input
         input(
           type="number",
           v-model="settings.Learning_rate",
@@ -154,9 +152,7 @@ div
   .settings-layer_section
     .form_row
       .form_label Additional Stop Condition:
-      #tutorial_stop-condition.tutorial-relative.form_input(
-        data-tutorial-hover-info
-      )
+      #tutorial_stop-condition.tutorial-relative.form_input
         base-radio(
           group-name="group2",
           value-input="Epochs",
@@ -259,7 +255,6 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode: "mod_tutorials/getIsTutorialMode",
       currentNetworkList: "mod_workspace/GET_currentNetworkElementList"
     }),
     inputId() {

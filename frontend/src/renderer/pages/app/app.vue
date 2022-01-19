@@ -80,10 +80,8 @@
         getEmptyScreenMode: 'mod_empty-navigation/getEmptyScreenMode',
         getViewMode:        'mod_workspace/GET_viewType',
         editIsOpen:         'mod_workspace/GET_networkIsOpen',
-        getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',
       }),
       ...mapState({
-        isShowTutorial:   state=> state.mod_tutorials.showTutorialStoryBoard,
         workspaceContent: state=> state.mod_workspace.workspaceContent,
       }),
       networkMode() {
@@ -108,12 +106,9 @@
         DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace',
         setSidebarStateAction:'globalView/hideSidebarAction',
         screenChange:         'mod_tracker/EVENT_screenChange',
-        saveTutorialProgress: 'mod_tutorials/saveTutorialProgress',
-        layerAddedAction:     'mod_tutorials/tutorial-workspace-layer-added-setup',
       }),
       beforeUnload() {
         this.screenChange({ screenName: '' });
-        this.saveTutorialProgress();
         this.set_workspaceChangesInLocalStorage();
       },
     }

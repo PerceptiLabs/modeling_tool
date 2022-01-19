@@ -3,7 +3,7 @@ div
   .settings-layer_section
     .form_row(v-tooltip-interactive:right="interactiveInfo.reshape")
       .form_label Reshape:
-      #tutorial_input-reshape.form_input(data-tutorial-hover-info)
+      #tutorial_input-reshape.form_input
         triple-input-element-reshape.tutorial-relative(
           v-model="settings.Shape",
           :axis-position="settings.Permutation",
@@ -21,25 +21,6 @@ div
       .form_input
         setting-reshape-image(:axis-settings="settings.Shape")
 
-  //- sidebar-setting-preview(
-  //-   :current-el="currentEl"
-  //-   )
-    //-.settings-layer_section
-      .form_row(v-tooltip-interactive:right="interactiveInfo.transpose")
-        .form_label Transpose:
-        #tutorial_input-transpose.form_input(data-tutorial-hover-info)
-          triple-input(v-model="settings.Permutation")
-
-  //- template(slot="Code-content")
-  //-   h1 (slot="Code-content"
-  //-   settings-code(
-  //-     :current-el="currentEl"
-  //-     :el-settings="settings"
-  //-     v-model="coreCode"
-  //-   )
-//- settings-preview(
-  //-   :current-el="currentEl"
-  //- )
 </template>
 
 <script>
@@ -49,7 +30,7 @@ import TripleInput from "@/components/base/triple-input";
 import TripleInputElementReshape from "@/components/base/triple-input--element-reshape.vue";
 import SettingReshapeImage from "@/components/network-elements/elements-settings/setting-reshape-image.vue";
 import SidebarSettingPreview from "@/components/network-elements/elements-settings/sidebar-setting-preview.vue";
-import { mapActions, mapGetters } from "vuex";
+import { mapActions } from "vuex";
 
 export default {
   name: "SetProcessReshape",
@@ -81,11 +62,6 @@ export default {
         }
       }
     };
-  },
-  computed: {
-    ...mapGetters({
-      isTutorialMode: "mod_tutorials/getIsTutorialMode"
-    })
   },
   methods: {
     ...mapActions({

@@ -99,17 +99,6 @@ const actions = {
       "App Version": rootState.globalView.appVersion,
     });
   },
-  /* Questionnaire */
-  EVENT_questionnaireSubmitted({ getters, commit }, { answers }) {
-    for (const answer of answers) {
-      // wanted to wrap all of the answers in a single object but filtering in
-      // MixPanel can only go 1 layer deep
-      mixPanel.track("Questionnaire response", {
-        Question: answer.q,
-        ...answer.a,
-      });
-    }
-  },
   /* Screen tracking */
   EVENT_screenChange({ getters, commit }, { screenName = "" }) {
     const oldScreenName = getters.getCurrentScreen;
@@ -214,9 +203,6 @@ const actions = {
   },
   EVENT_hideTips(ctx) {
     mixPanel.track("Hide tutorial tips");
-  },
-  EVENT_skipChecklist(ctx) {
-    mixPanel.track("Skip Get Started checklist");
   },
   /* Code editor in focus */
   EVENT_codeEditorStartFocus({ getters, commit }) {

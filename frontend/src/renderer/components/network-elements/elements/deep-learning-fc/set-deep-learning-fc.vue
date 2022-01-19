@@ -3,7 +3,7 @@ div
   .settings-layer_section
     .form_row(v-tooltip-interactive:right="interactiveInfo.neurons")
       .form_label Neurons:
-      #tutorial_neurons.tutorial-relative.form_input(data-tutorial-hover-info)
+      #tutorial_neurons.tutorial-relative.form_input
         input(
           type="text",
           v-model="settings.Neurons",
@@ -13,7 +13,7 @@ div
   .settings-layer_section
     .form_row(v-tooltip-interactive:right="interactiveInfo.activationFunction")
       .form_label Activation function:
-      #tutorial_activation_function.form_input(data-tutorial-hover-info)
+      #tutorial_activation_function.form_input
         base-radio(
           group-name="group1",
           value-input="None",
@@ -108,7 +108,7 @@ import mixinSetValidators from "@/core/mixins/net-element-settings-validators.js
 
 import SettingsCode from "@/components/network-elements/elements-settings/setting-code.vue";
 import NetBaseSettings from "@/components/network-elements/net-base-settings/net-base-settings.vue";
-import { mapGetters, mapActions } from "vuex";
+import { mapActions } from "vuex";
 
 export default {
   name: "SetDeepLearningFC",
@@ -142,11 +142,6 @@ export default {
         }
       }
     };
-  },
-  computed: {
-    ...mapGetters({
-      isTutorialMode: "mod_tutorials/getIsTutorialMode"
-    })
   },
   mounted() {
     this.saveSettingsToStore("Settings");

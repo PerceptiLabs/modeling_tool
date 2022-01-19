@@ -4,7 +4,7 @@ div
     :title="getModalTitle",
     :closeOnOutside="!isCreateModelLoading",
     titleAlign="text-center",
-    @closePopup="() => closeModal(true)"
+    @closePopup="() => closeModal()"
   )
     template(:slot="getModalTitle + '-content'")
       template(v-if="onStep === STEP.TYPE")
@@ -48,7 +48,6 @@ div
               .load-contents-group
                 button.btn.btn--primary.load-dataset(
                   @click="openFilePicker('setDataPath')",
-                  data-tutorial-target="tutorial-data-wizard-load-csv"
                 ) Upload .CSV
             .find-out-message Find our starting guide
               span.guide-link(@click="openPLVideoTutorialPage") here.
@@ -61,12 +60,11 @@ div
           template(v-else-if="dataset")
             .form_row
               .form_label Name:
-              .form_input(data-tutorial-hover-info)
+              .form_input
                 input.normalize-inputs(
                   type="text",
                   v-model="modelName",
                   @keyup="onModelNameKeyup",
-                  :data-tutorial-target="'tutorial-create-model-model-name'"
                 )
             .form_row.relative.mb-15(v-if="isEnterpriseMode !== true")
               .form_label Model Path:
@@ -74,7 +72,6 @@ div
                 input.normalize-inputs(
                   type="text",
                   v-model="modelPath",
-                  :data-tutorial-target="'tutorial-create-model-model-path'"
                 )
                 button.btn.btn--primary.normalize-button(
                   type="button",
@@ -383,12 +380,6 @@ export default {
     this.debouncedCreateModelFunction = debounce(_ => {
       this.createModel();
     }, 1000);
-
-    if (this.isDataWizardEnabled) {
-      this.setCurrentView("data-wizard-onboarding");
-    } else {
-      this.setCurrentView("tutorial-create-model-view");
-    }
   },
   beforeDestroy() {},
   destroyed() {
@@ -403,10 +394,6 @@ export default {
       getModelMeta: "mod_project/getModel",
       getProjects: "mod_project/getProjects",
       showErrorPopup: "globalView/GP_errorPopup",
-      setCurrentView: "mod_tutorials/setCurrentView",
-      setNextStep: "mod_tutorials/setNextStep",
-      activateNotification: "mod_tutorials/activateNotification",
-      setChecklistItemComplete: "mod_tutorials/setChecklistItemComplete",
       checkRyggAvailability: "mod_api/checkRyggAvailability",
     }),
     keysNavigationHandler(event) {
@@ -417,19 +404,12 @@ export default {
         this.closeModal();
       }
     },
-    closeModal(triggerViewChange = false) {
+    closeModal() {
       this.$store.dispatch("globalView/SET_newModelPopup", false);
-      // TODO: Need to stop any async tasks that are ongoing
-
-      if (triggerViewChange) {
-        this.setCurrentView("tutorial-model-hub-view");
-      }
     },
     choseTemplate(index) {
       this.chosenTemplate = index;
       this.autoPopulateName();
-
-      this.setNextStep({ currentStep: "tutorial-create-model-new-model" });
     },
     async autoPopulateName() {
       if (this.modelName && this.hasChangedModelName) {
@@ -584,7 +564,7 @@ export default {
         });
         
       if (!modelRecommendation) {
-        this.closeModal(false);
+        this.closeModal();
       }
 
       const inputData = convertModelRecommendationToVisNodeEdgeList(
@@ -640,14 +620,10 @@ export default {
       await this.$store.dispatch("mod_workspace/setViewType", "model");
 
       this.$store.commit("mod_empty-navigation/set_emptyScreenMode", 0);
-      this.setChecklistItemComplete({ itemId: "createModel" });
 
-      this.$nextTick(() => {
-        this.setCurrentView("tutorial-workspace-view");
-      });
       this.isCreateModelLoading = false;
       clearTimeout(watchTimerId);
-      this.closeModal(false);
+      this.closeModal();
     },
     async openFilePicker(openFilePickerReason) {
       if (openFilePickerReason === "setDataPath") {
@@ -694,8 +670,6 @@ export default {
       } else {
         this.hasChangedModelName = true;
       }
-
-      this.setNextStep({ currentStep: "tutorial-create-model-model-name" });
     },
     async handleDataPathUpdates(dataPath) {
       if (!dataPath || !dataPath.length || !dataPath[0]) {
@@ -763,15 +737,13 @@ export default {
           this.datasetPath = datasetContentPath;
           this.autoPopulateName();
         } else {
-          this.closeModal(false);
+          this.closeModal();
         }
       } catch (e) {
         this.toPrevStep();
       } finally {
         this.showLoadingSpinner = false;
       }
-
-      this.activateNotification();
     },
     handleCSVDataTypeUpdates(payload) {
       this.csvData = payload;

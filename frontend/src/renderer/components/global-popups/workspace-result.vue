@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex';
+import { mapState } from 'vuex';
 import ChartSpinner     from '@/components/charts/chart-spinner'
 
 export default {
@@ -44,28 +44,15 @@ export default {
   },
   data() {
     return {
-      popupInfo: {
-      },
+      popupInfo: {},
       isLoading: true,
     }
   },
   methods: {
-    ...mapActions({
-      setCurrentView:           'mod_tutorials/setCurrentView'
-    }),
     gotToTestPage(){
       this.$router.push({name: 'test'});
       this.$store.commit('globalView/GP_showNetResult', false);
     },
-    // runTest() {
-    //   this.closePopup();
-    //   this.$store.dispatch('mod_workspace/SET_statusNetworkCoreStatusProgressClear');
-    //   this.$store.dispatch('mod_workspace/SET_elementUnselect');
-    //   this.$store.dispatch("mod_workspace/SET_currentTestIndex", this.currentNetworkIndex);      
-    //   this.$store.dispatch('mod_workspace/SET_openTest', true);
-    //   this.$store.dispatch('mod_workspace/setViewType', 'test');
-    //   this.setCurrentView('tutorial-test-view');
-    // },
     closePopup() {
       this.$store.commit('globalView/GP_showNetResult', false);
       this.$store.dispatch('mod_workspace/SET_netMode', 'edit');

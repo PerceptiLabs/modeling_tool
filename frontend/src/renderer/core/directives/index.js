@@ -24,42 +24,21 @@ Vue.directive("tooltip", {
 });
 
 Vue.directive("tooltipInteractive", {
-  bind: function(el, binding, vnode) {
+  bind: function (el, binding, vnode) {
+    return; //@todo ask why we don't use them anymore?
     el.tooltipTutorialBinding = binding;
     el.addEventListener("mouseenter", insertTooltipInfo);
     el.addEventListener("mouseleave", removeTooltipInfo);
     el.addEventListener("mousedown", removeTooltipInfo);
   },
-  unbind: function(el) {
+  unbind: function (el) {
+    return;
     el.removeEventListener("mouseenter", insertTooltipInfo);
     el.removeEventListener("mouseleave", removeTooltipInfo);
     el.removeEventListener("click", removeTooltipInfo);
   }
 });
 
-Vue.directive("tutorialTooltip", {
-  bind: function(el, binding, vnode) {
-    console.log("bind", el, binding);
-    el.tooltipTutorialBinding = binding;
-    el.addEventListener("mouseenter", insertTutorialTip);
-    el.addEventListener("mouseleave", removeTutorialTip);
-    el.addEventListener("mousedown", removeTutorialTip);
-  },
-  unbind: function(el) {
-    el.removeEventListener("mouseenter", insertTutorialTip);
-    el.removeEventListener("mouseleave", removeTutorialTip);
-    el.removeEventListener("click", removeTutorialTip);
-  }
-});
-
-Vue.directive("comingSoon", {
-  bind(el, binding) {
-    if (binding.value) el.addEventListener("mousedown", showComingSoonPopup);
-  },
-  unbind(el) {
-    el.removeEventListener("mousedown", showComingSoonPopup);
-  }
-});
 
 Vue.directive('click-outside', {
   bind: function (el, binding, vnode) {
@@ -76,33 +55,14 @@ Vue.directive('click-outside', {
   },
 });
 
-function showComingSoonPopup() {
-  store.dispatch("globalView/GP_ComingSoonPopup");
-}
-
 let delayTimer;
 
-function insertTutorialTip(event) {
-  if (!store.getters["mod_tutorials/getIsTutorialMode"]) {
-    return;
-  }
 
-  console.log("insertTutorialTip", event);
-  const tutorialTip = createTutorialTip(
-    event.currentTarget,
-    event.currentTarget.tooltipTutorialBinding
-  );
-  if (!tutorialTip) {
-    return;
-  }
-
-  document.body.appendChild(tutorialTip);
-}
 function insertTooltipInfo(event) {
   if (
-    store.getters["mod_tutorials/getInteractiveInfo"] &&
     event.currentTarget.tooltipTutorialBinding.value
   ) {
+    
     document.body.appendChild(
       createTooltipInfo(
         event.currentTarget,
@@ -118,13 +78,11 @@ function insertStandardTooltip(event) {
   || event.target.tooltipStandardBinding.arg === "wrap-text")
     openTooltipDelay = 0;
 
-  if (!store.getters["mod_tutorials/getInteractiveInfo"]) {
-    delayTimer = setTimeout(() => {
-      event.target.appendChild(
-        createStandardTooltip(event.target, event.target.tooltipStandardBinding)
-      );
-    }, openTooltipDelay);
-  }
+  delayTimer = setTimeout(() => {
+    event.target.appendChild(
+      createStandardTooltip(event.target, event.target.tooltipStandardBinding)
+    );
+  }, openTooltipDelay);
 }
 
 function createTooltipInfo(el, info) {
@@ -137,6 +95,7 @@ function createTooltipInfo(el, info) {
     "js-tooltip-interactive"
   );
   sideCalculate(el, tooltip, info);
+  console.log(tooltip);
   if (typeof info.value === "string") {
     tooltip.innerHTML = info.value;
   } else {
@@ -146,25 +105,6 @@ function createTooltipInfo(el, info) {
   return tooltip;
 }
 
-function createTutorialTip(el, info) {
-  console.log("createTutorialTip", el);
-  console.log("createTutorialTip info", info);
-
-  if (!info.value.conditional) {
-    return;
-  }
-
-  let tooltip = document.createElement("section");
-  tooltip.classList.add(
-    "tooltip-tutorial",
-    `tooltip-tutorial--${info.arg}`,
-    "js-tooltip-interactive"
-  );
-  sideCalculate(el, tooltip, info);
-  tooltip.innerHTML = `<span class="tooltip-tutorial_italic">${info.value.displayText}</span>`;
-
-  return tooltip;
-}
 
 function createStandardTooltip(el, info) {
   let tooltip = document.createElement("div");
@@ -182,7 +122,7 @@ function removeStandardTooltip(event) {
 
 function removeTooltipInfo() {
   let tooltip = document.body.querySelector(".js-tooltip-interactive");
-  if (store.getters["mod_tutorials/getInteractiveInfo"] && tooltip) {
+  if (tooltip) {
     tooltip.remove();
   }
 }

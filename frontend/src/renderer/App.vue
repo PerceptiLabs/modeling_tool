@@ -9,16 +9,8 @@
   PiPyPopupUpdate(v-if="showPiPyNotification")
   create-issue-popup(v-if="showCreateIssuesPopup")
   modal-pages-engine
-  tutorials-checklist(:style="tutorialChecklistPosition")
   about-app-popup(v-if="showAppAboutPopUp")
   add-card-popup(v-if="showAddCardPopup")
-  #tutorial-notifications(v-if="showTutorialNotifications")
-    tutorial-notification(
-      v-for="n in tutorialNotifications",
-      :key="n.stepCode",
-      :stepCode="n.stepCode",
-      :arrowDirection="n.arrowDirection"
-    )
 </template>
 <script>
 import {
@@ -26,8 +18,6 @@ import {
   isBrowserChromeOrFirefox,
 } from "@/core/helpers";
 import CreateIssuePopup from "@/components/global-popups/create-issues-popup.vue";
-import TutorialsChecklist from "@/components/tutorial/tutorial-checklist.vue";
-import TutorialNotification from "@/components/different/tutorial-notification.vue";
 import {
   getModelJsonById as rygg_getModelJsonById,
   createDataset as rygg_createDataset,
@@ -63,7 +53,6 @@ export default {
   components: {
     SidebarMenu,
     ModalPagesEngine,
-    // HeaderLinux, HeaderWin, HeaderMac,
     TheInfoPopup,
     ConfirmPopup,
     CreateIssuePopup,
@@ -71,8 +60,6 @@ export default {
     AboutAppPopup,
     AddCardPopup,
     AppHeader,
-    TutorialsChecklist,
-    TutorialNotification,
   },
   beforeCreate() {
     this.$store.dispatch("mod_api/API_setAppInstance");
@@ -148,21 +135,8 @@ export default {
       "mod_workspace-changes/get_workspaceChangesInLocalStorage",
     );
 
-    this.$store
-      .dispatch("mod_tutorials/loadTutorialProgress")
-      .then(async () => {
-        if (this.isUserFirstLogin) {
-          // if (!process.env.NO_KC && keyCloak.isReachable()){
-          // this.setActivePageAction(MODAL_PAGE_QUESTIONNAIRE);
-          // }
-        } else if (!this.getHasShownWhatsNew) {
-          // this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
-        } else {
-          this.initTutorialView();
-        }
-      });
+    this.serViewType();
 
-    this.$store.dispatch("mod_tutorials/activateNotification");
     this.$store.dispatch("mod_api/checkCoreVersions", null, { root: true });
 
     this.updateOnlineStatus();
@@ -205,11 +179,6 @@ export default {
       networksWithChanges: "mod_workspace-changes/get_networksWithChanges",
       showPiPyNotification:
         "mod_workspace-notifications/getPiPyShowNotification",
-      getActiveNotifications: "mod_tutorials/getActiveNotifications",
-      getIsTutorialMode: "mod_tutorials/getIsTutorialMode",
-      getShowChecklist: "mod_tutorials/getShowChecklist",
-      getShowTutorialTips: "mod_tutorials/getShowTutorialTips",
-      getHasShownWhatsNew: "mod_tutorials/getHasShownWhatsNew",
       emptyNavigationMode: "mod_empty-navigation/getEmptyScreenMode",
       allModelsDatasets: "mod_datasets/GET_datasets",
     }),
@@ -245,90 +214,10 @@ export default {
     },
     showMenuBar() {
       const GET_userIsLogin = this.$store.getters["mod_user/GET_userIsLogin"];
-      return (
-        GET_userIsLogin &&
-        [
-          "home",
-          "app",
-          "projects",
-          "main-page",
-          "settings",
-          "test",
-          "export",
-          "pricing",
-        ].includes(this.$route.name)
-      );
+      return GET_userIsLogin;
     },
     showCreateIssuesPopup() {
       return this.$store.state.globalView.globalPopup.showCreateIssuesPopup;
-    },
-    currentPage() {
-      return this.$store.state.modal_pages.currentPage;
-    },
-    showTutorialChecklist() {
-      if (!this.getIsTutorialMode) {
-        return false;
-      }
-      if (!this.getShowChecklist) {
-        return false;
-      }
-
-      if (this.hasModalsOpenInWorkspace) {
-        return false;
-      }
-
-      if (!this.currentPage) {
-        return true;
-      }
-      if (this.currentPage === "MODAL_PAGE_PROJECT") {
-        return true;
-      }
-
-      return false;
-    },
-    showTutorialNotifications() {
-      // Don't show notifications if there are any overlays
-
-      if (this.currentPage) {
-        return false;
-      }
-      if (this.hasModalsOpenInWorkspace) {
-        return false;
-      }
-
-      if (!this.$store.state.globalView.globalPopup.showNewModelPopup) {
-        // have check each screen because the proposal to separate each view
-        // into it's own component wasn't well received.
-        if (this.$route.name === "projects") {
-          return this.getShowTutorialTips;
-        } else if (this.viewType === "model" && this.currentModelIndex === -1) {
-          return false;
-        } else if (
-          this.viewType === "statistic" &&
-          this.currentStatsIndex === -1
-        ) {
-          return false;
-        } else if (this.viewType === "test" && this.currentTestIndex === -1) {
-          return false;
-        }
-      }
-
-      return this.getIsTutorialMode && this.getShowTutorialTips;
-    },
-    hasModalsOpenInWorkspace() {
-      return (
-        this.$store.state.globalView.globalPopup.showNetResult ||
-        this.$store.state.globalView.globalPopup.showWorkspaceBeforeImport ||
-        this.$store.state.globalView.globalPopup.showCoreSideSettings ||
-        this.$store.state.globalView.globalPopup.showLoadSettingPopup ||
-        this.$store.state.globalView.globalPopup.showSaveNetworkPopup ||
-        this.$store.state.globalView.globalPopup
-          .showExportNetworkToGitHubPopup ||
-        this.$store.state.globalView.globalPopup
-          .showImportNetworkfromGitHubOrLocalPopup ||
-        this.showCreateIssuesPopup ||
-        this.showPopup
-      );
     },
     currentNetworkId() {
       return this.$store.getters["mod_workspace/GET_currentNetworkId"];
@@ -337,55 +226,6 @@ export default {
       return this.$store.state.mod_workspace.unparsedModels.map(
         m => m.model_id,
       );
-    },
-    tutorialNotifications() {
-      return this.getActiveNotifications;
-    },
-    tutorialChecklistPosition() {
-      let rightValueRm = 1;
-      let bottomValueRm = 1;
-
-      if (
-        this.$route.name !== "projects" &&
-        this.$route.name !== "settings" &&
-        this.emptyNavigationMode === 0 &&
-        !this.showNewModelPopup
-      ) {
-        bottomValueRm += 2; // the-workspace
-        bottomValueRm += 1; // scrollbars
-
-        if (this.$store.state.globalView.hideSidebar) {
-          rightValueRm += 25; // hardcoded in the-sidebar.vue file
-        }
-
-        let isNotificationWindowOpen = this.$store.getters[
-          "mod_workspace-notifications/getNotificationWindowState"
-        ](this.currentNetworkId);
-
-        if (isNotificationWindowOpen) {
-          rightValueRm += 70; // hardcoded in the workspace-code-window.vue file
-        }
-
-        const toasts = this.$store.getters[
-          "mod_workspace-notifications/getToasts"
-        ](this.currentNetworkId);
-        if (toasts) {
-          const errorToast = toasts.find(t => t.type === "error");
-          const warningToast = toasts.find(t => t.type === "error");
-
-          if (
-            (errorToast && errorToast.count) ||
-            (warningToast && errorToast.warningToast)
-          ) {
-            rightValueRm += 21; // hardcoded in the the-toaster.vue file
-          }
-        }
-      }
-
-      return {
-        right: `${rightValueRm}rem`,
-        bottom: `${bottomValueRm}rem`,
-      };
     },
     showAppAboutPopUp() {
       return this.$store.state.globalView.globalPopup.showAppAbout;
@@ -462,7 +302,6 @@ export default {
 
       getPyPiUpdate: "mod_workspace-notifications/getPyPiUpdate",
 
-      setCurrentView: "mod_tutorials/setCurrentView",
       checkRyggAvailability: "mod_api/checkRyggAvailability",
     }),
     updateOnlineStatus() {
@@ -631,23 +470,12 @@ export default {
       this.$store.commit("mod_workspace/get_lastActiveTabFromLocalStorage");
     },
 
-    initTutorialView() {
+    serViewType() {
       const viewType = localStorage.getItem(
         LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY,
       );
 
-      // for the project side bar
       this.setViewTypeMutation(viewType);
-
-      // for the tutorial
-      if (this.$route.name === "projects") {
-      } else if (viewType === "model") {
-        this.setCurrentView("tutorial-workspace-view");
-      } else if (viewType === "statistic") {
-        this.setCurrentView("tutorial-statistics-view");
-      } else if (viewType === "test") {
-        this.setCurrentView("tutorial-test-view");
-      }
     },
 
     initIntercom() {

@@ -11,7 +11,6 @@ import SettingsCloud from "@/components/network-elements/elements-settings/setti
 import SettingsFileList from "@/components/network-elements/elements-settings/setting-file-list.vue";
 import ChartSwitch from "@/components/charts/chart-switch.vue";
 import TripleInput from "@/components/base/triple-input";
-import WebUploadFile from "@/components/web/upload-file.vue";
 
 export default {
   name: "SetIoOutput",
@@ -21,7 +20,6 @@ export default {
     SettingsCloud,
     TripleInput,
     SettingsFileList,
-    WebUploadFile
   },
   mounted() {},
   data() {

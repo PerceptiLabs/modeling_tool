@@ -24,7 +24,6 @@
           span Data Settings
         button#tutorial_run-training-button.btn.btn--primary(type="button"
           :class="statusStartBtn"
-          :data-tutorial-target="'tutorial-workspace-start-training'"
           @click="onOffBtn(false)"
         )
           img(v-if="showSpinnerOnRun===true" src="static/img/spinner.gif" width="12px" style="margin-right: 5px")
@@ -49,13 +48,11 @@
             the-view-box#tutorial_statistics.the-statistics(
               v-if="statisticsIsOpen"
               :el-data="statisticsElSelected.statistics"
-              :data-tutorial-target="'tutorial-test-right-chart'"
               section-title="Statistics"
             )
             the-view-box#tutorial_view-box.the-view-box(
               v-if="statisticsIsOpen"
               :el-data="statisticsElSelected.viewBox"
-              :data-tutorial-target="'tutorial-test-left-chart'"
               section-title="ViewBox"
               )
             section.network_info-section.the-network-field(
@@ -84,7 +81,6 @@
             code-window(
               v-if="showCodeWindow"
               :networkId="currentNetworkId"
-              :data-tutorial-target="'tutorial-workspace-settings-code'"
             )
             //- notifications-window(
             //-   v-if="showNotificationWindow"

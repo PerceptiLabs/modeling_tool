@@ -21,7 +21,6 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex';
 import { deepCloneNetwork } from '@/core/helpers.js'
 
 export default {
@@ -35,9 +34,6 @@ export default {
     }
   },
   methods: {
-    ...mapActions({
-      setNextStep:      'mod_tutorials/setNextStep',
-    }),
     setCurrentTab(tab, el) {
       if(el && el.type === 'component') {
         let element = this.$store.getters['mod_workspace/GET_networkSnapshotElementById'](el.layerId);
@@ -53,18 +49,9 @@ export default {
         layerType: this.layerType,
         selectedMetric: tab
       });
-      
-      // Need to check if this.layerType === 'Training' because it's the same
-      // component for the Training and normal (next to network map) viewboxes.
-      if (this.layerType === 'Training' && this.getCurrentStepCode === 'tutorial-statistics-tabs') {
-        this.setNextStep({currentStep:'tutorial-statistics-tabs'});
-      }
     }
   },
   computed: {
-    ...mapGetters({
-      getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',
-    }),
     tabsKeyToBeChanged() {
       return this.layerType === 'ViewBox' ? 'viewBoxTabs' : 'statisticsTabs';
     },
