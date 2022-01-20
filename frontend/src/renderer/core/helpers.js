@@ -596,7 +596,7 @@ export function strShortener(string, length = 20) {
 /**
  *
  * @param {string} taskId
- * @param {requestCallback} cb
+ * @param {function} cb
  * @param {number} ms
  * @returns
  */
@@ -608,6 +608,7 @@ export const whenCeleryTaskDone = (taskId, cb = () => null, ms = 50) => {
       const intervalId = setInterval(() => {
         rygg_getTaskStatus(taskId).then(taskStatus => {
           if (rygg_isTaskComplete(taskStatus.state)) {
+            cb(taskStatus);
             clearInterval(intervalId);
             return resolve(taskStatus);
           } else {

@@ -1,13 +1,13 @@
 <template lang="pug">
 div
-  .switch
+  spinner(v-show="isUploadingFile", :text="uploadStatus")
+  .switch(v-show="!isUploadingFile")
     base-switch(
       :options="options",
       :value="selectedLoadOption",
       @change="onSelectLoadOption"
     )
-  .content
-    //- filter should ne passed here to filter model types 
+  .content(v-show="!isUploadingFile")
     template(v-if="selectedLoadOption === LoadDatasetOptions.public")
       public-dataset-list(
         @loadDataset="handleDataPathUpdates",
@@ -141,6 +141,7 @@ div
 <script>
 import PublicDatasetList from "./public-dataset-list";
 import CreateModelPicker from "./create-model-picker.vue";
+import Spinner from "@/components/charts/chart-spinner";
 import { modelTypes } from "@/core/constants";
 import { isFolderLoadingEnabled } from "@/core/helpers";
 import { mapGetters } from "vuex";
@@ -154,6 +155,7 @@ export default {
   components: {
     PublicDatasetList,
     CreateModelPicker,
+    Spinner,
   },
   data: () => ({
     options: Object.keys(LoadDatasetOptions).map(key => ({
@@ -185,11 +187,18 @@ export default {
       type: Boolean,
       default: false,
     },
+    uploadStatus: {
+      type: String,
+      default: "",
+    },
   },
   computed: {
     ...mapGetters({
       isEnterpriseMode: "globalView/get_isEnterpriseApp",
     }),
+    isUploadingFile() {
+      return this.uploadStatus.length;
+    },
   },
   methods: {
     onSelectLoadOption(ev) {

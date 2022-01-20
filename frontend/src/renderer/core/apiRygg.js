@@ -207,10 +207,13 @@ export const doesFileExist = path => {
 };
 
 export const getDatasetContent = async datasetId => {
-  let fs = await whenHaveFileservingToken();
-  let res = await fs.get(`/datasets/${datasetId}/content/`);
-  console.log("res", res);
-  return res.status === 200 ? res.data.file_contents : null;
+  try {
+    let fs = await whenHaveFileservingToken();
+    let res = await fs.get(`/datasets/${datasetId}/content/`);
+    return res.status === 200 ? res.data.file_contents : null;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const pickFile = (title, initialDir = null, fileTypes = null) => {
@@ -375,24 +378,20 @@ export const rygg_createSegmentationDataset = async (image_path, mask_path) => {
 };
 
 export const uploadDatasetToFileserver = async (file, overwrite = false) => {
-  try {
-    const data = new FormData();
-    data.append("file_uploaded", file);
-    data.append("name", file.name);
-    data.append("overwrite", overwrite ? "true" : "false");
-    const fs = await whenHaveFileservingToken();
-    const res = await fs.post(
-      `/datasets/create_from_upload/?project_id=${currentProject()}`,
-      data,
-    );
-    if (![200, 201].includes(res.status)) {
-      console.error("failed", res);
-      return null;
-    }
-    return res;
-  } catch (e) {
-    console.error(e);
+  const data = new FormData();
+  data.append("file_uploaded", file);
+  data.append("name", file.name);
+  data.append("overwrite", overwrite ? "true" : "false");
+  const fs = await whenHaveFileservingToken();
+  const res = await fs.post(
+    `/datasets/create_from_upload/?project_id=${currentProject()}`,
+    data,
+  );
+  if (![200, 201].includes(res.status)) {
+    console.error("failed", res);
+    return null;
   }
+  return res;
 };
 
 export const isTaskComplete = status => {

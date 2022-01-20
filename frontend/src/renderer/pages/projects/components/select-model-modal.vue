@@ -41,7 +41,8 @@ div
             @handleMultiModalCsvPicker="handleMultiModalCsvPicker",
             @handleMultiModalNext="handleMultiModalNext",
             :modelType="modelType",
-            @back="gotoTypeStep"
+            @back="gotoTypeStep",
+            :uploadStatus="uploadStatus"
           )
           template(v-else)
             .main-file-structure-contents
@@ -187,12 +188,14 @@ import {
   getDatasetContent as rygg_getDatasetContent,
   getNextModelName as rygg_getNextModelName,
   createDataset as rygg_createDataset,
-  getDatasets as rygg_getDataset,
+  getDataset as rygg_getDataset,
   uploadFile as rygg_uploadFile,
   pickFile as rygg_pickFile,
   pickDirectory as rygg_pickDirectory,
   rygg_createClassificationDataset,
   rygg_createSegmentationDataset,
+  isTaskComplete as rygg_isTaskComplete,
+  uploadDatasetToFileserver as rygg_uploadDatasetToFileserver,
 } from "@/core/apiRygg";
 import { renderingKernel } from "@/core/apiRenderingKernel";
 import { makeDatasetSettings } from "@/core/helpers";
@@ -310,6 +313,7 @@ export default {
       imageSegmentationMaskFolderPath: null,
       multiModalCsvPath: null,
       isFilePickerOpened: false,
+      uploadStatus: "",
     };
   },
   computed: {
@@ -562,7 +566,7 @@ export default {
           );
           return null;
         });
-        
+
       if (!modelRecommendation) {
         this.closeModal();
       }
@@ -739,7 +743,10 @@ export default {
         } else {
           this.closeModal();
         }
-      } catch (e) {
+      } catch (err) {
+        if (err.message) {
+          this.showErrorPopup(err.message);
+        }
         this.toPrevStep();
       } finally {
         this.showLoadingSpinner = false;
@@ -861,7 +868,37 @@ export default {
       this.multiModalCsvPath = path;
     },
     handleMultiModalNext() {
+      if (this.isEnterpriseMode) {
+        return this.handleEnterpriseMultiModalNext();
+      }
       this.handleDataPathUpdates([this.multiModalCsvPath]);
+    },
+    async handleEnterpriseMultiModalNext() {
+      const file = this.multiModalCsvPath;
+      this.uploadStatus = "Processing...";
+      try {
+        const {
+          data: { task_id, dataset_id },
+        } = await rygg_uploadDatasetToFileserver(file);
+        await whenCeleryTaskDone(task_id, cb => this.handleUploadProgress(cb));
+        const response = await rygg_getDataset(dataset_id);
+        const { data: { location: path } = {} } = response;
+        if (path) await this.handleDataPathUpdates([path]);
+      } catch (err) {
+        if (err.message) {
+          this.$store.dispatch("globalView/GP_errorPopup", err.message);
+        }
+      } finally {
+        this.uploadStatus = "";
+      }
+    },
+    handleUploadProgress(uploadCb) {
+      let msg = `${uploadCb.message} - ${uploadCb.so_far}%`;
+      const isTaskCompleted = rygg_isTaskComplete(uploadCb.state);
+      if (isTaskCompleted) {
+        msg = "";
+      }
+      this.uploadStatus = msg;
     },
   },
 };

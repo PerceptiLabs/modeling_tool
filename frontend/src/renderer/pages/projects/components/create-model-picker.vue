@@ -12,9 +12,6 @@ import {
   pickDirectory as rygg_pickDirectory,
   pickFile as rygg_pickFile,
 } from "@/core/apiRygg.js";
-import { whenCeleryTaskDone } from "@/core/helpers";
-import { uploadDatasetToFileserver as rygg_uploadDatasetToFileserver } from "@/core/apiRygg";
-import { getDataset as rygg_getDataset } from "@/core/apiRygg";
 import { mapState } from "vuex";
 export default {
   name: "CreateModelPicker",
@@ -76,23 +73,18 @@ export default {
         this.isWaitingToPick = false;
       }
     },
+    async onFilePicked(e) {
+      const file = e.target.files[0];
+      this.pathLocation = file.name;
+      this.$emit("onPick", file);
+    },
     async enterpriseSelect() {
       try {
         this.isWaitingToPick = true;
         const fileInput = document.createElement("input");
         fileInput.setAttribute("type", "file");
         fileInput.setAttribute("accept", ".csv,.zip");
-        fileInput.addEventListener("change", async e => {
-          const file = e.target.files[0];
-          const {
-            data: { task_id, dataset_id },
-          } = await rygg_uploadDatasetToFileserver(file);
-          await whenCeleryTaskDone(task_id, e => console.log(e));
-          const {
-            data: { location: path },
-          } = await rygg_getDataset(dataset_id);
-          if (path) this.sendPath(path);
-        });
+        fileInput.addEventListener("change", this.onFilePicked);
         fileInput.click();
       } finally {
         this.isWaitingToPick = false;
