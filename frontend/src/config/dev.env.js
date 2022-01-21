@@ -13,7 +13,7 @@ module.exports = merge(prodEnv, {
   GITHUB_CLIENT_ID: '"094271b0edb47c75dc24"',
   SENTRY_DSN:
     '"https://a926ebcbc2a0463ab728fe06ebd750a8@o283802.ingest.sentry.io/6061754"',
-  SENTRY_ENABLED: '"true"',
+  SENTRY_ENABLED: '"false"',
   SENTRY_ENV: '"dev"',
   PL_FILE_SERVING_TOKEN: '"12312"',
   ENABLE_LOGROCKET: '"false"',
