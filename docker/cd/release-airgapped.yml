@@ -1,0 +1,136 @@
+trigger:
+- none
+
+parameters:
+  - name: versionid
+    displayName: Requested Version
+    type: string
+
+jobs:
+  - job: startvm
+    displayName: Start Worker
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: AWSShellScript@1
+      inputs:
+        awsCredentials: 'aws'
+        regionName: 'us-east-2'
+        scriptType: 'inline'
+        inlineScript: 'aws ec2 start-instances --instance-ids i-02d83a036ea61ccd1 --region us-east-2'
+        failOnStandardError: true
+
+  - job: dockerbuild
+    dependsOn: startvm
+    pool: Docker Build
+
+    steps:
+    - checkout: self
+      clean: true
+      submodules: recursive
+      persistCredentials: true
+
+    - task: Bash@3
+      displayName: download artifacts for release
+      env:
+        PL_VERSION: ${{ parameters.versionid }}
+        RELEASE_SRC_BASE: https://perceptilabs.blob.core.windows.net/enterprise
+        DEST_DIR: $(Build.ArtifactStagingDirectory)
+
+      inputs:
+        targetType: 'inline'
+        script: |
+          set -Eeo pipefail
+          set -x
+                    
+          RELEASE_FILES=(
+            install_perceptilabs_enterprise
+            system_migrations.tar.gz
+          )
+
+          echo -n "Getting release files for version ${PL_VERSION} ... "
+          for SRC in ${RELEASE_FILES[@]}; do
+            curl -s $RELEASE_SRC_BASE/$PL_VERSION/${SRC} > ${DEST_DIR}/${SRC}
+          done
+          echo "done"
+
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'perceptilabsenterprise'
+        command: 'login'    
+
+    - task: Bash@3
+      displayName: pull and save docker images
+      env:
+        PL_VERSION: ${{ parameters.versionid }}
+        DEST_DIR: $(Build.ArtifactStagingDirectory)
+        CONTAINER_REGISTRY: perceptilabsenterprise.azurecr.io
+
+      inputs:
+        targetType: 'inline'
+        script: |
+          set -Eeo pipefail
+          set -x
+
+          RELEASE_FILES=(
+            install_perceptilabs_enterprise
+            system_migrations.tar.gz
+          )
+          
+          SYSTEM_MIGRATIONS=${DEST_DIR}/system_migrations.tar.gz
+          docker_images=$(\
+            tar -x -f "${SYSTEM_MIGRATIONS}" -O --wildcards "*docker-compose*.yml" | \
+            grep image: | \
+            grep -v fileserver | \
+            sed "s/.*image:[[:blank:]]*\(.*\)$/\1/g" | \
+            sed "s|\${CONTAINER_REGISTRY}|$CONTAINER_REGISTRY|g" | \
+            sed "s|\${PL_VERSION}|$PL_VERSION|g" | \
+            sort --unique)
+          
+          # pull the images
+          echo "${docker_images}"
+          echo "${docker_images}" | xargs -L 1 docker pull
+          
+          # save the images
+          echo -n "Saving the images locally ..."
+          docker save ${docker_images} --output ${DEST_DIR}/images.tar
+          echo "done"
+
+    - task: ArchiveFiles@2
+      displayName: Zip the installation files
+      inputs:
+        rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/perceptilabs-${{ parameters.versionid }}-airgapped.zip'
+        replaceExistingArchive: true
+        verbose: true
+
+    - task: AzureCLI@2
+      displayName: Publish the installation files
+      env:
+        ZIP_NAME: perceptilabs-${{ parameters.versionid }}-airgapped.zip
+        DEST_ACCT: perceptilabs
+        DEST_CONTAINER: pl-airgapped
+      inputs:
+        azureSubscription: 'Perceptilabs Azure'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az storage blob upload --verbose --account-name=${DEST_ACCT} --container-name=${DEST_CONTAINER} --file=$(Build.ArtifactStagingDirectory)/${ZIP_NAME} --name=${ZIP_NAME}
+        addSpnToEnvironment: true
+        useGlobalConfig: true
+
+  - job: stopvm
+    dependsOn: dockerbuild
+    pool:
+      vmImage: ubuntu-latest
+    displayName: Stop the build machine
+    steps:
+    - task: AWSShellScript@1
+      inputs:
+        awsCredentials: 'aws'
+        regionName: 'us-east-2'
+        scriptType: 'inline'
+        inlineScript: 'aws ec2 stop-instances --instance-ids i-02d83a036ea61ccd1 --region us-east-2'
+        failOnStandardError: true
