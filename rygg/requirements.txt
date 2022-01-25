@@ -27,9 +27,9 @@ psycopg2-binary>=2.8.5
 PyGithub>=1.53
 pygments>=2.6.1
 PyJWT>=1.7.1
-# pyobjc build broke on OSX in v8.0 and py 3.6. Pin it for that case
-pyobjc<=7.3; platform_system == "Darwin" and python_version < '3.7'
-pyobjc; platform_system == "Darwin" and python_version >= '3.7'
+# pyobjc build broke on OSX in v8.0 and py 3.8. Pin it for that case
+pyobjc<=8.0; platform_system == "Darwin" and python_version <= '3.8'
+pyobjc; platform_system == "Darwin" and python_version > '3.8'
 pyparsing>=2.4.7
 pypiwin32>=223; platform_system == "Windows"
 python-dateutil>=2.8.1
