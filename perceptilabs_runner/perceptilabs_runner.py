@@ -149,11 +149,13 @@ def get_pipes(verbosity):
 
 
 class PortPoller:
+    @staticmethod    
     def is_port_live(port):
         with socket.socket() as s:
             rc = s.connect_ex((HOST, port))
             return rc == 0
 
+    @staticmethod        
     def get_unresponsive_ports():
         return [
             (name, port)
@@ -161,22 +163,42 @@ class PortPoller:
             if not PortPoller.is_port_live(port)
         ]
 
-    def wait_for_ports(interval_secs=3):
+    @classmethod
+    def wait_for_ports(cls, interval_secs=3, max_attempts=20):
         count = 0
         while True:
-            unresponsive = PortPoller.get_unresponsive_ports()
+            unresponsive = cls.get_unresponsive_ports()
             if not any(unresponsive):
-                return
+                return 
 
             count += 1
             if count > 1:
-                print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Waiting for services to listen on these ports:")
-                for s, p in unresponsive:
-                    print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC}    {s} on port {p}")
-
+                if count < max_attempts:
+                    cls._print_unresponsive(unresponsive)
+                else:
+                    cls._print_timeout(unresponsive, interval_secs, max_attempts)
+                    raise SystemExit("One or more ports didn't respond")
+                    
             time.sleep(interval_secs)
 
+    @staticmethod            
+    def _print_unresponsive(unresponsive):
+        print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Waiting for services to listen on these ports:")
+        for s, p in unresponsive:
+            print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC}    {s} on port {p}")
 
+    @staticmethod
+    def _print_timeout(unresponsive, interval_secs, max_attempts):
+        print(f"{bcolors.ERROR}PerceptiLabs:{bcolors.ENDC} The following services did not start correctly:")
+        for s, p in unresponsive:
+            print(f"{bcolors.ERROR}PerceptiLabs:{bcolors.ENDC}    {s} on port {p}")
+
+        print(
+            f"{bcolors.ERROR}One or more services failed to start within {interval_secs*max_attempts} seconds. {bcolors.ENDC}"
+            f"{bcolors.ERROR}Verify that other applications aren't blocking the ports above. {bcolors.ENDC}"
+            f"{bcolors.ERROR}If the problem persists, please get in touch at https://forum.perceptilabs.com/{bcolors.ENDC}"
+        )            
+        
 def start(verbosity):
     # give the handler closure the shared procs variable
     procs = []
