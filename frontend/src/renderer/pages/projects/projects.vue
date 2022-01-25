@@ -1206,7 +1206,7 @@ $header-height: 60px;
 .model-name-wrapper {
   // text-overflow: ellipsis;
   overflow: hidden;
-  min-width: 100%;
+  flex-grow: 1;
   // height: 1.2em;
   white-space: nowrap;
   padding-right: 15px;
