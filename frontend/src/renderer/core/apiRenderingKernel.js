@@ -78,20 +78,21 @@ export const renderingKernel = {
   },
 
   async serveModel(
-    type,
     datasetSettings,
     userEmail,
     modelId,
     network,
     trainingSessionId,
     modelName,
+    settings
   ) {
+
     const payload = {
-      type: type,
       datasetSettings: datasetSettings,
       network: network,
       userEmail: userEmail,
       modelName: modelName,
+      settings: settings
     };
     return whenRenderingKernelReady
       .then(rk =>
@@ -118,22 +119,22 @@ export const renderingKernel = {
   },
 
   async waitForServedModelReady(
-    type,
     datasetSettings,
     userEmail,
     modelId,
     network,
     checkpointDirectory,
     modelName,
+    settings,
   ) {
     const servingSessionId = await renderingKernel.serveModel(
-      type,
       datasetSettings,
       userEmail,
       modelId,
       network,
       checkpointDirectory,
       modelName,
+      settings
     );
 
     return await (async function() {

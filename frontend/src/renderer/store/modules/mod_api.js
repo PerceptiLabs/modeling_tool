@@ -788,13 +788,17 @@ const actions = {
         );
       } else {
         const url = renderingKernel.waitForServedModelReady(
-          "gradio",
           disassembledModel.datasetSettings,
           userEmail,
           modelId,
           disassembledModel.graphSettings,
           trainingSessionId,
           networkName,
+          {
+            type: "gradio",
+            ExcludePreProcessing: settings.ExcludePreProcessing,
+            ExcludePostProcessing: settings.ExcludePostProcessing
+          }
         );
         return url;
       }

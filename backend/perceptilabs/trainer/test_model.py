@@ -141,7 +141,7 @@ def test_training_model_can_predict(script_factory, data_loader, batch_size):
 
 
 @pytest.mark.parametrize("batch_size", [1, 8])
-def test_inference_model_can_predict_with_loaded_and_preprocessed_data(script_factory, data_loader, batch_size):
+def test_inference_model_can_predict_with_loaded_preprocessed_and_postprocessed_data(script_factory, data_loader, batch_size):
     x, y_true = data_loader.get_example_batch(
         batch_size=batch_size,
         apply_pipelines='all'  # load and preprocess
@@ -152,6 +152,7 @@ def test_inference_model_can_predict_with_loaded_and_preprocessed_data(script_fa
         .as_inference_model(
             data_loader,
             include_preprocessing=False,  # Data already preprocessed
+            include_postprocessing=False
         )
 
     y_pred = inference_model(x)
@@ -163,7 +164,7 @@ def test_inference_model_can_predict_with_loaded_and_preprocessed_data(script_fa
 
 
 @pytest.mark.parametrize("batch_size", [1, 8])
-def test_inference_model_can_predict_with_loaded_but_not_preprocessed_data(script_factory, data_loader, batch_size):
+def test_inference_model_can_predict_with_loaded_but_neither_preprocessed_data_nor_postprocessed_data(script_factory, data_loader, batch_size):
     x, y_true = data_loader.get_example_batch(
         batch_size=batch_size,
         apply_pipelines='loader'
@@ -175,6 +176,7 @@ def test_inference_model_can_predict_with_loaded_but_not_preprocessed_data(scrip
         .as_inference_model(
             data_loader,
             include_preprocessing=True,  # Data is NOT already preprocessed
+            include_postprocessing=True
         )
 
     y_pred = inference_model(x)
@@ -184,4 +186,58 @@ def test_inference_model_can_predict_with_loaded_but_not_preprocessed_data(scrip
         assert y_pred[target].dtype == y_true[target].dtype
         assert y_pred[target].shape == y_true[target].shape
 
+@pytest.mark.parametrize("batch_size", [1, 8])
+def test_inference_model_can_predict_with_loaded_and_postprocessed_but_not_preprocessed_data(script_factory, data_loader, batch_size):
+    x, y_true = data_loader.get_example_batch(
+        batch_size=batch_size,
+        apply_pipelines='loader'
+    )
 
+    graph_spec = make_graph_spec(data_loader)
+
+    inference_model = TrainingModel(script_factory, graph_spec) \
+        .as_inference_model(
+            data_loader,
+            include_preprocessing=True,  # Data is NOT already preprocessed
+            include_postprocessing=False 
+        )
+
+    y_pred = inference_model(x)
+
+    # Apply the postprocessing pipeline after the inference model has been called on the input
+    feature_name = list(y_true.keys())[-1]
+    postprocessing = data_loader.get_postprocessing_pipeline(feature_name)
+    y_pred[feature_name] = postprocessing(y_pred[feature_name])
+
+    for target in y_true.keys():
+        assert target in y_pred
+        assert y_pred[target].dtype == y_true[target].dtype
+        assert y_pred[target].shape == y_true[target].shape
+
+@pytest.mark.parametrize("batch_size", [1, 8])
+def test_inference_model_can_predict_with_loaded_and_preprocessed_and_postprocessed_data(script_factory, data_loader, batch_size):
+    x, y_true = data_loader.get_example_batch(
+        batch_size=batch_size,
+        apply_pipelines='all' # This doesn't apply postprocessing
+    )
+
+    # Here we apply postprocessing to the example batch
+    feature_name = list(y_true.keys())[-1]
+    postprocessing = data_loader.get_postprocessing_pipeline(feature_name)
+    y_true[feature_name] = postprocessing(y_true[feature_name])
+
+    graph_spec = make_graph_spec(data_loader)
+
+    inference_model = TrainingModel(script_factory, graph_spec) \
+        .as_inference_model(
+            data_loader,
+            include_preprocessing=False,  # Data is already preprocessed
+            include_postprocessing=True   # Apply postprocessing in the inference model
+        )
+
+    y_pred = inference_model(x)
+    
+    for target in y_true.keys():
+        assert target in y_pred
+        assert y_pred[target].dtype == y_true[target].dtype
+        assert y_pred[target].shape == y_true[target].shape

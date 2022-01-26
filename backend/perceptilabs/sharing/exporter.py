@@ -30,6 +30,7 @@ class Exporter:
         self._data_loader = data_loader
         self._training_model = training_model
         self._on_model_exported = on_model_exported
+        
 
     @property
     def data_loader(self):
@@ -44,32 +45,32 @@ class Exporter:
         checkpoint_path = sanitize_path(checkpoint_path)
         self._training_model.save_weights(checkpoint_path)        
 
-    def export(self, export_directory, mode):
+    def export(self, export_directory, mode, include_preprocessing=True, include_postprocessing=True):
         """calls the export functions based on export mode"""
         if mode == 'Standard':
-            self._export_inference_model(export_directory)
+            self._export_inference_model(export_directory, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
         elif mode == 'Compressed':
             self._export_compressed_model(export_directory)
         elif mode == 'Quantized':
             self._export_quantized_model(export_directory)
         elif mode == 'FastAPI':
-            self._export_fastapi_service(export_directory)
+            self._export_fastapi_service(export_directory, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
         else:
             raise NotImplementedError(f"Unknown export mode '{mode}'")
 
         if self._on_model_exported:
             self._on_model_exported()
             
-    def _export_inference_model(self, path, model=None):
+    def _export_inference_model(self, path, model=None, include_preprocessing=True, include_postprocessing=True):
         """ Export the inference model """
         if model is None:
-            model = self.get_inference_model()
+            model = self.get_inference_model(include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
 
         model.save(sanitize_path(path))
 
-    def _export_fastapi_service(self, path):
+    def _export_fastapi_service(self, path, include_preprocessing=True, include_postprocessing=True):
         """ Export the inference model wrapped in a REST endpoint script """
-        model = self.get_inference_model()
+        model = self.get_inference_model(include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
         self._export_inference_model(path, model=model)
 
 
@@ -105,7 +106,7 @@ class Exporter:
 
     def _export_compressed_model(self, path):
         """ Export the compressed model """
-        model = self.get_inference_model(include_preprocessing=False)
+        model = self.get_inference_model(include_preprocessing=False, include_postprocessing=False)
         frozen_path = os.path.join(path, 'model.tflite')
 
         if not os.path.exists(path):
@@ -134,7 +135,7 @@ class Exporter:
         if num_input_layers > 1:
             raise CompatibilityError("Number of input layers cannot be greater than 1")
 
-        model = self.get_inference_model(include_preprocessing=False)
+        model = self.get_inference_model(include_preprocessing=False, include_postprocessing=False)
 
         def representative_data_gen():
             data_size = min(100, int(self._data_loader.get_dataset_size()/5))
@@ -161,10 +162,10 @@ class Exporter:
         with open(frozen_path, "wb") as f:
             f.write(tflite_model)
 
-    def get_inference_model(self, include_preprocessing=True):
+    def get_inference_model(self, include_preprocessing=True, include_postprocessing=True):
         """ Convert the Training Model to a simpler version (e.g., skip intermediate outputs)  """
         inference_model = self._training_model.as_inference_model(
-            self._data_loader, include_preprocessing=include_preprocessing)
+            self._data_loader, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
 
         return inference_model
 

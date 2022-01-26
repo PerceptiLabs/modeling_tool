@@ -227,6 +227,13 @@ $soc-list: (
   width: 100%;
 }
 
+.mr-10 {
+  margin-right: 10px;
+}
+.mb-5 {
+  margin-bottom: 5px;
+}
+
 // clearfix
 .clearfix {
   &:after {
@@ -238,6 +245,9 @@ $soc-list: (
 
 .d-flex {
   display: flex;
+}
+.align-center {
+  align-items: center;
 }
 
 .flex-row {

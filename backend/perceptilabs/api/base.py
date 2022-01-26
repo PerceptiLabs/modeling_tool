@@ -305,9 +305,8 @@ def create_app(
     @app.route('/inference/serving/<model_id>', methods=['POST'])
     def start_serving(model_id):
         json_data = request.get_json()
-        
         session_id = inference_interface.start_serving(
-            json_data['type'],
+            json_data['settings'],
             json_data['datasetSettings'],
             json_data['network'],
             model_id,

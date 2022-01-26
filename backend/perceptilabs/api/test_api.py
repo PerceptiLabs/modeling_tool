@@ -170,12 +170,15 @@ def assert_export(client, mixpanel_mock, user_token, dataset_settings, network, 
                 'name': 'my-model',
                 'Type': 'TFModel',
                 'Compressed': False,
-                'Quantized': False
+                'Quantized': False,
+                'ExcludePreProcessing':False,
+                'ExcludePostProcessing':False
             },
             'userEmail': user_email
         },
         headers={'Authorization': user_token}        
     )
+
     expected_path = os.path.join(tmp_path, 'my-model')
     
     assert res.status_code == 200
@@ -193,7 +196,7 @@ def assert_serving(client, mixpanel_mock, user_token, dataset_settings, network,
     res = client.post(
         f'/inference/serving/{model_id}?training_session_id={training_session_id}', 
         json={
-            'type': 'gradio',
+            'settings': {'ExcludePreProcessing': False, 'ExcludePostProcessing': False},
             'network': network,
             'datasetSettings': dataset_settings,
             'modelName': 'my-model',

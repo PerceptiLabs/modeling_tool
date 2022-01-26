@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class ServingSessionInterface():
-    def __init__(self, message_broker, event_tracker, model_access, epochs_access, results_access):
+    def __init__(self, serving_settings, message_broker, event_tracker, model_access, epochs_access, results_access):
+        self._serving_settings = serving_settings
         self._message_broker = message_broker
         self._event_tracker = event_tracker
         self._model_access = model_access
@@ -58,13 +59,18 @@ class ServingSessionInterface():
         def on_serving_started():
             tracking.send_model_served(self._event_tracker, user_email, model_id)            
 
+        include_preprocessing = not self._serving_settings['ExcludePreProcessing']
+        include_postprocessing = not self._serving_settings['ExcludePostProcessing']
+
         launcher = GradioLauncher(self._model_access, self._epochs_access)
         launcher.start(
             graph_spec,
             data_loader,
             training_session_id,
             model_name,
-            on_serving_started=on_serving_started
+            on_serving_started=on_serving_started,            
+            include_preprocessing=include_preprocessing,
+            include_postprocessing=include_postprocessing
         )
         return launcher
         

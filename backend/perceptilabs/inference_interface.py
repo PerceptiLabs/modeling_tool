@@ -13,11 +13,11 @@ class InferenceInterface:
         self._testing_results_access = testing_results_access
         self._serving_results_access = serving_results_access                
 
-    def start_serving(self, serving_type, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email, logrocket_url=''):
+    def start_serving(self, serving_settings, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email, logrocket_url=''):
         serving_session_id = self._serving_results_access.new_id()
         self._task_executor.enqueue(
             'serving_task',
-            serving_type,
+            serving_settings,
             dataset_settings_dict,
             graph_spec_dict,
             model_id,

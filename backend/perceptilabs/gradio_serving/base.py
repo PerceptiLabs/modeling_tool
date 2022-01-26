@@ -39,7 +39,7 @@ class GradioLauncher:
     def get_url(self):
         return self._url_dict['url']
 
-    def start(self, graph_spec, data_loader, training_session_id, model_name, on_serving_started=None):
+    def start(self, graph_spec, data_loader, training_session_id, model_name, on_serving_started=None, include_preprocessing=True, include_postprocessing=True):
         #if utils.is_debug():
         #    raise NotImplementedError("Cannot run Gradio in debug mode!")  # Flask development servers interfere
         self._thread = threading.Thread(
@@ -50,7 +50,9 @@ class GradioLauncher:
                 training_session_id,
                 model_name,
                 self._url_dict,
-                on_serving_started
+                on_serving_started,
+                include_preprocessing,
+                include_postprocessing
             ),
             daemon=True
         )
@@ -66,17 +68,17 @@ class GradioLauncher:
         self._stop_event.set()
         self._thread.join()
         
-    def _worker(self, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started):
+    def _worker(self, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=True, include_postprocessing=True):
         try:
             return self._worker_internal(
-                graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started)
+                graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
         except:
             logger.exception("Error in worker")
             raise
         
-    def _worker_internal(self, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started):        
+    def _worker_internal(self, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=True, include_postprocessing=True):        
         inference_model = self._get_inference_model(
-            graph_spec, data_loader, training_session_id)
+            graph_spec, data_loader, training_session_id, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
 
         metadata = data_loader.metadata
         inputs = {
@@ -128,7 +130,7 @@ class GradioLauncher:
 
         interface.close()
         
-    def _get_inference_model(self, graph_spec, data_loader, training_session_id):
+    def _get_inference_model(self, graph_spec, data_loader, training_session_id, include_preprocessing=True, include_postprocessing=True):
         epoch_id = self._epochs_access.get_latest(
             training_session_id=training_session_id, 
             require_checkpoint=True,
@@ -142,7 +144,7 @@ class GradioLauncher:
             .get_training_model(
                 model_id=graph_spec.to_dict(),  # TODO: frontend should send a model ID
                 checkpoint_path=checkpoint_path
-            ).as_inference_model(data_loader, include_preprocessing=True)
+            ).as_inference_model(data_loader, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
 
         return model
         

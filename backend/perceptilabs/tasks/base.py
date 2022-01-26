@@ -172,7 +172,7 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
      
 
 @handle_exceptions    
-def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email, serving_session_id, is_retry=False, logrocket_url=''):
+def serving_task(serving_settings, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email, serving_session_id, is_retry=False, logrocket_url=''):
     
     import perceptilabs.settings as settings    
     from perceptilabs.serving_interface import ServingSessionInterface
@@ -221,7 +221,7 @@ def serving_task(serving_type, dataset_settings_dict, graph_spec_dict, model_id,
     event_tracker = EventTracker()
     
     interface = ServingSessionInterface(
-        message_broker, event_tracker, model_access, epochs_access, serving_results_access)
+        serving_settings, message_broker, event_tracker, model_access, epochs_access, serving_results_access)
 
     interface.run(
         data_loader,

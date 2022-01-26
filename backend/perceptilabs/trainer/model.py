@@ -46,7 +46,7 @@ class TrainingModel(tf.keras.Model):
     def _get_layer_from_spec(self, layer_spec):
         return LayerHelper(self._script_factory, layer_spec, self._graph_spec).get_instance().keras_layer
 
-    def as_inference_model(self, data_loader, include_preprocessing=True):
+    def as_inference_model(self, data_loader, include_preprocessing=True, include_postprocessing=True):
         if include_preprocessing:
             dataset = data_loader.get_dataset(apply_pipelines='loader') # Model expects data to be loaded but NOT preprocessed
         else:
@@ -75,7 +75,7 @@ class TrainingModel(tf.keras.Model):
 
         outputs, _ = self.__call__(processed_inputs)
 
-        if include_preprocessing:        
+        if include_postprocessing:        
             for feature_name, tensor in outputs.items():
                 postprocessing = data_loader.get_postprocessing_pipeline(feature_name)
                 outputs[feature_name] = postprocessing(tensor)

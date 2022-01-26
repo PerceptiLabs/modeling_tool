@@ -1,0 +1,11 @@
+div.row
+    div.bold.mb-5 Settings:
+    div.d-flex.flex-column.justify-content-between
+        .checkbox-tooltip(
+            v-tooltip:right-wrap-text="`Excluding pre-processing will exclude all settings from the Data Wizard including Normalising and Resizing of data, in the deployed model. Augmentation steps are excluded by default.`"
+        )
+            base-checkbox(v-model="settings.ExcludePreProcessing") Exclude pre-processing
+        .checkbox-tooltip(
+            v-tooltip:right-wrap-text="`Excluding post-processing will exclude all steps after prediction including choosing of argmax value and convertion into string labels, in the deployed model.`"
+        )
+            base-checkbox(v-model="settings.ExcludePostProcessing") Exclude post-processing

@@ -167,11 +167,15 @@ class ModelsInterface:
             checkpoint_path=checkpoint_path
         )
 
-        exporter = Exporter(graph_spec, training_model, data_loader)
-
+        include_preprocessing = not options['ExcludePreProcessing'] # We not this value because the exporter has the bool parameter include_preprocessing
+        include_postprocessing = not options['ExcludePostProcessing']
+        exporter = Exporter(
+            graph_spec, training_model, data_loader
+        )
+        
         export_path = os.path.join(options['Location'], options['name'])
         mode = self._get_export_mode(options)
-        exporter.export(export_path, mode=mode)
+        exporter.export(export_path, mode=mode, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
 
         tracking.send_model_exported(
             self._event_tracker, user_email, model_id)
