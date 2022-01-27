@@ -1,7 +1,8 @@
 <template lang="pug">
 .create-model-folder-picker
-  p.create-model-folder-picker-label(v-if="!pathLocation") {{ label }}
-  p.create-model-folder-picker-path(v-else, :title="pathLocation") {{ pathLocation }}
+  .create-model-folder-picker-label(v-if="!pathLocation") {{ label }}
+  div(v-tooltip:bottom="pathLocation", v-else)
+    perfect-scrollbar.create-model-folder-picker-path {{ pathLocation }}
   button.btn.btn--primary.create-model-folder-picker-button(
     @click="onClick",
     :disabled="isWaitingToPick"
@@ -113,11 +114,9 @@ export default {
 .create-model-folder-picker-path {
   font-size: 16px;
   line-height: 40px;
-  padding: 0 85px 0 10px;
+  padding: 0 0 0 10px;
+  margin-right: 85px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  direction: rtl;
 }
 .create-model-folder-picker-button {
   position: absolute;

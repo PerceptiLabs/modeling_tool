@@ -48,7 +48,7 @@ div
             .main-file-structure-contents
               .load-contents-group
                 button.btn.btn--primary.load-dataset(
-                  @click="openFilePicker('setDataPath')",
+                  @click="openFilePicker('setDataPath')"
                 ) Upload .CSV
             .find-out-message Find our starting guide
               span.guide-link(@click="openPLVideoTutorialPage") here.
@@ -65,15 +65,12 @@ div
                 input.normalize-inputs(
                   type="text",
                   v-model="modelName",
-                  @keyup="onModelNameKeyup",
+                  @keyup="onModelNameKeyup"
                 )
             .form_row.relative.mb-15(v-if="isEnterpriseMode !== true")
               .form_label Model Path:
               .form_input.input_group.form_row
-                input.normalize-inputs(
-                  type="text",
-                  v-model="modelPath",
-                )
+                input.normalize-inputs(type="text", v-model="modelPath")
                 button.btn.btn--primary.normalize-button(
                   type="button",
                   @click="openFilePicker"
