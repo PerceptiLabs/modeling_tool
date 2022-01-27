@@ -28,7 +28,7 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
         {% endcall %}
 	{% call indented_if(layer_spec.dropout) %}
             output = self.dropout(output, training=training)
-            preview = self.dropout(preview, training=training)	    
+            preview = output    
 	{% endcall %}
 	
         self.kernel = self.dense.kernel

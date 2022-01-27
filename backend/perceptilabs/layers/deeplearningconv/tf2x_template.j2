@@ -100,11 +100,11 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
         {% endcall %}
         {% call indented_if(layer_spec.dropout) %}
             output = self.dropout(output, training=training)
-            preview = self.dropout(preview, training=training)      
+            preview = output     
         {% endcall %}
         {% call indented_if(layer_spec.pool) %}
             output = self.pooling(output)
-            preview = self.pooling(preview)      
+            preview = output     
         {% endcall %}   
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
