@@ -13,8 +13,8 @@ def serve(path):
     if path != "" and os.path.exists(app.static_folder + '/' + path):
         ext = os.path.splitext(path)[1]
         mimetype = None
-        if ext == 'js':
-            mimetype = 'text/javascript'
+        if ext == '.js':
+            mimetype = 'application/javascript'
         return send_from_directory(app.static_folder, path, mimetype=mimetype)
     else:
         print('app.static_folder', app.static_folder)
