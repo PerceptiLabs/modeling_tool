@@ -187,13 +187,12 @@ import {
   getNextModelName as rygg_getNextModelName,
   createDataset as rygg_createDataset,
   getDataset as rygg_getDataset,
-  uploadFile as rygg_uploadFile,
+  uploadDatasetToFileserver as rygg_uploadDatasetToFileserver,
   pickFile as rygg_pickFile,
   pickDirectory as rygg_pickDirectory,
   rygg_createClassificationDataset,
   rygg_createSegmentationDataset,
   isTaskComplete as rygg_isTaskComplete,
-  uploadDatasetToFileserver as rygg_uploadDatasetToFileserver,
 } from "@/core/apiRygg";
 import { renderingKernel } from "@/core/apiRenderingKernel";
 import { makeDatasetSettings } from "@/core/helpers";
@@ -794,7 +793,7 @@ export default {
       fileInput.setAttribute("accept", ".csv,.zip");
       fileInput.addEventListener("change", e => {
         const file = e.target.files[0];
-        rygg_uploadFile(file, false)
+        rygg_uploadDatasetToFileserver(file, false)
           .then(async () => {
             this.handleDataPathUpdates([file.name]);
           })

@@ -4,7 +4,7 @@ import {
   projectPathModel,
   eraseCookie,
 } from "@/core/helpers";
-import { getModelJson as rygg_getModelJson } from '@/core/apiRygg';
+import { getModelJsonById as rygg_getModelJsonById } from '@/core/apiRygg';
 
 const namespaced = true;
 
@@ -99,7 +99,9 @@ const actions = {
       pathIndex = localProjectsList.findIndex((proj)=> proj.pathProject === pathProject);
     }
 
-    rygg_getModelJson(pathFile)
+    // TODO: if this dead code is resurrected, then the model id will be needed
+    let model_id = 0;
+    rygg_getModelJsonById(model_id)
       .then(async (model) => {
 
         //validate model

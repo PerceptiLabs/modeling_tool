@@ -207,7 +207,6 @@ import ImportModel from "@/components/global-popups/import-model-popup.vue";
 
 import { mapActions, mapState, mapGetters } from "vuex";
 import { assembleModel } from "@/core/helpers/model-helper";
-import { getModelJson as rygg_getModelJson } from "@/core/apiRygg";
 import { getNextModelName as rygg_getNextModelName } from "@/core/apiRygg";
 import { uploadDatasetToFileserver as rygg_uploadDatasetToFileserver } from "@/core/apiRygg";
 import { getTaskStatus as rygg_getTaskStatus } from "@/core/apiRygg";
@@ -340,9 +339,6 @@ export default {
         // this.SET_openTest(false);
         this.$router.push({ name: "app" });
       }
-    },
-    openTemplate(path) {
-      rygg_getModelJson(path);
     },
     isItemSelected(itemId) {
       itemId = parseInt(itemId);

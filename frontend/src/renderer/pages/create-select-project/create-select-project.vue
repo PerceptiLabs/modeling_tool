@@ -88,8 +88,6 @@
   import { generateID } from "@/core/helpers";
   import { coreRequest } from '@/core/apiWeb.js';
   import cloneDeep from 'lodash.clonedeep';
-  import { getFolderContent as rygg_getFolderContent } from '@/core/apiRygg';
-  import { getModelJson as rygg_getModelJson } from '@/core/apiRygg';
   import { pickFile as rygg_pickFile } from '@/core/apiRygg';
   import { pickDirectory as rygg_pickDirectory } from '@/core/apiRygg';
   import { isEnterpriseApp as rygg_isEnterpriseApp } from '@/core/apiRygg';
