@@ -2,7 +2,6 @@ import tensorflow as tf
 import numpy as np
 import os
 from abc import ABC, abstractmethod
-from perceptilabs.script import ScriptFactory
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.resources.epochs import EpochsAccess
@@ -17,13 +16,10 @@ class LoadInferenceModel():
         self._outputs = None
 
     @classmethod
-    def from_checkpoint(cls, training_session_id, graph_spec, data_loader):
+    def from_checkpoint(cls, model_access, epochs_access, training_session_id, graph_spec, data_loader):
         """
         load model from checkpoint and graphspec
         """
-        script_factory = ScriptFactory()
-
-        epochs_access = EpochsAccess()                
         epoch_id = epochs_access.get_latest(
             training_session_id=training_session_id,
             require_checkpoint=True,
@@ -34,12 +30,10 @@ class LoadInferenceModel():
             training_session_id=training_session_id,
             epoch_id=epoch_id
         )
-        
-        training_model = ModelAccess(script_factory).get_training_model(
-            graph_spec.to_dict(),  # TODO: F/E needs to send ID
-            checkpoint_path=checkpoint_path
-        )
 
+        training_model = TrainingModel.from_graph_spec(
+            graph_spec, checkpoint_path=checkpoint_path)
+        
         return cls(training_model)
 
     def run_inference(self, data_iterator, return_inputs=False):

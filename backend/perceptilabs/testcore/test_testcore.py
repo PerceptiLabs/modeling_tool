@@ -5,7 +5,10 @@ import tempfile
 import tensorflow as tf
 import numpy as np
 import pandas as pd
+from unittest.mock import MagicMock
 
+from perceptilabs.resources.epochs import EpochsAccess
+from perceptilabs.resources.models import ModelAccess
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings, FeatureSpec
@@ -76,13 +79,10 @@ def graph_spec_few_epochs():
 
 
 @pytest.fixture()
-def training_session_id(temp_path):
-    import base64    
-    return base64.urlsafe_b64encode(temp_path.encode()).decode()
-
-
-@pytest.fixture()
-def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader, training_session_id):
+def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
+    training_session_id = '123'
+    testing_session_id = '456'
+    
     training_model = TrainingModel(script_factory, graph_spec_few_epochs)
     exporter = Exporter(graph_spec_few_epochs, training_model, data_loader)
     checkpoint_path = os.path.join(temp_path, 'checkpoint-0000.ckpt')
@@ -108,7 +108,15 @@ def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader, trai
         },
     }
     tests = []
-    testcore = TestCore(training_session_id, [1], models_info, tests)
+    model_ids = [1]
+    
+    rygg = MagicMock()
+    epochs_access = EpochsAccess(rygg)
+    model_access = ModelAccess(rygg)
+
+    testcore = TestCore(
+        model_access, epochs_access, testing_session_id, model_ids, models_info, tests)
+    
     testcore.load_models_and_data()
     yield testcore
 

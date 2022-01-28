@@ -60,7 +60,7 @@ export const renderingKernel = {
     const payload = {
       exportSettings: exportSettings,
       datasetSettings: datasetSettings,
-      network: network,
+      graphSettings: network,
       userEmail: userEmail,
       trainingSettings: trainingSettings,
       frontendSettings: frontendSettings,
@@ -89,7 +89,7 @@ export const renderingKernel = {
 
     const payload = {
       datasetSettings: datasetSettings,
-      network: network,
+      graphSettings: network,
       userEmail: userEmail,
       modelName: modelName,
       settings: settings
@@ -152,7 +152,7 @@ export const renderingKernel = {
 
   async getCode(network, modelId, layerId) {
     const payload = {
-      network: network,
+      graphSettings: network
     };
     return whenRenderingKernelReady
       .then(rk => rk.post(`/models/${modelId}/layers/${layerId}/code`, payload))
@@ -175,7 +175,7 @@ export const renderingKernel = {
 
   async getLayerInfoAll(modelId, network, datasetSettings, userEmail) {
     const payload = {
-      network: network,
+      graphSettings: network,
       datasetSettings: datasetSettings,
       userEmail: userEmail,
     };
@@ -188,7 +188,7 @@ export const renderingKernel = {
 
   async getLayerInfo(modelId, network, datasetSettings, layerId, userEmail) {
     const payload = {
-      network: network,
+      graphSettings: network,
       datasetSettings: datasetSettings,
       userEmail: userEmail,
     };
@@ -228,7 +228,7 @@ export const renderingKernel = {
 
   async getPreviews(modelId, network, datasetSettings, userEmail) {
     const payload = {
-      network: network,
+      graphSettings: network,
       datasetSettings: datasetSettings,
       userEmail: userEmail,
     };
@@ -261,31 +261,24 @@ export const renderingKernel = {
 
   async isDataReady(preprocessingSessionId, userEmail) {
     return whenRenderingKernelReady
-      .then(rk =>
-        rk.get(
-          `/datasets/preprocessing/${preprocessingSessionId}?user_email=${userEmail}`,
-        ),
-      )
-      .then(res => {
-        return res.status === 200 ? res.data : false;
-      })
-      .catch(err => {
-        console.error(err);
-        return false;
-      });
-  },
-
-  async getModelRecommendation(
-    datasetSettings,
-    userEmail,
-    modelId,
-    skippedWorkspace,
-  ) {
+    .then(rk => rk.get(`/datasets/preprocessing/${preprocessingSessionId}?user_email=${userEmail}`))
+    .then(res => {
+      return (res.status === 200) ? res.data : false;
+    }).catch((err) => {
+      console.error(err);
+      return false;
+    })
+  },    
+    
+  async getModelRecommendation(projectId, datasetId, datasetSettings, userEmail, modelName, skippedWorkspace, modelPath) {
     const payload = {
+      projectId: projectId,
+      datasetId: datasetId,
       datasetSettings: datasetSettings,
       userEmail: userEmail,
-      modelId: modelId,
+      modelName: modelName,
       skippedWorkspace: skippedWorkspace,
+      modelPath: modelPath
     };
     return whenRenderingKernelReady
       .then(rk => rk.post("/models/recommendations", payload))
@@ -298,17 +291,11 @@ export const renderingKernel = {
   },
 
   async waitForDataReady(datasetSettings, userEmail, cb) {
-    const preprocessingSessionId = await renderingKernel.putData(
-      datasetSettings,
-      userEmail,
-    );
-
-    await (async function() {
-      while (1) {
-        const res = await renderingKernel.isDataReady(
-          preprocessingSessionId,
-          userEmail,
-        );
+    const preprocessingSessionId = await renderingKernel.putData(datasetSettings, userEmail);
+        
+    await (async function () {
+      while(1) {
+        const res = await renderingKernel.isDataReady(preprocessingSessionId, userEmail);
         if (res && res.is_complete) {
           break;
         }
@@ -324,7 +311,6 @@ export const renderingKernel = {
 
   async startTraining(
     modelId,
-    trainingSessionId,
     network,
     datasetSettings,
     trainingSettings,
@@ -333,7 +319,7 @@ export const renderingKernel = {
     userEmail,
   ) {
     const payload = {
-      network: network,
+      graphSettings: network,
       datasetSettings: datasetSettings,
       trainingSettings: trainingSettings,
       checkpointDirectory: checkpointDirectory,
@@ -342,9 +328,7 @@ export const renderingKernel = {
     };
 
     return whenRenderingKernelReady
-      .then(rk =>
-        rk.post(`/models/${modelId}/training/${trainingSessionId}`, payload),
-      )
+      .then(rk => rk.post(`/models/${modelId}/training`, payload))
       .then(res => {
         if (res.status !== 200) {
           throw new Error("Failed to start training");
@@ -425,9 +409,12 @@ export const renderingKernel = {
       });
   },
 
-  async importModel(datasetId, modelFilePath) {
+  async importModel(archiveFilePath, projectId, datasetId, modelName, modelFilePath) {
     const payload = {
+      archiveFilePath: archiveFilePath,      
+      projectId: projectId,
       datasetId: datasetId,
+      modelName: modelName,
       modelFilePath: modelFilePath,
     };
     return whenRenderingKernelReady

@@ -21,12 +21,16 @@ class DatasetAccess:
             raise
 
     def get_location(self, dataset_id):
-        data = self._rygg.get_dataset(dataset_id)                    
+        data = self._rygg.get_dataset(dataset_id)
+        
         try:
-            return data['location'].replace('\\', '/')
+            location = data['location'].replace('\\', '/')
+            logger.info(f"Found dataset {dataset_id} at {location}")
         except:
             logger.exception("Failed getting dataset location")                        
             raise
+        else:
+            return location
 
     def get_name(self, dataset_id):
         data = self._rygg.get_dataset(dataset_id)                    
@@ -40,7 +44,8 @@ class DatasetAccess:
         try:
             location = self.get_location(dataset_id)
             df = pd.read_csv(location)
-
+            logger.info(f"Loaded dataframe for dataset {dataset_id}. Head:\n{df.head()}")
+            
             # Localize paths
             if fix_paths_for:
                 directory = os.path.dirname(location)

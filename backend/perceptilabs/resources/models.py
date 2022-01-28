@@ -1,26 +1,34 @@
+import os
 import logging
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.script import ScriptFactory
 
-logger = logging.getLogger(__name__)
 
 
 class ModelAccess:
-    def __init__(self, script_factory=None):    
-        self._script_factory = script_factory or ScriptFactory()
-
-    def get_training_model(self, model_id, checkpoint_path=None):
-        training_model = TrainingModel(
-            self._script_factory, self.get_graph_spec(model_id))
-
-        if checkpoint_path:
-            training_model.load_weights(filepath=checkpoint_path)
-            logger.info(f"Loaded weights from {checkpoint_path}")
-            
-        return training_model
+    def __init__(self, rygg):    
+        self._rygg = rygg
 
     def get_graph_spec(self, model_id):
-        graph_spec = GraphSpec.from_dict(model_id)  # TODO: this should be retrieved from rygg
+        graph_settings = self.get_graph(model_id)
+        graph_spec = GraphSpec.from_dict(graph_settings) 
         return graph_spec
 
+    def create(self, project_id, dataset_id, model_name, model_path=None):
+        location = os.path.join(model_path, model_name) if model_path else None
+        res = self._rygg.create_model(project_id, dataset_id, model_name, location=location)
+        return res['model_id']
+        
+    def save_graph(self, model_id, graph_spec):
+        model = self._rygg.load_model_json(model_id)
+        model['graphSettings'] = graph_spec.to_dict()
+        self._rygg.save_model_json(model_id, model)
+
+    def get_graph(self, model_id):
+        model = self._rygg.load_model_json(model_id)
+        return model['graphSettings']
+        
+    
+    
+    

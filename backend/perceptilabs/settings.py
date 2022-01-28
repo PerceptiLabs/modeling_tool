@@ -17,7 +17,7 @@ SERVING_RESULTS_REFRESH_INTERVAL = 1.0 # seconds [None == for every iteration]
 
 
 RYGG_FILE_SERVING_TOKEN = os.getenv("PL_FILE_SERVING_TOKEN", "12312")
-RYGG_BASE_URL = os.getenv("PL_RYGG_BASE_URL", "http://localhost:8000")
+RYGG_BASE_URL = os.getenv("PL_RYGG_BASE_URL", "http://127.0.0.1:8000")
 
 
 MIXPANEL_TOKEN_PROD = '1480b2244fdd4d821227a29e2637f922'  # TODO: should be env var..!

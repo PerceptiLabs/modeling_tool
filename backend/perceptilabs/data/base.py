@@ -63,6 +63,9 @@ class DataLoader:
 
     @classmethod
     def compute_metadata(cls, data_frame, dataset_settings, num_repeats=1, on_status_updated=None):
+        if data_frame is None:
+            raise ValueError("Dataframe cannot be None!")
+        
         training_set, _, _ = cls._build_and_partition_data(
             data_frame, dataset_settings, num_repeats
         )

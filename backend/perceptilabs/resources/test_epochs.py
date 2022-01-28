@@ -1,11 +1,14 @@
 import os
 import pytest
+from unittest.mock import MagicMock
 from perceptilabs.resources.epochs import EpochsAccess
 
 
 @pytest.fixture(scope='function')
-def access(monkeypatch):
-    access = EpochsAccess()
+def access(monkeypatch, tmp_path):
+    rygg = MagicMock()
+    rygg.get_model.return_value = {'location': tmp_path}    
+    access = EpochsAccess(rygg)
 
     files = {
         'state-0009.pkl': 9,
@@ -30,8 +33,7 @@ def access(monkeypatch):
 
 @pytest.fixture()
 def training_session_id(temp_path):
-    import base64    
-    return base64.urlsafe_b64encode(temp_path.encode()).decode()
+    return '123'
 
 
 def test_get_latest_require_checkpoint(access, training_session_id):

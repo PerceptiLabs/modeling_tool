@@ -15,7 +15,6 @@ import logging
 from perceptilabs.layers.visualizer import PerceptiLabsVisualizer
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, GlobalStatsTracker, TrainingStatsTracker
-from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.layers.iooutput.stats import ImageOutputStatsTracker, NumericalOutputStatsTracker, CategoricalOutputStatsTracker, MaskOutputStatsTracker
 from perceptilabs.layers.inner_layer_stats import InnerLayersStatsTracker
 from perceptilabs.layers.ioinput.stats import InputStatsTracker
@@ -33,10 +32,11 @@ logger = logging.getLogger(__name__)
 
 
 class Trainer:
-    def __init__(self, data_loader, training_model, training_settings, training_session_id, exporter=None, model_id=None, initial_state=None, on_training_started=None, on_training_stopped=None, on_training_completed=None):
+    def __init__(self, data_loader, training_model, training_settings, training_session_id, model_id=None, initial_state=None, on_training_started=None, on_training_stopped=None, on_training_completed=None, on_epoch_completed=None):
         self._on_training_started = on_training_started
         self._on_training_stopped = on_training_stopped
         self._on_training_completed = on_training_completed
+        self._on_epoch_completed = on_epoch_completed
 
         self._initial_state = initial_state
         self._training_settings = training_settings.copy()
@@ -49,7 +49,6 @@ class Trainer:
         self._data_loader = data_loader
         self._training_model = training_model
         self._graph_spec = training_model.graph_spec
-        self._exporter = exporter
 
         self._optimizer = self._resolve_optimizer(self._training_settings)
         self._loss_functions = self._setup_loss_functions(self._training_settings)
@@ -202,12 +201,12 @@ class Trainer:
             if self.is_closed:
                 break
 
-            if self._auto_checkpoint:
-                self._auto_save_epoch(epoch=self._num_epochs_completed)
-
             self._num_epochs_completed += 1
             epoch_time = time.perf_counter() - t0 
 
+            if self._on_epoch_completed:
+                self._on_epoch_completed(self, epoch_time)
+            
             self._log_epoch_summary(epoch_time)
             self._training_time += epoch_time
 
@@ -216,10 +215,6 @@ class Trainer:
                 peak_memory_usage = current_memory_usage
 
             yield
-
-        if not self._auto_checkpoint: 
-            if self._num_epochs_completed > 0 or self._num_training_batches_completed_this_epoch > 0:
-                self._auto_save_epoch(epoch=self._num_epochs_completed)
 
         if self._num_epochs_completed == self.num_epochs:
             self._set_status('Finished')
@@ -231,6 +226,7 @@ class Trainer:
             dataset_size, sample_size, num_iters_completed, data_units_iter_based, \
                 data_units_epoch_based, model_params, trainable_params = self._get_mixpanel_pricing_metrics()
             self._on_training_completed(
+                self,
                 self._training_time,
                 dataset_size,
                 sample_size,
@@ -247,22 +243,6 @@ class Trainer:
         else:
             logger.info(
                 f"Training ended before completion. Total duration: {round(self._training_time, 3)} s")
-
-    def _auto_save_epoch(self, epoch):
-        """ Exports the model so that we can restore it between runs """
-        if self._exporter is None:
-            logger.error("Exporter not set. Cannot auto export")
-            return
-
-        epochs_access = EpochsAccess()
-        checkpoint_path = epochs_access.get_checkpoint_path(
-            training_session_id=self._training_session_id,
-            epoch_id=epoch
-        )
-        self._exporter.export_checkpoint(checkpoint_path)
-
-        state_dict = self.save_state()
-        epochs_access.save_state_dict(self._training_session_id, epoch, state_dict)
 
     def _log_model_summary(self):
         try:
@@ -520,6 +500,10 @@ class Trainer:
                 data_units_epoch_based, model_params, trainable_params
 
     @property
+    def auto_checkpoint(self):
+        return self._auto_checkpoint
+    
+    @property
     def status(self):
         """ The current training status """
         return self._status
@@ -680,32 +664,6 @@ class Trainer:
     def get_global_stats(self):
         """ Returns a stats object for the current global stats """
         return self._global_stats_tracker.save()
-
-    def export(self, export_directory, mode='Standard'):
-        if self._exporter is None:
-            logger.warning("Exporter not set, couldn't export!")
-            return
-
-        if mode == 'Checkpoint':
-            self._exporter.export_checkpoint(
-                os.path.join(export_directory, 'checkpoint.ckpt'))
-        else:
-            self._exporter.export(export_directory, mode)
-
-    def export_inference(self, path, mode):
-        if self._exporter is not None:
-            self._exporter.export(path, mode)
-        else:
-            logger.warning(
-                "Exporter not set, couldn't export inference model!")
-
-    def export_checkpoint(self, path):
-        if self._exporter is not None:
-            path = os.path.join(path, 'checkpoint.ckpt')
-            self._exporter.export_checkpoint(path)
-        else:
-            logger.warning("Exporter not set, couldn't export checkpoint!")
-
 
     def get_output_stats(self) -> Dict:
         """ Returns a stats object representing the current state of the outputs """

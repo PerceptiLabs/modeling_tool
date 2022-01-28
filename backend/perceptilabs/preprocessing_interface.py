@@ -50,6 +50,9 @@ class PreprocessingSessionInterface:
         df = self._dataset_access.get_dataframe(
             dataset_settings.dataset_id, fix_paths_for=dataset_settings.file_based_features)
 
+        if df is None:
+            raise ValueError("Invalid dataframe!")
+
         def on_status_updated(status, feature_name, total_steps, steps_completed, index=None, size=None):
             if index is not None and size:
                 status_message =  f"Step {steps_completed}/{total_steps} for feature \'{feature_name}\': building {status} pipeline' [{index} / {size} samples processed]"

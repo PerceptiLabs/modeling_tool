@@ -12,11 +12,6 @@ from perceptilabs.script.base import ScriptFactory
 from perceptilabs.resources.epochs import EpochsAccess
 
 
-def make_session_id(string):
-    import base64    
-    return base64.urlsafe_b64encode(string.encode()).decode()    
-
-
 @pytest.fixture
 def data_loader():    
     builder = DatasetBuilder.from_features({
@@ -100,9 +95,6 @@ def message_broker(queue):
 @pytest.mark.parametrize("results_interval", [None, 0.0001])
 def test_results_are_stored(message_broker, data_loader, graph_spec, training_model, training_settings, results_interval):
     model_access = MagicMock()
-    model_access.get_training_model.return_value = training_model
-    model_access.get_graph_spec.return_value = graph_spec
-
     epochs_access = MagicMock()
     results_access = MagicMock()
     event_tracker = MagicMock()
@@ -118,8 +110,8 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, training_mo
     interface.run(
         data_loader,
         model_id='456',
-        graph_spec_dict=graph_spec.to_dict(),        
-        training_session_id=make_session_id('789'),
+        graph_settings=graph_spec.to_dict(),        
+        training_session_id='789',
         training_settings=training_settings,
         load_checkpoint=False,
         user_email='a@b.com',
@@ -130,11 +122,47 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, training_mo
     assert results_access.store.call_args[0][1]['progress'] == 1.0
 
 
+@pytest.mark.parametrize("auto_checkpoint", [False, True])
+def test_auto_checkpoint(monkeypatch, auto_checkpoint, message_broker, data_loader, graph_spec, training_model, training_settings):
+    training_settings['AutoCheckpoint'] = auto_checkpoint
+    
+    model_access = MagicMock()
+    epochs_access = MagicMock()
+    results_access = MagicMock()
+    event_tracker = MagicMock()
+
+    fn_export = MagicMock()
+    from perceptilabs.sharing.exporter import Exporter
+    monkeypatch.setattr(Exporter, "export_checkpoint", fn_export)  
+    
+    interface = TrainingSessionInterface(
+        message_broker,
+        event_tracker,        
+        model_access=model_access,
+        epochs_access=epochs_access,
+        results_access=results_access
+    )
+    
+    interface.run(
+        data_loader,
+        model_id='456',
+        graph_settings=graph_spec.to_dict(),        
+        training_session_id='789',
+        training_settings=training_settings,
+        load_checkpoint=False,
+        user_email='a@b.com',
+    )
+
+    expected_count = training_settings['Epochs'] if auto_checkpoint else 1
+
+
+    assert epochs_access.save_state_dict.call_count == expected_count
+    assert epochs_access.get_checkpoint_path.call_count == expected_count    
+    assert Exporter.export_checkpoint.call_count == expected_count
+    
+
 def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, graph_spec, training_model, training_settings):
     model_access = MagicMock()
-    model_access.get_training_model.return_value = training_model
-    model_access.get_graph_spec.return_value = graph_spec
-
     epochs_access = MagicMock()
     results_access = MagicMock()
     event_tracker = MagicMock()    
@@ -148,12 +176,12 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
     )
 
     model_id = '456'
-    training_session_id = make_session_id('789')
+    training_session_id = '789'
     
     step = interface.run_stepwise(
         data_loader,
         model_id=model_id,
-        graph_spec_dict=graph_spec.to_dict(),        
+        graph_settings=graph_spec.to_dict(),        
         training_session_id=training_session_id,  
         training_settings=training_settings,
         load_checkpoint=False,
@@ -190,12 +218,12 @@ def test_pausing_mid_training(queue, message_broker, data_loader, graph_spec, tr
     )
 
     model_id = '456'
-    training_session_id = make_session_id('789')
+    training_session_id = '789'
     
     step = interface.run_stepwise(
         data_loader,
         model_id=model_id,
-        graph_spec_dict=graph_spec.to_dict(),        
+        graph_settings=graph_spec.to_dict(),        
         training_session_id=training_session_id,
         training_settings=training_settings,
         load_checkpoint=False,
@@ -244,16 +272,17 @@ def test_export_mid_training(monkeypatch, queue, message_broker, data_loader, gr
     )
 
     model_id = '456'
-    training_session_id = make_session_id('789')
+    training_session_id = '789'
+    user_email = 'a@b.com'
     
     step = interface.run_stepwise(
         data_loader,
         model_id=model_id,
-        graph_spec_dict=graph_spec.to_dict(),        
+        graph_settings=graph_spec.to_dict(),        
         training_session_id=training_session_id,
         training_settings=training_settings,
         load_checkpoint=False,
-        user_email='a@b.com'
+        user_email=user_email
     )
 
     assert fn_export.call_count == 0    
@@ -269,7 +298,8 @@ def test_export_mid_training(monkeypatch, queue, message_broker, data_loader, gr
                     'model_id': model_id,
                     'training_session_id': training_session_id,
                     'export_directory': str(tmp_path),
-                    'mode': 'Standard'
+                    'mode': 'Standard',
+                    'user_email': user_email
                 }
             })
 
@@ -277,16 +307,21 @@ def test_export_mid_training(monkeypatch, queue, message_broker, data_loader, gr
     assert fn_export.call_count == 1
 
     
-
 @pytest.mark.parametrize("load_checkpoint", [False, True])
-def test_load_checkpoint(message_broker, data_loader, graph_spec, training_model, training_settings, load_checkpoint):
-    model_access = MagicMock()
-    model_access.get_training_model.return_value = training_model
-    model_access.get_graph_spec.return_value = graph_spec
+def test_load_checkpoint(monkeypatch, message_broker, data_loader, graph_spec, training_model, training_settings, load_checkpoint):
+    from perceptilabs.trainer.model import TrainingModel
 
-    epochs_access = EpochsAccess()
+    fn_mock = MagicMock()
+    fn_mock.return_value = training_model
+    monkeypatch.setattr(TrainingModel, "from_graph_spec", fn_mock)  
+
+    rygg = MagicMock()
+    rygg.get_model.return_value = {"location": "/tmp/my-checkpoint-dir"}
+    
+    epochs_access = EpochsAccess(rygg)
     results_access = MagicMock()
-    event_tracker = MagicMock()    
+    event_tracker = MagicMock()
+    model_access = MagicMock()    
     
     interface = TrainingSessionInterface(
         message_broker,
@@ -299,16 +334,16 @@ def test_load_checkpoint(message_broker, data_loader, graph_spec, training_model
     interface.run(
         data_loader,
         model_id='456',
-        graph_spec_dict=graph_spec.to_dict(),        
-        training_session_id=make_session_id('789'),
+        graph_settings=graph_spec.to_dict(),        
+        training_session_id='789',
         training_settings=training_settings,
         load_checkpoint=load_checkpoint,
         user_email='a@b.com'
     )
 
-    assert model_access.get_training_model.call_count == 1
+    assert fn_mock.call_count == 1
 
-    requested_checkpoint = model_access.get_training_model.call_args.kwargs['checkpoint_path']
+    requested_checkpoint = fn_mock.call_args.kwargs['checkpoint_path']
     if load_checkpoint:
         assert requested_checkpoint is not None
     else:
@@ -317,10 +352,10 @@ def test_load_checkpoint(message_broker, data_loader, graph_spec, training_model
         
 
 @pytest.mark.parametrize("model_id,session_id,expect_finished", [
-    ('correct', make_session_id('correct'), False),  # Both correct - should stop
-    ('incorrect', make_session_id('incorrect'), True),  # Both wrong - wont stop
-    ('incorrect', make_session_id('correct'), True),  # Model id wrong - wont stop
-    ('correct', make_session_id('incorrect'), True),  # Session id wrong - wont stop         
+    ('correct', 'correct', False),  # Both correct - should stop
+    ('incorrect', 'incorrect', True),  # Both wrong - wont stop
+    ('incorrect', 'correct', True),  # Model id wrong - wont stop
+    ('correct', 'incorrect', True),  # Session id wrong - wont stop         
 ])
                          
 def test_ignores_stopping_for_different_interface(model_id, session_id, expect_finished, queue, message_broker, data_loader, graph_spec, training_model, training_settings):
@@ -341,12 +376,12 @@ def test_ignores_stopping_for_different_interface(model_id, session_id, expect_f
     )
 
     actual_model_id = 'correct'
-    actual_training_session_id = make_session_id('correct')
+    actual_training_session_id = 'correct'
     
     step = interface.run_stepwise(
         data_loader,
         model_id=actual_model_id,
-        graph_spec_dict=graph_spec.to_dict(),
+        graph_settings=graph_spec.to_dict(),
         training_session_id=actual_training_session_id,  
         training_settings=training_settings,
         load_checkpoint=False,
@@ -394,8 +429,8 @@ def test_errors_are_stored(monkeypatch, message_broker, data_loader, graph_spec,
     interface.run(
         data_loader,
         model_id='456',
-        graph_spec_dict=graph_spec.to_dict(),        
-        training_session_id=make_session_id('789'),
+        graph_settings=graph_spec.to_dict(),        
+        training_session_id='789',
         training_settings=training_settings,
         load_checkpoint=False,
         user_email='a@b.com'

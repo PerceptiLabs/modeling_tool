@@ -42,7 +42,7 @@ class EventTracker:
             
     def _send_event(self, user_email, event_name, properties):
         self._assert_enabled()
-        
+
         self._mp.track(
             distinct_id=user_email,
             event_name=event_name,

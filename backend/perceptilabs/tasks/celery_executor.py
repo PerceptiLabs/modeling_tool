@@ -39,17 +39,17 @@ CELERY_APP = Celery(
     default_retry_delay=5,
     max_retries=3,
 )
-def training_task_wrapper(self, dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email, logrocket_url=''):
+def training_task_wrapper(self, dataset_settings_dict, model_id, training_session_id, training_settings, load_checkpoint, user_email, logrocket_url='', graph_settings=None):
     training_task(
         dataset_settings_dict,
         model_id,
-        graph_spec_dict,
         training_session_id,
         training_settings,
         load_checkpoint,
         user_email,
         is_retry=(self.request.retries > 0),
-        logrocket_url=logrocket_url
+        logrocket_url=logrocket_url,
+        graph_settings=graph_settings
     )
 
 @shared_task(
@@ -112,6 +112,11 @@ class CeleryTaskExecutor(TaskExecutor):
             self._on_task_sent(res.id, task_name)
         
         return res.id
+
+    @property
+    def num_remaining_tasks(self):
+        as_dict = self._app.control.inspect().active() or {}
+        return len(as_dict)
 
     def _setup_monitoring(self):
         def on_event(event):

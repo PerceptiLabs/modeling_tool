@@ -326,7 +326,7 @@ const actions = {
       models[id] = {};
       models[id].layers = getters.GET_coreNetworkById(id);
       models[id].model_name = network.networkName;
-      models[id].training_session_id = base64url(checkpoint_paths[id]);
+      models[id].training_session_id = id;
       models[id].datasetSettings = network.networkMeta.datasetSettings;
       models[id].data_path = payload.dataPath;
     });
@@ -450,7 +450,6 @@ const actions = {
       rootGetters["mod_workspace/GET_modelTrainingSetting"];
     const checkpointDirectory =
       rootGetters["mod_workspace/GET_currentNetworkCheckpointDirectory"];
-    const trainingSessionId = base64url(checkpointDirectory);
 
     const trackingData = {
       modelId: modelId,
@@ -459,7 +458,6 @@ const actions = {
     return renderingKernel
       .startTraining(
         modelId,
-        trainingSessionId,
         network,
         datasetSettings,
         trainingSettings,
@@ -491,7 +489,7 @@ const actions = {
     const checkpointDirectory = rootGetters[
       "mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId"
     ](modelId);
-    const trainingSessionId = base64url(checkpointDirectory);
+    const trainingSessionId = modelId;
 
     renderingKernel
       .pauseTraining(modelId, trainingSessionId)
@@ -514,7 +512,7 @@ const actions = {
     const checkpointDirectory = rootGetters[
       "mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId"
     ](modelId);
-    const trainingSessionId = base64url(checkpointDirectory);
+    const trainingSessionId = modelId;
 
     renderingKernel
       .unpauseTraining(modelId, trainingSessionId)
@@ -539,7 +537,7 @@ const actions = {
     const checkpointDirectory = rootGetters[
       "mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId"
     ](modelId);
-    const trainingSessionId = base64url(checkpointDirectory);
+    const trainingSessionId = modelId;
 
     renderingKernel
       .stopTraining(modelId, trainingSessionId)
@@ -578,7 +576,7 @@ const actions = {
     const checkpointDirectory = rootGetters[
       "mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId"
     ](networkId);
-    const trainingSessionId = base64url(checkpointDirectory);
+    const trainingSessionId = networkId;
 
     //console.log('API_getResultInfo', theData);
     return renderingKernel
@@ -612,7 +610,7 @@ const actions = {
     const checkpointDirectory = rootGetters[
       "mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId"
     ](modelId);
-    const trainingSessionId = base64url(checkpointDirectory);
+    const trainingSessionId = modelId;
 
     return renderingKernel
       .getTrainingStatus(modelId, trainingSessionId)
@@ -628,7 +626,7 @@ const actions = {
     const checkpointDirectory = rootGetters[
       "mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId"
     ](modelId);
-    const trainingSessionId = base64url(checkpointDirectory);
+    const trainingSessionId = modelId;
 
     return renderingKernel
       .getTrainingStatus(modelId, trainingSessionId)
@@ -761,7 +759,7 @@ const actions = {
       const checkpointDirectory = rootGetters[
         "mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId"
       ](settings.modelId);
-      const trainingSessionId = base64url(checkpointDirectory);
+      const trainingSessionId = modelId;
 
       console.info(settings, disassembledModel);
 
@@ -851,7 +849,7 @@ const actions = {
       "mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId"
     ](networkId);
 
-    const trainingSessionId = base64url(checkpointDirectory);
+    const trainingSessionId = networkId;
     renderingKernel
       .getTrainingStatus(networkId, trainingSessionId)
       .then(data => {
@@ -925,7 +923,7 @@ const actions = {
 
     if (!checkpointDirectory) return;
 
-    const trainingSessionId = base64url(checkpointDirectory);
+    const trainingSessionId = modelId
     return renderingKernel
       .getTrainingStatus(modelId, trainingSessionId)
       .then(data => {
@@ -973,7 +971,7 @@ const actions = {
       receiver: networkId,
       action: "updateResults",
       value: {
-        trainingSessionId: base64url(checkpointDirectory),
+        trainingSessionId: networkId
       },
     };
     return coreRequest(theData)
@@ -1245,7 +1243,7 @@ const actions = {
       };
     }
 
-    const trainingSessionId = base64url(checkpointDirFromProject(path));
+    const trainingSessionId = networkId;
 
     return renderingKernel
       .hasCheckpoint(networkId, trainingSessionId)

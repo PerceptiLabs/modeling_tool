@@ -31,7 +31,6 @@ class Exporter:
         self._training_model = training_model
         self._on_model_exported = on_model_exported
         
-
     @property
     def data_loader(self):
         return self._data_loader

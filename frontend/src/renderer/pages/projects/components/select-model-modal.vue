@@ -182,6 +182,7 @@ import {
 } from "@/core/helpers";
 import {
   doesDirExist as rygg_doesDirExist,
+  getModel as rygg_getModel,  
   getDatasetContent as rygg_getDatasetContent,
   getNextModelName as rygg_getNextModelName,
   createDataset as rygg_createDataset,
@@ -391,7 +392,6 @@ export default {
       addNetwork: "mod_workspace/ADD_network",
       closeStatsTestViews: "mod_workspace/SET_statisticsAndTestToClosed",
       currentProjectModels: "mod_project/getProjectModels",
-      createProjectModel: "mod_project/createProjectModel",
       getModelMeta: "mod_project/getModel",
       getProjects: "mod_project/getProjects",
       showErrorPopup: "globalView/GP_errorPopup",
@@ -478,13 +478,6 @@ export default {
         await this.createModelTF1X();
       }
     },
-    deleteModelWithErrorPopup(modelId, errorMessage) {
-      this.$store.dispatch("mod_project/deleteModel", {
-        model_id: modelId,
-      });
-      this.showErrorPopup(errorMessage);
-      this.isCreateModelLoading = false;
-    },
     async createModelTF2X(runStatistics = false) {
       if (!this.csvData) {
         throw new Error("csv is required");
@@ -510,18 +503,7 @@ export default {
         this.isShowCTA = true;
       }, 3 * 60 * 1000);
 
-      let newModelParams = {
-        name: modelName,
-        project: this.currentProjectId,
-        datasets: [this.createdFromDatasetId],
-      };
-
-      if (!this.isEnterpriseMode) {
-        newModelParams.location = `${this.modelPath}/${modelName}`;
-      }
-
       // Creating the project/network entry in rygg
-      const apiMeta = await this.createProjectModel(newModelParams);
 
       const datasetSettings = makeDatasetSettings(
         this.datasetSettings.randomizedPartitions,
@@ -540,27 +522,31 @@ export default {
           this.buildingPreProcessingStatus = message;
         },
       );
-      const modelRecommendation = await renderingKernel
+
+      const [modelId, modelRecommendation] = await renderingKernel
         .getModelRecommendation(
+          this.currentProjectId,
+          this.createdFromDatasetId,
           datasetSettings,
           this.userEmail,
-          apiMeta.model_id,
+          modelName,
           runStatistics,
+          this.isEnterpriseMode ? null : this.modelPath 
         )
         .then(res => {
           if (res && res.error) {
-            this.deleteModelWithErrorPopup(
-              apiMeta.model_id,
-              res.error.message + "\n\n" + res.error.details,
+            this.showErrorPopup(
+              res.error.message + "\n\n" + res.error.details
             );
+            this.isCreateModelLoading = false;      
           }
-          return res;
+          return [res['model_id'], res['graph_settings']];
         })
         .catch(err => {
-          this.deleteModelWithErrorPopup(
-            apiMeta.model_id,
-            res.error.message + "\n\n" + res.error.details,
+          this.showErrorPopup(
+            res.error.message + "\n\n" + res.error.details
           );
+          this.isCreateModelLoading = false;      
           return null;
         });
 
@@ -583,7 +569,9 @@ export default {
       var nodePositions = network.getPositions(ids);
       const layerMeta = await buildLayers(modelRecommendation, nodePositions);
 
-      // Creating network and adding the prepped layer to it
+      // Kernel has created a model. Get the meta info from Rygg
+      console.log(`Get apiMeta from Rygg for model ${modelId}`)
+      const apiMeta = await rygg_getModel(modelId);
 
       let frontendSettings = {
         apiMeta: apiMeta,

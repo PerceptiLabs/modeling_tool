@@ -38,7 +38,10 @@ class Importer:
 
         # TODO(anton): loop over type inference to see what works...!        
 
-        mapping = {original_column: None for original_column in dataset_settings_dict['featureSpecs'].keys()}
+        mapping = {
+            original_column: None
+            for original_column in dataset_settings_dict['featureSpecs'].keys()
+        }
 
         expected_types = set()
         for new_column, actual_type in default_types.items():
@@ -50,6 +53,9 @@ class Importer:
                     mapping[original_column] = new_column
 
         for original_column, new_column in mapping.items():
+            if dataset_settings_dict['featureSpecs'][original_column]['iotype'] == 'do not use':
+                continue
+            
             if new_column is None:
                 message  = f"Couldn't find a suitable remapping of dataset columns. The recommended types for dataset '{new_dataset}' were "
                 message += ", ".join(k + '->' + v for k, v in default_types.items())

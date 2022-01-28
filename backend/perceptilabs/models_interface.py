@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 
+from perceptilabs.trainer.model import TrainingModel            
 from perceptilabs.stats.base import OutputStats
 from perceptilabs.sharing.exporter import Exporter, CompatibilityError
 from perceptilabs.data.settings import DatasetSettings
@@ -33,19 +34,22 @@ class ModelsInterface:
 
         self._script_factory = ScriptFactory()        
 
-    def start_training(self, dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email, logrocket_url=''):
+    def start_training(self, dataset_settings_dict, model_id, training_settings, load_checkpoint, user_email, logrocket_url='', graph_settings=None):
+        training_session_id = model_id  # Training session ID == model ID for now...
+        
         self._task_executor.enqueue(
             'training_task',
             dataset_settings_dict,
             model_id,
-            graph_spec_dict,
             training_session_id,
             training_settings,
             load_checkpoint,
             user_email,
-            logrocket_url=logrocket_url            
+            logrocket_url=logrocket_url,
+            graph_settings=graph_settings
         )
-
+        return training_session_id 
+        
     def stop_training(self, model_id, training_session_id):
         self._message_broker.publish(
             {'event': 'training-stop', 'payload': {'model_id': model_id, 'training_session_id': training_session_id}})        
@@ -107,30 +111,32 @@ class ModelsInterface:
         return self._epochs_access.has_saved_epoch(
             training_session_id, require_trainer_state=False)
         
-    def _export_internal(self, options, model_id, graph_spec_dict, dataset_settings_dict, training_session_id, user_email, training_settings_dict, frontend_settings):
-        if options['Type'] == 'Archive':
-            return self._export_as_archive(
-                model_id,
-                options['Location'],
-                dataset_settings_dict,
-                graph_spec_dict,
-                user_email,
-                training_settings_dict,
-                frontend_settings
-            )
-        else:
-            if self.has_checkpoint(model_id, training_session_id):
-                return self._export_after_training(options, model_id, graph_spec_dict, dataset_settings_dict, training_session_id, user_email)
-            else:
-                return self._export_while_training(options, model_id, training_session_id)
-
     def export(self, *args, **kwargs):
         try:
             return self._export_internal(*args, **kwargs)
         except Exception as e:
             raise KernelError.from_exception(e, message=f'Model export failed')            
 
-    def _export_while_training(self, options, model_id, training_session_id):
+    def _export_internal(self, options, model_id, dataset_settings_dict, training_session_id, user_email, training_settings_dict, frontend_settings, graph_settings=None):
+        if options['Type'] == 'Archive':
+            return self._export_as_archive(
+                model_id,
+                options['Location'],
+                dataset_settings_dict,
+                user_email,
+                training_settings_dict,
+                frontend_settings,
+                graph_settings=graph_settings
+            )
+        elif self.has_checkpoint(model_id, training_session_id):
+            return self._export_after_training(
+                options, model_id, dataset_settings_dict,
+                training_session_id, user_email, graph_settings=graph_settings)
+        else:
+            return self._export_while_training(
+                options, model_id, training_session_id, user_email)            
+
+    def _export_while_training(self, options, model_id, training_session_id, graph_settings, user_email):
         export_path = os.path.join(options['Location'], options['name'])
         mode = self._get_export_mode(options)
         
@@ -140,32 +146,35 @@ class ModelsInterface:
                 'model_id': model_id,
                 'training_session_id': training_session_id,                
                 'export_directory': export_path,
-                'mode': mode
+                'graph_settings': graph_settings,
+                'mode': mode,
+                'user_email': user_email
             }
         }
         self._message_broker.publish(message)        
         return f"Model is running: export requested to {export_path}. This may take a moment."
         
-    def _export_after_training(self, options, model_id, graph_spec_dict, dataset_settings_dict, training_session_id, user_email):        
-        graph_spec = self._model_access.get_graph_spec(
-            model_id=graph_spec_dict) #TODO: F/E should send an ID
-        
+    def _export_after_training(self, options, model_id, dataset_settings_dict, training_session_id, user_email, graph_settings):
+        if graph_settings:
+            graph_spec = GraphSpec.from_dict(graph_settings)
+        else:
+            graph_spec = self._model_access.get_graph_spec(model_id)
+            
         data_loader = self._get_data_loader(dataset_settings_dict, user_email)
-        
+
         epoch_id = self._epochs_access.get_latest(
             training_session_id=training_session_id,  
             require_checkpoint=True,
             require_trainer_state=False
         )
-        
+
         checkpoint_path = self._epochs_access.get_checkpoint_path(
             training_session_id=training_session_id,
             epoch_id=epoch_id
         )
-        training_model = self._model_access.get_training_model(
-            graph_spec.to_dict(),  # TODO. f/e should send an ID
-            checkpoint_path=checkpoint_path
-        )
+            
+        training_model = TrainingModel.from_graph_spec(
+            graph_spec, checkpoint_path=checkpoint_path)
 
         include_preprocessing = not options['ExcludePreProcessing'] # We not this value because the exporter has the bool parameter include_preprocessing
         include_postprocessing = not options['ExcludePostProcessing']
@@ -211,9 +220,13 @@ class ModelsInterface:
         )
         return data_loader
 
-    def get_layer_info(self, model_id, dataset_settings_dict, graph_spec_dict, user_email, layer_id=None):
+    def get_layer_info(self, model_id, dataset_settings_dict, user_email, layer_id=None, graph_settings=None):
         try:
-            graph_spec = self._model_access.get_graph_spec(model_id=graph_spec_dict) #TODO: F/E should send an ID        
+            if graph_settings:
+                graph_spec = GraphSpec.from_dict(graph_settings)
+            else:
+                graph_spec = self._model_access.get_graph_spec(model_id)
+                
             data_loader = self._get_data_loader(dataset_settings_dict, user_email)
             lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
             lw_results = lw_core.run(graph_spec)
@@ -227,9 +240,13 @@ class ModelsInterface:
         except Exception as e:
             raise KernelError.from_exception(e, message=f'Failed getting layer info')            
 
-    def get_previews(self, model_id, graph_spec_dict, dataset_settings_dict, user_email):
+    def get_previews(self, model_id, dataset_settings_dict, user_email, graph_settings=None):
         try:
-            graph_spec = self._model_access.get_graph_spec(model_id=graph_spec_dict) #TODO: F/E should send an ID        
+            if graph_settings:
+                graph_spec = GraphSpec.from_dict(graph_settings)
+            else:
+                graph_spec = self._model_access.get_graph_spec(model_id)
+                
             data_loader = self._get_data_loader(dataset_settings_dict, user_email)
             lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
             lw_results = lw_core.run(graph_spec)
@@ -247,10 +264,13 @@ class ModelsInterface:
         except Exception as e:
             raise KernelError.from_exception(e, message=f'Failed getting previews')            
             
-    def get_layer_code(self, model_id, layer_id, graph_spec_dict):
-        graph_spec = self._model_access.get_graph_spec(model_id=graph_spec_dict) #TODO: F/E should send an ID
+    def get_layer_code(self, model_id, layer_id, graph_settings=None):
+        if graph_settings:
+            graph_spec = GraphSpec.from_dict(graph_settings)
+        else:
+            graph_spec = self._model_access.get_graph_spec(model_id)
+            
         layer_spec = graph_spec.nodes_by_id[layer_id]
-
         code = None
         if layer_spec.is_inner_layer:  # only inner layers have code 
             code = self._script_factory.render_layer_code(
@@ -261,11 +281,18 @@ class ModelsInterface:
         output = {'Output': code}
         return output
 
-    def get_model_recommendation(self, model_id, skipped_workspace, settings_dict, user_email):
+    def get_model_recommendation(self, project_id, dataset_id, model_name, skipped_workspace, settings_dict, user_email, model_path):
         try:
             data_loader = self._get_data_loader(settings_dict, user_email)
+            graph_spec, _ = automation_utils.get_model_recommendation(data_loader)
+
+            model_id = self._model_access.create(project_id, dataset_id, model_name, model_path)
+            try:
+                self._model_access.save_graph(model_id, graph_spec)
+            except:
+                logger.warning("save_graph raised an error")
+                
             
-            graph_spec, training_settings = automation_utils.get_model_recommendation(data_loader)
         except Exception as e:
             raise KernelError.from_exception(e, message="Couldn't get model recommendations because the Kernel responded with an error")
         
@@ -274,7 +301,7 @@ class ModelsInterface:
                 self._track_model_recommended(
                     model_id, user_email, skipped_workspace, data_loader, graph_spec, settings_dict)
                 
-            return graph_spec.to_dict()
+            return model_id, graph_spec.to_dict()
             
     def _track_model_recommended(self, model_id, user_email, skipped_workspace, data_loader, graph_spec, settings_dict):
         training_size = data_loader.get_dataset_size(partition='training')
@@ -298,31 +325,41 @@ class ModelsInterface:
             dataset_id=data_loader.settings.dataset_id
         )
     
-    def import_model(self, dataset_id, source_file):
+    def import_model(self, archive_path, project_id, dataset_id, model_name, model_path):
         importer = Importer(self._dataset_access, self._model_archives_access)
         dataset_settings_dict, graph_spec_dict, training_settings_dict = \
-            importer.run(dataset_id, source_file)
+            importer.run(dataset_id, archive_path)
         
+        model_id = self._model_access.create(project_id, dataset_id, model_name, model_path)
+        try:
+            self._model_access.save_graph(model_id, GraphSpec.from_dict(graph_spec_dict))
+        except:
+            logger.warning("save_graph raised an error")
+
         output = {
+            'modelId': model_id,
             'datasetSettings': dataset_settings_dict,
             'graphSpec': graph_spec_dict,
             'trainingSettings': training_settings_dict
         }
+        
         return output
 
-    def _export_as_archive(self, model_id, location, dataset_settings_dict, graph_spec_dict, user_email, training_settings_dict, frontend_settings):
+    def _export_as_archive(self, model_id, location, dataset_settings_dict, user_email, training_settings_dict, frontend_settings, graph_settings=None):
+        if graph_settings is None:
+            graph_settings = self._model_access.get_graph(model_id)
+        
         path = self._model_archives_access.write(
             model_id,
             location,
             dataset_settings_dict,
-            graph_spec_dict,
+            graph_settings,
             training_settings_dict,
             frontend_settings
         )
         tracking.send_model_exported(
             self._event_tracker, user_email, model_id)            
         return f"Model exported to '{path}'"
-            
             
             
     

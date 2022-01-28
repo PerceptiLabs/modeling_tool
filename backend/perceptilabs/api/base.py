@@ -37,9 +37,6 @@ import perceptilabs.tracking as tracking
 logger = logging.getLogger(__name__)
 
 
-rygg = RyggWrapper.with_default_settings()
-
-
 class MyJSONEncoder(JSONEncoder):
     def default(self, obj):
         return utils.convert(obj)
@@ -67,15 +64,17 @@ def create_app(
         preprocessing_results_access=None,
 ):
     # Defer creating objects until function is actually called to ensure any mocking happens first
+    rygg = RyggWrapper.with_default_settings()
+    
     preview_cache = preview_cache or NullCache()
     task_executor = task_executor or get_task_executor()
     message_broker = message_broker or get_message_broker()
     event_tracker = event_tracker or EventTracker()       
-    models_access = models_access or ModelAccess()
+    models_access = models_access or ModelAccess(rygg)
     model_archives_access = model_archives_access or ModelArchivesAccess()
-    epochs_access = epochs_access or EpochsAccess()
+    epochs_access = epochs_access or EpochsAccess(rygg)
     dataset_access = dataset_access or DatasetAccess(rygg)
-    training_results_access = training_results_access or TrainingResultsAccess()
+    training_results_access = training_results_access or TrainingResultsAccess(rygg)
     testing_results_access = testing_results_access or TestingResultsAccess()
     serving_results_access = serving_results_access or ServingResultsAccess()
     preprocessing_results_access = preprocessing_results_access or PreprocessingResultsAccess(get_data_metadata_cache())
@@ -136,7 +135,7 @@ def create_app(
     def put_preprocessing():
         json_data = request.get_json()
         settings_dict = json_data['datasetSettings']
-        user_email = json_data.get('userEmail')
+        user_email = maybe_get_email(request)
         logrocket_url = request.headers.get('X-LogRocket-URL', '') 
 
         session_id = datasets_interface.start_preprocessing(
@@ -165,29 +164,41 @@ def create_app(
     @app.route('/models/recommendations', methods=['POST'])
     def get_model_recommendation():
         json_data = request.get_json()        
-        graph_spec_dict = models_interface.get_model_recommendation(
-            json_data.get('modelId'),
+        model_id, graph_settings = models_interface.get_model_recommendation(
+            json_data['projectId'],
+            json_data['datasetId'],
+            json_data['modelName'],            
             json_data.get('skippedWorkspace'),
             json_data['datasetSettings'],
-            user_email=maybe_get_email(request)
+            user_email=maybe_get_email(request),
+            model_path=json_data.get('modelPath'),
         )
-        return jsonify(graph_spec_dict)
+        output = {
+            'model_id': model_id,
+            'graph_settings': graph_settings
+        }
+        return jsonify(output)
 
     @app.route('/models/import', methods=['POST'])    
     def import_model():
         json_data = request.get_json()
         
         output = models_interface.import_model(
+            json_data["archiveFilePath"],                        
+            json_data["projectId"],            
             json_data["datasetId"],
-            json_data["modelFilePath"]
+            json_data["modelName"],
+            json_data["modelFilePath"],
         )
         return jsonify(output)
     
 
     @app.route('/models/<model_id>/layers/<layer_id>/code', methods=['POST'])
     def get_layer_code(model_id, layer_id):
-        json_data = request.get_json()
-        return models_interface.get_layer_code(model_id, layer_id, json_data['network'])
+        json_data = request.get_json() or {}
+        return models_interface.get_layer_code(
+            model_id, layer_id, graph_settings=json_data.get('graphSettings')
+        )
 
     @app.route('/models/<model_id>/layers/previews', methods=['POST'])
     def get_previews(model_id):
@@ -195,8 +206,8 @@ def create_app(
         content = models_interface.get_previews(
             model_id,
             dataset_settings_dict=json_data['datasetSettings'],
-            graph_spec_dict=json_data['network'],
-            user_email=json_data.get('userEmail')
+            user_email=maybe_get_email(request),
+            graph_settings=json_data.get('graphSettings')
         )
         return jsonify(content)
     
@@ -207,9 +218,9 @@ def create_app(
         content = models_interface.get_layer_info(
             model_id,
             dataset_settings_dict=json_data['datasetSettings'],
-            graph_spec_dict=json_data['network'],
-            user_email=json_data.get('userEmail'),
-            layer_id=layer_id
+            user_email=maybe_get_email(request),
+            layer_id=layer_id,
+            graph_settings=json_data.get('graphSettings')
         )
         return jsonify(content)
 
@@ -226,26 +237,24 @@ def create_app(
         return '{"healthy": "true"}'
 
 
-    @app.route('/models/<model_id>/training/<training_session_id>', methods=['POST'])
-    def start_training(model_id, training_session_id):
+    @app.route('/models/<model_id>/training', methods=['POST'])
+    def start_training(model_id):
         json_data = request.get_json()
-        graph_spec_dict = json_data['network']
         dataset_settings = json_data['datasetSettings']
         training_settings = json_data['trainingSettings']
         load_checkpoint = json_data['loadCheckpoint']
         logrocket_url = request.headers.get('X-LogRocket-URL', '')         
 
-        models_interface.start_training(
+        training_session_id = models_interface.start_training(
             dataset_settings,
             model_id,
-            graph_spec_dict,
-            training_session_id,
             training_settings,
             load_checkpoint,
             maybe_get_email(request),            
-            logrocket_url=logrocket_url            
+            logrocket_url=logrocket_url,
+            graph_settings=json_data.get('graphSettings')
         )
-        return jsonify({"content": "core started"})
+        return jsonify({"content": "core started", "training_session_id": training_session_id})
 
     @app.route('/models/<model_id>/training/<training_session_id>/stop', methods=['PUT'])
     def stop_training(model_id, training_session_id):
@@ -283,22 +292,22 @@ def create_app(
     def export(model_id):
         json_data = request.get_json()
         training_session_id = request.args.get('training_session_id')        
-        graph_spec_dict = json_data['network']
         dataset_settings_dict = json_data['datasetSettings']
         export_options = json_data['exportSettings']        
         user_email = maybe_get_email(request)        
         training_settings = json_data.get('trainingSettings')        
         frontend_settings = json_data.get('frontendSettings')
+        graph_settings = json_data.get('graphSettings')        
 
         status = models_interface.export(
             export_options,
             model_id,
-            graph_spec_dict,
             dataset_settings_dict,
             training_session_id,
             user_email,
             training_settings,
-            frontend_settings
+            frontend_settings,
+            graph_settings=graph_settings
         )        
         return jsonify(status)
 
@@ -308,12 +317,12 @@ def create_app(
         session_id = inference_interface.start_serving(
             json_data['settings'],
             json_data['datasetSettings'],
-            json_data['network'],
             model_id,
             request.args.get('training_session_id'),            
             json_data['modelName'],
-            maybe_get_email(request),                    
-            logrocket_url=request.headers.get('X-LogRocket-URL', '')         
+            user_email=maybe_get_email(request),                    
+            logrocket_url=request.headers.get('X-LogRocket-URL', ''),
+            graph_settings=json_data.get('graphSettings')
         )        
         return jsonify(session_id)
 
@@ -349,6 +358,13 @@ def create_app(
         output = inference_interface.get_testing_results(testing_session_id)
         return jsonify(output)
 
+    '''
+    # TODO: only available in debug mode?
+    @app.route('/admin/tasks', methods=['GET'])
+    def admin_tasks():
+        num = task_executor.num_remaining_tasks
+        return jsonify(num)
+    '''
 
     @app.before_request
     def before_request():

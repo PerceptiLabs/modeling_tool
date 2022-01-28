@@ -1,4 +1,5 @@
 import base64
+import pathlib
 import math
 import psutil
 import GPUtil
@@ -80,11 +81,14 @@ def convert(obj):
     """ Converts datatypes which can't be jsonified to a type which can """
     if isinstance(obj, (np.int64, np.int32)):
         return int(obj)
-    if isinstance(obj, (np.float64, np.float32)):
+    elif isinstance(obj, (np.float64, np.float32)):
         return float(obj)
-    if np.iscomplexobj(obj):
+    elif np.iscomplexobj(obj):
         return abs(obj)
-    return json.JSONEncoder.default(obj)
+    elif isinstance(obj, pathlib.Path):
+        return str(obj)
+    else:
+        return json.JSONEncoder.default(obj)
 
     
 def get_app_variables():

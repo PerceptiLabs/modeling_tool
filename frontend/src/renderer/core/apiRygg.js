@@ -507,6 +507,19 @@ export const getDataset = async id => {
  * @param {number} id
  * @returns {Promise<AxiosResponse<any>>}
  */
+export const getModel = async id => {
+  return whenHaveFileservingToken()
+    .then(fs => fs.get(`/models/${id}/`))
+    .then(res => {
+      return res.status === 200 ? res.data : null;
+    });
+};
+
+/**
+ *
+ * @param {number} id
+ * @returns {Promise<AxiosResponse<any>>}
+ */
 export const removeDataset = async id => {
   try {
     const fs = await whenHaveFileservingToken();

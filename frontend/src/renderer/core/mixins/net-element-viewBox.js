@@ -43,8 +43,7 @@ const viewBoxMixin = {
     },
     currentTrainingSessionId() {
       const networkId = this.currentNetworkIdForKernelRequests;
-      const directory = this.$store.getters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](networkId)
-      return base64url(directory)  // URL safe base64
+      return networkId;
     },
     serverStatus() {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']

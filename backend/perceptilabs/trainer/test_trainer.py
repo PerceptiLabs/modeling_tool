@@ -146,9 +146,7 @@ def exporter(graph_spec, training_model, data_loader):
 
 @pytest.fixture()
 def training_session_id(temp_path):
-    import base64    
-    return base64.urlsafe_b64encode(temp_path.encode()).decode()
-
+    return '123'
     
 def test_progress_reaches_one(data_loader, training_model, training_settings, training_session_id):
     trainer = Trainer(data_loader, training_model, training_settings, training_session_id)
@@ -263,8 +261,9 @@ def test_trainer_can_pause_stop(data_loader, training_model, training_settings, 
     trainer.stop()
     assert trainer.status == 'Stopped'
 
-
+'''
 def test_trainer_export_checkpoints_atleast_once(graph_spec, data_loader, training_model, training_settings, exporter, temp_path, training_session_id):
+    # TODO: deprecate or move to interface    
     trainer = Trainer(data_loader, training_model, training_settings, training_session_id, exporter=exporter)
 
     step = trainer.run_stepwise()
@@ -280,8 +279,8 @@ def test_trainer_export_checkpoints_atleast_once(graph_spec, data_loader, traini
     assert file_name in os.listdir(temp_path)
 
 
-
 def test_trainer_export_checkpoint_while_training(graph_spec, data_loader, training_model, training_settings, exporter, temp_path, training_session_id):
+    # TODO: deprecate or move to interface        
     trainer = Trainer(data_loader, training_model, training_settings, training_session_id, exporter=exporter)
 
     step = trainer.run_stepwise()
@@ -294,6 +293,7 @@ def test_trainer_export_checkpoint_while_training(graph_spec, data_loader, train
 
 
 def test_trainer_export_pb_while_training(graph_spec, data_loader, training_model, training_settings, exporter, temp_path, training_session_id):
+    # TODO: deprecate or move to interface            
     trainer = Trainer(data_loader, training_model, training_settings, training_session_id, exporter=exporter)
 
     step = trainer.run_stepwise()
@@ -301,7 +301,7 @@ def test_trainer_export_pb_while_training(graph_spec, data_loader, training_mode
 
     assert 'saved_model.pb' not in os.listdir(temp_path)
 
-
+'''
 def test_trainer_custom_loss(data_loader, training_model, training_settings_custom_loss, training_session_id):
     """ Tests if the trainer can finish a full training loop with a loss function not native to the Keras library, such as Dice. """
 
@@ -344,15 +344,28 @@ def test_trainer_validate_raises_error_for_faulty_spec(data_loader, training_mod
         trainer.validate()
 
 
-def test_trainer_calls_export_checkpoint_once_per_epoch(graph_spec, data_loader, training_model, training_settings, training_session_id, temp_path):
-    training_settings['AutoCheckpoint'] = True
-    exporter = MagicMock()
-
-    trainer = Trainer(data_loader, training_model, training_settings, training_session_id, exporter=exporter)
+def test_trainer_calls_epoch_callback(graph_spec, data_loader, training_model, training_settings, training_session_id, temp_path):
+    fn = MagicMock()
+    
+    trainer = Trainer(
+        data_loader, training_model, training_settings,
+        training_session_id, on_epoch_completed=fn)
+    
     step = trainer.run()
 
-    assert exporter.export_checkpoint.call_count == training_settings['Epochs']
+    assert fn.call_count == training_settings['Epochs']
 
+
+def test_trainer_calls_completed_callback(graph_spec, data_loader, training_model, training_settings, training_session_id, temp_path):
+    fn = MagicMock()
+    
+    trainer = Trainer(
+        data_loader, training_model, training_settings,
+        training_session_id, on_training_completed=fn)
+    
+    step = trainer.run()
+    assert fn.call_count == 1
+    
 
 def test_trainer_load_from_initial_gives_equal_results(graph_spec, data_loader, training_model, training_settings, training_session_id):
     trainer1 = Trainer(data_loader, training_model, training_settings, training_session_id)

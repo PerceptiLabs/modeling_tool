@@ -18,6 +18,9 @@ logger = logging.getLogger(__name__)
 class TrainingResultsAccess:
     FILE_NAME = 'latest-training-results.pkl'
 
+    def __init__(self, rygg):
+        self._rygg = rygg
+
     def store(self, training_session_id, results):
         if training_session_id is None:
             return None
@@ -50,7 +53,7 @@ class TrainingResultsAccess:
         return results_dict        
 
     def _get_path(self, training_session_id):
-        directory = b64decode_and_sanitize(training_session_id)  # For now it's just a base64 path
+        directory = self._rygg.get_model(training_session_id)['location']
         
         os.makedirs(directory, exist_ok=True)
         file_path = os.path.join(directory, self.FILE_NAME).replace('\\', '/')

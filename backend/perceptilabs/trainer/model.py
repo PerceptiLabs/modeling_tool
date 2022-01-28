@@ -1,4 +1,5 @@
 import tensorflow as tf
+from perceptilabs.script.base import ScriptFactory
 from perceptilabs.layers.helper import LayerHelper
 
 
@@ -13,6 +14,19 @@ class TrainingModel(tf.keras.Model):
         for layer_spec in self._graph_spec.get_ordered_layers():
             if layer_spec.is_inner_layer:                    
                 self._layers_by_id[layer_spec.id_] = self._get_layer_from_spec(layer_spec)
+
+    @classmethod
+    def from_graph_spec(cls, graph_spec, checkpoint_path=None, on_weights_loaded=None):
+        script_factory = ScriptFactory()
+        training_model = TrainingModel(script_factory, graph_spec)
+
+        if checkpoint_path:
+            training_model.load_weights(filepath=checkpoint_path)
+
+            if on_weights_loaded:
+                on_weights_loaded(checkpoint_path)
+            
+        return training_model        
 
     @property
     def graph_spec(self):

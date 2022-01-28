@@ -18,7 +18,9 @@ import perceptilabs.utils as utils
 logger = logging.getLogger(__name__)
 
 class TestCore():
-    def __init__(self, testing_session_id, model_ids, models_info, tests, on_testing_completed=None):
+    def __init__(self, model_access, epochs_access, testing_session_id, model_ids, models_info, tests, on_testing_completed=None):
+        self._model_access = model_access
+        self._epochs_access = epochs_access        
         self._on_testing_completed = on_testing_completed
         self._testing_session_id = testing_session_id
         self._status = None
@@ -64,7 +66,9 @@ class TestCore():
         """
         try:
             self._models[model_id] = LoadInferenceModel.from_checkpoint(
-                training_session_id, graph_spec, self._data_loaders[model_id])
+                self._model_access, self._epochs_access,
+                training_session_id, graph_spec, self._data_loaders[model_id]
+            )
             logger.info("model %s loaded successfully.", model_id)
         except Exception as e:
             raise KernelError.from_exception(

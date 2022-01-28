@@ -5,6 +5,7 @@ from datetime import datetime
 
 import sentry_sdk
 
+from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.gradio_serving.base import GradioLauncher
 import perceptilabs.tracking as tracking
 
@@ -24,11 +25,11 @@ class ServingSessionInterface():
         for _ in self.run_stepwise(*args, **kwargs):
             pass
 
-    def run_stepwise(self, data_loader, graph_spec_dict, model_id, training_session_id, serving_session_id, model_name, user_email, results_interval=3.0, is_retry=False, logrocket_url=''):
+    def run_stepwise(self, data_loader, model_id, training_session_id, serving_session_id, model_name, user_email, results_interval=3.0, is_retry=False, logrocket_url='', graph_settings=None):
 
         try:
             launcher = self._setup_launcher(
-                graph_spec_dict, training_session_id, data_loader, model_name, model_id, user_email)
+                training_session_id, data_loader, model_name, model_id, user_email, graph_settings)
             
             with self._message_broker.subscription() as queue:
                 yield from self._main_loop(queue, results_interval, serving_session_id, launcher)
@@ -37,7 +38,6 @@ class ServingSessionInterface():
             
             with sentry_sdk.push_scope() as scope:
                 scope.set_user({'email': user_email})                
-                scope.set_extra('graph_spec', graph_spec_dict)
                 scope.set_extra('dataset_settings', data_loader.settings)
                 scope.set_extra('model_id', model_id)
                 scope.set_extra('training_session_id', training_session_id)
@@ -47,8 +47,11 @@ class ServingSessionInterface():
                 sentry_sdk.flush()                        
             
 
-    def _setup_launcher(self, graph_spec_dict, training_session_id, data_loader, model_name, model_id, user_email):
-        graph_spec = self._model_access.get_graph_spec(graph_spec_dict)
+    def _setup_launcher(self, training_session_id, data_loader, model_name, model_id, user_email, graph_settings):
+        if graph_settings:
+            graph_spec = GraphSpec.from_dict(graph_settings)
+        else:
+            graph_spec = self._model_access.get_graph_spec(model_id)
         
         epoch_id = self._epochs_access.get_latest(
             training_session_id=training_session_id,
@@ -57,13 +60,14 @@ class ServingSessionInterface():
         )
 
         def on_serving_started():
-            tracking.send_model_served(self._event_tracker, user_email, model_id)            
+            tracking.send_model_served(self._event_tracker, user_email, model_id)
 
         include_preprocessing = not self._serving_settings['ExcludePreProcessing']
         include_postprocessing = not self._serving_settings['ExcludePostProcessing']
 
         launcher = GradioLauncher(self._model_access, self._epochs_access)
         launcher.start(
+            model_id,
             graph_spec,
             data_loader,
             training_session_id,

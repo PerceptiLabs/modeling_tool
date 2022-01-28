@@ -13,19 +13,19 @@ class InferenceInterface:
         self._testing_results_access = testing_results_access
         self._serving_results_access = serving_results_access                
 
-    def start_serving(self, serving_settings, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email, logrocket_url=''):
+    def start_serving(self, serving_settings, dataset_settings_dict, model_id, training_session_id, model_name, user_email, graph_settings=None, logrocket_url=''):
         serving_session_id = self._serving_results_access.new_id()
         self._task_executor.enqueue(
             'serving_task',
             serving_settings,
             dataset_settings_dict,
-            graph_spec_dict,
             model_id,
             training_session_id,
             model_name,
             user_email,
             serving_session_id,
-            logrocket_url=logrocket_url
+            logrocket_url=logrocket_url,
+            graph_settings=graph_settings
         )
         return serving_session_id
 

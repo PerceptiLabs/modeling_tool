@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 import sentry_sdk
 
+from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.utils import setup_sentry
 
 logger = logging.getLogger(__name__)
@@ -33,8 +34,7 @@ class TaskExecutor(ABC):
     
 
 @handle_exceptions    
-def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_session_id, training_settings, load_checkpoint, user_email, is_retry=False, logrocket_url=''):
-    
+def training_task(dataset_settings_dict, model_id, training_session_id, training_settings, load_checkpoint, user_email, is_retry=False, logrocket_url='', graph_settings=None):
     import perceptilabs.settings as settings    
     from perceptilabs.training_interface import TrainingSessionInterface
     from perceptilabs.messaging.base import get_message_broker
@@ -51,12 +51,13 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
     from perceptilabs.rygg import RyggWrapper
     import perceptilabs.utils as utils
     import os
-
+    
+    rygg = RyggWrapper.with_default_settings()
     message_broker = get_message_broker()
     
-    model_access = ModelAccess(ScriptFactory())
-    epochs_access = EpochsAccess()
-    training_results_access = TrainingResultsAccess()
+    model_access = ModelAccess(rygg)
+    epochs_access = EpochsAccess(rygg)
+    training_results_access = TrainingResultsAccess(rygg)
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())            
 
     # TODO: all this data setup should be moved into the coreInteraface!!!
@@ -66,7 +67,6 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
     data_metadata = preprocessing_results_access.get_metadata(dataset_settings.compute_hash())
 
-    rygg = RyggWrapper.with_default_settings()
     dataset_access = DatasetAccess(rygg)
 
     df = dataset_access.get_dataframe(
@@ -86,14 +86,14 @@ def training_task(dataset_settings_dict, model_id, graph_spec_dict, training_ses
     interface.run(
         data_loader,
         model_id,
-        graph_spec_dict,
         training_session_id,
         training_settings,
         load_checkpoint,
         user_email,
         results_interval=settings.TRAINING_RESULTS_REFRESH_INTERVAL,
         is_retry=is_retry,
-        logrocket_url=logrocket_url
+        logrocket_url=logrocket_url,
+        graph_settings=graph_settings
     )
     
 
@@ -116,15 +116,15 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
     import perceptilabs.utils as utils
     import os
     
+    rygg = RyggWrapper.with_default_settings()
     message_broker = get_message_broker()
     data_metadata_cache = get_data_metadata_cache().for_compound_keys()
     
-    model_access = ModelAccess(ScriptFactory())
-    epochs_access = EpochsAccess()
+    model_access = ModelAccess(rygg)
+    epochs_access = EpochsAccess(rygg)
     testing_results_access = TestingResultsAccess()
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
 
-    rygg = RyggWrapper.with_default_settings()
     dataset_access = DatasetAccess(rygg)
 
         
@@ -147,9 +147,12 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
             num_repeats=num_repeats
         )
 
-
-        graph_dict = models_info[model_id]['layers'] 
-        graph_spec = model_access.get_graph_spec(model_id=graph_dict)  # TODO: f/e should send an ID        
+        graph_settings = models_info[model_id].get('layers')
+        if graph_settings:
+            graph_spec = GraphSpec.from_dict(graph_settings)
+        else:
+            graph_spec = model_access.get_graph_spec(model_id)
+            
         models[model_id] = {
             'graph_spec': graph_spec,
             'data_loader': data_loader,
@@ -172,8 +175,7 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
      
 
 @handle_exceptions    
-def serving_task(serving_settings, dataset_settings_dict, graph_spec_dict, model_id, training_session_id, model_name, user_email, serving_session_id, is_retry=False, logrocket_url=''):
-    
+def serving_task(serving_settings, dataset_settings_dict, model_id, training_session_id, model_name, user_email, serving_session_id, graph_settings=None, is_retry=False, logrocket_url=''):
     import perceptilabs.settings as settings    
     from perceptilabs.serving_interface import ServingSessionInterface
     from perceptilabs.caching.utils import get_data_metadata_cache    
@@ -190,12 +192,13 @@ def serving_task(serving_settings, dataset_settings_dict, graph_spec_dict, model
     from perceptilabs.rygg import RyggWrapper
     import perceptilabs.utils as utils
     import os
-
+    
+    rygg = RyggWrapper.with_default_settings()
     message_broker = get_message_broker()    
     data_metadata_cache = get_data_metadata_cache().for_compound_keys()
     
-    model_access = ModelAccess(ScriptFactory())
-    epochs_access = EpochsAccess()
+    model_access = ModelAccess(rygg)
+    epochs_access = EpochsAccess(rygg)
     serving_results_access = ServingResultsAccess()
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())                
 
@@ -204,8 +207,6 @@ def serving_task(serving_settings, dataset_settings_dict, graph_spec_dict, model
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
     data_metadata = preprocessing_results_access.get_metadata(dataset_settings.compute_hash())    
 
-
-    rygg = RyggWrapper.with_default_settings()
     dataset_access = DatasetAccess(rygg)
 
     df = dataset_access.get_dataframe(
@@ -225,7 +226,6 @@ def serving_task(serving_settings, dataset_settings_dict, graph_spec_dict, model
 
     interface.run(
         data_loader,
-        graph_spec_dict,
         model_id,
         training_session_id,
         serving_session_id,
@@ -233,7 +233,8 @@ def serving_task(serving_settings, dataset_settings_dict, graph_spec_dict, model
         user_email,
         results_interval=settings.SERVING_RESULTS_REFRESH_INTERVAL,
         is_retry=is_retry,
-        logrocket_url=logrocket_url
+        logrocket_url=logrocket_url,
+        graph_settings=graph_settings
     )
     
 

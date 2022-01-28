@@ -14,7 +14,8 @@ from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import FeatureSpec, DatasetSettings, Partitions
 from perceptilabs.graph.builder import GraphSpecBuilder
-
+from perceptilabs.trainer.model import TrainingModel
+    
 import pytest
 from unittest.mock import MagicMock
 from retrying import retry
@@ -42,7 +43,10 @@ def wait_for_gradio_down(launcher):
         r = requests.head(launcher.get_url(), timeout=3)
 
 
-def test_launcher_starts_endpoint():
+def test_launcher_starts_endpoint(monkeypatch):
+    mock_fn = MagicMock()
+    monkeypatch.setattr(TrainingModel, "from_graph_spec", mock_fn)  
+    
     model_access = MagicMock()
     
     launcher = GradioLauncher(
@@ -51,9 +55,10 @@ def test_launcher_starts_endpoint():
     )
 
     launcher.start(
+        model_id='123',
         graph_spec=MagicMock(),
         data_loader=MagicMock(),
-        training_session_id=MagicMock(),
+        training_session_id='456',
         model_name='my model'                
     )
     wait_for_gradio_up(launcher)
@@ -209,10 +214,11 @@ def make_graph_spec(data_loader):
 def test_predictions_endpoint(script_factory, data_loader):
     launcher = GradioLauncher(
         model_access=ModelAccess(script_factory),
-        epochs_access=EpochsAccess()
+        epochs_access=EpochsAccess(rygg=MagicMock())
     )
     
     launcher.start(
+        model_id='123',
         graph_spec=make_graph_spec(data_loader),
         data_loader=data_loader,
         training_session_id=None,

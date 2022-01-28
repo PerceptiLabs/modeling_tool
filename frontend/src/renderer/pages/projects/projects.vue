@@ -209,7 +209,14 @@ import { mapActions, mapState, mapGetters } from "vuex";
 import { assembleModel } from "@/core/helpers/model-helper";
 import { getModelJson as rygg_getModelJson } from "@/core/apiRygg";
 import { getNextModelName as rygg_getNextModelName } from "@/core/apiRygg";
-import { pickFile as rygg_pickFile } from "@/core/apiRygg";
+import { uploadDatasetToFileserver as rygg_uploadDatasetToFileserver } from "@/core/apiRygg";
+import { getTaskStatus as rygg_getTaskStatus } from "@/core/apiRygg";
+import { isTaskComplete as rygg_isTaskComplete } from "@/core/apiRygg";
+import {
+  pickFile as rygg_pickFile,
+  getFileContent as rygg_getFileContent,
+  getModel as rygg_getModel,    
+} from "@/core/apiRygg";
 import { renderingKernel } from "@/core/apiRenderingKernel.js";
 import { arrayIncludeOrOmit, isNoKeyCloakEnabled } from "@/core/helpers";
 import {
@@ -299,7 +306,6 @@ export default {
       showInfoPopup: "globalView/GP_infoPopup",
       set_currentNetwork: "mod_workspace/SET_currentNetwork",
       set_currentModelIndex: "mod_workspace/SET_currentModelIndex",
-      createProjectModel: "mod_project/createProjectModel",
       setActivePageAction: "modal_pages/setActivePageAction",
       delete_networkById: "mod_workspace/DELETE_networkById",
       closeStatsTestViews: "mod_workspace/SET_statisticsAndTestToClosed",
@@ -711,9 +717,15 @@ export default {
         [{ extensions: ["*.zip"] }],
       );
 
+      const namePrefix = "Loaded";
+      const modelName = await rygg_getNextModelName(namePrefix);
+
       const res = await renderingKernel.importModel(
+	selectedModelFile.path,
+        this.currentProjectId,
         datasetId,
-        selectedModelFile.path,
+	modelName,
+	this.projectPath
       );
 
       if (res.error) {
@@ -736,17 +748,10 @@ export default {
       var nodePositions = network.getPositions(ids); // TODO: create a ticket for parsing this if it isn't resolved...
 
       const layerMeta = await buildLayers(res.graphSpec, nodePositions);
+      const apiMeta = await rygg_getModel(res.modelId);
 
-      const namePrefix = "Loaded";
-      const modelName = await rygg_getNextModelName(namePrefix);
-
-      const apiMeta = await this.createProjectModel({
-        name: modelName,
-        project: this.currentProjectId,
-        location: `${this.projectPath}/${modelName}`,
-        datasets: [datasetId],
-      });
-
+      console.debug("apiMeta: ", apiMeta);
+      
       let frontendSettings = {
         apiMeta: apiMeta,
         networkName: modelName,

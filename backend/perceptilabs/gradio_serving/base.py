@@ -11,6 +11,7 @@ import gradio as gr
 from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.script import ScriptFactory
+from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings
@@ -39,12 +40,13 @@ class GradioLauncher:
     def get_url(self):
         return self._url_dict['url']
 
-    def start(self, graph_spec, data_loader, training_session_id, model_name, on_serving_started=None, include_preprocessing=True, include_postprocessing=True):
+    def start(self, model_id, graph_spec, data_loader, training_session_id, model_name, on_serving_started=None, include_preprocessing=True, include_postprocessing=True):
         #if utils.is_debug():
         #    raise NotImplementedError("Cannot run Gradio in debug mode!")  # Flask development servers interfere
         self._thread = threading.Thread(
             target=self._worker,
             args=(
+                model_id,
                 graph_spec,
                 data_loader,
                 training_session_id,
@@ -68,18 +70,17 @@ class GradioLauncher:
         self._stop_event.set()
         self._thread.join()
         
-    def _worker(self, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=True, include_postprocessing=True):
+    def _worker(self, model_id, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=True, include_postprocessing=True):
         try:
             return self._worker_internal(
-                graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
+                model_id, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
         except:
             logger.exception("Error in worker")
             raise
         
-    def _worker_internal(self, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=True, include_postprocessing=True):        
+    def _worker_internal(self, model_id, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=True, include_postprocessing=True):        
         inference_model = self._get_inference_model(
-            graph_spec, data_loader, training_session_id, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
-
+            model_id, graph_spec, data_loader, training_session_id, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
         metadata = data_loader.metadata
         inputs = {
             spec.feature_name: self.get_gradio_input(spec.feature_name, spec.datatype, metadata[spec.feature_name])
@@ -130,7 +131,7 @@ class GradioLauncher:
 
         interface.close()
         
-    def _get_inference_model(self, graph_spec, data_loader, training_session_id, include_preprocessing=True, include_postprocessing=True):
+    def _get_inference_model(self, model_id, graph_spec, data_loader, training_session_id, include_preprocessing=True, include_postprocessing=True):
         epoch_id = self._epochs_access.get_latest(
             training_session_id=training_session_id, 
             require_checkpoint=True,
@@ -140,13 +141,13 @@ class GradioLauncher:
         checkpoint_path = self._epochs_access.get_checkpoint_path(
             training_session_id=training_session_id, epoch_id=epoch_id)
 
-        model = self._model_access \
-            .get_training_model(
-                model_id=graph_spec.to_dict(),  # TODO: frontend should send a model ID
-                checkpoint_path=checkpoint_path
-            ).as_inference_model(data_loader, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
+        training_model = TrainingModel.from_graph_spec(
+            graph_spec, checkpoint_path=checkpoint_path)
+        
+        inference_model = training_model.as_inference_model(
+            data_loader, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
 
-        return model
+        return inference_model
         
     @staticmethod
     def get_gradio_input(feature_name, datatype, metadata):

@@ -66,12 +66,14 @@ class TestingSessionInterface():
             yield
 
     def _setup_test_core(self, testing_session_id, models, tests, user_email):
-
+        
         def on_testing_completed(model_id, test):
             tracking.send_testing_completed(
                 self._event_tracker, user_email, model_id, test)
         
         core = TestCore(
+            self._model_access,
+            self._epochs_access,
             testing_session_id,
             list(models.keys()),
             models,

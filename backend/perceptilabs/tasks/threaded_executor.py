@@ -13,7 +13,7 @@ DEFAULT_TASKS = {
 }
 
 
-class ThreadedTaskExecutor:
+class ThreadedTaskExecutor(TaskExecutor):
     def __init__(
             self,
             tasks=DEFAULT_TASKS,
@@ -25,6 +25,7 @@ class ThreadedTaskExecutor:
     ):
         self._tasks = tasks
         self._pool = ThreadPoolExecutor()
+        self._futures = []
 
         self._on_task_sent = on_task_sent        
         self._on_task_received = on_task_received
@@ -68,3 +69,10 @@ class ThreadedTaskExecutor:
             
         return task_func_with_callbacks
         
+    @property
+    def num_remaining_tasks(self):
+        count = 0
+        for f in self._futures:
+            if not f.done():
+                count += 1
+        return count

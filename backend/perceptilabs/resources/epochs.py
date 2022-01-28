@@ -9,6 +9,9 @@ from perceptilabs.utils import b64decode_and_sanitize
 logger = logging.getLogger(__name__)
 
 class EpochsAccess:
+    def __init__(self, rygg):
+        self._rygg = rygg
+
     def get_latest(self, training_session_id, require_checkpoint=True, require_trainer_state=False):
         if training_session_id is None:
             return None
@@ -48,6 +51,11 @@ class EpochsAccess:
         directory = self._resolve_directory_path(training_session_id)
         file_path = os.path.join(directory, 'checkpoint-{epoch_id:04d}.ckpt'.format(
             epoch_id=int(epoch_id))).replace('\\', '/')
+
+        logger.info(
+            f"Created checkpoint path {file_path} "
+            f"for training session {training_session_id} epoch {epoch_id}"
+        )        
         return file_path
 
     def _get_state_path(self, training_session_id, epoch_id):
@@ -80,7 +88,7 @@ class EpochsAccess:
                 logger.info(f"Size of state pickle file in bytes: {size}")
 
     def _resolve_directory_path(self, training_session_id):
-        directory = b64decode_and_sanitize(training_session_id)  # For now it's just a base64 path
+        directory = self._rygg.get_model(training_session_id)['location']        
         return directory
 
     def _get_epochs(self, training_session_id):

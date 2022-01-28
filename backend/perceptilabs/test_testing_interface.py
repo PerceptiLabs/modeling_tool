@@ -78,6 +78,8 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, results_int
     model_access.get_graph_spec.return_value = graph_spec
 
     epochs_access = MagicMock()
+    epochs_access.get_checkpoint_path.return_value = None
+
     results_access = MagicMock()
     event_tracker = MagicMock()
     
@@ -98,7 +100,7 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, results_int
                 'graph_spec': graph_spec,
                 'data_loader': data_loader,
                 'model_name': 'model111',
-                'training_session_id': make_session_id(temp_path)
+                'training_session_id': '134'
             }
         },
         tests=tests,
@@ -117,6 +119,8 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
     model_access.get_graph_spec.return_value = graph_spec
 
     epochs_access = MagicMock()
+    epochs_access.get_checkpoint_path.return_value = None
+    
     results_access = MagicMock()
     event_tracker = MagicMock()        
     

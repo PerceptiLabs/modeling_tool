@@ -1,6 +1,8 @@
 import os
 import pytest
+import numpy as np
 import pandas as pd
+from mixpanel import Mixpanel    
 from unittest.mock import MagicMock
 from retrying import retry
 from unittest.mock import patch
@@ -12,7 +14,7 @@ from celery.contrib.pytest import (
     celery_worker_pool, celery_worker_parameters
 )
 
-
+from perceptilabs.rygg import RyggWrapper
 from perceptilabs.caching.utils import DictCache
 from perceptilabs.api.base import create_app
 from perceptilabs.tasks.celery_executor import CeleryTaskExecutor
@@ -20,12 +22,10 @@ from perceptilabs.tasks.threaded_executor import ThreadedTaskExecutor
 import perceptilabs.settings as settings
 
 
-def make_session_id(string):
-    import base64    
-    return base64.urlsafe_b64encode(string.encode()).decode()
+@pytest.fixture(scope='session')
+def celery_worker_pool():
+    return 'threads'
 
-
-# TODO: session IDs [both training and testing] should be created in the Kernel... As a hack, just aask for the checkpoint directory on "start training" and "start testing", then the frontend can keep track of the returned session IDs.
 
 @pytest.fixture(scope='function', autouse=True)
 def mixpanel_mock(monkeypatch):
@@ -33,7 +33,6 @@ def mixpanel_mock(monkeypatch):
     fn_set_once = MagicMock()
     fn_set = MagicMock()    
 
-    from mixpanel import Mixpanel
     monkeypatch.setattr(Mixpanel, 'track', fn_track, raising=True)
     monkeypatch.setattr(Mixpanel, 'people_set_once', fn_set_once, raising=True)
     monkeypatch.setattr(Mixpanel, 'people_set', fn_set, raising=True)        
@@ -49,15 +48,29 @@ def user_token():
 @pytest.fixture(scope='function', autouse=True)
 def rygg_mock(monkeypatch, tmp_path):
     df = pd.DataFrame({
-        'x1': [1.0, 2.0, 3.0, 4.0],
-        'x2': [5.0, 6.0, 3.0, 9.0],
-        'y1': ['a', 'b', 'c', 'd']
+        'x1': np.random.random((100,)).tolist(),
+        'x2': np.random.random((100,)).tolist(),
+        'y1': ['a', 'b', 'c', 'd']*25
     })
+    location1 = os.path.join(tmp_path, 'data1.csv')
+    df.to_csv(location1, index=False)
 
-    location = os.path.join(tmp_path, 'data.csv')
-    df.to_csv(location, index=False)
-    
+    df = pd.DataFrame({
+        'a1': np.random.random((100,)).tolist(),
+        'b2': np.random.random((100,)).tolist(),
+        'c1': ['a', 'b', 'c', 'd']*25
+    })
+    location2 = os.path.join(tmp_path, 'data2.csv')
+    df.to_csv(location2, index=False)
+        
     def get_dataset(self, dataset_id):
+        if str(dataset_id) == '123':
+            location = location1
+        elif str(dataset_id) == '456':
+            location = location2
+        else:
+            raise ValueError(f"No dataset with ID {dataset_id}")
+        
         response = {
             'location': location,
             'name': 'MyDataset',
@@ -65,10 +78,40 @@ def rygg_mock(monkeypatch, tmp_path):
         }
         return response
 
-    from perceptilabs.rygg import RyggWrapper
-    monkeypatch.setattr(RyggWrapper, 'get_dataset', get_dataset)    
-    
+    models = {}
 
+    # TODO: in frontend, we must always update model in rygg before we tell kernel smth.. which endpoints are affected?
+    
+    def create_model(self, project_id, dataset_id, model_name, location=None): 
+        model_id = str(len(models) + 100)
+        meta = {
+            'location': location or os.path.join(tmp_path, model_name),
+            'model_id': model_id,
+        }
+        models[model_id] = {
+            'meta': meta,
+            'model_json': {}
+        }
+        return meta
+
+    def get_model(self, model_id):
+        return models.get(model_id, {}).get('meta', {})
+
+    def save_model_json(self, model_id, model):
+        #import pdb; pdb.set_trace()        
+        models[model_id]['model_json'] = model
+        
+    def load_model_json(self, model_id):
+        return models.get(model_id, {}).get('model_json', {})
+
+
+    monkeypatch.setattr(RyggWrapper, 'get_dataset', get_dataset)
+    monkeypatch.setattr(RyggWrapper, 'create_model', create_model)
+    monkeypatch.setattr(RyggWrapper, 'get_model', get_model)        
+    monkeypatch.setattr(RyggWrapper, 'save_model_json', save_model_json)    
+    monkeypatch.setattr(RyggWrapper, 'load_model_json', load_model_json)
+
+    
 @pytest.fixture(scope='function')
 def client(request, celery_worker):
     if not hasattr(request, 'param') or request.param == 'threaded':
@@ -84,8 +127,8 @@ def client(request, celery_worker):
     with app.test_client() as client:
         yield client
 
-        
-@pytest.fixture
+
+@pytest.fixture(scope='function')
 def dataset_settings():
     dict_ = {
         "featureSpecs": {
@@ -117,7 +160,7 @@ def dataset_settings():
     return dict_
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def training_settings():
     yield {
         'Epochs': 10,
@@ -159,11 +202,10 @@ def has_been_called_with(func, args=None, kwargs=None, allow_subset=True):
     return False
 
 
-def assert_export(client, mixpanel_mock, user_token, dataset_settings, network, user_email, model_id, training_session_id, tmp_path):
+def assert_export(client, mixpanel_mock, user_token, dataset_settings, model_id, training_session_id, tmp_path, graph_settings=None):
     res = client.put(
         f'/models/{model_id}/export?training_session_id={training_session_id}', 
         json={
-            'network': network,
             'datasetSettings': dataset_settings,
             'exportSettings': {
                 'Location': str(tmp_path),
@@ -174,7 +216,7 @@ def assert_export(client, mixpanel_mock, user_token, dataset_settings, network, 
                 'ExcludePreProcessing':False,
                 'ExcludePostProcessing':False
             },
-            'userEmail': user_email
+            'graphSettings': graph_settings            
         },
         headers={'Authorization': user_token}        
     )
@@ -192,15 +234,14 @@ def assert_export(client, mixpanel_mock, user_token, dataset_settings, network, 
         kwargs={'distinct_id': 'anton.k@perceptilabs.com', 'event_name': 'model-exported'}
     )
 
-def assert_serving(client, mixpanel_mock, user_token, dataset_settings, network, user_email, model_id, training_session_id):
+def assert_serving(client, mixpanel_mock, user_token, dataset_settings, model_id, training_session_id, graph_settings=None):
     res = client.post(
         f'/inference/serving/{model_id}?training_session_id={training_session_id}', 
         json={
             'settings': {'ExcludePreProcessing': False, 'ExcludePostProcessing': False},
-            'network': network,
             'datasetSettings': dataset_settings,
             'modelName': 'my-model',
-            'userEmail': user_email
+            'graphSettings': graph_settings
         },
         headers={'Authorization': user_token}                
     )
@@ -214,7 +255,6 @@ def assert_serving(client, mixpanel_mock, user_token, dataset_settings, network,
         time_since_update = current_time - last_update
         
         return time_since_update > 2 * settings.SERVING_RESULTS_REFRESH_INTERVAL
-    
     
     @retry(stop_max_attempt_number=10, wait_fixed=1000)
     def wait_for_serving_up():
@@ -251,7 +291,7 @@ def assert_serving(client, mixpanel_mock, user_token, dataset_settings, network,
     wait_for_serving_down()            
 
     
-def assert_data(client, dataset_settings):
+def assert_data(client, dataset_settings, user_token):
     # Start preprocessing the dataset
     res = client.put(
         '/datasets/preprocessing',
@@ -268,7 +308,7 @@ def assert_data(client, dataset_settings):
         res = client.get(
             f"/datasets/preprocessing/{preprocessing_session_id}",
             headers={'Authorization': user_token}                    
-        )  
+        )
         assert res.status_code == 200    
         assert res.json == {'is_complete': True, 'message': "Build status: 'complete'", 'error': None}
 
@@ -279,24 +319,29 @@ def assert_model_recommendation(client, mixpanel_mock, user_token, dataset_setti
     # Get a model recommendation
     res = client.post(
         '/models/recommendations',
-        json={'datasetSettings': dataset_settings},
+        json={
+            'projectId': 100,
+            'datasetId': 123, # TODO: as param
+            'modelName': 'MyModel', # TODO: as param
+            'datasetSettings': dataset_settings
+        },
         headers={'Authorization': user_token}
     )    
     assert res.status_code == 200
     assert mixpanel_mock.track.call_args[1]['distinct_id'] == 'anton.k@perceptilabs.com'
     assert mixpanel_mock.track.call_args[1]['event_name'] == 'model-recommended'    
 
-    network = res.json
-    return network
+    model_id = res.json['model_id']
+    graph_settings = res.json['graph_settings']    
+    return model_id, graph_settings
 
 
-def assert_info(client, model_id, dataset_settings, network, user_email):
+def assert_info(client, model_id, dataset_settings, user_token, graph_settings=None):
     res = client.post(
         f'/models/{model_id}/layers/info',
         json={
             'datasetSettings': dataset_settings,
-            'network': network,
-            'userEmail': user_email
+            'graphSettings': graph_settings
         },
         headers={'Authorization': user_token}                
     )
@@ -310,8 +355,6 @@ def assert_info(client, model_id, dataset_settings, network, user_email):
             f'/models/{model_id}/layers/{layer_id}/info',
             json={
                 'datasetSettings': dataset_settings,
-                'network': network,
-                'userEmail': user_email
             },
             headers={'Authorization': user_token}                    
         )
@@ -319,21 +362,20 @@ def assert_info(client, model_id, dataset_settings, network, user_email):
         assert 'outShape' in res.json        
 
 
-def assert_previews(client, model_id, dataset_settings, network, user_email):
+def assert_previews(client, model_id, dataset_settings, user_token, graph_settings=None):
     res = client.post(
         f'/models/{model_id}/layers/previews',
         json={
             'datasetSettings': dataset_settings,
-            'network': network,
-            'userEmail': user_email
+            'graphSettings': graph_settings
         },
         headers={'Authorization': user_token}                
     )
     
     assert res.status_code == 200
     assert res.json['outputDims']['0'] == {'Dim': '1', 'Error': None}
-    assert res.json['outputDims']['1'] == {'Dim': '2', 'Error': None}
-    assert res.json['outputDims']['2'] == {'Dim': '2', 'Error': None}        
+    assert res.json['outputDims']['1'] == {'Dim': '4', 'Error': None}
+    assert res.json['outputDims']['2'] == {'Dim': '4', 'Error': None}        
 
     assert 'series' in res.json['previews']['0']
     assert 'xLength' in res.json['previews']['0']
@@ -345,13 +387,10 @@ def assert_previews(client, model_id, dataset_settings, network, user_email):
     assert 'xLength' in res.json['previews']['2']
 
 
-def assert_layer_code(client, model_id, network, user_email):
+def assert_layer_code(client, model_id, user_token, graph_settings=None):
     res = client.post(
         f'/models/{model_id}/layers/1/code',
-        json={
-            'network': network,
-            'userEmail': user_email
-        },
+        json={'graphSettings': graph_settings},
         headers={'Authorization': user_token}                
     )
 
@@ -368,21 +407,22 @@ def assert_layer_code(client, model_id, network, user_email):
     assert is_valid_syntax(res.json['Output'])
 
 
-def assert_training(client, mixpanel_mock, user_token, model_id, network, dataset_settings, training_settings, training_session_id, user_email):
+def assert_training(client, mixpanel_mock, user_token, model_id, dataset_settings, training_settings, graph_settings=None):
     res = client.post(
-        f'/models/{model_id}/training/{training_session_id}',
+        f'/models/{model_id}/training',
         json={
-            'network': network,
             'datasetSettings': dataset_settings,
             'trainingSettings': training_settings,
+            'graphSettings': graph_settings,            
             'loadCheckpoint': False,
-            'userEmail': user_email
         },
         headers={'Authorization': user_token}
     )
     assert res.status_code == 200
-    assert res.json == {'content': 'core started'}
-
+    assert res.json['content'] == 'core started'
+    assert res.json['training_session_id']
+    training_session_id = res.json['training_session_id']    
+    
     @retry(stop_max_attempt_number=10, wait_fixed=1000)    
     def wait_for_training_started():
         res = client.get(f'/models/{model_id}/training/{training_session_id}/status')
@@ -425,41 +465,21 @@ def assert_training(client, mixpanel_mock, user_token, model_id, network, datase
 
 
     wait_for_training_completed()
+    return training_session_id
 
-    
-@pytest.mark.parametrize("deployment", ["export", "serving"])    
-@pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
-def test_modeling_flow(client, deployment, mixpanel_mock, user_token, tmp_path, dataset_settings, training_settings):
-    assert_data(client, dataset_settings)
-    network = assert_model_recommendation(client, mixpanel_mock, user_token, dataset_settings)
 
-    user_email = 'anton.k@perceptilabs.com'
-    model_id = '123'
-    training_session_id = make_session_id(str(tmp_path))  # TODO: This should be generated by one of the endpoints....
-
-    assert_info(client, model_id, dataset_settings, network, user_email)    
-    assert_previews(client, model_id, dataset_settings, network, user_email)
-
-    assert_layer_code(client, model_id, network, user_email)
-    
-    assert_training(
-        client, mixpanel_mock, user_token, model_id,
-        network, dataset_settings, training_settings, training_session_id, user_email
-    )
-
+def assert_testing(client, mixpanel_mock, model_id, training_session_id, dataset_settings, user_token):
     res = client.post(
         f'/inference/testing',
         json={
             'modelsInfo': {
                 model_id: {
-                    'layers': network,
                     'model_name': 'MyModel',
                     'training_session_id': training_session_id,
                     'datasetSettings': dataset_settings
                 }
             },
             'tests': ['confusion_matrix'],
-            'userEmail': user_email
         },
         headers={'Authorization': user_token}                
     )
@@ -487,37 +507,78 @@ def test_modeling_flow(client, deployment, mixpanel_mock, user_token, tmp_path, 
         assert has_been_called_with(
             mixpanel_mock.track,
             kwargs={'distinct_id': 'anton.k@perceptilabs.com', 'event_name': 'testing-completed'}
-        )
-        
+        )        
 
     wait_for_testing()
+    return testing_session_id
+        
+
+    
+@pytest.mark.parametrize("deployment", ["export", "serving"])    
+@pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
+def test_modeling_flow(client, deployment, mixpanel_mock, user_token, tmp_path, dataset_settings, training_settings):
+    assert_data(client, dataset_settings, user_token)
+    model_id, _ = assert_model_recommendation(
+        client, mixpanel_mock, user_token, dataset_settings)
+
+    assert_info(client, model_id, dataset_settings, user_token)    
+    assert_previews(client, model_id, dataset_settings, user_token)
+    assert_layer_code(client, model_id, user_token)
+    
+    training_session_id = assert_training(
+        client, mixpanel_mock, user_token, model_id,
+        dataset_settings, training_settings
+    )
+
+    assert_testing(client, mixpanel_mock, model_id, training_session_id, dataset_settings, user_token)        
+
+    if deployment == 'export':
+        assert_export(client, mixpanel_mock, user_token, dataset_settings, model_id, training_session_id, tmp_path)
+    elif deployment == 'serving':
+        assert_serving(client, mixpanel_mock, user_token, dataset_settings, model_id, training_session_id)
+
+
+@pytest.mark.parametrize("deployment", ["export", "serving"])
+def test_modeling_flow_with_graph_settings_in_payload(client, deployment, mixpanel_mock, user_token, tmp_path, dataset_settings, training_settings):
+    assert_data(client, dataset_settings, user_token)
+    model_id, graph_settings = assert_model_recommendation(
+        client, mixpanel_mock, user_token, dataset_settings)
+
+    assert_info(client, model_id, dataset_settings, user_token, graph_settings=graph_settings)    
+    assert_previews(client, model_id, dataset_settings, user_token, graph_settings=graph_settings)
+    assert_layer_code(client, model_id, user_token, graph_settings=graph_settings)
+    
+    training_session_id = assert_training(
+        client, mixpanel_mock, user_token, model_id,
+        dataset_settings, training_settings, graph_settings=graph_settings
+    )
+
+    assert_testing(client, mixpanel_mock, model_id, training_session_id, dataset_settings, user_token)        
 
     if deployment == 'export':
         assert_export(
-            client, mixpanel_mock, user_token, dataset_settings, network, user_email, model_id, training_session_id, tmp_path)
+            client, mixpanel_mock, user_token, dataset_settings, model_id, training_session_id, tmp_path, graph_settings=graph_settings)
     elif deployment == 'serving':
         assert_serving(
-            client, mixpanel_mock, user_token, dataset_settings, network, user_email, model_id, training_session_id)
+            client, mixpanel_mock, user_token, dataset_settings, model_id, training_session_id, graph_settings=graph_settings)
+        
         
 
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
 def test_multi_input_modeling_flow(client, mixpanel_mock, user_token, tmp_path, dataset_settings, training_settings):
     dataset_settings["featureSpecs"]["x2"]["iotype"] = "input"  # Enable more inputs
-    assert_data(client, dataset_settings)
+    assert_data(client, dataset_settings, user_token)
 
-    network = assert_model_recommendation(client, mixpanel_mock, user_token, dataset_settings)    
-    user_email = 'anton.k@perceptilabs.com'
-    model_id = '123'
-    training_session_id = make_session_id(str(tmp_path))  # TODO: This should be generated by one of the endpoints....
+    model_id, _ = assert_model_recommendation(client, mixpanel_mock, user_token, dataset_settings)    
 
-    assert_training(
-        client, mixpanel_mock, user_token, model_id, network,
-        dataset_settings, training_settings, training_session_id, user_email
+    training_session_id = assert_training(
+        client, mixpanel_mock, user_token, model_id, 
+        dataset_settings, training_settings
     )
     
     assert_export(
         client, mixpanel_mock, user_token,
-        dataset_settings, network, user_email, model_id, training_session_id, tmp_path
+        dataset_settings, model_id, training_session_id, tmp_path
     )
 
 
@@ -525,25 +586,22 @@ def test_multi_input_modeling_flow(client, mixpanel_mock, user_token, tmp_path, 
 def test_modeling_flow_stop_training(client, tmp_path, dataset_settings, training_settings, mixpanel_mock, user_token):
     training_settings["Epochs"] = 500  # Ensure we run for a while...
 
-    assert_data(client, dataset_settings)
-    network = assert_model_recommendation(client, mixpanel_mock, user_token, dataset_settings)
-    user_email = 'anton.k@perceptilabs.com'
-    model_id = '123'
-    training_session_id = make_session_id(str(tmp_path))  # TODO: This should be generated by one of the endpoints....
+    assert_data(client, dataset_settings, user_token)
+    model_id, _ = assert_model_recommendation(client, mixpanel_mock, user_token, dataset_settings)
 
     res = client.post(
-        f'/models/{model_id}/training/{training_session_id}',
+        f'/models/{model_id}/training',
         json={
-            'network': network,
             'datasetSettings': dataset_settings,
             'trainingSettings': training_settings,
             'loadCheckpoint': False,
-            'userEmail': user_email
         },
         headers={'Authorization': user_token}        
     )
     assert res.status_code == 200
-    assert res.json == {'content': 'core started'}
+    assert res.json['content'] == 'core started'
+    assert res.json['training_session_id'] 
+    training_session_id = res.json['training_session_id']    
 
     @retry(stop_max_attempt_number=10, wait_fixed=1000)
     def wait_for_training_started():
@@ -605,8 +663,8 @@ def test_type_inference(client, user_token, mixpanel_mock):
     assert res.status_code == 200
 
     assert res.json == {
-        'x1': [['categorical', 'numerical'], 0],
-        'x2': [['categorical', 'numerical'], 0],        
+        'x1': [['categorical', 'numerical'], 1],
+        'x2': [['categorical', 'numerical'], 1],        
         'y1': [['categorical', 'text'], 0]
     }
 
@@ -614,10 +672,10 @@ def test_type_inference(client, user_token, mixpanel_mock):
         mixpanel_mock.track,
         kwargs={'distinct_id': 'anton.k@perceptilabs.com', 'event_name': 'data-selected'}
     )
-    
+
     
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)    
-def test_preprocessing_error(monkeypatch, client, tmp_path, dataset_settings, training_settings):
+def test_preprocessing_error(monkeypatch, client, tmp_path, dataset_settings, training_settings, user_token):
     error_message = 'some-random-error-message'
     
     def fake_call(*args, **kwargs):
@@ -642,40 +700,36 @@ def test_preprocessing_error(monkeypatch, client, tmp_path, dataset_settings, tr
             f"/datasets/preprocessing/{preprocessing_session_id}",
             headers={'Authorization': user_token}            
         )
+        
         assert res.status_code == 200
         assert res.json['error']['message']
         assert error_message in res.json['error']['details']
         
-    wait_for_data_error()        
-    
+    wait_for_data_error()
+
 
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)    
 def test_training_error(monkeypatch, client, tmp_path, dataset_settings, training_settings, mixpanel_mock, user_token):
-    assert_data(client, dataset_settings)
-    network = assert_model_recommendation(client, mixpanel_mock, user_token, dataset_settings)
+    assert_data(client, dataset_settings, user_token)
+    model_id, _ = assert_model_recommendation(client, mixpanel_mock, user_token, dataset_settings)
     
-    user_email = 'anton.k@perceptilabs.com'  # TODO: can i remove user_email arg from all tests?
-    model_id = '123'
-    training_session_id = make_session_id(str(tmp_path))  # TODO: This should be generated by one of the endpoints....
-
     res = client.post(
-        f'/models/{model_id}/training/{training_session_id}',
+        f'/models/{model_id}/training',
         json={
-            'network': network,
             'datasetSettings': dataset_settings,
             'trainingSettings': training_settings,
             'loadCheckpoint': False,
-            'userEmail': user_email
         },
         headers={'Authorization': user_token}        
     )
     assert res.status_code == 200
-    assert res.json == {'content': 'core started'}
-
+    assert res.json['content'] == 'core started'    
+    assert res.json['training_session_id'] 
+    training_session_id = res.json['training_session_id']    
 
     error_message = 'some-random-error-message'
     
-    @retry(stop_max_attempt_number=10, wait_fixed=1000)
+    @retry(stop_max_attempt_number=20, wait_fixed=1000)
     def wait_for_training_error():
         res = client.get(
             f'/models/{model_id}/training/{training_session_id}/status',
@@ -697,31 +751,25 @@ def test_training_error(monkeypatch, client, tmp_path, dataset_settings, trainin
 
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)    
 def test_testing_error(monkeypatch, client, tmp_path, dataset_settings, training_settings, mixpanel_mock, user_token):
-    assert_data(client, dataset_settings)
-    network = assert_model_recommendation(client, mixpanel_mock, user_token, dataset_settings)
+    assert_data(client, dataset_settings, user_token)
+    model_id, _ = assert_model_recommendation(client, mixpanel_mock, user_token, dataset_settings)
     
-    user_email = 'anton.k@perceptilabs.com'
-    model_id = '123'
-    training_session_id = make_session_id(str(tmp_path))  # TODO: This should be generated by one of the endpoints....
-
-    assert_training(
+    training_session_id = assert_training(
         client, mixpanel_mock, user_token, model_id,
-        network, dataset_settings, training_settings, training_session_id, user_email)
-
+        dataset_settings, training_settings
+    )
 
     res = client.post(
         f'/inference/testing',
         json={
             'modelsInfo': {
                 model_id: {
-                    'layers': network,
                     'model_name': 'MyModel',
                     'training_session_id': training_session_id,
                     'datasetSettings': dataset_settings
                 }
             },
             'tests': ['confusion_matrix'],
-            'userEmail': user_email
         },
         headers={'Authorization': user_token}        
     )
@@ -769,4 +817,62 @@ def test_get_version(client):
     assert response.status_code == 200
     assert response.json == {
         'perceptilabs': 'development', 'python': sys.version, 'tensorflow': tf.__version__}
+    
+
+#@pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
+def test_sharing_flow(client, mixpanel_mock, user_token, tmp_path, dataset_settings, training_settings):
+    assert_data(client, dataset_settings, user_token)
+    model_id, _ = assert_model_recommendation(client, mixpanel_mock, user_token, dataset_settings)
+
+    assert_info(client, model_id, dataset_settings, user_token)    
+    assert_previews(client, model_id, dataset_settings, user_token)
+
+    assert_layer_code(client, model_id, user_token)
+    
+    training_session_id = assert_training(
+        client, mixpanel_mock, user_token, model_id,
+        dataset_settings, training_settings
+    )
+
+    res = client.put(
+        f'/models/{model_id}/export?training_session_id={training_session_id}', 
+        json={
+            'datasetSettings': dataset_settings,
+            'trainingSettings': training_settings,            
+            'exportSettings': {
+                'Location': str(tmp_path),
+                'name': 'my-model',
+                'Type': 'Archive',
+            }
+        },
+        headers={'Authorization': user_token}        
+    )
+    archive_path = os.path.join(tmp_path, f'model_{model_id}.zip')
+    assert os.path.isfile(archive_path)
+    
+
+    res = client.post(
+        f'/models/import', 
+        json={
+            'archiveFilePath': archive_path,            
+            'projectId': '10',  
+            'datasetId': '456',
+            'modelName': 'my-new-model',
+            'modelFilePath': tmp_path,            
+        },
+        headers={'Authorization': user_token}        
+    )
+
+    assert_training(
+        client, mixpanel_mock, user_token, res.json['modelId'],
+        res.json['datasetSettings'], res.json['trainingSettings']   # TODO: these should NOT be returned. We should instead return the dataset settings ID (hash? or model id?) and training session ID (model id)... What about frontend settings? Leave for now?
+    )
+    
+
+
+
+
+
+
+
     
