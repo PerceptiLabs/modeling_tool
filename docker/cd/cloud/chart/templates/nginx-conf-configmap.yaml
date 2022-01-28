@@ -8,27 +8,28 @@ data:
     }
 
     http {
+      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                         '$status $body_bytes_sent "$http_referer" '
+                         '"$http_user_agent" "$http_x_forwarded_for"';
+
       map $http_upgrade $connection_upgrade {
         default upgrade;
         '' close;
       }
 
       server {
+        access_log /dev/stdout main;
+        error_log stderr debug;
+
         listen 8080;
         client_max_body_size 100M;
         location /rygg/ {
           proxy_pass http://rygg/;
         }
-        location /auth/ {
-          proxy_pass http://keycloak/auth/;
-          proxy_set_header Host $host;
-          proxy_set_header X-Real-IP $remote_addr;
-          proxy_set_header X-Forwarded-Proto $scheme;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        }
         location / {
           proxy_pass http://frontend/;
           proxy_set_header Host $host;
+          proxy_set_header Access-Control-Allow-Origin https://keycloak.dev.perceptilabs.com:8443;
         }
         location /rygg_url {
           return 200 $scheme://$host/rygg/;
@@ -46,6 +47,8 @@ data:
           proxy_set_header X-Forwarded-Proto $scheme;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
+        # Note that we're writing it to a writeable dir (/var/run) instead of the default /etc/nginx/conf.d
+        include /var/run/configs.conf;
       }
     }
 

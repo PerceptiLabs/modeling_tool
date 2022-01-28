@@ -30,6 +30,8 @@ const baseUrlSite = "https://perceptilabs.com";
 const baseHost = window.location.hostname;
 
 export const KEYCLOAK_URL_CONFIG_PATH = "keycloak_url";
+export const KEYCLOAK_REALM_CONFIG_PATH = "keycloak_realm";
+export const KEYCLOAK_CLIENTID_CONFIG_PATH = "keycloak_clientid";
 export const IS_ENTERPRISE_CONFIG_PATH = "is_enterprise";
 
 export const RYGG_URL_CONFIG_PATH = "rygg_url";
@@ -49,8 +51,6 @@ export const RENDERING_KERNEL_BASE_URL = `http://${baseHost}:5001`;
 
 export const GITHUB_AUTHORIZE_URL = `https://github.com/login/oauth/authorize?scope=public_repo,read:user&client_id=${process.env.GITHUB_CLIENT_ID}`;
 export const GITHUB_GET_TOKEN_BY_CODE_URL = "https://ghsk.azurewebsites.net";
-
-export const KEYCLOAK_REALM_PATH = `/realms/${process.env.KEYCLOAK_REALM}`;
 
 export const PERCEPTILABS_DOCUMENTATION_URL = `https://docs.perceptilabs.com/perceptilabs`;
 export const PERCEPTILABS_YOUTUBE_VIDEO_TUTORIAL_URL = `https://www.youtube.com/watch?v=dhzxOCin2kY&list=PLhDSeRDt1gigF-8DrTBedYy3TMZ2OelqA&index=5`;

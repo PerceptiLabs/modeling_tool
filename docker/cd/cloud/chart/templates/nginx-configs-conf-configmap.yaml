@@ -1,0 +1,15 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-configs-conf
+data:
+  configs.conf.template: |
+    location /keycloak_url {
+      return 200 ${KEYCLOAK_URL};
+    }
+    location /keycloak_realm {
+      return 200 ${KEYCLOAK_REALM};
+    }
+    location /keycloak_clientid {
+      return 200 ${KEYCLOAK_CLIENTID};
+    }

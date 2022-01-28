@@ -149,10 +149,12 @@ function setTokens(store, token, refreshToken) {
 export let keycloak;
 async function login() {
   let url = await keyCloak.url();
+  let realm = await keyCloak.realm();
+  let clientid = await keyCloak.clientid();
   let initOptions = {
     url: `${url}`,
-    realm: `${process.env.KEYCLOAK_REALM}`,
-    clientId: `${process.env.KEYCLOAK_CLIENT_ID}`,
+    realm: `${realm}`,
+    clientId: `${clientid}`,
     onLoad: "login-required",
     checkLoginIframe: false, // only true when onLoad is set to 'check-sso', causes errors when offline
   };

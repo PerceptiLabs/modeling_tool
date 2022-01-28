@@ -32,11 +32,25 @@ spec:
         - name: nginx
           image: {{ .Values.nginx.docker_image | quote }}
           imagePullPolicy: {{ .Values.nginx.pull_policy | default "IfNotPresent" | quote }}
+          env:
+            - name: KEYCLOAK_URL
+              value: {{ .Values.keycloak.url | quote }}
+            - name: KEYCLOAK_REALM
+              value: {{ .Values.keycloak.realm | quote }}
+            - name: KEYCLOAK_CLIENTID
+              value: {{ .Values.keycloak.clientid | quote }}
+              # To allow for writing configs.conf to a writeable dir (/var/run) instead of the default /etc/nginx/conf.d
+            - name: NGINX_ENVSUBST_OUTPUT_DIR
+              value: /var/cache
           ports:
             - containerPort: 8080
             - containerPort: 8443
           resources: {}
           volumeMounts:
+            - mountPath: /etc/nginx/templates/configs.conf.template
+              subPath: configs.conf.template
+              name: nginx-configs-conf
+              readOnly: true
             - mountPath: /etc/nginx/nginx.conf
               subPath: nginx.conf
               name: nginx-conf
@@ -47,6 +61,12 @@ spec:
               name: nginx-cache
       restartPolicy: Always
       volumes:
+        - name: nginx-configs-conf
+          configMap:
+            name: nginx-configs-conf
+            items:
+              - key: configs.conf.template
+                path: configs.conf.template
         - name: nginx-conf
           configMap:
             name: nginx-conf

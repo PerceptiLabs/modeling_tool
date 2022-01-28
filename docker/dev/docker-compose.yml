@@ -118,12 +118,19 @@ services:
       PL_KERNEL_MODE: rendering
 
   nginx:
-    <<: *common_base
     image: nginx
     ports:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./configs.conf.template:/etc/nginx/templates/configs.conf.template
+    environment:
+      KEYCLOAK_URL: https://keycloak.dev.perceptilabs.com:8443/auth
+      KEYCLOAK_REALM: vue-perceptilabs
+      KEYCLOAK_CLIENTID: vue-perceptilabs-client-id
+    restart: unless-stopped
+    networks:
+      - perceptilabs
 
 networks:
   perceptilabs:

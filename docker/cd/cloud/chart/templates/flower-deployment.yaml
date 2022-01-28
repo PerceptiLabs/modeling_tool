@@ -24,7 +24,7 @@ spec:
           {{- if .Values.flower.docker_image_override }}
           image: {{ .Values.flower.docker_image_override | quote }}
           {{- else }}
-          image: "{{ .Values.flower.docker_repo }}:{{ .Values.pl_docker_tag }}"
+          image: "{{ .Values.flower.docker_repo }}:{{ required "pl_docker_tag is a required value" .Values.pl_docker_tag }}"
           {{- end }}
           imagePullPolicy: {{ .Values.flower.pull_policy | default "IfNotPresent" | quote }}
           args:
@@ -41,7 +41,7 @@ spec:
             - name: PL_REDIS_URL
               value: redis://{{ .Values.redis_host }}
             - name: FLOWER_PORT
-              value: 5555
+              value: "5555"
           ports:
             - containerPort: 5555
           resources: {}

@@ -1,29 +1,31 @@
-# copied from operator-tools Makefile. It would be nice to not need this
 ROOT_DIR                = $(shell git rev-parse --show-toplevel)
 TEMPLATE_CMD            = @sed 's+REPLACE_NAMESPACE+${NAMESPACE}+g'#; s+REPLACE_GPU_COUNT+${GPU_COUNT}+g; s+REPLACE_SUBSCRIPTION_NAME+${APP_REPOSITORY}+g'
 DEPLOYMENT_NAME         = perceptilabs
 NAMESPACE_PREFIX        = a
-NAMESPACE               = $(shell oc get namespaces --no-headers --output='custom-columns=NAME:.metadata.name' | grep "^${NS_PREFIX}" | head -n 1)
+NAMESPACE               = $(shell oc get namespaces --no-headers --output='custom-columns=NAME:.metadata.name' | grep "^${NAMESPACE_PREFIX}" | head -n 1)
 NAMESPACE_SEQUENCE      = $(shell echo "${NAMESPACE}" | sed 's/^${NAMESPACE_PREFIX}//g')
 NEXT_NAMESPACE_SEQUENCE = $(shell echo $$((${NAMESPACE_SEQUENCE}+1)))
 NEXT_NAMESPACE          = ${NAMESPACE_PREFIX}${NEXT_NAMESPACE_SEQUENCE}
-REMOTE                  = origin
+REMOTE                  ?= $(shell git remote -v | grep "git@ssh.dev.azure.com:.*/PerceptiLabs/PerceptiLabs/PerceptiLabs (fetch)$$" | cut -d $$'\t' -f 1)
 DOCKER_TAG_PATTERN      = ^docker_\\d\\+$$
-LATEST_BUILD            = $(shell git fetch ${REMOTE} > /dev/null && git tag | grep ${DOCKER_TAG_PATTERN} | cut -d _ -f 2 | sort | tail -n 1)
+LATEST_BUILD            ?= $(shell git fetch ${REMOTE} > /dev/null && git tag | grep ${DOCKER_TAG_PATTERN} | cut -d _ -f 2 | sort | tail -n 1)
 BUILD_NUMBER            ?= ${LATEST_BUILD}
+
 
 undeploy: ## remove the helm chart
 	helm uninstall --namespace=${NAMESPACE} ${DEPLOYMENT_NAME}
 
-deploy: require-NAMESPACE require-PERCEPTILABS_AZURECR_PWD #secret ## deploy the helm chart
-	helm install --namespace=${NAMESPACE} --create-namespace ${DEPLOYMENT_NAME} --set imageCredentials.password=${PERCEPTILABS_AZURECR_PWD} ./chart --debug
+deploy: require-BUILD_NUMBER require-NAMESPACE require-PERCEPTILABS_AZURECR_PWD #secret ## deploy the helm chart
+	echo "Installing tag ${BUILD_NUMBER}"
+	helm install --namespace=${NAMESPACE} --create-namespace ${DEPLOYMENT_NAME} --set imageCredentials.password=${PERCEPTILABS_AZURECR_PWD} --set pl_docker_tag=${BUILD_NUMBER} --debug ./chart
 
 remove_namespace:  ## delete the namespace completely
-	oc delete namespace ${NAMESPACE} --ignore-not-found &
+	[ -n "${NAMESPACE}" ] && oc delete namespace ${NAMESPACE} --ignore-not-found &
 
 redeploy: remove_namespace deploy  ## delete the namespace and redeploy everything
 
-deploy_next: remove_namespace ## delete the current ns and redeploy to the next ns in the sequence
+deploy_next: remove_namespace ## delete the current ns and redeploys to the next ns in the sequence
+	echo Installing tag ${BUILD_NUMBER} to namespace ${NEXT_NAMESPACE}
 	helm install --namespace=${NEXT_NAMESPACE} --create-namespace ${DEPLOYMENT_NAME} --set imageCredentials.password=${PERCEPTILABS_AZURECR_PWD} --set pl_docker_tag=${BUILD_NUMBER} ./chart --debug
 	echo "Deployed to namespace ${NEXT_NAMESPACE}"
 

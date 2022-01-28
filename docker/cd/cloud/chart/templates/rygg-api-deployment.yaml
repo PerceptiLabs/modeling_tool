@@ -33,7 +33,7 @@ spec:
           {{- if .Values.rygg.docker_image_override }}
           image: {{ .Values.rygg.docker_image_override | quote }}
           {{- else }}
-          image: "{{ .Values.rygg.docker_repo }}:{{ .Values.pl_docker_tag }}"
+          image: "{{ .Values.rygg.docker_repo }}:{{ required "pl_docker_tag is a required value" .Values.pl_docker_tag }}"
           {{- end }}
           imagePullPolicy: {{ .Values.rygg.pull_policy | default "IfNotPresent" | quote }}
           env:

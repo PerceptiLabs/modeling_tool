@@ -12,9 +12,11 @@ log_level: DEBUG
 
 unzip_to_tmp: true
 
-pl_docker_tag: latest
+pl_docker_tag: null
 keycloak:
-  docker_image: quay.io/keycloak/keycloak:13.0.0
+  url: https://keycloak.dev.perceptilabs.com:8443/auth
+  realm: vue-perceptilabs
+  clientid: vue-perceptilabs-client-id
 bash_host:
   image: registry.access.redhat.com/ubi8/ubi:latest
 nginx:
