@@ -13,6 +13,11 @@ const workspaceSpinner = {
       showTrainingSpinner:'mod_workspace/GET_showStartTrainingSpinner',
     })
   },
+  created() {
+    if (this.showTrainingSpinner) {
+      this.set_showTrainingSpinner(false);
+    }
+  },
   watch: {
     showTrainingSpinner(newVal) {
       if(newVal) {
