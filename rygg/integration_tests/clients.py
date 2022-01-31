@@ -201,8 +201,8 @@ class DatasetClient(ClientBase):
     ENDPOINT = "/datasets/"
     ID_FIELD = "dataset_id"
 
-    def create_from_remote(rest, project, remote_name, destination_dir):
-        resp = rest.post('/datasets/create_from_remote/', {}, id=remote_name, path=destination_dir, project_id=project.id)
+    def create_from_remote(rest, project, dataset_type, remote_name, destination_dir):
+        resp = rest.post('/datasets/create_from_remote/', {}, id=remote_name, path=destination_dir, project_id=project.id, type=dataset_type)
         return TaskClient(rest, resp['task_id']), DatasetClient(rest, resp['dataset_id'])
 
     def create_from_upload(rest, project, name, upload_file_path):
@@ -212,11 +212,11 @@ class DatasetClient(ClientBase):
     def create_classification_dataset(rest, project, dataset_path):
         response = rest.post('/datasets/create_classification_dataset/', {}, dataset_path=dataset_path, project_id=project.id)
         return TaskClient(rest, response['task_id']), DatasetClient(rest, response['dataset_id'])
-    
+
     def create_segmentation_dataset(rest, project, image_path, mask_path):
         response = rest.post('/datasets/create_segmentation_dataset/', {}, image_path=image_path, mask_path=mask_path, project_id=project.id)
         return TaskClient(rest, response['task_id']), DatasetClient(rest, response['dataset_id'])
-        
+
     @property
     def name(self):
         return self.as_dict["name"]
@@ -248,6 +248,10 @@ class DatasetClient(ClientBase):
     @property
     def is_perceptilabs_sourced(self):
         return self.as_dict["is_perceptilabs_sourced"]
+
+    @property
+    def type(self):
+        return self.as_dict["type"]
 
     @property
     def models(self):

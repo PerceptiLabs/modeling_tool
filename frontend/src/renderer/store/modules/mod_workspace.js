@@ -5,7 +5,6 @@ import {
   isLocalStorageAvailable,
   stringifyNetworkObjects,
   deepCopy,
-  isEnvDataWizardEnabled,
   checkpointDirFromProject,
 } from "@/core/helpers.js";
 import { widthElement, LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS, defaultTrainingSettings } from '@/core/constants.js'
@@ -957,10 +956,8 @@ const mutations = {
 
     let arrSelect = cloneDeep(getters.GET_currentSelectedEl);
     
-    // under feature flag
-    if(isEnvDataWizardEnabled()) {
-      arrSelect = arrSelect.filter(el => !lockedComponentsNames.includes(el.componentName))  
-    }
+    // filter locked components to not be removed
+    arrSelect = arrSelect.filter(el => !lockedComponentsNames.includes(el.componentName))  
     
     if(!arrSelect.length) return;
     let arrSelectID = [];

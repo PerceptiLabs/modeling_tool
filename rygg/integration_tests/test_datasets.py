@@ -87,7 +87,7 @@ def test_delete_dataset_in_downloading(rest, tmpdir, tmp_project):
         return not found_files
 
 
-    task, dataset = DatasetClient.create_from_remote(rest, tmp_project, medium_dataset_name, tmpdir)
+    task, dataset = DatasetClient.create_from_remote(rest, tmp_project, 'M', medium_dataset_name, tmpdir)
 
     with task:
         with dataset:
@@ -124,7 +124,7 @@ def test_cancel_download_task(rest, tmpdir, tmp_project):
     big_dataaset_name = get_large_remote_record(rest)['UniqueName']
 
     # create a large dataset from remote
-    task, dataset = DatasetClient.create_from_remote(rest, tmp_project, big_dataaset_name, tmpdir)
+    task, dataset = DatasetClient.create_from_remote(rest, tmp_project, 'M', big_dataaset_name, tmpdir)
     try:
         with task:
             # Cancel it while it's downloading
@@ -141,7 +141,7 @@ def test_cancel_download_task(rest, tmpdir, tmp_project):
     assert_eventually(is_zip_removed, stop_max_delay=10000, wait_fixed=100)
 
     # try to create a new dataset from the same remote. It should succeed
-    task, dataset = DatasetClient.create_from_remote(rest, tmp_project, big_dataaset_name, tmpdir)
+    task, dataset = DatasetClient.create_from_remote(rest, tmp_project, 'M', big_dataaset_name, tmpdir)
 
     try:
         with task, dataset:
@@ -228,7 +228,7 @@ def test_no_post_access_in_enterprise(rest, tmp_project, tmp_model, tmp_text_fil
 @pytest.mark.usefixtures('pip_only')
 def test_new_dataset_round_trips_fields_local(rest, tmp_project, tmp_model, tmp_text_file):
     name = f"data with {tmp_text_file}"
-    with DatasetClient.make(rest, name=name, location=tmp_text_file, project=tmp_project.id, models=[tmp_model.id]) as dataset:
+    with DatasetClient.make(rest, name=name, location=tmp_text_file, project=tmp_project.id, models=[tmp_model.id], type='M') as dataset:
 
         refetched = DatasetClient(rest, dataset.id)
         # test that creating a dataset returns one that's waiting for an upload
@@ -357,6 +357,7 @@ def test_deleting_allows_same_name(rest, tmpdir, tmp_project):
         "project": tmp_project.id,
         "location": filename,
         "name": "dataset",
+        "type": "M",
     }
 
     # create and then delete a dataset
@@ -373,6 +374,13 @@ def test_deleting_allows_same_name(rest, tmpdir, tmp_project):
     DatasetClient.make(rest, **common_params)
 
 
+@pytest.mark.timeout(1)
+def test_validates_type(rest, tmpdir, tmp_project, to_local_translator):
+    # don't try this if the remote dataset is already linked to the dataset, which means that we're working on a non-test system
+    test_record = get_small_remote_record(rest)
+    with pytest.raises(Exception, match="400"):
+        DatasetClient.create_from_remote(rest, tmp_project, 'invalid_type', test_record["UniqueName"], tmpdir)
+
 @pytest.mark.timeout(10)
 def test_create_dataset_from_remote(rest, tmpdir, tmp_project, to_local_translator):
     # don't try this if the remote dataset is already linked to the dataset, which means that we're working on a non-test system
@@ -380,7 +388,7 @@ def test_create_dataset_from_remote(rest, tmpdir, tmp_project, to_local_translat
     assert test_record
 
     count_before = rest.get(f"/datasets/")['count']
-    task, dataset = DatasetClient.create_from_remote(rest, tmp_project, test_record["UniqueName"], tmpdir)
+    task, dataset = DatasetClient.create_from_remote(rest, tmp_project, 'M', test_record["UniqueName"], tmpdir)
 
     # make sure the task acts as expected
     assert_task_starts(rest, task)

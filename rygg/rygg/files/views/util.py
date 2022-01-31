@@ -46,6 +46,13 @@ def get_project_id_from_request(request):
         raise HTTPExceptions.NOT_FOUND.with_content(f"Project {project_id} does not exist")
     return project_id
 
+def get_required_choice_param(request, param, choices):
+    got = get_required_param(request, param)
+    valid = [k for k,_ in choices]
+    if got not in valid:
+        raise HTTPExceptions.BAD_REQUEST.with_content(f"{param} not in {valid}")
+    return got
+
 def json_response(response_content):
     return Response(response_content, content_type="application/json")
 

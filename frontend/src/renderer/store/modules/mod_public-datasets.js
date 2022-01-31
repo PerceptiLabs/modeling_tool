@@ -105,8 +105,8 @@ const actions = {
     }
   },
 
-  async downloadDataset({ commit, dispatch }, { id, name, projectId, path }) {
-    const task_id = await downloadDataset({ id, name, projectId, path });
+  async downloadDataset({ commit, dispatch }, { id, name, projectId, path, type }) {
+    const task_id = await downloadDataset({ id, name, projectId, path, type });
 
     commit("changeDownloadingCount", true);
 

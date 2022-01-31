@@ -17,7 +17,6 @@
   .layerTitle(v-if="showTitle") {{ displayTitle }}
   img.icon-lock(
     src="../../../../../../static/img/lock2.svg",
-    v-if="isDataWizardEnabled"
   )
 </template>
 
@@ -25,7 +24,6 @@
 import mixinSet from "@/core/mixins/net-element-view-layer.js";
 import TextEditable from "@/components/base/text-editable.vue";
 import mixinFocus from "@/core/mixins/net-element-settings-input-focus.js";
-import { isEnvDataWizardEnabled } from "@/core/helpers";
 export default {
   name: "ViewIoInput",
   mixins: [mixinSet, mixinFocus],
@@ -42,11 +40,6 @@ export default {
       displayTitle: "IO Input"
     };
   },
-  computed: {
-    isDataWizardEnabled() {
-      return isEnvDataWizardEnabled();
-    }
-  }
 };
 </script>
 <style lang="scss" scoped>

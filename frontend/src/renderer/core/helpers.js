@@ -536,10 +536,6 @@ export const arrayIncludeOrOmit = (array, value) => {
 };
 const sleep = m => new Promise(r => setTimeout(r, m));
 
-export const isEnvDataWizardEnabled = () => {
-  return process.env.ENABLE_DATAWIZARD === "true";
-};
-
 export const isPublicDatasetEnabled = () => {
   return process.env.ENABLE_PUBLIC_DATASET === "true";
 };

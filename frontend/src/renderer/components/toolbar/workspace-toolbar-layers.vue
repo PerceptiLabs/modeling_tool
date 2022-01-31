@@ -44,7 +44,7 @@
 </template>
 
 <script>
-import { generateID, isEnvDataWizardEnabled } from "@/core/helpers.js";
+import { generateID } from "@/core/helpers.js";
 
 import DeepLearningFC from "@/components/network-elements/elements/deep-learning-fc/view-deep-learning-fc.vue";
 import DeepLearningConv from "@/components/network-elements/elements/deep-learning-conv/view-deep-learning-conv.vue";
@@ -419,15 +419,13 @@ export default {
       this.$store.dispatch("mod_addComponent/setShiftKey", isShiftPressed);
     },
     filterUnnecessaryLayers() {
-      if (isEnvDataWizardEnabled()) {
-        let newArr = [];
-        this.layersbarList.map((obj) => {
-          if (obj.id !== "tutorial_data" && obj.id !== "tutorial_training") {
-            newArr.push(obj);
-          }
-        });
-        this.layersbarList = newArr;
-      }
+      let newArr = [];
+      this.layersbarList.map((obj) => {
+        if (obj.id !== "tutorial_data" && obj.id !== "tutorial_training") {
+          newArr.push(obj);
+        }
+      });
+      this.layersbarList = newArr;
     },
   },
   computed: {
@@ -440,9 +438,6 @@ export default {
   },
   mounted() {
     this.filterUnnecessaryLayers();
-    if (!isEnvDataWizardEnabled()) {
-      return;
-    }
   },
 };
 </script>

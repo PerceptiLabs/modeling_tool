@@ -9,7 +9,7 @@
         tbody
           tr(v-for="(data, modelId) in testData")
             td {{modelName(modelId)}}
-            td(:title="value")(v-for="value in getFirstElementFromObject(data)") {{ (value).toFixed(4) }}
+            td(:title="value" v-for="value in getFirstElementFromObject(data)") {{ (value).toFixed(4) }} 
 </template>
 <script>
 import { getFirstElementFromObject } from "@/core/helpers";

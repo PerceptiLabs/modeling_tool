@@ -142,6 +142,7 @@ export default {
         name: dataset.Name,
         projectId: this.currentProject,
         path: this.projectPath + "/Datasets/" + dataset.Name,
+        type: this.modelType,
       });
     },
     useDataset(publicDataset) {

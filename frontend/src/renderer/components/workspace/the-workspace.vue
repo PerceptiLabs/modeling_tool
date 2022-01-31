@@ -18,7 +18,7 @@
               clipPath(id="clip0")
                 rect(width="17" height="17" fill="white")
           span Save
-        //- button(v-if="modelTrainingSettings && isGlobalTrainingSettingEnabled" @click="onOffBtn(true)").btn.btn--secondary
+        //- button(v-if="modelTrainingSettings" @click="onOffBtn(true)").btn.btn--secondary
         //-   | Run with current settings
         button.btn.btn--secondary(type="button" @click="openDataSettings")
           span Data Settings

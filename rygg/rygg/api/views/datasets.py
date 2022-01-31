@@ -15,6 +15,7 @@ from rygg.files.views.util import (
     get_optional_param,
     get_optional_int_param,
     get_project_id_from_request,
+    get_required_choice_param,
     request_as_dict,
     protect_read_only_enterprise_field,
     json_response,
@@ -165,6 +166,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
         name = get_optional_param(request, "name", f"New Dataset")
         remote_id = get_required_param(request, "id")
         project_id = get_required_param(request, "project_id")
+        type = get_required_choice_param(request, "type", Dataset.Type.choices)
         destination = None if IS_CONTAINERIZED else request_path(request)
 
         task_id, dataset = Dataset.create_from_remote(
@@ -172,6 +174,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
             name,
             remote_id,
             destination,
+            type,
         )
 
         response = {
@@ -223,15 +226,15 @@ class DatasetViewSet(viewsets.ModelViewSet):
         sliced = itertools.islice(all_rows, 0, num_rows)
         return json_response({"file_contents": list(sliced)})
 
-    
-    
+
+
     @action(detail=False, methods=['POST'])
     def create_classification_dataset(self, request):
         dataset_path = get_required_param(request, "dataset_path")
         project_id = get_required_param(request, "project_id")
 
         task_id, dataset = Dataset.create_classification_dataset(
-            project_id, 
+            project_id,
             dataset_path
         )
 
@@ -242,15 +245,15 @@ class DatasetViewSet(viewsets.ModelViewSet):
         }
         return Response(response, 201)
 
-    
-    
+
+
     @action(detail=False, methods=['POST'])
     def create_segmentation_dataset(self, request):
         image_path = get_required_param(request, "image_path")
         mask_path = get_required_param(request, "mask_path")
         project_id = get_required_param(request, "project_id")
         task_id, dataset = Dataset.create_segmentation_dataset(
-            project_id, 
+            project_id,
             image_path,
             mask_path
         )

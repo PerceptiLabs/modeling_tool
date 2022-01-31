@@ -176,7 +176,6 @@ import { assembleModel } from "@/core/helpers/model-helper";
 
 import {
   debounce,
-  isEnvDataWizardEnabled,
   isPublicDatasetEnabled,
   isFolderLoadingEnabled,
 } from "@/core/helpers";
@@ -235,14 +234,10 @@ export default {
       showNewModelPopup !== null &&
       showNewModelPopup.hasOwnProperty("datasetId")
     ) {
-      let datasetPath = "";
       const allDatasets = this.$store.getters["mod_datasets/GET_datasets"];
-      allDatasets.forEach(dataset => {
-        if (dataset.dataset_id === showNewModelPopup.datasetId) {
-          datasetPath = dataset.location;
-        }
-      });
-      this.handleDataPathUpdates([datasetPath]);
+      const ds = allDatasets.find(ds => ds.dataset_id === showNewModelPopup.datasetId);
+      this.setModelType(ds.type);
+      this.handleDataPathUpdates([ds.location]);
     }
   },
   data: function() {
@@ -331,9 +326,6 @@ export default {
     isPublicDatasetEnabled() {
       return isPublicDatasetEnabled();
     },
-    isDataWizardEnabled() {
-      return isEnvDataWizardEnabled();
-    },
     isFolderLoadingEnabled() {
       return isFolderLoadingEnabled();
     },
@@ -420,62 +412,38 @@ export default {
       this.modelName = await rygg_getNextModelName(namePrefix);
     },
     isAllIOTypesFilled() {
-      if (this.isDataWizardEnabled) {
-        const { csvData } = this;
-        return (
-          csvData &&
-          csvData.ioTypes.filter(v => v !== undefined).length ===
-            csvData.ioTypes.length
-        );
-      } else {
-        return false;
-      }
+      const { csvData } = this;
+      return (
+        csvData &&
+        csvData.ioTypes.filter(v => v !== undefined).length ===
+          csvData.ioTypes.length
+      );
     },
     hasInputAndTarget() {
-      if (this.isDataWizardEnabled) {
-        const { csvData } = this;
-        return (
-          csvData &&
-          csvData.ioTypes.filter(v => v === "Input").length > 0 &&
-          csvData.ioTypes.filter(v => v === "Target").length > 0
-        );
-      } else {
-        return false;
-      }
+      const { csvData } = this;
+      return (
+        csvData &&
+        csvData.ioTypes.filter(v => v === "Input").length > 0 &&
+        csvData.ioTypes.filter(v => v === "Target").length > 0
+      );
     },
     hasOneTarget() {
-      if (this.isDataWizardEnabled) {
-        const { csvData } = this;
-        return (
-          csvData && csvData.ioTypes.filter(v => v === "Target").length === 1
-        );
-      } else {
-        return false;
-      }
+      const { csvData } = this;
+      return (
+        csvData && csvData.ioTypes.filter(v => v === "Target").length === 1
+      );
     },
     isDisableCreateAction() {
-      if (this.isDataWizardEnabled) {
-        const { modelName, csvData } = this;
-        let allColumnsAreSelected = true;
-        let hasInputAndTarget = true;
-        let hasOneTarget = true;
-        if (this.isDataWizardEnabled) {
-          allColumnsAreSelected = this.isAllIOTypesFilled();
-          hasInputAndTarget = this.hasInputAndTarget();
-          hasOneTarget = this.hasOneTarget();
-        }
-        return !allColumnsAreSelected || !hasInputAndTarget || !hasOneTarget;
-      } else {
-        const { chosenTemplate, modelName, basicTemplates } = this;
-        return chosenTemplate === null || !modelName;
-      }
+      let allColumnsAreSelected = true;
+      let hasInputAndTarget = true;
+      let hasOneTarget = true;
+      allColumnsAreSelected = this.isAllIOTypesFilled();
+      hasInputAndTarget = this.hasInputAndTarget();
+      hasOneTarget = this.hasOneTarget();
+      return !allColumnsAreSelected || !hasInputAndTarget || !hasOneTarget;
     },
     async createModel() {
-      if (this.isDataWizardEnabled) {
-        await this.createModelTF2X();
-      } else {
-        await this.createModelTF1X();
-      }
+      await this.createModelTF2X();
     },
     async createModelTF2X(runStatistics = false) {
       if (!this.csvData) {
@@ -682,14 +650,10 @@ export default {
         if (datasetIndex !== -1) {
           this.createdFromDatasetId = allDatasets[datasetIndex].dataset_id;
         } else {
-          console.error({
-            message: "Dataset isn't created yet",
-            location: dataPath[0],
-            allDatasets,
-          });
           const createDataset = await rygg_createDataset({
             name: dataPath[0],
             location: dataPath[0],
+            type: this.modelType,
           });
           this.$store.dispatch("mod_datasets/getDatasets");
           this.createdFromDatasetId = createDataset.data.dataset_id;

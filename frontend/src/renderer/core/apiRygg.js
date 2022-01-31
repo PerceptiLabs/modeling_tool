@@ -207,13 +207,9 @@ export const doesFileExist = path => {
 };
 
 export const getDatasetContent = async datasetId => {
-  try {
-    let fs = await whenHaveFileservingToken();
-    let res = await fs.get(`/datasets/${datasetId}/content/`);
-    return res.status === 200 ? res.data.file_contents : null;
-  } catch (err) {
-    throw err;
-  }
+  let fs = await whenHaveFileservingToken();
+  let res = await fs.get(`/datasets/${datasetId}/content/`);
+  return res.status === 200 ? res.data.file_contents : null;
 };
 
 export const pickFile = (title, initialDir = null, fileTypes = null) => {
@@ -323,11 +319,11 @@ export const getPublicDatasetCategories = () => {
     .then(res => res.data);
 };
 
-export const downloadDataset = ({ id, name, projectId, path }) => {
+export const downloadDataset = ({ id, name, projectId, path, type }) => {
   return whenHaveFileservingToken()
     .then(fs =>
       fs.post(
-        `/datasets/create_from_remote/?id=${id}&name=${name}&project_id=${projectId}&path=${path}`,
+        `/datasets/create_from_remote/?id=${id}&name=${name}&project_id=${projectId}&path=${path}&type=${type}`,
         {},
       ),
     )
@@ -420,7 +416,6 @@ export const cancelTask = async task_id => {
  */
 export const createDataset = async payload => {
   try {
-    console.error("createDataset", payload);
     const fs = await whenHaveFileservingToken();
     return await fs.post("datasets/", {
       project_id: currentProject(),

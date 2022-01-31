@@ -2,7 +2,7 @@ import {mapActions, mapGetters, mapMutations, mapState} from 'vuex';
 import saveNet    from './workspace-save-net.js'
 import scaleNet   from './workspace-scale.js'
 import spinnerNet from './workspace-spinner.js'
-import {debounce, isEnvDataWizardEnabled} from '@/core/helpers'
+import { debounce } from '@/core/helpers'
 
 import { googleAnalytics }        from '@/core/analytics';
 
@@ -250,9 +250,6 @@ export default {
         this.setGridValue(value);
       }
     },
-    isGlobalTrainingSettingEnabled() {
-      return isEnvDataWizardEnabled();
-    },   
     statusStartBtn() {
       return {
         // 'bg-error':   this.statusTraining === 'training',
@@ -698,7 +695,7 @@ export default {
       if(this.isTraining)  {
         this.trainStop();
       } else {
-        if(this.isGlobalTrainingSettingEnabled && !runWithCurrentSettings) {
+        if(!runWithCurrentSettings) {
           // open setting modal
           this.$store.dispatch('globalView/showGlobalTrainingSettingsAction', {
             isOpen: true,
@@ -736,18 +733,10 @@ export default {
     
     trainStartWithCheckpoint() {
       googleAnalytics.trackCustomEvent('start-training');
-      if (!isEnvDataWizardEnabled()) {
-        let valid = this.validateNetwork();
-        if (!valid) return;
-      }
       this.GP_showCoreSideSettings(true);
     },
     trainStartWithoutCheckpoint() {
       googleAnalytics.trackCustomEvent('start-training');
-      if (!isEnvDataWizardEnabled()) {
-        let valid = this.validateNetwork();
-        if (!valid) return;
-      }
       // if toggle off
       // start directly
 
@@ -764,37 +753,6 @@ export default {
           this.$store.dispatch('globalView/hideSidebarAction', false);
         });
     },
-    validateNetwork() {
-      let net;
-      if(this.currentElList) net = Object.values(this.currentElList);
-      else {
-        this.showInfoPopup('You cannot Run without a Data element and a Training element');
-        return false;
-      }
-
-      let typeData = net.find((element)=> element.layerType === 'Data');
-      if(typeData === undefined) {
-        this.showInfoPopup('Data element missing');
-        return false
-      }
-
-      let typeTraining = net.find((element)=> element.layerType === 'Training');
-      if(typeTraining === undefined) {
-        this.showInfoPopup('Classic Machine Learning or Training element missing');
-        return false
-      }
-      let trainingIncluded = net.find(element => trainingElements.includes(element.componentName));
-      let deepLearnIncluded = true;
-      if (trainingIncluded) {
-        deepLearnIncluded = net.find(element => deepLearnElements.includes(element.componentName));
-      }
-      if(deepLearnIncluded === undefined) {
-        this.showInfoPopup('If you use the Training elements, you must use the Deep Learn elements');
-        return false
-      }
-
-      return true;
-    },    
     openDataSettings() {
       this.$store.dispatch('globalView/SET_datasetSettingsPopupAction', true);
     }

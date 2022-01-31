@@ -148,9 +148,6 @@ export default {
 
     if (!this.user) this.cloud_userGetProfile();
 
-    setTimeout(() => {
-      this.$store.dispatch("mod_api/API_getOutputDim");
-    }, 1000);
   },
   beforeDestroy() {
     window.removeEventListener("online", this.updateOnlineStatus);
@@ -371,59 +368,9 @@ export default {
           });
           return models;
         })
-        .then(this.handleCreateDatasets)
-        .then(this.handleAttachDatasetsToModel);
-    },
-    // migration for creating datasets
-    async handleCreateDatasets(models) {
-      const alreadyCreatedDatasetsPaths = this.allModelsDatasets.map(
-        x => x.location,
-      );
-      const notExistingDatasets = models
-        .filter(x => x !== null)
-        .map(model => {
-          const datasetPath = getModelDatasetPath(model);
-          let ret = null;
-          if (!alreadyCreatedDatasetsPaths.includes(datasetPath)) {
-            ret = {
-              modelId: model.apiMeta.model_id,
-              datasetPath,
-            };
-          }
-          return ret;
-        })
-        .filter(x => x !== null);
-
-      notExistingDatasets.map(async data => {
-        // creating datasets
-        await rygg_createDataset({
-          project: this.currentProjectId,
-          name: data.datasetPath,
-          location: data.datasetPath,
-        });
-      });
-      await this.$store.dispatch("mod_datasets/getDatasets");
-      return models;
-    },
-    // migration for attaching datasets to models
-    async handleAttachDatasetsToModel(models) {
-      const arrOfLocations = this.allModelsDatasets.map(x => x.location);
-      await this.workspaceContent.map(async workspaceModel => {
-        if (workspaceModel.apiMeta.datasets.length === 0) {
-          const datasetPath = getModelDatasetPath(workspaceModel);
-          const modelDataset = this.allModelsDatasets[
-            arrOfLocations.indexOf(datasetPath)
-          ];
-          await rygg_attachModelsToDataset(modelDataset.dataset_id, [
-            ...modelDataset.models,
-            workspaceModel.apiMeta.model_id,
-          ]);
-        }
-      });
     },
     async fetchUnparsedModels(modelMetas) {
       let unparsedModels = [];
-
       modelMetas.forEach(async model => {
         const modelJson = await rygg_getModelJsonById(model.model_id);
         if (!modelJson) {

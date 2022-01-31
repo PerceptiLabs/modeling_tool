@@ -109,7 +109,7 @@ def tmp_dataset(tmp_text_file, rest, tmp_project):
             yield dataset
     else:
         filename = tmp_text_file
-        with DatasetClient.make(rest, name=filename, location=filename, project=tmp_project.id) as dataset:
+        with DatasetClient.make(rest, name=filename, location=filename, project=tmp_project.id, type='M') as dataset:
             yield dataset
 
 

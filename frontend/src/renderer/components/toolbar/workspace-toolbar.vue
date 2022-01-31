@@ -76,8 +76,6 @@
 <script>
 import { mapGetters, mapActions, mapMutations, mapState } from 'vuex';
 
-import {goToLink, isEnvDataWizardEnabled} from '@/core/helpers.js';
-
 import LayersToolbar            from '@/components/toolbar/workspace-toolbar-layers.vue';
 import SidebarToggleButton      from '@/components/toolbar/sidebar-toggle-button.vue';
 

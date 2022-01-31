@@ -1,74 +1,45 @@
 <template lang="pug">
 div
   .settings-layer_section
-    template(v-if="isTF2XEnabled")
-      .form_row(v-tooltip-interactive:right="interactiveInfo.convolutionType")
-        .form_label Convolution type:
-        #tutorial_convolution_type.form_input(data-tutorial-hover-info)
-          base-radio(
-            group-name="convolutionTypeGroup",
-            value-input="Conv",
-            v-model="settings.Conv_type"
-          )
-            span Conv
-          base-radio(
-            group-name="convolutionTypeGroup",
-            value-input="Transpose",
-            v-model="settings.Conv_type"
-          )
-            span Transpose
-          base-radio(
-            group-name="convolutionTypeGroup",
-            value-input="Separable",
-            v-model="settings.Conv_type"
-          )
-            span Separable
-          base-radio(
-            group-name="convolutionTypeGroup",
-            value-input="Depthwise",
-            v-model="settings.Conv_type"
-          )
-            span Depthwise
-      .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
-        .form_label Dimension:
-        #tutorial_dimension.form_input(data-tutorial-hover-info)
-          base-radio(
-            v-for="convDimOption in validConvolutionDimOptions",
-            :key="convDimOption",
-            group-name="group",
-            :value-input="convDimOption",
-            v-model="settings.Conv_dim"
-          )
-            span {{ convDimOption }}
+    .form_row(v-tooltip-interactive:right="interactiveInfo.convolutionType")
+      .form_label Convolution type:
+      #tutorial_convolution_type.form_input(data-tutorial-hover-info)
+        base-radio(
+          group-name="convolutionTypeGroup",
+          value-input="Conv",
+          v-model="settings.Conv_type"
+        )
+          span Conv
+        base-radio(
+          group-name="convolutionTypeGroup",
+          value-input="Transpose",
+          v-model="settings.Conv_type"
+        )
+          span Transpose
+        base-radio(
+          group-name="convolutionTypeGroup",
+          value-input="Separable",
+          v-model="settings.Conv_type"
+        )
+          span Separable
+        base-radio(
+          group-name="convolutionTypeGroup",
+          value-input="Depthwise",
+          v-model="settings.Conv_type"
+        )
+          span Depthwise
+    .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
+      .form_label Dimension:
+      #tutorial_dimension.form_input(data-tutorial-hover-info)
+        base-radio(
+          v-for="convDimOption in validConvolutionDimOptions",
+          :key="convDimOption",
+          group-name="group",
+          :value-input="convDimOption",
+          v-model="settings.Conv_dim"
+        )
+          span {{ convDimOption }}
 
-    template(v-else)
-      .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
-        .form_label Dimension:
-        #tutorial_dimension.form_input(data-tutorial-hover-info)
-          base-radio(
-            group-name="group",
-            value-input="Automatic",
-            v-model="settings.Conv_dim"
-          )
-            span Automatic
-          base-radio(
-            group-name="group",
-            value-input="1D",
-            v-model="settings.Conv_dim"
-          )
-            span 1D
-          base-radio(
-            group-name="group",
-            value-input="2D",
-            v-model="settings.Conv_dim"
-          )
-            span 2D
-          base-radio(
-            group-name="group",
-            value-input="3D",
-            v-model="settings.Conv_dim"
-          )
-            span 3D
   .settings-layer_section
     .form_row(v-tooltip-interactive:right="interactiveInfo.patchSize")
       .form_label Patch size:
@@ -268,7 +239,6 @@ div
 <script>
 import mixinSet from "@/core/mixins/net-element-settings.js";
 import mixinSetValidators from "@/core/mixins/net-element-settings-validators.js";
-import { isEnvDataWizardEnabled } from "@/core/helpers";
 
 export default {
   name: "SetDeepLearningConv",
@@ -356,9 +326,6 @@ export default {
     };
   },
   computed: {
-    isTF2XEnabled() {
-      return isEnvDataWizardEnabled();
-    },
     validConvolutionDimOptions() {
       const convType = this.settings.Conv_type;
 

@@ -1,4 +1,4 @@
-import {deepCloneNetwork, isEnvDataWizardEnabled} from "@/core/helpers";
+import { deepCloneNetwork } from "@/core/helpers";
 import { lockedComponentsNames } from "@/core/constants";
 
 const namespaced = true;
@@ -33,9 +33,7 @@ const actions = {
 };
 
 function filterLockedComponents(payload) {
-  if(isEnvDataWizardEnabled()) {
-    payload = payload.filter(el => !lockedComponentsNames.includes(el.target.dataset.component))  
-  }
+  payload = payload.filter(el => !lockedComponentsNames.includes(el.target.dataset.component))  
   return payload
 }
 export default {
