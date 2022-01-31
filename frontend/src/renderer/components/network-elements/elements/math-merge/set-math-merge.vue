@@ -71,15 +71,16 @@ export default {
       settings: {
         Type: "Add", //#Add, Sub, Multi, Div, Concat
         Merge_dim: "-1",
-        InputsCount: 2
+        InputsCount: 2,
       },
       isNumberOfInputsValid: false,
       interactiveInfo: {
         operation: {
           title: "Operation",
-          text: "Choose which operation to use"
-        }
-      }
+          text: "Choose which operation to use",
+        },
+      },
+      removedInputConnections: [],
     };
   },
   computed: {
@@ -96,14 +97,14 @@ export default {
       });
       const newInputsKeys = Object.keys(newInputs);
       const lastInputId = newInputsKeys[newInputsKeys.length - 1];
-      return lastInputId;
+      return [lastInputId, newInputs[lastInputId]];
     },
     getMergeComponentInputsCount() {
       return Object.keys(this.getMergeComponentInputs).length;
     },
     layerId() {
       return this.currentEl.layerId;
-    }
+    },
   },
   mounted() {
     this.settings.InputsCount = this.getMergeComponentInputsCount;
@@ -126,18 +127,30 @@ export default {
       }
     },
     addInput(inputNr) {
-      this.$store.commit("mod_workspace/ADD_inputVariableMutation", {
-        layerId: this.layerId,
-        name: `input${inputNr}`
-      });
+      const haveCachedInputs = this.removedInputConnections.length;
+      if (haveCachedInputs) {
+        const input = this.removedInputConnections.pop();
+        this.$store.dispatch("mod_workspace/ADD_inputVariableAction", {
+          layerId: this.layerId,
+          name: input.name,
+          reference_var_id: input.reference_var_id,
+          reference_layer_id: input.reference_layer_id,
+        });
+      } else {
+        this.$store.dispatch("mod_workspace/ADD_inputVariableAction", {
+          layerId: this.layerId,
+          name: `input${inputNr}`,
+        });
+      }
     },
     removeInput() {
-      const lastInputId = this.getLastEditableInputId;
+      const [lastInputId, lastInput] = this.getLastEditableInputId;
+      this.removedInputConnections.push(lastInput); // stash of removed inputs
       this.$store.dispatch("mod_workspace/DELETE_inputVariableAction", {
         layerId: this.layerId,
-        inputVariableId: lastInputId
+        inputVariableId: lastInputId,
       });
-    }
+    },
   },
   watch: {
     "settings.InputsCount": {
@@ -156,8 +169,8 @@ export default {
           this.isNumberOfInputsValid = false;
           this.handleInputNumberChanged(this.settings.InputsCount);
         }
-      }
-    }
-  }
+      },
+    },
+  },
 };
 </script>

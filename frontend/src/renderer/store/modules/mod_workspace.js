@@ -1709,13 +1709,14 @@ const mutations = {
     let el = currentElement(payload.layerId).inputs[payload.inputVariableId];
     el.name = payload.value;
   },
-  ADD_inputVariableMutation(state, payload) {
+  ADD_inputVariableMutation(state, { payload, dispatch }) {
     let el = currentElement(payload.layerId)
     Vue.set(el.inputs, generateID(), {
       name: payload.name || "input",
-      reference_var_id: null,
-      reference_layer_id: null,
+      reference_var_id: payload.reference_var_id || null,
+      reference_layer_id: payload.reference_layer_id || null,
     });
+    dispatch('mod_events/EVENT_calcArray', null, { root: true });
   },
   DELETE_inputVariableMutation(state, {payload, dispatch }) {
     let el = currentElement(payload.layerId);
@@ -1830,6 +1831,9 @@ const actions = {
     //     }
     //   }
     return layerIdsWithReference;
+  },
+  ADD_inputVariableAction({ dispatch, commit }, payload) {
+    commit("ADD_inputVariableMutation", { payload, dispatch });
   },
   DELETE_inputVariableAction({ dispatch, commit }, payload) {
     commit('DELETE_inputVariableMutation', { payload, dispatch });
