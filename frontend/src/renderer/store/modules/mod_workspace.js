@@ -17,7 +17,7 @@ import { saveModelJson as rygg_saveModelJson, updateModelMeta as rygg_updateMode
 import { lockedComponentsNames } from "@/core/constants.js";
 import store from '@/store';
 import { disassembleModel, defaultNetwork } from "@/core/helpers/model-helper";
-
+import { attachForwardAndBackwardConnectionsToNetwork } from "@/core/modelHelpers";
 const namespaced = true;
 
 const state = {
@@ -329,8 +329,8 @@ const getters = {
     }
     return focusedElement[0];
   },
-  GET_descendentsIds: (state, getters, rootState, rootGetters) => (pivotLayer, withPivot) => {
-    return rootGetters['mod_api/GET_descendentsIds'](pivotLayer, withPivot);
+  GET_descendentIds: (state, getters, rootState, rootGetters) => (pivotLayer, withPivot) => {
+    return rootGetters['mod_api/GET_descendentIds'](pivotLayer, withPivot);
   },
   GET_networksInCurrentProject(state, getters) {
 
@@ -964,8 +964,7 @@ const mutations = {
     
     if(!arrSelect.length) return;
     let arrSelectID = [];
-
-    const copyOfNetwork = {...getters.GET_currentNetworkElementList};
+    const copyOfNetwork = attachForwardAndBackwardConnectionsToNetwork(getters.GET_currentNetworkElementList);
     let net = {...getters.GET_currentNetworkElementList};
 
     deleteElement(arrSelect);
@@ -973,7 +972,7 @@ const mutations = {
     let descendantsIds = []
     for(let ix in arrSelectID) {
       const id = arrSelectID[ix];
-      descendantsIds = [...descendantsIds, ...getters.GET_descendentsIds(copyOfNetwork[id], false)]
+      descendantsIds = [...descendantsIds, ...getters.GET_descendentIds(copyOfNetwork[id], false)]
     }
     descendantsIds = Array.from(new Set(descendantsIds));
     descendantsIds = descendantsIds.filter((item) => {

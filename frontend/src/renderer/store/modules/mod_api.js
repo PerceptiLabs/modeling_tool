@@ -205,7 +205,7 @@ const getters = {
     return headlessState.isHeadless;
   },
   // maybe another flag for within or not alayerId
-  GET_descendentsIds: (state, getters) => (pivotLayer, withPivot = true) => {
+  GET_descendentIds: (state, getters) => (pivotLayer, withPivot = true) => {
     const networkList = attachForwardAndBackwardConnectionsToNetwork(
       getters.GET_coreNetworkElementList,
     );
