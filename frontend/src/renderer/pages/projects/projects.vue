@@ -29,12 +29,26 @@ div
     // List
     .models-list
       .models-list-row.model-list-header.bold
-        .column-1
+        .column-1.d-flex.align-items-center
           base-checkbox.btn-checkbox(
             :value="isAllItemsSelected()",
             @input="toggleSelectedItems"
           )
-            | All datasets
+          svg.expand-datasets-ico.mr-20(
+            @click="expandAllDatasets",
+            xmlns="http://www.w3.org/2000/svg",
+            width="12",
+            height="14",
+            viewBox="0 0 12 14",
+            fill="none"
+          )
+            path(
+              fill-rule="evenodd",
+              clip-rule="evenodd",
+              d="M1.1008 8.29026C1.15305 8.23787 1.21513 8.19631 1.28346 8.16795C1.3518 8.1396 1.42506 8.125 1.49905 8.125C1.57304 8.125 1.6463 8.1396 1.71464 8.16795C1.78298 8.19631 1.84505 8.23787 1.8973 8.29026L5.99905 12.3931L10.1008 8.29026C10.2064 8.18463 10.3497 8.1253 10.4991 8.1253C10.6484 8.1253 10.7917 8.18463 10.8973 8.29026C11.0029 8.39588 11.0623 8.53913 11.0623 8.68851C11.0623 8.83788 11.0029 8.98113 10.8973 9.08676L6.3973 13.5868C6.34505 13.6391 6.28298 13.6807 6.21464 13.7091C6.1463 13.7374 6.07304 13.752 5.99905 13.752C5.92506 13.752 5.8518 13.7374 5.78347 13.7091C5.71513 13.6807 5.65305 13.6391 5.6008 13.5868L1.1008 9.08676C1.04842 9.0345 1.00686 8.97243 0.978501 8.90409C0.950144 8.83575 0.935547 8.76249 0.935547 8.68851C0.935547 8.61452 0.950144 8.54126 0.978501 8.47292C1.00686 8.40458 1.04842 8.34251 1.1008 8.29026V8.29026ZM1.1008 5.71176C1.15305 5.76414 1.21513 5.8057 1.28346 5.83406C1.3518 5.86241 1.42506 5.87701 1.49905 5.87701C1.57304 5.87701 1.6463 5.86241 1.71464 5.83406C1.78298 5.8057 1.84505 5.76414 1.8973 5.71176L5.99905 1.60888L10.1008 5.71176C10.2064 5.81738 10.3497 5.87672 10.4991 5.87672C10.6484 5.87672 10.7917 5.81738 10.8973 5.71176C11.0029 5.60613 11.0623 5.46288 11.0623 5.31351C11.0623 5.16413 11.0029 5.02088 10.8973 4.91526L6.3973 0.415255C6.34505 0.362872 6.28298 0.321311 6.21464 0.292954C6.1463 0.264597 6.07304 0.25 5.99905 0.25C5.92506 0.25 5.8518 0.264597 5.78347 0.292954C5.71513 0.321311 5.65305 0.362872 5.6008 0.415255L1.1008 4.91526C1.04842 4.96751 1.00686 5.02958 0.978501 5.09792C0.950144 5.16626 0.935547 5.23952 0.935547 5.31351C0.935547 5.38749 0.950144 5.46076 0.978501 5.52909C1.00686 5.59743 1.04842 5.6595 1.1008 5.71176V5.71176Z",
+              fill="white"
+            )
+          span All datasets
         .column-3 Training Status
         .column-4 Duration
         .column-5 Test Available
@@ -286,6 +300,9 @@ export default {
       return this.$store.getters["mod_workspace/GET_networkIndexById"](
         this.renameId,
       );
+    },
+    isAllDatasetsExpanded() {
+      return this.dataSetIsOpenedStateArray.length === this.allDatasets.length;
     },
   },
   watch: {
@@ -783,6 +800,13 @@ export default {
       });
       this.dataSetIsOpenedStateArray = temp;
     },
+    expandAllDatasets() {
+      if (this.isAllDatasetsExpanded) {
+        this.dataSetIsOpenedStateArray = [];
+      } else {
+        this.expandDatasetsModels();
+      }
+    },
   },
   created() {
     // Adding this because of reloads on this page
@@ -1234,9 +1258,11 @@ $header-height: 60px;
 .mr-20 {
   margin-right: 20px;
 }
-.dataset-chevron {
+.dataset-chevron,
+.expand-datasets-ico {
   margin-right: 20px;
   min-width: 18px;
+  cursor: pointer;
   path {
     fill: theme-var($text-highlight);
   }
