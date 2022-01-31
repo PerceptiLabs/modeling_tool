@@ -1,6 +1,6 @@
 <template lang="pug">
   ul.statistics-box_tabset
-    h5 View Box
+    h5 View Box | {{currentTab}}
     li.statistics-box_tab(
       v-for="(tabInfo, name, i) in tabSet"
       :key="name"
@@ -35,7 +35,7 @@ export default {
   },
   methods: {
     setCurrentTab(tab, el) {
-      if(el && el.type === 'component') {
+      if(el && (el.type === 'component' || el.type === 'input')) {
         let element = this.$store.getters['mod_workspace/GET_networkSnapshotElementById'](el.layerId);
         
         this.$store.commit('mod_statistics/CHANGE_StatisticSelectedArr', deepCloneNetwork(element));

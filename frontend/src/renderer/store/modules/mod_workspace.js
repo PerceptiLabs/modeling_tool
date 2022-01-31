@@ -368,6 +368,11 @@ const getters = {
     const currentNetwork = getters.GET_currentNetwork;
     return currentNetwork.networkMeta.trainingSettings
   },
+  GET_inputs: (state, getters) => {
+    let net = deepCloneNetwork(getters.GET_currentNetworkElementList);
+    
+    return Object.values(net).filter(el => (el.layerType === 'IoInput'));
+  },
   GET_inputsAndOutputs: (state, getters) => {
     let net = deepCloneNetwork(getters.GET_currentNetworkElementList);
     
@@ -377,19 +382,18 @@ const getters = {
     let componentsTabs = [];
 
     // make inputs tabs
-    Inputs.forEach(el => {
-      componentsTabs.push({
-        btnId: el.layerName,
-        name: el.layerName ,
-        layerId: el.layerId,
-        type: 'component',  // default | component
-        layerType: el.layerType,
-        btnInteractiveInfo: {
-          title: el.layerName,
-          text: 'View the global'
-        },
-      });
+    componentsTabs.push({
+      btnId: Inputs.length > 1 ? 'Input': Inputs[0].layerName,
+      name: Inputs.length > 1 ? 'Input': Inputs[0].layerName ,
+      layerId: Inputs[0].layerId,
+      type: Inputs.length > 1 ? 'input' : 'component',  // input | component
+      layerType: Inputs.length > 1 ? 'IoInput': Inputs[0].layerType,
+      btnInteractiveInfo: {
+        title: Inputs.length > 1 ? 'Input': Inputs[0].layerName,
+        text: 'View the global'
+      },
     });
+
     // make output overview tab
     componentsTabs.push({
       btnId: 'Overview',

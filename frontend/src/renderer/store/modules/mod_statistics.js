@@ -45,7 +45,7 @@ const mutations = {
 
   CHANGE_StatisticSelectedArr(state, dataEl) {
     state.selectedElArr.statistics = dataEl;
-    state.statisticsTabs.selectedMetric = dataEl.layerName;
+    // state.statisticsTabs.selectedMetric = dataEl.layerName;
   },
   CHANGE_viewBoxSelectElArr(state, dataEl) {
     state.selectedElArr.viewBox.layerMeta.isSelected = false;

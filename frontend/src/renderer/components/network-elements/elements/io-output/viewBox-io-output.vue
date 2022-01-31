@@ -188,11 +188,11 @@ export default {
   name: "ViewBoxIoOutput",
   components: {
     ChartSwitch,
-    ViewBoxPerformanceChart
+    ViewBoxPerformanceChart,
   },
   mixins: [viewBoxMixin, netIOTabs],
   props: {
-    el: Object
+    el: Object,
   },
   data() {
     return {
@@ -201,15 +201,15 @@ export default {
         Loss: {},
         Accuracy: {
           OverEpochs: {},
-          OverSteps: {}
+          OverSteps: {},
         },
         PvG: {
           Sample: {},
-          BatchAverage: {}
+          BatchAverage: {},
         },
         ViewBox: {
-          Output: {}
-        }
+          Output: {},
+        },
       },
 
       colorList: ["#6B8FF7", "#FECF73"],
@@ -219,24 +219,24 @@ export default {
         Input: true,
         PvG: true,
         AveragePvG: true,
-        Accuracy: true
-      }
+        Accuracy: true,
+      },
     };
   },
   watch: {
     testIsOpen(newVal) {
       newVal ? this.setTab("Prediction") : null;
-    }
+    },
   },
   methods: {
     getChartDisplayClass() {
       const classNamePrefixes = {
         1: "one",
         2: "two",
-        4: "four"
+        4: "four",
       };
       let itemsCount = 0;
-      Object.keys(this.chartData).forEach(key => {
+      Object.keys(this.chartData).forEach((key) => {
         if (key !== "ViewBox" && key !== "__ob__") {
           let itm = this.chartData[key];
           itemsCount += Object.keys(itm).length;
@@ -254,7 +254,7 @@ export default {
           break;
       }
     }
-  }
+  },
 };
 </script>
 <style scoped lang="scss">
