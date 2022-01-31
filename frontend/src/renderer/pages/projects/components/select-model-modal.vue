@@ -222,13 +222,13 @@ export default {
     LoadDataset,
   },
   mixins: [mixinFocus],
-  async created() {
+  created() {
     // Check if Rygg is online
-    if (!(await this.checkRyggAvailability())) {
-      this.closeModal();
-      return;
-    }
-
+    this.checkRyggAvailability().then(isRyggAvailable => {
+      if (!isRyggAvailable) {
+        this.closeModal();
+      }
+    });
     const showNewModelPopup = this.showNewModelPopup;
     if (
       typeof showNewModelPopup === "object" &&
