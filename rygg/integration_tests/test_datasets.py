@@ -173,9 +173,13 @@ def test_dataset_model_association_after_create(rest, tmp_project, tmp_model):
         tmp_model.update(datasets = [dataset2.id])
         assert_dict_lists_equal(tmp_model.datasets, [dataset2.as_dict], "dataset_id")
 
+        def get_id(ds_dict):
+            return ds_dict['dataset_id']
+
         # add_datasets adds to them
         tmp_model.add_datasets([dataset1.id])
-        assert_dict_lists_equal(tmp_model.datasets, [dataset1.as_dict, dataset2.as_dict], "dataset_id")
+        from_models_sorted = sorted(tmp_model.datasets, key=get_id)
+        assert_dict_lists_equal(from_models_sorted, [dataset1.as_dict, dataset2.as_dict], "dataset_id")
 
         # show that we can delete the association
         tmp_model.remove_datasets([dataset1.id, dataset2.id])

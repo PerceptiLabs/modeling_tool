@@ -116,6 +116,3 @@ def model_post_save(instance, **kwargs):
 
     if instance.is_removed:
         delete_path_async(instance.project.project_id, instance.abs_dir)
-
-    assert instance.full_location
-    assert os.path.isdir(instance.abs_dir)

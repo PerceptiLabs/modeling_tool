@@ -12,12 +12,12 @@ frontend_dev: require-ROOT ## make the developmet frontend image
 	cd ${ROOT}/frontend && \
 	docker build . --file Dockerfile-dev --tag=dev/frontend:latest
 
-.env: ## Sets up the env file so docker-compose has the basic env vars
+env: ## Sets up the env file so docker-compose has the basic env vars
 	echo PL_ROOT=${ROOT} >> .env
 	echo WORKING_DIR=${HOME}/Downloads/Perceptilabs_dev >> .env
 	mkdir -p ${HOME}/Downloads/Perceptilabs_dev
 
-dev_all: rygg_dev kernel_dev frontend_dev .env ## All dev images and env file
+dev_all: rygg_dev kernel_dev frontend_dev env ## All dev images and env file
 
 clean: ## Cleans up the .env file and docker detrius
 	rm .env
@@ -37,3 +37,4 @@ require-%:
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
+.PHONY: rygg_dev kernel_dev frontend_dev env dev_all clean

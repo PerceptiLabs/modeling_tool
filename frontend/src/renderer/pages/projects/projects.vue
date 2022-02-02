@@ -19,9 +19,7 @@ div
     .header-controls
       .left-side
         .button-container
-          button.btn.btn--primary(
-            @click="handleAddNetworkModal",
-          )
+          button.btn.btn--primary(@click="handleAddNetworkModal")
             span.btn-round-icon
               img(src="/static/img/add-button.svg")
             span.left-header-btn-text Create Project
@@ -100,23 +98,18 @@ div
                 bdi {{ dataset.name | datasetFormat }}
                 | &nbsp;
                 strong(v-if="dataset.exists_on_disk === false") (Missing Data)
-            .column-7.d-flex
+            .column-7.d-flex(v-if="dataset.exists_on_disk")
               .new-model-btn(
                 v-tooltip:networkElement="'Experimental'",
-                v-if="dataset.exists_on_disk === true",
                 @click="loadModelIntoExistingDataset(dataset.dataset_id)"
               ) + Load Model
               .new-model-btn(
-                v-if="dataset.exists_on_disk === true",
                 @click="createModelWithCurrentDataSetPath(dataset.dataset_id)"
               )
                 div + New Model
-              template(v-else)
-                span.img-button(
-                  :class="{ disabledIconButton: dataset.models.length > 0 }",
-                  @click="deleteDataset(dataset.dataset_id)"
-                )
-                  img(src="/static/img/project-page/remove-red.svg")
+            .column-7.d-flex.flex-row-reverse(v-if="!dataset.exists_on_disk")
+              span.img-button(@click="deleteDataset(dataset.dataset_id)")
+                img(src="/static/img/project-page/remove-red.svg")
 
           //-- MODELS BELONG TO DATASET --//
           template(v-if="isDatasetOpened(dataset.dataset_id)")

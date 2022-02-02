@@ -91,10 +91,8 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         Dataset.get_by_id(dataset_id).delete()
 
     def delete_from_disk(dataset):
-        if os.path.isfile(dataset.location):
-            full_path = dataset.location
-        elif os.path.isdir(dataset.location):
-            full_path = dataset.location
+      if os.path.isfile(dataset.location) or os.path.isdir(dataset.location):
+        full_path = dataset.location
         delete_path_async(dataset.project.project_id, full_path)
 
     @property
