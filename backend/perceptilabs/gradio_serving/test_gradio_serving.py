@@ -222,7 +222,9 @@ def test_predictions_endpoint(script_factory, data_loader):
         graph_spec=make_graph_spec(data_loader),
         data_loader=data_loader,
         training_session_id=None,
-        model_name='my model'        
+        model_name='my model',
+        include_preprocessing=True,
+        include_postprocessing=True        
     )
     wait_for_gradio_up(launcher)
 
@@ -242,6 +244,133 @@ def test_predictions_endpoint(script_factory, data_loader):
 
     assert response.status_code == 200
     assert response.json() != {}  # TODO: validate response
+
+    with pytest.raises(NotImplementedError):
+        launcher.stop()  
+        # wait_for_gradio_down(launcher)  # TODO: enable when removing not implemented error
+
+
+def test_predictions_endpoint_no_preprocessing_no_postprocessing_in_gradio(script_factory, data_loader):
+    launcher = GradioLauncher(
+        model_access=ModelAccess(script_factory),
+        epochs_access=EpochsAccess(rygg=MagicMock())
+    )
+    
+    launcher.start(
+        model_id='123',
+        graph_spec=make_graph_spec(data_loader),
+        data_loader=data_loader,
+        training_session_id=None,
+        model_name='my model',
+        include_preprocessing=False,
+        include_postprocessing=False        
+    )
+    wait_for_gradio_up(launcher)
+
+    if data_loader.feature_specs['x1'].datatype == 'categorical':
+        inputs, outputs = data_loader.get_example_batch(
+            batch_size=None, output_type='list', apply_pipelines='all')
+    else:
+        inputs, outputs = data_loader.get_example_batch(
+            batch_size=None, output_type='list', apply_pipelines=None)
+
+    
+    data = []
+    for value in inputs.values():
+        if isinstance(value, (str, bytes)) and os.path.isfile(value):
+            encoded_file = encode_file_to_base64(value)                  
+            data.append(encoded_file)
+        else:
+            data.append(value)
+
+    url = launcher.get_url() + 'api/predict/'
+    response = requests.post(url, json={'data': data})
+
+    assert response.status_code == 200
+    assert response.json() != {}  # TODO: validate responseå
+
+    with pytest.raises(NotImplementedError):
+        launcher.stop()  
+        # wait_for_gradio_down(launcher)  # TODO: enable when removing not implemented error
+
+
+def test_predictions_endpoint_no_postprocessing_in_gradio(script_factory, data_loader):
+    launcher = GradioLauncher(
+        model_access=ModelAccess(script_factory),
+        epochs_access=EpochsAccess(rygg=MagicMock())
+    )
+    
+    launcher.start(
+        model_id='123',
+        graph_spec=make_graph_spec(data_loader),
+        data_loader=data_loader,
+        training_session_id=None,
+        model_name='my model',
+        include_preprocessing=True,
+        include_postprocessing=False        
+    )
+    wait_for_gradio_up(launcher)
+
+    inputs, outputs = data_loader.get_example_batch(
+        batch_size=None, output_type='list', apply_pipelines=None)
+
+    data = []
+    for value in inputs.values():
+        if isinstance(value, (str, bytes)) and os.path.isfile(value):
+            encoded_file = encode_file_to_base64(value)                  
+            data.append(encoded_file)
+        else:
+            data.append(value)
+
+    url = launcher.get_url() + 'api/predict/'
+    response = requests.post(url, json={'data': data})
+
+    assert response.status_code == 200
+    assert response.json() != {}  # TODO: validate responseå
+
+    with pytest.raises(NotImplementedError):
+        launcher.stop()  
+        # wait_for_gradio_down(launcher)  # TODO: enable when removing not implemented error
+
+
+def test_predictions_endpoint_no_preprocessing_in_gradio(script_factory, data_loader):
+    launcher = GradioLauncher(
+        model_access=ModelAccess(script_factory),
+        epochs_access=EpochsAccess(rygg=MagicMock())
+    )
+    
+    launcher.start(
+        model_id='123',
+        graph_spec=make_graph_spec(data_loader),
+        data_loader=data_loader,
+        training_session_id=None,
+        model_name='my model',
+        include_preprocessing=False,
+        include_postprocessing=True        
+    )
+    wait_for_gradio_up(launcher)
+
+    if data_loader.feature_specs['x1'].datatype == 'categorical':
+        inputs, outputs = data_loader.get_example_batch(
+            batch_size=None, output_type='list', apply_pipelines='all')
+    else:
+        inputs, outputs = data_loader.get_example_batch(
+            batch_size=None, output_type='list', apply_pipelines=None)
+
+
+    data = []
+    for value in inputs.values():
+        if isinstance(value, (str, bytes)) and os.path.isfile(value):
+            encoded_file = encode_file_to_base64(value)                  
+            data.append(encoded_file)
+        else:
+            data.append(value)
+
+    url = launcher.get_url() + 'api/predict/'
+    response = requests.post(url, json={'data': data})
+
+    assert response.status_code == 200
+    assert response.json() != {}  # TODO: validate responseå
 
     with pytest.raises(NotImplementedError):
         launcher.stop()  

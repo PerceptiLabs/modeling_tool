@@ -41,8 +41,6 @@ class GradioLauncher:
         return self._url_dict['url']
 
     def start(self, model_id, graph_spec, data_loader, training_session_id, model_name, on_serving_started=None, include_preprocessing=True, include_postprocessing=True):
-        #if utils.is_debug():
-        #    raise NotImplementedError("Cannot run Gradio in debug mode!")  # Flask development servers interfere
         self._thread = threading.Thread(
             target=self._worker,
             args=(
@@ -82,12 +80,13 @@ class GradioLauncher:
         inference_model = self._get_inference_model(
             model_id, graph_spec, data_loader, training_session_id, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
         metadata = data_loader.metadata
+            
         inputs = {
             spec.feature_name: self.get_gradio_input(spec.feature_name, spec.datatype, metadata[spec.feature_name])
             for spec in graph_spec.input_layers
         }
         targets = {
-            spec.feature_name: self.get_gradio_output(spec.feature_name, spec.datatype, metadata[spec.feature_name])
+            spec.feature_name: self.get_gradio_output(spec.feature_name, spec.datatype, metadata[spec.feature_name], include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
             for spec in graph_spec.target_layers
         }
         
@@ -102,11 +101,8 @@ class GradioLauncher:
                 x[feature_name] = np.array([value])
             
             y = inference_model.predict(x)
+            output_values = self._create_output_values(y, targets, metadata, graph_spec, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
 
-            if len(targets) == 1:
-                output_values = next(iter(y.values())).squeeze().tolist()
-            else:
-                output_values = [y[name].squeeze().tolist() for name in targets.keys()]
             return output_values        
 
         interface = gr.Interface(
@@ -148,6 +144,40 @@ class GradioLauncher:
             data_loader, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
 
         return inference_model
+
+    def _create_output_values(self, model_output, targets, metadata, graph_spec, include_preprocessing=True, include_postprocessing=True):            
+        if len(targets) == 1:
+            output_values = next(iter(model_output.values())).squeeze().tolist()
+        else:
+            output_values = [model_output[name].squeeze().tolist() for name in targets.keys()]
+        
+        dtype = self._get_dtype(graph_spec.target_layers)
+        if not include_postprocessing and dtype=='categorical':
+            output_values = self._create_categorical_output(model_output, metadata, graph_spec)
+
+        return output_values
+
+    def _create_categorical_output(self, model_output, metadata, graph_spec):
+        categories = self._get_all_categories(metadata=metadata, target_layers=graph_spec.target_layers)
+        output_values = dict()
+        for value in model_output.values():
+            if isinstance(value, np.ndarray) and value.ndim > 1:
+                predictions = value.flatten().tolist()
+            for index in range(len(categories)):
+                output_values[categories[index]] = predictions[index]
+        return output_values
+
+    def _get_all_categories(self, metadata, target_layers):
+        if len(target_layers) > 1:
+            raise NotImplementedError("Can't get categories when there is more than one target layer!")
+        for spec in target_layers:
+            categories = list(metadata[spec.feature_name]['preprocessing']['mapping'].keys())
+            return categories
+    
+    def _get_dtype(self, target_layers):
+        for spec in target_layers:
+            dtype = spec.datatype
+            return dtype
         
     @staticmethod
     def get_gradio_input(feature_name, datatype, metadata):
@@ -172,7 +202,7 @@ class GradioLauncher:
             raise NotImplementedError(f"No gradio input type found for datatype '{datatype}'")
 
     @staticmethod
-    def get_gradio_output(feature_name, datatype, metadata):
+    def get_gradio_output(feature_name, datatype, metadata, include_preprocessing=True, include_postprocessing=True):
         if datatype == 'numerical':
             return gr.outputs.Textbox(label=feature_name)
         elif datatype == 'text':  
@@ -180,8 +210,14 @@ class GradioLauncher:
         elif datatype in ['image', 'mask']: 
             return gr.outputs.Image(type='numpy', label=feature_name)             
         elif datatype == 'categorical':
-            return gr.outputs.Textbox(label=feature_name)  
+            if include_postprocessing:
+                return gr.outputs.Textbox(label=feature_name)
+            else:
+                return gr.outputs.Label(type='confidences', label=feature_name)
         else:
             raise NotImplementedError(f"No gradio output type found for datatype '{datatype}'")
+    
+
+
 
     
