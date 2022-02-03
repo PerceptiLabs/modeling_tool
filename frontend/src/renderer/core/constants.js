@@ -178,7 +178,7 @@ export const TestTypes = {
 };
 
 export const modelTypes = {
-  CLASSIFICATION: "classification",
-  SEGMENTATION: "segmentation",
-  MULTI_MODAL: "multimodal",
+  CLASSIFICATION: "C",
+  SEGMENTATION: "S",
+  MULTI_MODAL: "M",
 };
