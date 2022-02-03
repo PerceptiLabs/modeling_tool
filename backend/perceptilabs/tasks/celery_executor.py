@@ -113,11 +113,6 @@ class CeleryTaskExecutor(TaskExecutor):
         
         return res.id
 
-    @property
-    def num_remaining_tasks(self):
-        as_dict = self._app.control.inspect().active() or {}
-        return len(as_dict)
-
     def _setup_monitoring(self):
         def on_event(event):
             if event['type'] == 'task-sent' and self._on_task_sent:
@@ -148,3 +143,29 @@ class CeleryTaskExecutor(TaskExecutor):
         thread.start()
         
         return thread
+    
+    @property
+    def num_remaining_tasks(self):
+        tasks = self._get_worker_tasks()
+        return len(tasks)
+
+    def _get_worker_tasks(self):
+        as_dict = self._app.control.inspect().active() or {}
+
+        tasks = []
+        for worker_tasks in as_dict.values():
+            tasks.extend(worker_tasks)
+
+        return tasks
+
+    def get_tasks(self):
+        tasks = self._get_worker_tasks()
+
+        results = {
+            task['id']: {
+                'args': tuple(task['args']),
+                'kwargs': task['kwargs']
+            }
+            for task in tasks
+        }
+        return results

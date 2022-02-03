@@ -5,6 +5,8 @@ import platform
 import pickle
 import os
 import logging
+from retrying import retry
+
 
 from perceptilabs.utils import b64decode_and_sanitize
 from perceptilabs.utils import sanitize_path
@@ -60,16 +62,14 @@ class TrainingResultsAccess:
         return file_path
         
     def remove(self, training_session_id):
-        
-        if training_session_id is not None:
-            path = self._get_path(training_session_id)
+        @retry(stop_max_attempt_number=3, wait_fixed=500)  # Windows needs several attempts
+        def do_remove(path):
             if os.path.isfile(path):
                 with FileLock(path+'.lock'):
-                    while True:     #without this, deleting file operation breaks in windows os
-                        try:
-                            os.remove(path)
-                            break
-                        except:
-                            continue
+                    os.remove(path)
+                    
+        if training_session_id is not None:
+            path = self._get_path(training_session_id)
+            do_remove(path)
         
 

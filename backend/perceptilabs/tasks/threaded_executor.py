@@ -1,4 +1,6 @@
 import uuid
+from threading import RLock
+from copy import deepcopy
 from concurrent.futures import ThreadPoolExecutor
 
 from perceptilabs.tasks.base import TaskExecutor
@@ -23,9 +25,10 @@ class ThreadedTaskExecutor(TaskExecutor):
             on_task_succeeded=None,
             on_task_failed=None
     ):
-        self._tasks = tasks
+        self._task_functions = tasks
         self._pool = ThreadPoolExecutor()
-        self._futures = []
+        self._submitted_tasks = {}
+        self._lock = RLock();
 
         self._on_task_sent = on_task_sent        
         self._on_task_received = on_task_received
@@ -39,11 +42,20 @@ class ThreadedTaskExecutor(TaskExecutor):
         if self._on_task_sent:
             self._on_task_sent(task_id, task_name)
 
-        task_func = self._tasks[task_name]
+        task_func = self._task_functions[task_name]
         task_func_with_callbacks = self._wrap_in_callbacks(
             task_func, task_id, task_name)
 
-        self._pool.submit(task_func_with_callbacks, *args, **kwargs)
+        future = self._pool.submit(
+            task_func_with_callbacks, *args, **kwargs)
+
+        with self._lock:
+            self._submitted_tasks[task_id] = {
+                'future': future,
+                'args': deepcopy(args),
+                'kwargs': deepcopy(kwargs)
+            }
+        
         return task_id
     
     def _wrap_in_callbacks(self, task_func, task_id, task_name):
@@ -72,7 +84,22 @@ class ThreadedTaskExecutor(TaskExecutor):
     @property
     def num_remaining_tasks(self):
         count = 0
-        for f in self._futures:
-            if not f.done():
-                count += 1
+        with self._lock:
+            for task_info in self._submitted_tasks.values():
+                if not task_info['future'].done():
+                    count += 1
         return count
+
+    def get_tasks(self):
+        result = {}
+        with self._lock:
+            results = {
+                task_id: {
+                    'args': deepcopy(task_info['args']),
+                    'kwargs': deepcopy(task_info['kwargs'])
+                }
+                for task_id, task_info in self._submitted_tasks.items()
+                if not task_info['future'].done()
+            }            
+        return results
+    

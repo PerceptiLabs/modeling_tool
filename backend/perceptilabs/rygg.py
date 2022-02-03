@@ -1,10 +1,34 @@
 import requests
 import logging
 
+from abc import ABC, abstractmethod
 
 logger = logging.getLogger(__name__)
 
-class RyggWrapper:
+
+class RyggAdapter(ABC):
+    @abstractmethod
+    def get_dataset(self, dataset_id):
+        raise NotImplementedError
+
+    @abstractmethod    
+    def create_model(self, project_id, dataset_id, model_name, location=None):
+        raise NotImplementedError
+
+    @abstractmethod    
+    def load_model_json(self, model_id):
+        raise NotImplementedError
+
+    @abstractmethod    
+    def save_model_json(self, model_id, model):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_model(self, model_id):
+        raise NotImplementedError
+
+
+class RyggWrapper(RyggAdapter):
     def __init__(self, base_url, file_serving_token):
         self._base_url = base_url
         self._token = file_serving_token

@@ -28,6 +28,11 @@ def celery_config():
     }
 
 
+@pytest.fixture(scope='session')
+def celery_worker_pool():
+    return 'threads'
+
+
 @pytest.fixture(scope='function')
 def executor(mode, celery_app, celery_worker, callbacks):
     def hello_task():
@@ -36,11 +41,16 @@ def executor(mode, celery_app, celery_worker, callbacks):
     def crash_task():
         raise ValueError("CRASH!!!")
 
+    def slow_task(*args, **kwargs):
+        import time
+        time.sleep(8)
+        
     if mode == 'threaded':
         return ThreadedTaskExecutor(
             tasks={
                 'hello_task': hello_task,
-                'crash_task': crash_task
+                'crash_task': crash_task,
+                'slow_task': slow_task                
             },
             on_task_sent=callbacks.on_task_sent,
             on_task_received=callbacks.on_task_received,
@@ -56,6 +66,10 @@ def executor(mode, celery_app, celery_worker, callbacks):
         @celery_app.task(name='crash_task')
         def wrap_crash():
             return crash_task()
+
+        @celery_app.task(name='slow_task')
+        def wrap_slow(*args, **kwargs):
+            return slow_task(*args, **kwargs)
 
         celery_worker.reload()
         
@@ -119,3 +133,32 @@ def test_failure(executor, callbacks, monkeypatch):
     wait_for_task()
     
 
+@pytest.mark.skip(reason="code not in use")
+@pytest.mark.parametrize('mode', ['threaded', 'celery'])
+def test_get_tasks(executor):
+    expected_args = ('abc', 1234)
+    expected_kwargs = {'a': 'wasd', 'b': 500}
+    
+    task_name = 'slow_task'
+    task_id = executor.enqueue(
+        task_name,
+        *expected_args,
+        **expected_kwargs
+    )
+
+    @retry(stop_max_attempt_number=10, wait_fixed=500)
+    def wait_for_task_exists():
+        tasks = executor.get_tasks()
+        assert task_id in tasks
+        assert tasks[task_id]['args'] == expected_args
+        assert tasks[task_id]['kwargs'] == expected_kwargs
+        assert executor.num_remaining_tasks == 1        
+
+    wait_for_task_exists()
+
+    @retry(stop_max_attempt_number=10, wait_fixed=500)
+    def wait_for_task_gone():
+        assert executor.get_tasks() == {}
+        assert executor.num_remaining_tasks == 0              
+
+    wait_for_task_gone()
