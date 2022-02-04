@@ -613,4 +613,26 @@ def setup_sentry():
     )
     logger.info(f"Initialized sentry for environment '{environment}' and release '{release}'")
 
+
+def directory_tree(path):
+    if not os.path.isdir(path):
+        raise ValueError(f"Path {path} is not a directory")
+
+    found = []
+    for path, dirs, files in os.walk(path):
+        for d in dirs:
+            found_path = os.path.join(path, d)
+            
+            if not found_path.endswith(os.path.sep):
+                found_path += os.path.sep  # dirs should end with /
+                
+            found.append(found_path)
+                
+        for f in files:
+            found.append(os.path.join(path, f))
+
+    return found
+        
+        
+    
     

@@ -8,8 +8,8 @@ import logging
 from retrying import retry
 
 
-from perceptilabs.utils import b64decode_and_sanitize
-from perceptilabs.utils import sanitize_path
+from perceptilabs.utils import directory_tree
+
 
 from filelock import FileLock
 
@@ -40,7 +40,7 @@ class TrainingResultsAccess:
 
         path = self._get_path(training_session_id)
         if not os.path.isfile(path):
-            logger.error(f"Invalid training results path: {path} for training session id {training_session_id}")
+            self._print_missing_file_error(path, training_session_id)            
             return None
 
         results_dict = {}
@@ -52,7 +52,18 @@ class TrainingResultsAccess:
             logger.error(f"Invalid training results for training session id {training_session_id}. No content found.")
             return None
         
-        return results_dict        
+        return results_dict
+
+    def _print_missing_file_error(self, path, training_session_id):
+        error_message = f"Invalid training results path: {path} for training session id {training_session_id}"
+
+        modeldir = os.path.dirname(path)
+        if os.path.isdir(modeldir):
+            error_message += ". Directory tree:\n"            
+            for found_path in directory_tree(modeldir):
+                error_message += "  " + found_path + "\n"
+                
+        logger.error(error_message)
 
     def _get_path(self, training_session_id):
         directory = self._rygg.get_model(training_session_id)['location']
