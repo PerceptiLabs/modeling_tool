@@ -85,27 +85,44 @@ class ModelsInterface:
         results_dict = self._training_results_access.get_latest(training_session_id)
 
         if not results_dict:
+            logger.error(
+                f"No results found for training session {training_session_id} and model {model_id}")
             return {}
 
         if type_ == 'global-results':
-            stats = results_dict['global_stats']
-            output = stats.get_data_objects()
-            return output
+            return self._get_training_results_global(results_dict)
         elif type_ == 'end-results':
-            global_stats = results_dict['global_stats']
-        
-            output = {}        
-            output['global_stats'] = global_stats.get_end_results()
-        
-            for layer_id, obj in results_dict['layer_stats'].items():
-                if isinstance(obj, OutputStats):  # OutputStats are guaranteed to have end results
-                    output[layer_id] = obj.get_end_results()
-
-            return output
+            return self._get_training_results_end(results_dict)
         elif type_ == 'layer-results':
+            return self._get_training_results_for_layer(results_dict, layer_id, view)
+
+    def _get_training_results_global(self, results_dict):
+        stats = results_dict['global_stats']
+        output = stats.get_data_objects()
+        return output
+
+    def _get_training_results_end(self, results_dict):
+        global_stats = results_dict['global_stats']
+        
+        output = {}        
+        output['global_stats'] = global_stats.get_end_results()
+        
+        for layer_id, obj in results_dict['layer_stats'].items():
+            if isinstance(obj, OutputStats):  # OutputStats are guaranteed to have end results
+                output[layer_id] = obj.get_end_results()
+
+        return output
+
+    def _get_training_results_for_layer(self, results_dict, layer_id, view):
+        try:
             stats = results_dict['layer_stats'][layer_id]        
-            output = stats.get_data_objects(view=view)            
-            return output
+            output = stats.get_data_objects(view=view)
+        except:
+            logger.exception(
+                f"Failed getting results for layer {layer_id} and view {view}. Results: {results_dict}")
+            raise
+        else:
+            return output            
 
     def has_checkpoint(self, model_id, training_session_id):
         return self._epochs_access.has_saved_epoch(
