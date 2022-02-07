@@ -463,7 +463,7 @@ $button-size: 2.5rem;
 }
 
 .layer-list {
-  margin-right: 30px;
+  margin-right: 20px;
 }
 
 .layer {

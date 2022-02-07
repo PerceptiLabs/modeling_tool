@@ -32,69 +32,74 @@
 
 
     .workspace-frame(:class="{'border': emptyNavigationMode == 0}")
-      component.blue-left-border(:is="toolbarType" v-if="emptyNavigationMode == 0")
-      .workspace_content_wrapper
-        .workspace_content.bookmark_content.js-workspace.blue-border(
-          v-show="emptyNavigationMode == 0"  
-          ref="workspaceNet"
-          :class="{'workspace-relative' : showTrainingSpinner, 'open-statistics': statisticsIsOpen, 'is-drag-active': getIsWorkspaceDragEvent}"
-          )
-          .network(
-            v-if="currentNetworkIndex === i"
-            v-for="(net, i) in workspace"
-            :key="net.networkID"
-            :class="networkClass"
-          )
-            the-view-box#tutorial_statistics.the-statistics(
-              v-if="statisticsIsOpen"
-              :el-data="statisticsElSelected.statistics"
-              section-title="Statistics"
+      .workspace_content_container
+        .workspace_content_wrapper
+          component.blue-left-border(:is="toolbarType" v-if="emptyNavigationMode == 0")
+          .workspace_content.bookmark_content.js-workspace.blue-border(
+            v-show="emptyNavigationMode == 0"  
+            ref="workspaceNet"
+            :class="{'workspace-relative' : showTrainingSpinner, 'open-statistics': statisticsIsOpen, 'is-drag-active': getIsWorkspaceDragEvent}"
             )
-            the-view-box#tutorial_view-box.the-view-box(
-              v-if="statisticsIsOpen"
-              :el-data="statisticsElSelected.viewBox"
-              section-title="ViewBox"
+            .network(
+              v-if="currentNetworkIndex === i"
+              v-for="(net, i) in workspace"
+              :key="net.networkID"
+              :class="networkClass"
+            )
+              the-view-box#tutorial_statistics.the-statistics(
+                v-if="statisticsIsOpen"
+                :el-data="statisticsElSelected.statistics"
+                section-title="Statistics"
               )
-            section.network_info-section.the-network-field(
-              ref="networkWindow"
+              the-view-box#tutorial_view-box.the-view-box(
+                v-if="statisticsIsOpen"
+                :el-data="statisticsElSelected.viewBox"
+                section-title="ViewBox"
+                )
+              section.network_info-section.the-network-field(
+                ref="networkWindow"
+                )
+                .info-section_head(v-if="statisticsIsOpen") Map
+                .spinner-container(v-if="showTrainingSpinner && isStatisticsOrTestOpened")
+                  chart-spinner
+                perfect-scrollbar.info-section_main.js-info-section_main(
+                  @wheel="scaleScroll($event)"
+                  id="networkWorkspace"
+                  v-if="!showTrainingSpinner || !isStatisticsOrTestOpened"
+                  )
+                  network-field(
+                    ref="networkField"
+                    :key="i"
+                    :scaleNet="scaleNet"
+                  )
+                  // when select more then 2 network item its display
+                  div(:style="dragBoxHorizontalTopBorder()")
+                  div(:style="dragBoxHorizontalBottomBorder()")
+                  div(:style="dragBoxVerticalLeftBorder()")
+                  div(:style="dragBoxVerticalRightBorder()")
+                mini-map-navigation(:scaleNet="scaleNet")
+                //- sidebar-layers.layers-sidebar
+              code-window(
+                v-if="showCodeWindow"
+                :networkId="currentNetworkId"
               )
-              .info-section_head(v-if="statisticsIsOpen") Map
-              .spinner-container(v-if="showTrainingSpinner && isStatisticsOrTestOpened")
-                chart-spinner
-              perfect-scrollbar.info-section_main.js-info-section_main(
-                @wheel="scaleScroll($event)"
-                id="networkWorkspace"
-                v-if="!showTrainingSpinner || !isStatisticsOrTestOpened"
-                )
-                network-field(
-                  ref="networkField"
-                  :key="i"
-                  :scaleNet="scaleNet"
-                )
-                // when select more then 2 network item its display
-                div(:style="dragBoxHorizontalTopBorder()")
-                div(:style="dragBoxHorizontalBottomBorder()")
-                div(:style="dragBoxVerticalLeftBorder()")
-                div(:style="dragBoxVerticalRightBorder()")
-              mini-map-navigation(:scaleNet="scaleNet")
-              //- sidebar-layers.layers-sidebar
-            code-window(
-              v-if="showCodeWindow"
-              :networkId="currentNetworkId"
-            )
-            //- notifications-window(
-            //-   v-if="showNotificationWindow"
-            //- )
-            information-panel(
-              v-if="showNotificationWindow"
-            )
-            //-general-settings(v-if="showGlobalSet")
-            general-result(v-if="showGlobalResult")
-            select-core-side(v-if="showCoreSide")
-            workspace-before-import(v-if="showWorkspaceBeforeImport")
-            workspace-load-network(v-if="showLoadSettingPopup")
+              //- notifications-window(
+              //-   v-if="showNotificationWindow"
+              //- )
+              information-panel(
+                v-if="showNotificationWindow"
+              )
+              //-general-settings(v-if="showGlobalSet")
+              general-result(v-if="showGlobalResult")
+              select-core-side(v-if="showCoreSide")
+              workspace-before-import(v-if="showWorkspaceBeforeImport")
+              workspace-load-network(v-if="showLoadSettingPopup")
 
-            the-toaster(:style="toasterRightPosition")
+              the-toaster(:style="toasterRightPosition")
+          .workspace_footer(
+            v-if="emptyNavigationMode===0"
+          )
+            include ./footer/workspace-footer.pug
         the-sidebar(v-if="getViewType==='model' && emptyNavigationMode===0")
       .hardware-metrics(
         v-show="showResourceView!=0 && statisticsIsOpen"
@@ -119,11 +124,6 @@
           .row_item
             .ticker.green
             span GPU
-
-      .workspace_footer(
-        v-if="emptyNavigationMode===0"
-        )
-        include ./footer/workspace-footer.pug
 
       workspace-save-network(
         v-if="showSaveNetworkPopup"
@@ -189,6 +189,9 @@
     .tab-group {
       display: flex;
     }
+  }
+  .workspace_content_container {
+    display: flex;
   }
   .workspace-frame {
     background: theme-var($neutral-8);
@@ -376,6 +379,8 @@
   }
   .workspace_content_wrapper {
     display: flex;
+    flex-direction: column;
+    flex-grow: 1;
   }
   
   .action_tab {

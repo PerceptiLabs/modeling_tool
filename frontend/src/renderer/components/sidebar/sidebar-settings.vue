@@ -1,31 +1,17 @@
 <template lang="pug">
 .sidebar-setting-wrapper
-  .sidebar-setting-head
+  .sidebar-setting-head(
+    v-if="selectedEl !== null",
+  )
+    .component-name {{componentTypeToName[selectedEl.componentName]}}
     sidebar-auto-setting-info(
-      v-if="selectedEl !== null",
       :key="selectedEl.layerId",
       :selectedEl="selectedEl"
     )
-    .sidebar-setting-head-name.bold 
-      | Settings
-    base-toggle-expand.primary(
-      :value="isShowSettings",
-      :onClick="toggleShowSettings"
-    ) 
-
-  .sidebar-setting-head2
-    button.no-border.btn.btn--secondary(
-      v-if="shouldShowOpenCodeBtn",
-      @click="onOpenCodeButtonClick()"
-    ) 
-      | Open Code &nbsp;
-      img(src="/static/img/code.svg")
   perfect-scrollbar.sidebar-setting-content(
     :data-tutorial-target="'tutorial-workspace-settings'",
-    :class="{ 'sidebar-setting-content-with-component': showComponents, 'closed-preview': isSettingPreviewVisible }",
     ref="sidebarSettingWrapper",
-    v-if="isShowSettings"
-  )
+  )    
     sidebar-locked-settings-wrapper(:selectedEl="selectedEl")
       component.setting-values-wrapper(
         v-if="selectedEl !== null",
@@ -39,7 +25,26 @@
     v-if="selectedEl !== null",
     :current-el="selectedEl"
   )
-  button.btn.btn--outline-primary.reset-component-btn.no-border(
+
+  .sidebar-setting-actions
+    button.btn.btn--primary(
+      v-if="shouldShowOpenCodeBtn",
+      @click="onOpenCodeButtonClick()"
+    ) 
+      img(src="/static/img/code.svg")
+      | Open Code &nbsp;
+
+    div(
+      v-tooltip:bottom="'Coming Soon'"
+    )
+      button.btn.btn--primary(
+        v-if="shouldShowOpenCodeBtn",
+        disabled
+      ) 
+        img(src="/static/img/save.svg")
+        | Save &nbsp;
+
+  button.btn.btn--outline-primary.reset-component-btn(
     v-if="shouldShowResetComponentBtn",
     @click="resetComponentSettings"
   ) Reset Component
@@ -80,6 +85,7 @@ import SidebarLockedSettingsWrapper from "@/components/sidebar/sidebar-locked-se
 import SidebarAutoSettingInfo from "@/components/sidebar/sidebar-auto-setting-info.vue";
 
 import { mapGetters, mapActions } from "vuex";
+import { componentTypeToName } from '@/core/constants.js';
 
 export default {
   name: "SidebarSettings",
@@ -113,14 +119,16 @@ export default {
   },
   data() {
     return {
-      isShowSettings: true
+      componentTypeToName: componentTypeToName
     };
+  },
+  created() {
+    console.log('this.selectedEl', this.selectedEl);
   },
   computed: {
     ...mapGetters({
       selectedEl: "mod_workspace/GET_selectedElement", // {} or null
       currentNetworkId: "mod_workspace/GET_currentNetworkId",
-      showComponents: "mod_workspace/GET_showComponents" // {} or null
     }),
     codeWindowState() {
       return this.$store.getters[
@@ -193,14 +201,16 @@ export default {
       this.$store.dispatch("mod_workspace/resetNetworkElementSettings", {
         layerId: this.selectedEl.layerId
       });
-    },
-    toggleShowSettings() {
-      this.isShowSettings = !this.isShowSettings;
     }
   }
 };
 </script>
 <style lang="scss" scoped>
+.sidebar-setting-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 .sidebar-setting-head {
   position: relative;
   display: flex;
@@ -212,8 +222,13 @@ export default {
   // height: 31px;
 }
 
-.sidebar-setting-head2 {
-  padding: 0px 15px;
+.sidebar-setting-actions {
+  display: flex;
+  padding: 4px 8px;
+
+  button {
+    margin: 4px;
+  }
 }
 
 .sidebar-setting-head-name {
@@ -247,22 +262,19 @@ export default {
   padding: 10px 15px;
 }
 .setting-chart-wrapper {
-  position: absolute;
+  position: relative;
   width: 250px;
   // border-top: 2px solid #5D5E60;
-  bottom: $reset-btn;
   z-index: 10;
 }
 
 // also .sidebar-setting-content are used in _forms.scss for stylize sidebar setting inputs
 .sidebar-setting-content {
+  flex-grow: 1;
   // padding: 10px;
   // background-color: $bg-toolbar-2;
   // border: $border-1;
   // height: calc(65vh - 99px);
-  height: calc(
-    100vh - #{$remaining-normal + $components-header + $preview-header}
-  );
   overflow-x: scroll;
 
   &.closed-preview {
@@ -284,13 +296,7 @@ export default {
   }
 }
 .reset-component-btn {
-  position: absolute;
-  bottom: 0;
-  margin-top: auto;
-  font-size: 11px;
-  line-height: 18px;
-  width: 250px;
-  height: 24px;
+  margin: 0 12px 10px;
 }
 
 .primary {
@@ -299,5 +305,10 @@ export default {
 
 .no-border {
   border-width: 0px !important;
+}
+
+.component-name {
+  font-size: 14px;
+  font-weight: bold;
 }
 </style>

@@ -10,7 +10,7 @@ const savedTheme = localStorage.getItem(localStorageThemeKey);
 const state = {
   onlineStatus: true,
   hideLayers: true,
-  hideSidebar: true,
+  hideSidebar: false,
   platform: process.platform,
   appVersion: "",
   appPath: "",

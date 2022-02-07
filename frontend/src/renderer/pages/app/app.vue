@@ -121,7 +121,6 @@
     background-color: $bg-window;
 
     display: flex;
-    max-width: calc(100vw -  #{$w-sidemenu});
 
     // border-radius: 15px 0 0 0;
     

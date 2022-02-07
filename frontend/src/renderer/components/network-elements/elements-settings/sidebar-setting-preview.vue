@@ -1,18 +1,12 @@
 <template lang="pug">
 .sidebar-setting-preview(v-if="havePreview")
-  .preview-handler(@click="toggleSettingPreviewVisibility()")
-    h4.sidebar-setting-preview-title Preview
-    base-toggle-expand.primary(
-      :value="isSettingPreviewVisible",
-      :onClick="toggleSettingPreviewVisibility"
-    ) 
-  chart-switch.sidebar-data-settings_chart.sidebar-settings-preview-wrapper(
-    v-show="isSettingPreviewVisible",
-    :disable-header="true",
-    :chart-data="storeCurrentElement.chartData",
-    :chartIdx="currentEl.chartIdx",
-    @chartIdxChange="handleChartIdxChange"
-  )
+  .chart-wrapper
+    chart-switch.sidebar-data-settings_chart.sidebar-settings-preview-wrapper(
+      :disable-header="true",
+      :chart-data="storeCurrentElement.chartData",
+      :chartIdx="currentEl.chartIdx",
+      @chartIdxChange="handleChartIdxChange"
+    )
 </template>
 
 <script>
@@ -41,9 +35,6 @@ export default {
       return this.$store.getters["mod_workspace/GET_networkElementById"](
         this.layerId
       );
-    },
-    isSettingPreviewVisible() {
-      return this.$store.state.mod_workspace.isSettingPreviewVisible;
     },
     havePreview() {
       return (
@@ -95,6 +86,13 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.sidebar-setting-preview {
+  display: flex;
+  flex-direction: column;
+}
+.chart-wrapper {
+  flex: 1;
+}
 .preview-handler {
   display: flex;
   justify-content: space-between;

@@ -1,9 +1,6 @@
 <template lang="pug">
   section.sidebar_layers
-    .layers_title.bold.d-flex.sidebar_content-padding--small
-      span Components
-      base-toggle-expand.primary(:value="showComponents" :onClick="toggleShowComponents")
-    perfect-scrollbar(tag='ul').layers_body(ref="layersItemList" v-if="showComponents")
+    perfect-scrollbar(tag='ul').layers_body(ref="layersItemList")
       sidebar-layers-item(
         v-for="item in networkElementList"
         :key="item.layerId"
@@ -29,13 +26,11 @@ export default {
       workspace: 'mod_workspace/GET_currentNetwork',
       currentSelectedList: 'mod_workspace/GET_currentSelectedEl',
       networkElementListLength: 'mod_workspace/GET_currentNetworkElementListLength',      
-      showComponents: 'mod_workspace/GET_showComponents',
     }),
     networkElementList() {
       let currentNet = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
       var newNet = {...currentNet};
       let filterItemsWithThoseId = filterItemIdsRecursion(newNet,  []);
-      
       
       function filterItemIdsRecursion(net, data) {
         for(let elId in  net) {
@@ -67,11 +62,7 @@ export default {
   methods: {
     ...mapMutations({
       setGridValue: 'globalView/setGridStateMutation',
-      setShowComponents: 'mod_workspace/setShowComponentsMutation'
-    }),
-    toggleShowComponents () {
-      this.setShowComponents(!this.showComponents)
-    }
+    })
   }
 }
 </script>
@@ -82,7 +73,6 @@ export default {
     display: flex;
     flex-direction: column;
     // flex-grow: 1;
-    max-height: 25vh;
     overflow: hidden;
     // background-color: $bg-toolbar;
     box-sizing: border-box;

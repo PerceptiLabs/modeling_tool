@@ -114,7 +114,8 @@ $popup-indent-top: 1rem;
 $popup-indent-left: 1rem;
 
 
-$remaining: 240px;
+$remaining: 245px;
+$sidebar-remaining: 190px;
 $preview-header: 42px;
 $preview-content: 160px;
 $reset-btn: 24px;
@@ -168,7 +169,7 @@ $bg-workspace: theme-var($neutral-8);
 $bg-workspace-2: theme-var($neutral-8);
 $bg-workspace-3: theme-var($neutral-8);
 $bg-toolbar: theme-var($neutral-7);
-$bg-toolbar-2: theme-var($neutral-7);
+$bg-toolbar-2: theme-var($neutral-8);
 
 $bg-grad-cyan: linear-gradient($color-1, $color-2);
 $bg-grad-blue: linear-gradient($color-5, $color-6);

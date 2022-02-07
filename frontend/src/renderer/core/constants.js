@@ -22,6 +22,23 @@ const deepLearnElements = [
   "UNet",
 ];
 
+export const componentTypeToName = {
+  DeepLearningConv: "Convolution",
+  DeepLearningFC: "Dense",
+  DeepLearningRecurrent: "Recurrent",
+  ProcessReshape: "Reshape",
+  ProcessRescale: "Rescale",
+  ProcessOneHot: "OneHot",
+  ProcessGrayscale: "Grayscale",
+  MathMerge: "Merge",
+  PreTrainedVGG16: "VGG16",
+  PreTrainedMobileNetV2: "MobileNetV2",
+  PreTrainedResNet50: "ResNet50",
+  PreTrainedInceptionV3: "InceptionV3",
+  IoInput: "Input",
+  IoOutput: "Target",
+};
+
 const pathWebWorkers = "./static/webworkers";
 
 const baseUrlCloud = "https://perceptilabsamerica.azurewebsites.net/api/";

@@ -50,12 +50,10 @@ const state = {
     height: 0,
   },
   isSettingInputFocused: false, // is chenghed when focus/blur on sidebar setting input (it's made for preventing component remove when press backspace in input)
-  isSettingPreviewVisible: true,
   viewType: localStorage.getItem(LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY) || 'model', // [model,statistic,test]
   showModelPreviews: localStorage.hasOwnProperty(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) ? localStorage.getItem(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) === 'true' : true,
   fetchedPreviewsNetworksIds: [],
   copyOrCutNetworkSnapshot: [],
-  showComponents: false,
   defaultNetwork: defaultNetwork
 };
 
@@ -431,9 +429,6 @@ const getters = {
   
     return componentsTabs;
   },
-  GET_showComponents() {    
-    return state.showComponents;
-  }
 };
 
 const mutations = {
@@ -483,9 +478,6 @@ const mutations = {
       Vue.set(networkList[elId],"forward_connections", payload[elId].forward_connections);
       Vue.set(networkList[elId],"backward_connections", payload[elId].backward_connections);
     })
-  },
-  toggleSettingPreviewVisibility() {
-    state.isSettingPreviewVisible = !state.isSettingPreviewVisible;
   },
   setIsSettingInputFocused(state, value) {
     state.isSettingInputFocused = value;
@@ -1786,9 +1778,6 @@ const mutations = {
   setModelRunSettingsMutation(state, {name, value, currentNetwork}) {
     currentNetwork.networkMeta.trainingSettings[name] = value;
   },
-  setShowComponentsMutation(state, value) {
-    state.showComponents = value;
-  }
 };
 
 

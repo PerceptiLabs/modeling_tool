@@ -69,19 +69,16 @@
           :value="showModelPreviews" 
           :onClick="toggleModelPreviews")
           span.bold Preview
-          
-        sidebar-toggle-button.toggle
 </template>
 
 <script>
 import { mapGetters, mapActions, mapMutations, mapState } from 'vuex';
 
 import LayersToolbar            from '@/components/toolbar/workspace-toolbar-layers.vue';
-import SidebarToggleButton      from '@/components/toolbar/sidebar-toggle-button.vue';
 
 export default {
   name: 'WorkspaceToolbar',
-  components: { LayersToolbar, SidebarToggleButton },
+  components: { LayersToolbar },
   created(){
     this.handleStatisticState(this.workspaceModels);
   },
