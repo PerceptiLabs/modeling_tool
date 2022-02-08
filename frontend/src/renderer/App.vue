@@ -371,7 +371,7 @@ export default {
     },
     async fetchUnparsedModels(modelMetas) {
       let unparsedModels = [];
-      modelMetas.forEach(async model => {
+      await Promise.all(modelMetas.map(async model => {
         const modelJson = await rygg_getModelJsonById(model.model_id);
         if (!modelJson) {
           unparsedModels.push(model);
@@ -379,9 +379,9 @@ export default {
           // Doing these removes explicitly because the data can be loaded from webstorage
           // The effect is that the same network can appear doubled in the Model Hub
           // Remove from workspace content
-          this.deleteNetworkById(model.model_id);
+          await this.deleteNetworkById(model.model_id);
         }
-      });
+      }));
 
       this.setUnparsedModels({ unparsedModels });
     },

@@ -24,6 +24,9 @@ div
               img(src="/static/img/add-button.svg")
             span.left-header-btn-text Create Project
       .right-side
+        .search-bar
+          i.icon.icon-search
+          input(v-model="filter", placeholder="Search datasets and models")
     // List
     .models-list
       .models-list-row.model-list-header.bold
@@ -62,7 +65,7 @@ div
                 img(src="/static/img/project-page/remove-red.svg")
 
       perfect-scrollbar.model-list-scrollbar
-        div(v-for="dataset in allDatasets", :key="dataset.dataset_id")
+        div(v-for="dataset in filteredDatasets", :key="dataset.dataset_id")
           //-- DATASET ROW --//
           .models-list-row.model-list-item.model-list-item-dataset(
             @contextmenu.stop.prevent="openDatasetContext($event, dataset.dataset_id)"
@@ -95,7 +98,7 @@ div
                   fill="white"
                 )
               .editable-field.model-name-wrapper
-                bdi {{ dataset.name | datasetFormat }}
+                bdi(v-html="highlight(datasetFormat(dataset.name))")
                 | &nbsp;
                 strong(v-if="dataset.exists_on_disk === false") (Missing Data)
             .column-7.d-flex(v-if="dataset.exists_on_disk")
@@ -114,7 +117,7 @@ div
           //-- MODELS BELONG TO DATASET --//
           template(v-if="isDatasetOpened(dataset.dataset_id)")
             .models-list-row.model-list-item.model-list-item-child(
-              v-for="(model, index) in getModelsByDataSetId(dataset.dataset_id)",
+              v-for="(model, index) in getFilteredModelsByDataSetId(dataset)",
               @contextmenu.stop.prevent="openContext($event, model.networkID)",
               :key="'Valid_' + model.networkID",
               :class="{ 'is-selected': isItemSelected(model.networkID) }"
@@ -129,8 +132,9 @@ div
                     :title="model.networkName",
                     v-if="!isRenamingItem(model.networkID)",
                     v-tooltip:bottom="'Click to open Model'",
-                    @click.stop="goToNetworkView(model.networkID)"
-                  ) {{ model.networkName }}
+                    @click.stop="goToNetworkView(model.networkID)",
+                    v-html="highlight(model.networkName)"
+                  )
                   input.rename-control(
                     v-else,
                     v-model="renameValue",
@@ -221,7 +225,7 @@ import { isTaskComplete as rygg_isTaskComplete } from "@/core/apiRygg";
 import {
   pickFile as rygg_pickFile,
   getFileContent as rygg_getFileContent,
-  getModel as rygg_getModel,    
+  getModel as rygg_getModel,
 } from "@/core/apiRygg";
 import { renderingKernel } from "@/core/apiRenderingKernel.js";
 import { arrayIncludeOrOmit, isNoKeyCloakEnabled } from "@/core/helpers";
@@ -241,7 +245,7 @@ export default {
     WorkspaceLoadNetwork,
     ImportModel,
   },
-  data: function() {
+  data: function () {
     return {
       selectedListIds: [],
       selectedDatasetIds: [],
@@ -258,6 +262,7 @@ export default {
       renameValue: null,
       showUser: !isNoKeyCloakEnabled(),
       dataSetIsOpenedStateArray: [],
+      filter: "",
     };
   },
   created() {
@@ -265,7 +270,6 @@ export default {
     // When the stats and test views are their own routes,
     // a better alternative would be to put a lot of the
     // following in the router.
-    this.setCurrentView("tutorial-model-hub-view");
     this.expandDatasetsModels();
   },
   computed: {
@@ -277,22 +281,33 @@ export default {
       projectPath: "mod_project/GET_projectPath",
     }),
     ...mapState({
-      currentProjectId: state => state.mod_project.currentProject,
-      showFilePickerPopup: state =>
+      currentProjectId: (state) => state.mod_project.currentProject,
+      showFilePickerPopup: (state) =>
         state.globalView.globalPopup.showFilePickerPopup,
-      showNewModelPopup: state =>
+      showNewModelPopup: (state) =>
         state.globalView.globalPopup.showNewModelPopup,
-      showLoadSettingPopup: state =>
+      showLoadSettingPopup: (state) =>
         state.globalView.globalPopup.showLoadSettingPopup,
-      workspaceContent: state => state.mod_workspace.workspaceContent,
-      unparsedModels: state => state.mod_workspace.unparsedModels,
-      showImportNetworkFromGitHubOrLocalPopup: state =>
+      workspaceContent: (state) => state.mod_workspace.workspaceContent,
+      unparsedModels: (state) => state.mod_workspace.unparsedModels,
+      showImportNetworkFromGitHubOrLocalPopup: (state) =>
         state.globalView.globalPopup.showImportNetworkfromGitHubOrLocalPopup,
     }),
     get_modelIndexById() {
       return this.$store.getters["mod_workspace/GET_networkIndexById"](
         this.renameId,
       );
+    },
+    filteredDatasets() {
+      return this.allDatasets.filter((dataset) => {
+        const models = this.getModelsByDataSetId(dataset.dataset_id);
+        return (
+          dataset.name.toLowerCase().includes(this.filter.toLowerCase()) ||
+          models.some((model) =>
+            model.networkName.toLowerCase().includes(this.filter.toLowerCase()),
+          )
+        );
+      });
     },
     isAllDatasetsExpanded() {
       return this.dataSetIsOpenedStateArray.length === this.allDatasets.length;
@@ -334,7 +349,7 @@ export default {
       });
 
       const index = this.workspaceContent.findIndex(
-        wc => wc.networkID == networkID,
+        (wc) => wc.networkID == networkID,
       );
       this.set_currentNetwork(index > 0 ? index : 0);
 
@@ -373,20 +388,20 @@ export default {
       // checking if dataset have models which are not be deleted
       if (this.selectedDatasetIds.length) {
         let datasets = this.allDatasets
-          .map(ds => ({
+          .map((ds) => ({
             id: ds.dataset_id,
             models: ds.models,
           }))
-          .filter(ds => this.selectedDatasetIds.includes(ds.id));
+          .filter((ds) => this.selectedDatasetIds.includes(ds.id));
 
         const datasetHasModels =
           datasets
             .map(
-              ds =>
-                ds.models.filter(x => !this.selectedListIds.includes(x))
+              (ds) =>
+                ds.models.filter((x) => !this.selectedListIds.includes(x))
                   .length !== 0,
             )
-            .filter(x => x).length !== 0;
+            .filter((x) => x).length !== 0;
         if (datasetHasModels) {
           this.showErrorPopup("Dataset has models remove them first");
           return;
@@ -394,13 +409,13 @@ export default {
       }
 
       const modelsToDeleteNames = this.workspaceContent
-        .filter(model => this.selectedListIds.includes(model.networkID))
-        .map(m => m.networkName)
+        .filter((model) => this.selectedListIds.includes(model.networkID))
+        .map((m) => m.networkName)
         .join(", ");
 
       const datasetsToDeleteNames = this.allDatasets
-        .filter(ds => this.selectedDatasetIds.includes(ds.dataset_id))
-        .map(ds => ds.name)
+        .filter((ds) => this.selectedDatasetIds.includes(ds.dataset_id))
+        .map((ds) => ds.name)
         .join(`, `);
 
       let removeMessageStr = `Are you sure you want to unregister ${
@@ -446,10 +461,10 @@ export default {
           this.selectedDatasetIds = [];
         } else {
           let newWorkspaceContent = [...this.workspaceContent];
-          this.selectedListIds = newWorkspaceContent.map(networkItem =>
+          this.selectedListIds = newWorkspaceContent.map((networkItem) =>
             parseInt(networkItem.networkID, 10),
           );
-          this.selectedDatasetIds = this.allDatasets.map(dataset => {
+          this.selectedDatasetIds = this.allDatasets.map((dataset) => {
             return dataset.dataset_id;
           });
         }
@@ -502,7 +517,7 @@ export default {
     async handleContextRemoveModel() {
       const modelId = this.contextModelId;
       const modelName = this.workspaceContent.find(
-        model => model.networkID === modelId,
+        (model) => model.networkID === modelId,
       ).networkName;
       this.popupConfirm({
         type: "DANGER",
@@ -535,7 +550,7 @@ export default {
           this.$store.dispatch("mod_tracker/EVENT_modelDeletion", "Unparsed");
           this.$store
             .dispatch("mod_project/deleteModel", model)
-            .then(serverResponse => {
+            .then((serverResponse) => {
               this.unparsedModels.splice(index, 1);
             });
         },
@@ -545,9 +560,8 @@ export default {
     // Rename Module
     handleContextRenameModel() {
       this.renameId = this.contextModelId;
-      this.renameValue = this.workspaceContent[
-        this.get_modelIndexById
-      ].networkName;
+      this.renameValue =
+        this.workspaceContent[this.get_modelIndexById].networkName;
       setTimeout(() => {
         this.$refs.titleInput[0].focus();
       }, 300);
@@ -597,7 +611,7 @@ export default {
       }
 
       const datasetName = this.allDatasets.find(
-        dataset => dataset.dataset_id === datasetId,
+        (dataset) => dataset.dataset_id === datasetId,
       ).name;
       this.popupConfirm({
         type: "DANGER",
@@ -635,7 +649,7 @@ export default {
         return;
       }
       const datasetName = this.allDatasets.find(
-        dataset => dataset.dataset_id === datasetId,
+        (dataset) => dataset.dataset_id === datasetId,
       ).name;
       this.popupConfirm({
         type: "DANGER",
@@ -673,10 +687,19 @@ export default {
     handleLoadDataClick() {
       this.handleAddNetworkModal();
     },
+    getFilteredModelsByDataSetId(dataset) {
+      const models = this.getModelsByDataSetId(dataset.dataset_id);
+
+      return dataset.name.toLowerCase().includes(this.filter.toLowerCase())
+        ? models
+        : models.filter((model) =>
+            model.networkName.toLowerCase().includes(this.filter.toLowerCase()),
+          );
+    },
     getModelsByDataSetId(dataSetId) {
       let matchedModels = [];
       const models = this.workspaceContent;
-      models.forEach(model => {
+      models.forEach((model) => {
         if (
           model.apiMeta.datasets &&
           model.apiMeta.datasets.includes(dataSetId)
@@ -727,11 +750,11 @@ export default {
       const modelName = await rygg_getNextModelName(namePrefix);
 
       const res = await renderingKernel.importModel(
-	selectedModelFile.path,
+        selectedModelFile.path,
         this.currentProjectId,
         datasetId,
-	modelName,
-	this.projectPath
+        modelName,
+        this.projectPath,
       );
 
       if (res.error) {
@@ -745,8 +768,8 @@ export default {
       const network = createVisNetwork(inputData);
 
       // Wait till the 'stabilized' event has fired
-      await new Promise(resolve =>
-        network.on("stabilized", async data => resolve()),
+      await new Promise((resolve) =>
+        network.on("stabilized", async (data) => resolve()),
       );
 
       // Creating the networkElementList for the network
@@ -757,7 +780,7 @@ export default {
       const apiMeta = await rygg_getModel(res.modelId);
 
       console.debug("apiMeta: ", apiMeta);
-      
+
       let frontendSettings = {
         apiMeta: apiMeta,
         networkName: modelName,
@@ -788,11 +811,12 @@ export default {
 
     expandDatasetsModels() {
       const temp = [];
-      this.allDatasets.forEach(dataset => {
+      this.allDatasets.forEach((dataset) => {
         temp.push(dataset.dataset_id);
       });
       this.dataSetIsOpenedStateArray = temp;
     },
+
     expandAllDatasets() {
       if (this.isAllDatasetsExpanded) {
         this.dataSetIsOpenedStateArray = [];
@@ -800,15 +824,6 @@ export default {
         this.expandDatasetsModels();
       }
     },
-  },
-  created() {
-    // Adding this because of reloads on this page
-    // When the stats and test views are their own routes,
-    // a better alternative would be to put a lot of the
-    // following in the router.
-    this.expandDatasetsModels();
-  },
-  filters: {
     datasetFormat(val) {
       let lestSlashIx = val.lastIndexOf("/");
       const datasetName = val.substring(lestSlashIx + 1);
@@ -817,12 +832,31 @@ export default {
         lestSlashIx,
       );
       if (folderName) {
-        return `${folderName[0].toUpperCase() +
-          folderName.substring(1)} - ${datasetName}`;
+        return `${
+          folderName[0].toUpperCase() + folderName.substring(1)
+        } - ${datasetName}`;
       } else {
         return datasetName;
       }
     },
+    highlight(val) {
+      if (this.filter === "") return val;
+
+      if (val.toLowerCase().includes(this.filter.toLowerCase())) {
+        return val.replace(
+          new RegExp(this.filter.toLowerCase(), "ig"),
+          "<mark>$&</mark>",
+        );
+      }
+      return val;
+    },
+  },
+  created() {
+    // Adding this because of reloads on this page
+    // When the stats and test views are their own routes,
+    // a better alternative would be to put a lot of the
+    // following in the router.
+    this.expandDatasetsModels();
   },
 };
 </script>
@@ -842,10 +876,9 @@ $header-height: 60px;
 }
 .header-controls {
   display: flex;
+  margin-bottom: 10px;
   .left-side {
     display: flex;
-
-    margin-bottom: 10px;
 
     .import-button-container {
       display: flex;
@@ -856,9 +889,9 @@ $header-height: 60px;
     }
   }
   .right-side {
-    margin-left: auto;
+    margin-left: 10px;
+    flex: 1;
     display: flex;
-    align-items: center;
   }
 }
 .text-button {
@@ -1264,5 +1297,19 @@ $header-height: 60px;
   margin-right: 20px;
   white-space: nowrap;
   font-size: 16px;
+}
+.search-bar {
+  display: flex;
+  align-items: center;
+  border: $border-1;
+  background: theme-var($neutral-7);
+  padding: 8px 16px;
+  font-size: 16px;
+  line-height: 20px;
+
+  input {
+    background: transparent;
+    outline: none;
+  }
 }
 </style>
