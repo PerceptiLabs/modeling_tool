@@ -77,7 +77,16 @@ def rygg_mock(monkeypatch, tmp_path):
             'is_perceptilabs_sourced': True                        
         }
         return response
+    
+    def get_tf_hub_cache_dir(self):
+        response = {
+            "tf_hub_cache_dir": str(tmp_path.stem)
+        }
+        return response
 
+    from perceptilabs.rygg import RyggWrapper
+    monkeypatch.setattr(RyggWrapper, 'get_dataset', get_dataset)    
+    monkeypatch.setattr(RyggWrapper, 'get_tf_hub_cache_dir', get_tf_hub_cache_dir)  
     models = {}
 
     # TODO: in frontend, we must always update model in rygg before we tell kernel smth.. which endpoints are affected?

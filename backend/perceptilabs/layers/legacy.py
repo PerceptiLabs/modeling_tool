@@ -1,3 +1,4 @@
+import tensorflow as tf
 class Tf2xLayer:
     """ This layer is an adapter between Keras layers and our infrastructure for sending data.
     
@@ -45,24 +46,24 @@ class Tf2xLayer:
     @property
     def weights(self):
         """ Return the trainable weight of a layer """        
-        if hasattr(self.keras_layer, 'kernel') and self.keras_layer.kernel.trainable:
-            return {'W': self.keras_layer.kernel}
+        if hasattr(self.keras_layer, 'kernel') and hasattr(self.keras_layer.kernel, 'trainable'):
+            if self.keras_layer.kernel.trainable:
+                return {'W': self.keras_layer.kernel}
         elif hasattr(self.keras_layer, 'conv') and self.keras_layer.conv.kernel.trainable:
             return {'W': self.keras_layer.conv.kernel}            
         else:
-            return {}
+            return {} 
         
     @property
     def biases(self):
         """ Return the trainable bias of a layer """
-        if hasattr(self.keras_layer, 'bias') and self.keras_layer.bias.trainable:        
-            return {'b': self.keras_layer.bias}
+        if hasattr(self.keras_layer, 'bias') and hasattr(self.keras_layer.bias, 'trainable'):
+            if self.keras_layer.bias.trainable:        
+                return {'b': self.keras_layer.bias}
         elif hasattr(self.keras_layer, 'conv') and self.keras_layer.conv.bias.trainable:
             return {'b': self.keras_layer.conv.bias}            
         else:
             return {}
-
-
 class DataSupervised:
     pass
 

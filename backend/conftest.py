@@ -9,7 +9,7 @@ import pkg_resources
 import tensorflow as tf
 import numpy as np
 import pandas as pd
-
+from unittest.mock import MagicMock
 
 from perceptilabs.script.engine import J2Engine
 from perceptilabs.script.utils import render_and_execute_macro
@@ -331,5 +331,3 @@ def classification_spec_basic(make_graph_spec, temp_path, temp_path_checkpoints)
 def script_factory():
     from perceptilabs.script import ScriptFactory    
     yield ScriptFactory()
-
-    

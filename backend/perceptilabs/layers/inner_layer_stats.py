@@ -20,6 +20,7 @@ from perceptilabs.layers.deeplearningfc.stats import FCOutputStats
 from perceptilabs.layers.deeplearningconv.stats import ConvOutputStats
 from perceptilabs.layers.deeplearningrecurrent.stats import RecurrentOutputStats
 from perceptilabs.layers.unet.stats import UnetOutputStats
+from perceptilabs.layers.layertfmodel.stats import LayerTfModelOutputStats
 
 class InnerLayersStatsTracker(ABC):
 
@@ -139,6 +140,8 @@ class InnerLayersStatsTracker(ABC):
             return ConvOutputStats(weights, bias, outputs, gradients)
         elif layer_type == 'DeepLearningRecurrent':
             return RecurrentOutputStats(outputs)
+        elif layer_type == 'LayerTfModel':
+            return LayerTfModelOutputStats(outputs)
 
     def __eq__(self, other):
         return(

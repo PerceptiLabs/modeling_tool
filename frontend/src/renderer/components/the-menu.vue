@@ -196,8 +196,8 @@ export default {
       }
     },
     onPaste(ev, triggeredByHotkey) {
-      if (!Array.from(document.activeElement.classList).includes("inputarea")) {
-        ev.preventDefault();
+      if (['TEXTAREA', 'INPUT'].includes(document.activeElement.nodeName)) {
+        return;
       }
 
       this.HCPaste(triggeredByHotkey);

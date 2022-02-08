@@ -39,6 +39,7 @@
   import ProcessOneHot    from '@/components/network-elements/elements/process-one-hot/viewBox-process-one-hot.vue'
   import ProcessReshape   from '@/components/network-elements/elements/process-reshape/viewBox-process-reshape.vue'
   import ProcessRescale   from '@/components/network-elements/elements/process-rescale/viewBox-process-rescale.vue'
+  import LayerTfModel from '@/components/network-elements/elements/tensorflow-model/viewBox-tensorflow-model.vue'
   import PreTrainedResNet50 from '@/components/network-elements/elements/pretrained-resnet50/viewBox-pretrained-resnet50.vue'
   import PreTrainedMobileNetV2 from '@/components/network-elements/elements/pretrained-mobilenetv2/viewBox-pretrained-mobilenetv2.vue'
   import PreTrainedVGG16 from '@/components/network-elements/elements/pretrained-vgg16/viewBox-pretrained-vgg16.vue'
@@ -60,7 +61,7 @@ export default {
     DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     TrainNormal, TrainRegression, TrainReinforce, TrainDetector, TrainGan,
-    PreTrainedResNet50, PreTrainedMobileNetV2, PreTrainedVGG16, PreTrainedInceptionV3,
+    PreTrainedResNet50, PreTrainedMobileNetV2, LayerTfModel, PreTrainedVGG16, PreTrainedInceptionV3,
     MathArgmax, MathMerge,
     IoInput, IoOutput,
     LayerCustom,

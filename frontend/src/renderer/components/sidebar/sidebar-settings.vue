@@ -71,6 +71,7 @@ import TrainDetector from "@/components/network-elements/elements/train-detector
 
 import LayerCustom from "@/components/network-elements/elements/layer-custom/set-layer-custom.vue";
 
+import LayerTfModel from "@/components/network-elements/elements/tensorflow-model/set-tensorflow-model.vue";
 import PreTrainedVGG16 from "@/components/network-elements/elements/pretrained-vgg16/set-pretrained-vgg16.vue";
 import PreTrainedMobileNetV2 from "@/components/network-elements/elements/pretrained-mobilenetv2/set-pretrained-mobilenetv2.vue";
 import PreTrainedResNet50 from "@/components/network-elements/elements/pretrained-resnet50/set-pretrained-resnet50.vue";
@@ -109,6 +110,7 @@ export default {
     IoInput,
     IoOutput,
     LayerCustom,
+    LayerTfModel,
     PreTrainedVGG16,
     PreTrainedInceptionV3,
     PreTrainedMobileNetV2,

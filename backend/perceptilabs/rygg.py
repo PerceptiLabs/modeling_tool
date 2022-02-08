@@ -43,6 +43,15 @@ class RyggWrapper(RyggAdapter):
             logger.exception(f"Error in get_dataset for dataset {dataset_id}")
             raise
 
+    def get_tf_hub_cache_dir(self):
+        try:
+            res = requests.get(
+                f"{self._base_url}/tf_hub_cache_dir")
+            return res.json()
+        except:
+            logger.exception("Error in get_tf_hub_cache_dir")
+            return {}
+        
     def create_model(self, project_id, dataset_id, model_name, location=None):
         payload = {
             "name": model_name,

@@ -25,7 +25,7 @@ from rygg.files.views.directory_view import (
 )
 from rygg.files.views.github_view import (github_export, github_import, github_issue)
 from rygg.files.views.upload_view import get_upload_dir
-
+from rygg.files.views.tf_hub_cache_view import get_tf_hub_cache_dir
 
 router = routers.DefaultRouter()
 router.register(r"projects", ProjectViewSet)
@@ -53,4 +53,5 @@ urlpatterns = [
     path(r"github/import", github_import),
     path(r"github/issue", github_issue),
     path(r"upload_dir", get_upload_dir),
+    path(r"tf_hub_cache_dir", get_tf_hub_cache_dir),
 ]

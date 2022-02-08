@@ -60,4 +60,3 @@ class InferenceInterface:
             return results_dict['results']
         else:
             return {}
-

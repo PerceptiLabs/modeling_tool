@@ -17,6 +17,7 @@ from perceptilabs.layers.pretrainedmobilenetv2.spec import PreTrainedMobileNetV2
 from perceptilabs.layers.iooutput.spec import OutputLayerSpec
 from perceptilabs.layers.ioinput.spec import InputLayerSpec
 from perceptilabs.layers.unet.spec import UNetSpec
+from perceptilabs.layers.layertfmodel.spec import LayerTfModelSpec
 
 LayerMeta = namedtuple(
     'LayerMeta', [
@@ -123,6 +124,12 @@ DEFINITION_TABLE_TF2X = {
         'layers/layercustom/tf2x_imports.json',
         'layers/layercustom/tf2x_template.j2',
         'layer_custom'
+    ),
+    'LayerTfModel': LayerMeta(
+        LayerTfModelSpec,
+        'layers/layertfmodel/tf2x_imports.json',
+        'layers/layertfmodel/tf2x_template.j2',
+        'layer_tfmodel'
     ),
 }
 

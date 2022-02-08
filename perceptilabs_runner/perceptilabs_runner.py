@@ -138,8 +138,7 @@ def watch(procs, interval_secs=1):
             break
 
     stop(procs)
-
-
+    
 def get_pipes(verbosity):
     return {
         "stdout": subprocess.DEVNULL if verbosity < 2 else None,

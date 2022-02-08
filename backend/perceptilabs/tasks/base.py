@@ -45,6 +45,7 @@ def training_task(dataset_settings_dict, model_id, training_session_id, training
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.training_results import TrainingResultsAccess
     from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess    
+    from perceptilabs.resources.tfhub_cache_dir import TensorflowSupportAccess
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     from perceptilabs.resources.datasets import DatasetAccess            
@@ -69,6 +70,8 @@ def training_task(dataset_settings_dict, model_id, training_session_id, training
 
     dataset_access = DatasetAccess(rygg)
 
+    TensorflowSupportAccess(rygg)
+    
     df = dataset_access.get_dataframe(
         dataset_settings.dataset_id, fix_paths_for=dataset_settings.file_based_features)
     
@@ -107,7 +110,8 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
     from perceptilabs.resources.models import ModelAccess
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.testing_results import TestingResultsAccess
-    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess        
+    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess   
+    from perceptilabs.resources.tfhub_cache_dir import TensorflowSupportAccess     
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     from perceptilabs.tracking.base import EventTracker
@@ -126,7 +130,7 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
 
     dataset_access = DatasetAccess(rygg)
-
+    TensorflowSupportAccess(rygg)
         
     # TODO: all this data loader etup should be moved into the test interface!!!
     models = {}
@@ -184,6 +188,7 @@ def serving_task(serving_settings, dataset_settings_dict, model_id, training_ses
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.serving_results import ServingResultsAccess
     from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess        
+    from perceptilabs.resources.tfhub_cache_dir import TensorflowSupportAccess
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     from perceptilabs.messaging.base import get_message_broker
@@ -206,9 +211,13 @@ def serving_task(serving_settings, dataset_settings_dict, model_id, training_ses
 
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
     data_metadata = preprocessing_results_access.get_metadata(dataset_settings.compute_hash())    
+    
+
+    rygg = RyggWrapper.with_default_settings()
 
     dataset_access = DatasetAccess(rygg)
-
+    TensorflowSupportAccess(rygg)
+    
     df = dataset_access.get_dataframe(
         dataset_settings.dataset_id, fix_paths_for=dataset_settings.file_based_features)
     

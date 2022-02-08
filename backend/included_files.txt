@@ -168,6 +168,14 @@ perceptilabs/layers/layercustom/tf2x_imports.json
 perceptilabs/layers/layercustom/tf2x_template.j2
 perceptilabs/layers/layercustom/stats.py
 
+# perceptilabs/layers/layertfmodel
+perceptilabs/layers/layertfmodel/__init__.py
+perceptilabs/layers/layertfmodel/spec.py
+perceptilabs/layers/layertfmodel/imports.json
+perceptilabs/layers/layertfmodel/tf2x_imports.json
+perceptilabs/layers/layertfmodel/tf2x_template.j2
+perceptilabs/layers/layertfmodel/stats.py
+
 # perceptilabs/layers/pretrainedvgg16
 perceptilabs/layers/pretrainedvgg16/spec.py
 perceptilabs/layers/pretrainedvgg16/tf2x_template.j2
@@ -349,4 +357,5 @@ perceptilabs/resources/training_results.py
 perceptilabs/resources/testing_results.py
 perceptilabs/resources/serving_results.py
 perceptilabs/resources/preprocessing_results.py
+perceptilabs/resources/tfhub_cache_dir.py
 

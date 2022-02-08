@@ -10,26 +10,26 @@ import {
   isTaskComplete as rygg_isTaskComplete,
   getTaskStatus as rygg_getTaskStatus,
 } from "@/core/apiRygg";
-const projectPathModel = function(projectPath) {
+const projectPathModel = function (projectPath) {
   return `${projectPath}${pathSlash}model.json`;
 };
 
-const getDefaultProjectPathForOs = function() {
+const getDefaultProjectPathForOs = function () {
   return "~/Documents/PerceptiLabs"; //the path to MyDocuments is resolved in Kernel
 };
 
-const checkpointDirFromProject = function(projectPath) {
+const checkpointDirFromProject = function (projectPath) {
   return `${projectPath}/checkpoint`;
 };
 
 /*encryption */
-const encryptionData = function(data) {
+const encryptionData = function (data) {
   return JSON.stringify(data)
     .split("")
     .reverse()
     .join("");
 };
-const decryptionData = function(data) {
+const decryptionData = function (data) {
   return JSON.stringify(data)
     .split("")
     .reverse()
@@ -37,16 +37,16 @@ const decryptionData = function(data) {
 };
 
 /*other*/
-const generateID = function() {
+const generateID = function () {
   return Date.now().toString();
 };
 
-const calcLayerPosition = function(position, zoomScaleCoefficient = 1) {
+const calcLayerPosition = function (position, zoomScaleCoefficient = 1) {
   const grid = workspaceGrid * zoomScaleCoefficient;
   return Math.round(position / grid) * grid;
 };
 
-const throttleEv = function(func, ms) {
+const throttleEv = function (func, ms) {
   var isThrottled = false,
     savedArgs,
     savedThis;
@@ -63,7 +63,7 @@ const throttleEv = function(func, ms) {
 
     isThrottled = true;
 
-    setTimeout(function() {
+    setTimeout(function () {
       isThrottled = false;
       if (savedArgs) {
         wrapper.apply(savedThis, savedArgs);
@@ -75,7 +75,7 @@ const throttleEv = function(func, ms) {
   return wrapper;
 };
 
-const goToLink = function(url) {
+const goToLink = function (url) {
   let link = document.createElement("a");
   link.setAttribute("href", url);
   link.setAttribute("target", "_blank");
@@ -125,12 +125,12 @@ function isCyclic(obj) {
   return detected;
 }
 
-const deepCopy = function(object) {
+const deepCopy = function (object) {
   // isCyclic(object); // find circular references
   return JSON.parse(JSON.stringify(object));
 };
 
-const deepCloneNetwork = function(object) {
+const deepCloneNetwork = function (object) {
   // isCyclic(object); // find circular references
   return JSON.parse(
     JSON.stringify(
@@ -144,7 +144,7 @@ const deepCloneNetwork = function(object) {
   );
 };
 
-const isLocalStorageAvailable = function() {
+const isLocalStorageAvailable = function () {
   try {
     var storage = window["localStorage"],
       x = "__storage_test__";
@@ -170,7 +170,7 @@ const isLocalStorageAvailable = function() {
   }
 };
 
-const stringifyNetworkObjects = function(network) {
+const stringifyNetworkObjects = function (network) {
   return JSON.stringify(
     network,
     (key, val) => {
@@ -248,7 +248,7 @@ const parseJWT = jwt => {
 const debounce = function(callback, waitInMs) {
   let timerHandle;
 
-  return function() {
+  return function () {
     clearInterval(timerHandle);
     timerHandle = setTimeout(() => {
       callback.apply(this, arguments);
@@ -256,7 +256,7 @@ const debounce = function(callback, waitInMs) {
   };
 };
 
-const promiseWithTimeout = function(timeout, promise) {
+const promiseWithTimeout = function (timeout, promise) {
   const timeoutPromise = new Promise((resolve, reject) => {
     const timerHandle = setTimeout(() => resolve(), timeout);
   });
@@ -264,7 +264,7 @@ const promiseWithTimeout = function(timeout, promise) {
   return Promise.race([promise, timeoutPromise]);
 };
 
-const layerBgColor = function(componentName) {
+const layerBgColor = function (componentName) {
   let className = "";
   switch (componentName) {
     case "DataData":
@@ -273,6 +273,7 @@ const layerBgColor = function(componentName) {
     case "IoInput":
       className = "net-color-data";
       break;
+    case "LayerTfModel":
     case "DeepLearningFC":
     case "DeepLearningConv":
     case "DeepLearningRecurrent":
@@ -281,7 +282,7 @@ const layerBgColor = function(componentName) {
     case "PreTrainedMobileNetV2":
     case "PreTrainedInceptionV3":
     case "UNet":
-      className = "net-color-learn-deep";
+      className = 'net-color-learn-deep';
       break;
     case "ProcessCrop":
     case "ProcessEmbed":
@@ -326,20 +327,21 @@ const layerBgColor = function(componentName) {
   return [className];
 };
 
-const layerBgColorTransparent = function(componentName) {
+const layerBgColorTransparent = function (componentName) {
   let className = "";
   switch (componentName) {
     case "DataData":
     case "DataEnvironment":
       className = "net-element-data";
       break;
+    case "LayerTfModel":
     case "DeepLearningFC":
     case "DeepLearningConv":
     case "DeepLearningRecurrent":
     case "PreTrainedResNet50":
     case "PreTrainedVGG16":
     case "PreTrainedInceptionV3":
-      className = "net-element-learn-deep";
+      className = 'net-element-learn-deep';
       break;
     case "ProcessCrop":
     case "ProcessEmbed":
@@ -377,7 +379,7 @@ const layerBgColorTransparent = function(componentName) {
   return [className];
 };
 
-const hashObject = function(inputObject) {
+const hashObject = function (inputObject) {
   const concatValues = Object.values(inputObject)
     .map(eo => eo.toString())
     .join("");
@@ -437,7 +439,7 @@ const createCoreNetwork = (network, currentNetworkUsingWeights = false) => {
 
 const objectToQueryParams = reqData => {
   return Object.keys(reqData)
-    .map(function(key) {
+    .map(function (key) {
       return key + "=" + reqData[key];
     })
     .join("&");

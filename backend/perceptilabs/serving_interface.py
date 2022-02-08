@@ -2,7 +2,7 @@ import time
 import logging
 from queue import Empty
 from datetime import datetime
-
+import os
 import sentry_sdk
 
 from perceptilabs.graph.spec import GraphSpec
@@ -20,7 +20,7 @@ class ServingSessionInterface():
         self._model_access = model_access
         self._epochs_access = epochs_access
         self._results_access = results_access
-
+        
     def run(self, *args, **kwargs):
         for _ in self.run_stepwise(*args, **kwargs):
             pass
@@ -98,5 +98,3 @@ class ServingSessionInterface():
                 self._results_access.store(serving_session_id, results)
             finally:
                 yield
-
-

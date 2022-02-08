@@ -4,8 +4,8 @@ from unittest.mock import MagicMock
 from perceptilabs.models_interface import ModelsInterface
 from perceptilabs.utils import KernelError
 
-
 def make_interface(task_executor=None, message_broker=None, event_tracker=None, dataset_access=None, model_access=None, model_archives_access=None, epochs_access=None, training_results_access=None, preprocessing_results_access=None, preview_cache=None):
+    
     interface = ModelsInterface(
         task_executor=task_executor or MagicMock(),
         message_broker=message_broker or MagicMock(),

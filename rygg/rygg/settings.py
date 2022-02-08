@@ -284,6 +284,9 @@ def file_upload_dir(project_id):
 
     return os.path.join(BASE_UPLOAD_DIR, str(project_id))
 
+def tf_hub_cache_dir():
+    return os.path.join(DEFAULT_PROJECT_DIR, 'Tensorflow_Hub_Models')
+
 
 FILE_UPLOAD_HANDLERS = [
     # story 1588: turn off in-memory uploads

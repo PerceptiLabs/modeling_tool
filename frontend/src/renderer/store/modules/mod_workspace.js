@@ -2573,6 +2573,8 @@ const componentsInputs = {
   TrainDetector: ['predictions', 'labels'],
   LayerCustom: ['input'],
 
+  LayerTfModel: ['input'],
+
   PreTrainedMobileNetV2: ['input'],
   PreTrainedResNet50: ['input'],
   PreTrainedVGG16: ['input'],
@@ -2608,6 +2610,8 @@ const componentsOutputs = {
   TrainReinforce: [],
   TrainGan: [],
   TrainDetector: [],
+
+  LayerTfModel: ['output'],
 
   PreTrainedMobileNetV2: ['output'],
   PreTrainedVGG16: ['output'],

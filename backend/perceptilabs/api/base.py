@@ -24,6 +24,7 @@ from perceptilabs.resources.preprocessing_results import PreprocessingResultsAcc
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.resources.model_archives import ModelArchivesAccess
 from perceptilabs.resources.epochs import EpochsAccess
+from perceptilabs.resources.tfhub_cache_dir import TensorflowSupportAccess
 from perceptilabs.script import ScriptFactory
 from perceptilabs.issues import traceback_from_exception
 from perceptilabs.rygg import RyggWrapper
@@ -61,8 +62,8 @@ def create_app(
         training_results_access=None,
         testing_results_access=None,
         serving_results_access=None,
-        preprocessing_results_access=None,
-):
+        preprocessing_results_access=None
+    ):
     # Defer creating objects until function is actually called to ensure any mocking happens first
     rygg = RyggWrapper.with_default_settings()
     
@@ -78,7 +79,7 @@ def create_app(
     testing_results_access = testing_results_access or TestingResultsAccess()
     serving_results_access = serving_results_access or ServingResultsAccess()
     preprocessing_results_access = preprocessing_results_access or PreprocessingResultsAccess(get_data_metadata_cache())
-
+    TensorflowSupportAccess(rygg)
     
     app = Flask(__name__)
     app.json_encoder = MyJSONEncoder
@@ -101,14 +102,14 @@ def create_app(
         epochs_access,
         training_results_access,
         preprocessing_results_access,
-        preview_cache
+        preview_cache,
     )
 
     inference_interface = InferenceInterface(
         task_executor,
         message_broker,
         testing_results_access,
-        serving_results_access
+        serving_results_access,
     )
 
     @app.route('/user', methods=['POST'])

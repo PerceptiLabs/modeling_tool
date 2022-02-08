@@ -59,6 +59,7 @@ rygg/files/views/github_view.py
 rygg/files/views/json_model_view.py
 rygg/files/views/model_directory_view.py
 rygg/files/views/upload_view.py
+rygg/files/views/tf_hub_cache_view.py
 rygg/files/views/url_reachable.py
 rygg/files/views/util.py
 rygg/middleware.py

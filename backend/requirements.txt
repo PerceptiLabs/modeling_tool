@@ -53,3 +53,4 @@ websockets>=8.1
 keras_unet_collection==0.1.10
 flask-compress==1.9.0
 filelock==3.3.2
+tensorflow_hub==0.12.0

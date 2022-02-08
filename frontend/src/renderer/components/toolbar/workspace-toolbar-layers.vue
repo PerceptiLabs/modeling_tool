@@ -70,6 +70,7 @@ import IoOutput from "@/components/network-elements/elements/io-output/view-io-o
 
 import LayerCustom from "@/components/network-elements/elements/layer-custom/view-layer-custom.vue";
 
+import LayerTfModel from "@/components/network-elements/elements/tensorflow-model/view-tensorflow-model.vue";
 import PreTrainedVGG16 from "@/components/network-elements/elements/pretrained-vgg16/view-pretrained-vgg16.vue";
 import PreTrainedMobileNetV2 from "@/components/network-elements/elements/pretrained-mobilenetv2/view-pretrained-mobilenetv2.vue";
 import PreTrainedInceptionV3 from "@/components/network-elements/elements/pretrained-inceptionv3/view-pretrained-inceptionv3.vue";
@@ -98,6 +99,7 @@ export default {
     MathArgmax,
     MathMerge,
     LayerCustom,
+    LayerTfModel,
     PreTrainedVGG16,
     PreTrainedInceptionV3,
     PreTrainedResNet50,
@@ -152,6 +154,7 @@ export default {
           tooltip: "Public",
           showEl: false,
           networkElements: [
+            "LayerTfModel",
             "PreTrainedVGG16",
             "PreTrainedResNet50",
             "PreTrainedInceptionV3",

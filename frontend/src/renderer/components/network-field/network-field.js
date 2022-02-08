@@ -26,6 +26,7 @@ import ClassicMLSVM from "@/components/network-elements/elements/classic-ml-vect
 import LayerContainer from "@/components/network-elements/elements/layer-container/layer-container.vue";
 import LayerCustom from "@/components/network-elements/elements/layer-custom/layer-custom.vue";
 
+import LayerTfModel from "@/components/network-elements/elements/tensorflow-model/tensorflow-model.vue";
 import PreTrainedVGG16 from "@/components/network-elements/elements/pretrained-vgg16/pretrained-vgg16.vue";
 import PreTrainedMobileNetV2 from "@/components/network-elements/elements/pretrained-mobilenetv2/pretrained-mobilenetv2.vue";
 import PreTrainedInceptionV3 from "@/components/network-elements/elements/pretrained-inceptionv3/pretrained-inceptionv3.vue";
@@ -71,6 +72,7 @@ export default {
     IoOutput,
     LayerContainer,
     LayerCustom,
+    LayerTfModel,
     PreTrainedVGG16,
     PreTrainedInceptionV3,
     PreTrainedResNet50,
