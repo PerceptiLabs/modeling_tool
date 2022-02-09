@@ -46,7 +46,7 @@ class RyggWrapper(RyggAdapter):
     def get_tf_hub_cache_dir(self):
         try:
             res = requests.get(
-                f"{self._base_url}/tf_hub_cache_dir")
+                f"{self._base_url}/tf_hub_cache_dir?token={self._token}")
             return res.json()
         except:
             logger.exception("Error in get_tf_hub_cache_dir")
