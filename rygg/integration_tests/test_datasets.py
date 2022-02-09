@@ -166,8 +166,14 @@ def test_dataset_model_association_after_create(rest, tmp_project, tmp_model):
     with spam_dataset(rest, tmp_project, "dataset1") as dataset1, \
          spam_dataset(rest, tmp_project, "dataset2") as dataset2:
 
+        # associate the model to the dataset
         tmp_model.update(datasets = [dataset1.id])
-        assert tmp_model.datasets == [dataset1.as_dict]
+
+        # wait for them to line up
+        def are_equal():
+            dataset1.refresh()
+            return tmp_model.datasets == [dataset1.as_dict]
+        assert_eventually(are_equal, stop_max_delay=2000, wait_fixed=50)
 
         # update datasets replaces the whole list
         tmp_model.update(datasets = [dataset2.id])
