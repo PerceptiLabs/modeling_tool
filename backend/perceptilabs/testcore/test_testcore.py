@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from unittest.mock import MagicMock
 
+from perceptilabs.rygg import RyggAdapter
 from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.trainer.model import TrainingModel
@@ -78,6 +79,27 @@ def graph_spec_few_epochs():
     return graph_spec
 
 
+class Rygg(RyggAdapter):
+    def __init__(self, tmp_path):
+        self.tmp_path = tmp_path
+
+    def get_dataset(self, dataset_id):
+        raise NotImplementedError
+
+    def create_model(self, project_id, dataset_id, model_name, location=None):
+        raise NotImplementedError
+
+    def load_model_json(self, model_id):
+        raise NotImplementedError
+
+    def save_model_json(self, model_id, model):
+        raise NotImplementedError
+
+    def get_model(self, model_id):
+        return {'location': '/tmp'}
+
+
+
 @pytest.fixture()
 def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
     training_session_id = '123'
@@ -110,7 +132,7 @@ def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
     tests = []
     model_ids = [1]
     
-    rygg = MagicMock()
+    rygg = Rygg(temp_path)
     epochs_access = EpochsAccess(rygg)
     model_access = ModelAccess(rygg)
 

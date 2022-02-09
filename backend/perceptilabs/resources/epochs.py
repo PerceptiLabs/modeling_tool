@@ -8,6 +8,11 @@ from perceptilabs.utils import b64decode_and_sanitize
 
 logger = logging.getLogger(__name__)
 
+
+class ModelDirectoryCorrupt(Exception):
+    pass
+
+
 class EpochsAccess:
     def __init__(self, rygg):
         self._rygg = rygg
@@ -88,8 +93,23 @@ class EpochsAccess:
                 logger.info(f"Size of state pickle file in bytes: {size}")
 
     def _resolve_directory_path(self, training_session_id):
-        directory = self._rygg.get_model(training_session_id)['location']        
-        return directory
+        model_dir = self._rygg.get_model(training_session_id)['location']
+
+        if model_dir is None:
+            raise RuntimeError(
+                f"Backend returned None for model location. Session ID: {training_session_id}")
+        
+        model_dir = str(model_dir).replace('\\', '/')  # Sanitize Windows path
+        
+        ckpt_dir = os.path.join(model_dir, 'checkpoint')
+        
+        if os.path.isfile(ckpt_dir):
+            raise ModelDirectoryCorrupt(
+                f"Creating checkpoint directory failed because a file with the same path already exists. Path: {ckpt_dir}")
+        
+        os.makedirs(ckpt_dir, exist_ok=True)
+        
+        return ckpt_dir
 
     def _get_epochs(self, training_session_id):
         directory = self._resolve_directory_path(training_session_id)

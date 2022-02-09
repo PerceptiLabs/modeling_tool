@@ -17,6 +17,10 @@ from filelock import FileLock
 logger = logging.getLogger(__name__)
 
 
+class ModelDirectoryCorrupt(Exception):
+    pass
+
+
 class TrainingResultsAccess:
     FILE_NAME = 'latest-training-results.pkl'
 
@@ -66,10 +70,17 @@ class TrainingResultsAccess:
         logger.error(error_message)
 
     def _get_path(self, training_session_id):
-        directory = self._rygg.get_model(training_session_id)['location']
+        model_dir = self._rygg.get_model(training_session_id)['location']
+        model_dir = model_dir.replace('\\', '/')  # Sanitize Windows path
         
-        os.makedirs(directory, exist_ok=True)
-        file_path = os.path.join(directory, self.FILE_NAME).replace('\\', '/')
+        ckpt_dir = os.path.join(model_dir, 'checkpoint')
+
+        if os.path.isfile(ckpt_dir):
+            raise ModelDirectoryCorrupt(
+                f"Creating checkpoint directory failed because a file with the same path already exists. Path: {ckpt_dir}")
+        
+        os.makedirs(ckpt_dir, exist_ok=True)
+        file_path = os.path.join(ckpt_dir, self.FILE_NAME)
         return file_path
         
     def remove(self, training_session_id):
