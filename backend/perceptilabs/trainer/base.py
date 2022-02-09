@@ -201,12 +201,12 @@ class Trainer:
             if self.is_closed:
                 break
 
-            self._num_epochs_completed += 1
             epoch_time = time.perf_counter() - t0 
 
             if self._on_epoch_completed:
-                self._on_epoch_completed(self, epoch_time)
+                self._on_epoch_completed(self._num_epochs_completed, self, epoch_time)
             
+            self._num_epochs_completed += 1
             self._log_epoch_summary(epoch_time)
             self._training_time += epoch_time
 

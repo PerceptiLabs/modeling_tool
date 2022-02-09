@@ -287,6 +287,7 @@ perceptilabs/trainer/__init__.py
 perceptilabs/trainer/base.py
 perceptilabs/trainer/losses.py
 perceptilabs/trainer/model.py
+perceptilabs/trainer/utils.py
 
 # backend/perceptilabs/sharing/
 perceptilabs/sharing/exporter.py

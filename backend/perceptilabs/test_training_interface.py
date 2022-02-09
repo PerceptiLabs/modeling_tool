@@ -1,7 +1,9 @@
 import pytest
+import time
 from unittest.mock import MagicMock
 from queue import Queue
 
+import sentry_sdk
 import tensorflow as tf
 
 from perceptilabs.graph.builder import GraphSpecBuilder
@@ -440,5 +442,52 @@ def test_errors_are_stored(monkeypatch, message_broker, data_loader, graph_spec,
     assert results_access.store.call_args[0][1]['error']['message']
     assert error_message in results_access.store.call_args[0][1]['error']['details']
 
+
+@pytest.mark.parametrize("slowdown_rate", [0.0, 0.2])
+def test_slowdown_is_detected(monkeypatch, slowdown_rate, queue, message_broker, data_loader, graph_spec, training_model, training_settings):
+    max_slowdown_rate = 0.1
     
+    fake_sentry_call = MagicMock()
+    monkeypatch.setattr(sentry_sdk, 'capture_message', fake_sentry_call, raising=True)
+    
+    model_access = MagicMock()
+    model_access.get_training_model.return_value = training_model
+    model_access.get_graph_spec.return_value = graph_spec
+
+    epochs_access = MagicMock()
+    results_access = MagicMock()
+    event_tracker = MagicMock()
+    
+    interface = TrainingSessionInterface(
+        message_broker,
+        event_tracker,
+        model_access=model_access,
+        epochs_access=epochs_access,
+        results_access=results_access,
+        max_slowdown_rate=max_slowdown_rate
+    )
+
+    model_id = '456'
+    training_session_id = '789'
+    
+    step = interface.run_stepwise(
+        data_loader,
+        model_id=model_id,
+        graph_settings=graph_spec.to_dict(),        
+        training_session_id=training_session_id,
+        training_settings=training_settings,
+        load_checkpoint=False,
+        user_email='a@b.com',
+        results_interval=None, # make sure we get results every iteration,
+    )
+    
+    status_list = []
+    for counter, _ in enumerate(step):
+        time.sleep(slowdown_rate*counter)
+
+    if slowdown_rate == 0:
+        assert fake_sentry_call.call_count == 0
+    else:
+        assert fake_sentry_call.call_count == 1
+        assert fake_sentry_call.call_args.args == ("Training slowdown detected",)
         

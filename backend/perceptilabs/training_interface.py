@@ -3,6 +3,7 @@ import time
 import logging
 from queue import Empty
 import os
+from contextlib import contextmanager
 
 import sentry_sdk
 
@@ -12,52 +13,64 @@ from perceptilabs.trainer import Trainer
 from perceptilabs.trainer.model import TrainingModel            
 from perceptilabs.sharing.exporter import Exporter
 from perceptilabs.utils import KernelError
+from perceptilabs.trainer.utils import EpochSlowdownTracker
 import perceptilabs.tracking as tracking
 
 logger = logging.getLogger(__name__)
 
 
 class TrainingSessionInterface:
-    def __init__(self, message_broker, event_tracker, model_access, epochs_access, results_access):
+    def __init__(self, message_broker, event_tracker, model_access, epochs_access, results_access, max_slowdown_rate=0.1):
         self._message_broker = message_broker
         self._event_tracker = event_tracker
         self._model_access = model_access
         self._epochs_access = epochs_access
         self._results_access = results_access
-        
+
+        self._max_slowdown_rate = max_slowdown_rate
+        self._has_reported_slowdown = False        
+        self._slowdown_tracker = EpochSlowdownTracker()
+
     def run(self, *args, **kwargs):
         for _ in self.run_stepwise(*args, **kwargs):
             pass
 
     def run_stepwise(self, data_loader, model_id, training_session_id, training_settings, load_checkpoint, user_email, results_interval=None, is_retry=False, logrocket_url='', graph_settings=None):
+
+        @contextmanager
+        def sentry_closure():
+            with sentry_sdk.push_scope() as scope:
+                scope.set_user({'email': user_email})            
+                scope.set_extra('model_id', model_id)
+                scope.set_extra('training_session_id', training_session_id)
+                scope.set_extra('training_settings', training_settings)
+                scope.set_extra('dataset_settings', data_loader.settings)
+                scope.set_extra('graph_settings', graph_settings)                                
+                scope.set_extra('logrocket_url', logrocket_url)            
+                yield scope
+                sentry_sdk.flush()
+        
         try:
             self._clean_old_status(training_session_id)
         
             trainer = self._setup_trainer(
                 data_loader, model_id, training_session_id, training_settings, 
                 use_checkpoint=(load_checkpoint or is_retry), user_email=user_email,
-                graph_settings=graph_settings
+                graph_settings=graph_settings, sentry_closure=sentry_closure
             )
             with self._message_broker.subscription() as queue:
                 yield from self._main_loop(queue, trainer, results_interval, training_session_id)
 
         except Exception as e:
-            self._handle_error(e, model_id, training_session_id, training_settings, user_email, logrocket_url)
+            self._handle_error(e, training_session_id, sentry_closure)
 
-    def _handle_error(self, e, model_id, training_session_id, training_settings, user_email, logrocket_url):
+    def _handle_error(self, e, training_session_id, sentry_closure):
         error = KernelError.from_exception(e, message="Error during training!")
         self._results_access.store(training_session_id, {'error': error.to_dict()})
         logger.exception("Exception in training session interface!")
 
-        with sentry_sdk.push_scope() as scope:
-            scope.set_user({'email': user_email})            
-            scope.set_extra('model_id', model_id)
-            scope.set_extra('training_session_id', training_session_id)
-            scope.set_extra('training_settings', training_settings)
-            scope.set_extra('logrocket_url', logrocket_url)            
-            
+        with sentry_closure() as scope:
             sentry_sdk.capture_exception(e)
-            sentry_sdk.flush()            
 
     def _main_loop(self, queue, trainer, results_interval, training_session_id):
         training_step = trainer.run_stepwise()
@@ -77,7 +90,7 @@ class TrainingSessionInterface:
 
             yield            
 
-    def _setup_trainer(self, data_loader, model_id, training_session_id, training_settings, use_checkpoint, user_email, graph_settings):
+    def _setup_trainer(self, data_loader, model_id, training_session_id, training_settings, use_checkpoint, user_email, graph_settings, sentry_closure):
 
         if graph_settings:
             graph_spec = GraphSpec.from_dict(graph_settings)
@@ -120,9 +133,11 @@ class TrainingSessionInterface:
             tracking.send_training_completed(
                 self._event_tracker, user_email, model_id, graph_spec, *args)
 
-        def on_epoch_completed(trainer, epoch_time):
+        def on_epoch_completed(epoch, trainer, epoch_time):
             if trainer.auto_checkpoint:
                 self._save_epoch(trainer)
+
+            self._check_for_slowdown(epoch, epoch_time, sentry_closure)
         
         trainer = Trainer(
             data_loader,
@@ -208,3 +223,24 @@ class TrainingSessionInterface:
         self._epochs_access.save_state_dict(
             trainer.training_session_id, trainer.num_epochs_completed, state_dict)
     
+    def _check_for_slowdown(self, epoch, epoch_time, sentry_closure):
+        self._slowdown_tracker.add_time(epoch_time)
+
+        slowdown_per_epoch = self._slowdown_tracker.get_slowdown_rate()
+
+        if not self._has_reported_slowdown and slowdown_per_epoch > self._max_slowdown_rate:
+            logger.warning(
+                f"Training has slowed down by {slowdown_per_epoch}s/epoch measured across {epoch+1} epochs. Maximum slowdown rate is set to {self._max_slowdown_rate}s/epoch. "
+                f"Epoch durations: {self._slowdown_tracker.times}"
+            )
+
+            with sentry_closure() as scope:
+                scope.set_extra('epoch_number', epoch)                
+                scope.set_extra('epoch_durations', self._slowdown_tracker.times)
+                scope.set_extra('slowdown_rate', slowdown_per_epoch)
+                scope.set_extra('slowdown_rate_max', self._max_slowdown_rate)                
+                sentry_sdk.capture_message("Training slowdown detected")            
+            
+            self._has_reported_slowdown = True
+
+        
