@@ -147,6 +147,38 @@ def get_pipes(verbosity):
     }
 
 
+class PortTimeout(Exception):
+    def __init__(self, unresponsive, interval_secs, max_attempts):
+        self.unresponsive = unresponsive
+        self.interval_secs = interval_secs
+        self.max_attempts = max_attempts
+    
+    def __str__(self):
+        text = "The following services did not start within {self.interval_secs*self.max_attempts} seconds.:\n"
+        for s, p in self.unresponsive.items():
+            text += f"    {s} on port {p}\n"
+
+        text += "If the problem persists, please get in touch at https://forum.perceptilabs.com/"
+        return text
+
+    
+class PortInUse(Exception):
+    def __init__(self, responsive):
+        self.responsive = responsive
+    
+    def __str__(self):
+        text = "The following ports are already in use:\n"
+        for s, p in self.responsive.items():
+            text += f"    {p}, which is needed by service {s}\n"
+
+        text += (
+            "Verify that other applications aren't blocking the port(s) above. "
+            "If the problem persists, please get in touch at https://forum.perceptilabs.com/"
+        )
+        return text
+    
+
+
 class PortPoller:
     @staticmethod    
     def is_port_live(port):
@@ -154,16 +186,31 @@ class PortPoller:
             rc = s.connect_ex((HOST, port))
             return rc == 0
 
-    @staticmethod        
-    def get_unresponsive_ports():
-        return [
-            (name, port)
+    @staticmethod
+    def get_responsive_ports():
+        return {
+            name: port
             for name, port in PORTS.items()
-            if not PortPoller.is_port_live(port)
-        ]
+            if PortPoller.is_port_live(port)
+        }
 
     @classmethod
-    def wait_for_ports(cls, interval_secs=3, max_attempts=20):
+    def get_unresponsive_ports(cls):
+        responsive = cls.get_responsive_ports()
+        return {
+            name: port
+            for name, port in PORTS.items()
+            if name not in responsive
+        }
+
+    @classmethod
+    def assert_ports_are_free(cls):
+        responsive = cls.get_responsive_ports()        
+        if any(responsive):
+            raise PortInUse(responsive)
+                    
+    @classmethod
+    def wait_for_ports(cls, interval_secs=3, max_attempts=5):
         count = 0
         while True:
             unresponsive = cls.get_unresponsive_ports()
@@ -175,29 +222,16 @@ class PortPoller:
                 if count < max_attempts:
                     cls._print_unresponsive(unresponsive)
                 else:
-                    cls._print_timeout(unresponsive, interval_secs, max_attempts)
-                    raise SystemExit("One or more ports didn't respond")
+                    raise PortTimeout(unresponsive, interval_secs, max_attempts)
                     
             time.sleep(interval_secs)
 
     @staticmethod            
     def _print_unresponsive(unresponsive):
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Waiting for services to listen on these ports:")
-        for s, p in unresponsive:
+        for s, p in unresponsive.items():
             print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC}    {s} on port {p}")
 
-    @staticmethod
-    def _print_timeout(unresponsive, interval_secs, max_attempts):
-        print(f"{bcolors.ERROR}PerceptiLabs:{bcolors.ENDC} The following services did not start correctly:")
-        for s, p in unresponsive:
-            print(f"{bcolors.ERROR}PerceptiLabs:{bcolors.ENDC}    {s} on port {p}")
-
-        print(
-            f"{bcolors.ERROR}One or more services failed to start within {interval_secs*max_attempts} seconds. {bcolors.ENDC}"
-            f"{bcolors.ERROR}Verify that other applications aren't blocking the ports above. {bcolors.ENDC}"
-            f"{bcolors.ERROR}If the problem persists, please get in touch at https://forum.perceptilabs.com/{bcolors.ENDC}"
-        )            
-        
 def start(verbosity):
     # give the handler closure the shared procs variable
     procs = []
@@ -212,8 +246,13 @@ def start(verbosity):
         pipes = get_pipes(verbosity)
         api_token = secrets.token_urlsafe()
         do_migration(pipes, api_token)
+
+        print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Checking ports")
+        PortPoller.assert_ports_are_free()
+        
         procs = list([start_one(cmd, pipes, api_token) for cmd in SERVICE_CMDS])
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Starting")
+
         PortPoller.wait_for_ports()
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} PerceptiLabs Started")
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} PerceptiLabs is running at http://localhost:8080/?token={api_token}")
@@ -221,7 +260,7 @@ def start(verbosity):
         signal.signal(signal.SIGINT, handler)
         watch(procs)
     except Exception as e:
-        print(e)
+        print(f"{bcolors.ERROR}PerceptiLabs:{bcolors.ENDC}{str(e)}")
         sentry_sdk.capture_exception(e)
         stop(procs)
 
