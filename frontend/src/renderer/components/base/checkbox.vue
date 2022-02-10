@@ -93,10 +93,11 @@ export default {
     &:checked + .checkbox-fake {
       //background: $bg-grad-blue;
       //box-shadow: $icon-shad;
+      border-color: $color-6;
       background: $color-6;
       .icon {
         opacity: 1;
-        color: $white;
+        color: $black;
       }
       /*<!--&.checkbox-fake&#45;&#45;icon {-->*/
       /*<!--  background: $bg-workspace;-->*/
@@ -128,7 +129,7 @@ export default {
     height: 18px;
     cursor: pointer;
     // background: theme-var($neutral-8);
-    border: $border-1;
+    border: 1px solid theme-var($neutral-1);
     border-radius: 2px;
 
     .icon {

@@ -50,10 +50,10 @@ div
               fill="white"
             )
           span All datasets
-        .column-3 Training Status
+        .column-3 Status
         .column-4 Duration
-        .column-5 Test Available
-        .column-6 Last Modified
+        .column-5 Test
+        .column-6 Modified
         .column-7.d-flex.justify-content-between.justify-content-center
           div
           .d-flex.flex-row-reverse.align-items-center
@@ -65,7 +65,11 @@ div
                 img(src="/static/img/project-page/remove-red.svg")
 
       perfect-scrollbar.model-list-scrollbar
-        div(v-for="dataset in filteredDatasets", :key="dataset.dataset_id")
+        div.dataset-group(
+          v-for="dataset in filteredDatasets"
+          :key="dataset.dataset_id"
+          :class="{'has-selected': hasSelected(dataset)}"
+        )
           //-- DATASET ROW --//
           .models-list-row.model-list-item.model-list-item-dataset(
             @contextmenu.stop.prevent="openDatasetContext($event, dataset.dataset_id)"
@@ -98,18 +102,23 @@ div
                   fill="white"
                 )
               .editable-field.model-name-wrapper
-                bdi(v-html="highlight(datasetFormat(dataset.name))")
+                strong(v-html="highlight(datasetFormat(dataset.name))")
                 | &nbsp;
                 strong(v-if="dataset.exists_on_disk === false") (Missing Data)
             .column-7.d-flex(v-if="dataset.exists_on_disk")
-              .new-model-btn(
+              .load-model-btn(
                 v-tooltip:networkElement="'Experimental'",
                 @click="loadModelIntoExistingDataset(dataset.dataset_id)"
-              ) + Load Model
+              ) 
+                div 
+                  img(src="/static/img/load.svg")
+                  | Load Model
               .new-model-btn(
                 @click="createModelWithCurrentDataSetPath(dataset.dataset_id)"
               )
-                div + New Model
+                div 
+                  img(src="/static/img/add-icon.svg")
+                  | New Model
             .column-7.d-flex.flex-row-reverse(v-if="!dataset.exists_on_disk")
               span.img-button(@click="deleteDataset(dataset.dataset_id)")
                 img(src="/static/img/project-page/remove-red.svg")
@@ -368,6 +377,11 @@ export default {
     isItemSelected(itemId) {
       itemId = parseInt(itemId);
       return this.selectedListIds.indexOf(itemId) !== -1;
+    },
+    hasSelected(dataset) {
+      return this.isDatasetSelected(dataset.dataset_id) 
+            || this.getModelsByDataSetId(dataset.dataset_id)
+                .some((model) => this.isItemSelected(model.networkID));
     },
     toggleItemSelection(modelId) {
       modelId = parseInt(modelId);
@@ -947,7 +961,7 @@ $header-height: 60px;
   .column-1 {
     position: relative;
     margin-right: auto;
-    padding-left: 80px;
+    padding-left: 60px;
     min-width: 300px;
     width: 300px;
   }
@@ -975,10 +989,6 @@ $header-height: 60px;
     justify-content: space-between;
     align-items: center;
 
-    img {
-      margin-left: 10px;
-      margin-bottom: 3px;
-    }
   }
 }
 .model-list-header {
@@ -989,13 +999,14 @@ $header-height: 60px;
   border-radius: 4px 4px 0px 0px;
   background: theme-var($neutral-7);
   border-bottom: $border-1;
+  padding: 0 22px;
   // padding-right: 20px;
   // padding: 0px 40px;
 
   .column-1 {
     .btn-checkbox {
       position: absolute;
-      left: 41px;
+      left: 20px;
       top: 50%;
       transform: translateY(-50%);
       font-size: 16px;
@@ -1013,14 +1024,13 @@ $header-height: 60px;
   font-size: 16px;
   font-weight: 400;
   align-items: center;
-  border-radius: 4px;
-  margin: 10px 0px;
+  padding: 10px 0px;
   border: 1px solid transparent;
 
-  &:hover:not(.is-selected) {
+  &:hover {
     // background: rgba(97, 133, 238, 0.75);
     // box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-    background: $color-6;
+    background: #475788;
     color: white;
     .is-favorite {
       path {
@@ -1040,18 +1050,13 @@ $header-height: 60px;
     }
   }
 
-  &.is-selected {
-    background: theme-var($neutral-6);
-    border: 1px solid $color-6;
-  }
-
   .column-1 {
     display: flex;
     justify-content: flex-start;
     flex: 1;
     .btn-checkbox {
       position: absolute;
-      left: 41px;
+      left: 20px;
       top: 50%;
       transform: translateY(-50%);
     }
@@ -1088,7 +1093,6 @@ $header-height: 60px;
   }
 
   .model-unsaved_changes_indicator {
-    margin-right: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1100,8 +1104,6 @@ $header-height: 60px;
     background: theme-var($neutral-8);
     border-radius: 45px;
     border: 1px solid $color-6;
-
-    margin-left: 2rem;
 
     > span {
       font-family: Nunito Sans;
@@ -1121,17 +1123,18 @@ $header-height: 60px;
     }
   }
   &.model-list-item-child {
+    border-top: 1px solid theme-var($border-color);
     //border-bottom: none;
     .column-1 {
       .btn-checkbox {
         position: absolute;
-        left: 81px;
+        left: 61px;
         top: 50%;
         transform: translateY(-50%);
       }
     }
     .column-1 {
-      padding-left: 120px;
+      padding-left: 100px;
       .btn-round-icon {
         left: 38px;
       }
@@ -1141,7 +1144,7 @@ $header-height: 60px;
 .fav-icon-action {
   &:hover {
     path {
-      stroke: #6185ee;
+      stroke: $color-6;
       stroke-width: 2px;
       border-radius: 1px;
     }
@@ -1255,16 +1258,16 @@ $header-height: 60px;
   color: #e1e1e1;
 }
 .model-name-wrapper {
-  // text-overflow: ellipsis;
+  text-overflow: ellipsis;
   overflow: hidden;
-  flex-grow: 1;
   // height: 1.2em;
   white-space: nowrap;
-  padding-right: 15px;
+  margin-right: 8px;
 }
 .model-list-scrollbar {
   height: calc(100vh - 212px);
   max-height: calc(100vh - 212px);
+  padding: 10px 0px;
 }
 .test-link {
   display: flex;
@@ -1293,10 +1296,40 @@ $header-height: 60px;
     fill: theme-var($text-highlight);
   }
 }
-.new-model-btn {
+.new-model-btn, .load-model-btn {
   margin-right: 20px;
   white-space: nowrap;
   font-size: 16px;
+
+  padding: 10px 12px;
+  border-radius: 4px;
+  img {
+    margin-right: 8px;
+  }
+}
+.dataset-group {
+  margin: 10px 20px;
+
+  border: 1px solid theme-var($border-color);
+  border-radius: 10px;
+  background: theme-var($neutral-4);
+  overflow: hidden;
+
+  &:hover {
+    background: theme-var($neutral-8);
+
+    .load-model-btn {
+      background-color: #5E6F9F;
+      color: white;
+    }
+    .new-model-btn {
+      background-color: $color-6;
+      color: white;
+    }
+  }
+  &.has-selected {
+    border-color: $color-6;
+  }
 }
 .search-bar {
   display: flex;
