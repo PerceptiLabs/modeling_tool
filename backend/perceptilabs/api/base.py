@@ -79,7 +79,7 @@ def create_app(
     testing_results_access = testing_results_access or TestingResultsAccess()
     serving_results_access = serving_results_access or ServingResultsAccess()
     preprocessing_results_access = preprocessing_results_access or PreprocessingResultsAccess(get_data_metadata_cache())
-    TensorflowSupportAccess(rygg)
+    tensorflow_support_access = TensorflowSupportAccess(rygg)
     
     app = Flask(__name__)
     app.json_encoder = MyJSONEncoder
@@ -103,6 +103,7 @@ def create_app(
         training_results_access,
         preprocessing_results_access,
         preview_cache,
+        tensorflow_support_access
     )
 
     inference_interface = InferenceInterface(

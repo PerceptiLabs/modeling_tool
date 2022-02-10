@@ -70,7 +70,7 @@ def training_task(dataset_settings_dict, model_id, training_session_id, training
 
     dataset_access = DatasetAccess(rygg)
 
-    TensorflowSupportAccess(rygg)
+    tensorflow_support_access = TensorflowSupportAccess(rygg)
     
     df = dataset_access.get_dataframe(
         dataset_settings.dataset_id, fix_paths_for=dataset_settings.file_based_features)
@@ -84,7 +84,7 @@ def training_task(dataset_settings_dict, model_id, training_session_id, training
     event_tracker = EventTracker()
 
     interface = TrainingSessionInterface(
-        message_broker, event_tracker, model_access, epochs_access, training_results_access)
+        message_broker, event_tracker, model_access, epochs_access, training_results_access, tensorflow_support_access)
     
     interface.run(
         data_loader,
@@ -130,7 +130,7 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
 
     dataset_access = DatasetAccess(rygg)
-    TensorflowSupportAccess(rygg)
+    tensorflow_support_access = TensorflowSupportAccess(rygg)
         
     # TODO: all this data loader etup should be moved into the test interface!!!
     models = {}
@@ -166,7 +166,7 @@ def testing_task(testing_session_id, models_info, tests, user_email, is_retry=Fa
 
     event_tracker = EventTracker()    
     interface = TestingSessionInterface(
-        message_broker, event_tracker, model_access, epochs_access, testing_results_access)
+        message_broker, event_tracker, model_access, epochs_access, testing_results_access, tensorflow_support_access)
 
     interface.run(
         testing_session_id,
@@ -216,7 +216,7 @@ def serving_task(serving_settings, dataset_settings_dict, model_id, training_ses
     rygg = RyggWrapper.with_default_settings()
 
     dataset_access = DatasetAccess(rygg)
-    TensorflowSupportAccess(rygg)
+    tensorflow_support_access = TensorflowSupportAccess(rygg)
     
     df = dataset_access.get_dataframe(
         dataset_settings.dataset_id, fix_paths_for=dataset_settings.file_based_features)
@@ -231,7 +231,7 @@ def serving_task(serving_settings, dataset_settings_dict, model_id, training_ses
     event_tracker = EventTracker()
     
     interface = ServingSessionInterface(
-        serving_settings, message_broker, event_tracker, model_access, epochs_access, serving_results_access)
+        serving_settings, message_broker, event_tracker, model_access, epochs_access, serving_results_access, tensorflow_support_access)
 
     interface.run(
         data_loader,

@@ -95,7 +95,7 @@ def message_broker(queue):
 
 
 @pytest.mark.parametrize("results_interval", [None, 0.0001])
-def test_results_are_stored(message_broker, data_loader, graph_spec, training_model, training_settings, results_interval):
+def test_results_are_stored(message_broker, data_loader, graph_spec, training_model, training_settings, results_interval, tensorflow_support_access):
     model_access = MagicMock()
     epochs_access = MagicMock()
     results_access = MagicMock()
@@ -106,7 +106,8 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, training_mo
         event_tracker,        
         model_access=model_access,
         epochs_access=epochs_access,
-        results_access=results_access
+        results_access=results_access,
+        tensorflow_support_access=tensorflow_support_access
     )
     
     interface.run(
@@ -125,7 +126,7 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, training_mo
 
 
 @pytest.mark.parametrize("auto_checkpoint", [False, True])
-def test_auto_checkpoint(monkeypatch, auto_checkpoint, message_broker, data_loader, graph_spec, training_model, training_settings):
+def test_auto_checkpoint(monkeypatch, auto_checkpoint, message_broker, data_loader, graph_spec, training_model, training_settings, tensorflow_support_access):
     training_settings['AutoCheckpoint'] = auto_checkpoint
     
     model_access = MagicMock()
@@ -142,7 +143,8 @@ def test_auto_checkpoint(monkeypatch, auto_checkpoint, message_broker, data_load
         event_tracker,        
         model_access=model_access,
         epochs_access=epochs_access,
-        results_access=results_access
+        results_access=results_access,
+        tensorflow_support_access=tensorflow_support_access
     )
     
     interface.run(
@@ -163,7 +165,7 @@ def test_auto_checkpoint(monkeypatch, auto_checkpoint, message_broker, data_load
     assert Exporter.export_checkpoint.call_count == expected_count
     
 
-def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, graph_spec, training_model, training_settings):
+def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, graph_spec, training_model, training_settings, tensorflow_support_access):
     model_access = MagicMock()
     epochs_access = MagicMock()
     results_access = MagicMock()
@@ -174,7 +176,8 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
         event_tracker,        
         model_access=model_access,
         epochs_access=epochs_access,
-        results_access=results_access
+        results_access=results_access,
+        tensorflow_support_access=tensorflow_support_access
     )
 
     model_id = '456'
@@ -202,7 +205,7 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
     assert actual_progress == expected_progress < 1.0  # Assert progress doesnt change after stopping
     
 
-def test_pausing_mid_training(queue, message_broker, data_loader, graph_spec, training_model, training_settings):
+def test_pausing_mid_training(queue, message_broker, data_loader, graph_spec, training_model, training_settings, tensorflow_support_access):
     model_access = MagicMock()
     model_access.get_training_model.return_value = training_model
     model_access.get_graph_spec.return_value = graph_spec
@@ -216,7 +219,8 @@ def test_pausing_mid_training(queue, message_broker, data_loader, graph_spec, tr
         event_tracker,
         model_access=model_access,
         epochs_access=epochs_access,
-        results_access=results_access
+        results_access=results_access,
+        tensorflow_support_access=tensorflow_support_access
     )
 
     model_id = '456'
@@ -251,7 +255,7 @@ def test_pausing_mid_training(queue, message_broker, data_loader, graph_spec, tr
     assert status_list.count('Paused') == steps_paused
 
 
-def test_export_mid_training(monkeypatch, queue, message_broker, data_loader, graph_spec, training_model, training_settings, tmp_path):
+def test_export_mid_training(monkeypatch, queue, message_broker, data_loader, graph_spec, training_model, training_settings, tmp_path, tensorflow_support_access):
     fn_export = MagicMock()
 
     from perceptilabs.sharing.exporter import Exporter
@@ -270,7 +274,8 @@ def test_export_mid_training(monkeypatch, queue, message_broker, data_loader, gr
         event_tracker,        
         model_access=model_access,
         epochs_access=epochs_access,
-        results_access=results_access
+        results_access=results_access,
+        tensorflow_support_access=tensorflow_support_access
     )
 
     model_id = '456'
@@ -310,7 +315,7 @@ def test_export_mid_training(monkeypatch, queue, message_broker, data_loader, gr
 
     
 @pytest.mark.parametrize("load_checkpoint", [False, True])
-def test_load_checkpoint(monkeypatch, message_broker, data_loader, graph_spec, training_model, training_settings, load_checkpoint):
+def test_load_checkpoint(monkeypatch, message_broker, data_loader, graph_spec, training_model, training_settings, load_checkpoint, tensorflow_support_access):
     from perceptilabs.trainer.model import TrainingModel
 
     fn_mock = MagicMock()
@@ -330,7 +335,8 @@ def test_load_checkpoint(monkeypatch, message_broker, data_loader, graph_spec, t
         event_tracker,        
         model_access=model_access,
         epochs_access=epochs_access,
-        results_access=results_access
+        results_access=results_access,
+        tensorflow_support_access=tensorflow_support_access
     )
     
     interface.run(
@@ -360,7 +366,7 @@ def test_load_checkpoint(monkeypatch, message_broker, data_loader, graph_spec, t
     ('correct', 'incorrect', True),  # Session id wrong - wont stop         
 ])
                          
-def test_ignores_stopping_for_different_interface(model_id, session_id, expect_finished, queue, message_broker, data_loader, graph_spec, training_model, training_settings):
+def test_ignores_stopping_for_different_interface(model_id, session_id, expect_finished, queue, message_broker, data_loader, graph_spec, training_model, training_settings, tensorflow_support_access):
     model_access = MagicMock()
     model_access.get_training_model.return_value = training_model
     model_access.get_graph_spec.return_value = graph_spec
@@ -374,7 +380,8 @@ def test_ignores_stopping_for_different_interface(model_id, session_id, expect_f
         event_tracker,        
         model_access=model_access,
         epochs_access=epochs_access,
-        results_access=results_access
+        results_access=results_access,
+        tensorflow_support_access=tensorflow_support_access
     )
 
     actual_model_id = 'correct'
@@ -404,7 +411,7 @@ def test_ignores_stopping_for_different_interface(model_id, session_id, expect_f
         assert progress < 1.0
 
         
-def test_errors_are_stored(monkeypatch, message_broker, data_loader, graph_spec, training_model, training_settings):
+def test_errors_are_stored(monkeypatch, message_broker, data_loader, graph_spec, training_model, training_settings, tensorflow_support_access):
     error_message = "sdijasdisaj"
     
     def fake_call(*args, **kwargs):
@@ -425,7 +432,8 @@ def test_errors_are_stored(monkeypatch, message_broker, data_loader, graph_spec,
         event_tracker,        
         model_access=model_access,
         epochs_access=epochs_access,
-        results_access=results_access
+        results_access=results_access,
+        tensorflow_support_access=tensorflow_support_access
     )
     
     interface.run(
@@ -444,7 +452,7 @@ def test_errors_are_stored(monkeypatch, message_broker, data_loader, graph_spec,
 
 
 @pytest.mark.parametrize("slowdown_rate", [0.0, 0.2])
-def test_slowdown_is_detected(monkeypatch, slowdown_rate, queue, message_broker, data_loader, graph_spec, training_model, training_settings):
+def test_slowdown_is_detected(monkeypatch, slowdown_rate, queue, message_broker, data_loader, graph_spec, training_model, training_settings, tensorflow_support_access):
     max_slowdown_rate = 0.1
     
     fake_sentry_call = MagicMock()
@@ -464,6 +472,7 @@ def test_slowdown_is_detected(monkeypatch, slowdown_rate, queue, message_broker,
         model_access=model_access,
         epochs_access=epochs_access,
         results_access=results_access,
+        tensorflow_support_access=tensorflow_support_access,
         max_slowdown_rate=max_slowdown_rate
     )
 

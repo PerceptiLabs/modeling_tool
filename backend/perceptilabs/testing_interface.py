@@ -17,19 +17,20 @@ logger = logging.getLogger(__name__)
 class TestingSessionInterface():
     """Main Class that does all the computations for the tests and returns the results
     """
-    def __init__(self, message_broker, event_tracker, model_access, epochs_access, results_access):
+    def __init__(self, message_broker, event_tracker, model_access, epochs_access, results_access, tensorflow_support_access):
         self._event_tracker = event_tracker
         self._message_broker = message_broker
         self._model_access = model_access
         self._epochs_access = epochs_access
         self._results_access = results_access
-        
+        self._tensorflow_support_access = tensorflow_support_access
 
     def run(self, *args, **kwargs):
         for _ in self.run_stepwise(*args, **kwargs):
             pass
 
     def run_stepwise(self, testing_session_id, models, tests, user_email, results_interval=None, logrocket_url=''):
+        self._tensorflow_support_access.set_tfhub_env_var()
         try:
             test_core = self._setup_test_core(testing_session_id, models, tests, user_email)
 

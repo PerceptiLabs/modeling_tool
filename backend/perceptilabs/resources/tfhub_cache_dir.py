@@ -6,7 +6,6 @@ logger = logging.getLogger(__name__)
 class TensorflowSupportAccess:
     def __init__(self, rygg):
         self._rygg = rygg
-        self.set_tfhub_env_var()
 
     def get_tfhub_cache_directory(self):            
         try:

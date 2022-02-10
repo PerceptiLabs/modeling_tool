@@ -73,7 +73,7 @@ def message_broker(queue):
 
 
 @pytest.mark.parametrize("results_interval", [None, 0.0001])
-def test_results_are_stored(message_broker, data_loader, graph_spec, results_interval, temp_path):
+def test_results_are_stored(message_broker, data_loader, graph_spec, results_interval, temp_path, tensorflow_support_access):
     model_access = MagicMock()
     model_access.get_graph_spec.return_value = graph_spec
 
@@ -88,7 +88,8 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, results_int
         event_tracker,
         model_access=model_access,
         epochs_access=epochs_access,
-        results_access=results_access
+        results_access=results_access,
+        tensorflow_support_access=tensorflow_support_access
     )
 
     tests = ['confusion_matrix']    
@@ -114,7 +115,7 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, results_int
         assert results_access.store.call_args[0][1]['results'][test] != {}
 
 
-def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, graph_spec, temp_path):
+def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, graph_spec, temp_path, tensorflow_support_access):
     model_access = MagicMock()
     model_access.get_graph_spec.return_value = graph_spec
 
@@ -129,7 +130,8 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
         event_tracker,
         model_access=model_access,
         epochs_access=epochs_access,
-        results_access=results_access
+        results_access=results_access,
+        tensorflow_support_access=tensorflow_support_access
     )
 
     tests = ['confusion_matrix']    

@@ -13,20 +13,21 @@ logger = logging.getLogger(__name__)
 
 
 class ServingSessionInterface():
-    def __init__(self, serving_settings, message_broker, event_tracker, model_access, epochs_access, results_access):
+    def __init__(self, serving_settings, message_broker, event_tracker, model_access, epochs_access, results_access, tensorflow_support_access):
         self._serving_settings = serving_settings
         self._message_broker = message_broker
         self._event_tracker = event_tracker
         self._model_access = model_access
         self._epochs_access = epochs_access
         self._results_access = results_access
+        self._tensorflow_support_access = tensorflow_support_access
         
     def run(self, *args, **kwargs):
         for _ in self.run_stepwise(*args, **kwargs):
             pass
 
     def run_stepwise(self, data_loader, model_id, training_session_id, serving_session_id, model_name, user_email, results_interval=3.0, is_retry=False, logrocket_url='', graph_settings=None):
-
+        self._tensorflow_support_access.set_tfhub_env_var()
         try:
             launcher = self._setup_launcher(
                 training_session_id, data_loader, model_name, model_id, user_email, graph_settings)

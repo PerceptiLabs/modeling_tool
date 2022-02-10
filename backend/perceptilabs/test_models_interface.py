@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 from perceptilabs.models_interface import ModelsInterface
 from perceptilabs.utils import KernelError
 
-def make_interface(task_executor=None, message_broker=None, event_tracker=None, dataset_access=None, model_access=None, model_archives_access=None, epochs_access=None, training_results_access=None, preprocessing_results_access=None, preview_cache=None):
+def make_interface(tensorflow_support_access, task_executor=None, message_broker=None, event_tracker=None, dataset_access=None, model_access=None, model_archives_access=None, epochs_access=None, training_results_access=None, preprocessing_results_access=None, preview_cache=None):
     
     interface = ModelsInterface(
         task_executor=task_executor or MagicMock(),
@@ -17,14 +17,15 @@ def make_interface(task_executor=None, message_broker=None, event_tracker=None, 
         training_results_access=training_results_access or MagicMock(),
         preprocessing_results_access=preprocessing_results_access or MagicMock(),
         preview_cache=preview_cache or MagicMock(),
+        tensorflow_support_access=tensorflow_support_access
     )
     return interface
 
 
-def test_export_archive_failure_raises_kernel_error(tmp_path):
+def test_export_archive_failure_raises_kernel_error(tensorflow_support_access, tmp_path):
     model_archives_access = MagicMock()
     model_archives_access.write.side_effect = ValueError("Crash!")
-    interface = make_interface(model_archives_access=model_archives_access)
+    interface = make_interface(tensorflow_support_access, model_archives_access=model_archives_access)
 
     with pytest.raises(KernelError):
         interface.export(
@@ -39,10 +40,10 @@ def test_export_archive_failure_raises_kernel_error(tmp_path):
         )
 
     
-def test_export_archive_failure_raises_kernel_error(tmp_path):
+def test_export_archive_failure_raises_kernel_error(tmp_path, tensorflow_support_access):
     model_archives_access = MagicMock()
     model_archives_access.write.side_effect = ValueError("Crash!")
-    interface = make_interface(model_archives_access=model_archives_access)
+    interface = make_interface(tensorflow_support_access, model_archives_access=model_archives_access)
 
     with pytest.raises(KernelError):
         interface.export(
@@ -57,7 +58,7 @@ def test_export_archive_failure_raises_kernel_error(tmp_path):
         )
 
     
-def test_export_normal_failure_raises_kernel_error(monkeypatch):
+def test_export_normal_failure_raises_kernel_error(tensorflow_support_access, monkeypatch):
     epochs_access = MagicMock()
     epochs_access.has_checkpoint = True
 
@@ -67,7 +68,7 @@ def test_export_normal_failure_raises_kernel_error(monkeypatch):
     from perceptilabs.sharing.exporter import Exporter
     monkeypatch.setattr(Exporter, "export", fn_export)  
     
-    interface = make_interface(epochs_access=epochs_access)
+    interface = make_interface(tensorflow_support_access, epochs_access=epochs_access)
 
     with pytest.raises(KernelError):
         interface.export(

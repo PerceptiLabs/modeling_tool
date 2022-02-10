@@ -20,12 +20,14 @@ logger = logging.getLogger(__name__)
 
 
 class TrainingSessionInterface:
-    def __init__(self, message_broker, event_tracker, model_access, epochs_access, results_access, max_slowdown_rate=0.1):
+    def __init__(self, message_broker, event_tracker, model_access, epochs_access, results_access, tensorflow_support_access, max_slowdown_rate=0.1):
         self._message_broker = message_broker
         self._event_tracker = event_tracker
         self._model_access = model_access
         self._epochs_access = epochs_access
         self._results_access = results_access
+        self._tensorflow_support_access = tensorflow_support_access
+        
 
         self._max_slowdown_rate = max_slowdown_rate
         self._has_reported_slowdown = False        
@@ -36,6 +38,7 @@ class TrainingSessionInterface:
             pass
 
     def run_stepwise(self, data_loader, model_id, training_session_id, training_settings, load_checkpoint, user_email, results_interval=None, is_retry=False, logrocket_url='', graph_settings=None):
+        self._tensorflow_support_access.set_tfhub_env_var()
 
         @contextmanager
         def sentry_closure():

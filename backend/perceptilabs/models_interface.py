@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class ModelsInterface:
-    def __init__(self, task_executor, message_broker, event_tracker, dataset_access, model_access, model_archives_access, epochs_access, training_results_access, preprocessing_results_access, preview_cache):
+    def __init__(self, task_executor, message_broker, event_tracker, dataset_access, model_access, model_archives_access, epochs_access, training_results_access, preprocessing_results_access, preview_cache, tensorflow_support_access):
         self._task_executor = task_executor
         self._message_broker = message_broker
         self._event_tracker = event_tracker
@@ -31,7 +31,8 @@ class ModelsInterface:
         self._training_results_access = training_results_access
         self._preprocessing_results_access = preprocessing_results_access
         self._preview_cache = preview_cache
-
+        self._tensorflow_support_access = tensorflow_support_access
+        
         self._script_factory = ScriptFactory()        
         
 
@@ -246,7 +247,7 @@ class ModelsInterface:
                 graph_spec = self._model_access.get_graph_spec(model_id)
                 
             data_loader = self._get_data_loader(dataset_settings_dict, user_email)
-            lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
+            lw_core = self._initialize_lw_core(data_loader)
             lw_results = lw_core.run(graph_spec)
 
             content = lwcore_utils.get_network_data(graph_spec, lw_results, skip_previews=True)
@@ -259,6 +260,7 @@ class ModelsInterface:
             raise KernelError.from_exception(e, message=f'Failed getting layer info')            
 
     def get_previews(self, model_id, dataset_settings_dict, user_email, graph_settings=None):
+        self._tensorflow_support_access.set_tfhub_env_var()
         try:
             if graph_settings:
                 graph_spec = GraphSpec.from_dict(graph_settings)
@@ -266,7 +268,7 @@ class ModelsInterface:
                 graph_spec = self._model_access.get_graph_spec(model_id)
                 
             data_loader = self._get_data_loader(dataset_settings_dict, user_email)
-            lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
+            lw_core = self._initialize_lw_core(data_loader)
             lw_results = lw_core.run(graph_spec)
 
             content = lwcore_utils.get_network_data(graph_spec, lw_results, skip_previews=False)
@@ -380,8 +382,7 @@ class ModelsInterface:
         return f"Model exported to '{path}'"
             
 
-    
-    
-        
-
-        
+    def _initialize_lw_core(self, data_loader):
+        self._tensorflow_support_access.set_tfhub_env_var()
+        lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
+        return lw_core

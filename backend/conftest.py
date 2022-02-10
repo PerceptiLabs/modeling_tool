@@ -331,3 +331,10 @@ def classification_spec_basic(make_graph_spec, temp_path, temp_path_checkpoints)
 def script_factory():
     from perceptilabs.script import ScriptFactory    
     yield ScriptFactory()
+
+
+@pytest.fixture(scope='function')
+def tensorflow_support_access(temp_path):
+    cache_directory_access = MagicMock()
+    cache_directory_access.get_tfhub_cache_directory.return_value = {'tf_hub_cache_dir':temp_path}
+    return cache_directory_access
