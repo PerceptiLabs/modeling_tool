@@ -147,14 +147,14 @@ def get_pipes(verbosity):
     }
 
 
-class PortTimeout(Exception):
+class PerceptilabsPortTimeout(Exception):
     def __init__(self, unresponsive, interval_secs, max_attempts):
         self.unresponsive = unresponsive
         self.interval_secs = interval_secs
         self.max_attempts = max_attempts
     
     def __str__(self):
-        text = "The following services did not start within {self.interval_secs*self.max_attempts} seconds.:\n"
+        text = f"The following services did not start within {self.interval_secs*self.max_attempts} seconds.:\n"
         for s, p in self.unresponsive.items():
             text += f"    {s} on port {p}\n"
 
@@ -162,7 +162,7 @@ class PortTimeout(Exception):
         return text
 
     
-class PortInUse(Exception):
+class PerceptilabsPortBusy(Exception):
     def __init__(self, responsive):
         self.responsive = responsive
     
@@ -207,7 +207,7 @@ class PortPoller:
     def assert_ports_are_free(cls):
         responsive = cls.get_responsive_ports()        
         if any(responsive):
-            raise PortInUse(responsive)
+            raise PerceptilabsPortBusy(responsive)
                     
     @classmethod
     def wait_for_ports(cls, interval_secs=3, max_attempts=5):
@@ -222,7 +222,7 @@ class PortPoller:
                 if count < max_attempts:
                     cls._print_unresponsive(unresponsive)
                 else:
-                    raise PortTimeout(unresponsive, interval_secs, max_attempts)
+                    raise PerceptilabsPortTimeout(unresponsive, interval_secs, max_attempts)
                     
             time.sleep(interval_secs)
 
