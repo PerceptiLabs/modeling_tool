@@ -30,6 +30,7 @@ class TrainingSessionInterface:
         
 
         self._max_slowdown_rate = max_slowdown_rate
+        self._min_epochs_for_slowdown = 5
         self._has_reported_slowdown = False        
         self._slowdown_tracker = EpochSlowdownTracker()
 
@@ -228,6 +229,9 @@ class TrainingSessionInterface:
     
     def _check_for_slowdown(self, epoch, epoch_time, sentry_closure):
         self._slowdown_tracker.add_time(epoch_time)
+
+        if self._slowdown_tracker.num_epochs_measured < self._min_epochs_for_slowdown:
+            return            
 
         slowdown_per_epoch = self._slowdown_tracker.get_slowdown_rate()
 

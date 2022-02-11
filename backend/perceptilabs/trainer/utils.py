@@ -19,8 +19,10 @@ class EpochSlowdownTracker:
     def has_slowdown(self, max_rate=0.001):
         rate = self.get_slowdown_rate()
         return rate > max_rate
-            
 
+    @property
+    def num_epochs_measured(self):
+        return len(self.times)
     
     
 
