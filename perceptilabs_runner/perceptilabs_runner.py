@@ -61,6 +61,9 @@ PORTS = {
     "frontend": 8080,
 }
 
+POLLING_MAX_ATTEMPTS = 40
+POLLING_TIME_BETWEEN_ATTEMPTS = 3
+
 MIGRATION_CMD = [PYTHON, "-m", "django", "migrate", "--settings", "rygg.settings"]
 SERVICE_CMDS = [
     [PYTHON, "-m", "perceptilabs"],
@@ -253,7 +256,10 @@ def start(verbosity):
         procs = list([start_one(cmd, pipes, api_token) for cmd in SERVICE_CMDS])
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Starting")
 
-        PortPoller.wait_for_ports()
+        PortPoller.wait_for_ports(
+            max_attempts=POLLING_MAX_ATTEMPTS,
+            interval_secs=POLLING_TIME_BETWEEN_ATTEMPTS
+        )
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} PerceptiLabs Started")
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} PerceptiLabs is running at http://localhost:8080/?token={api_token}")
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Use Control-C to stop this server and shut down all PerceptiLabs processes.")
