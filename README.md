@@ -255,6 +255,7 @@ In case of you are facing some issues with calling rygg, run `python manage.py m
 1. When Perceptilabs Docker finishes, run the "Docker Release" pipeline
     - Use tag $PL_VERSION
     - Build ID to deploy: The build number from above
+1. When Docker Release finishes, run "Release Airgapped"
 1. When Docker Release finishes, run "Docker CD":
     - Branch: master
     - Release Channel: prod
