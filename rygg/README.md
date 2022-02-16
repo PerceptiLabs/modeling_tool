@@ -27,7 +27,7 @@ PL_FILE_SERVING_TOKEN=12312 PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlit
 ```
 ## For local mode:
 ```
-PL_FILE_SERVING_TOKEN=12312 PL_FILE_UPLOAD_DIR=$(pwd) python manage.py runserver 0.0.0.0:8000
+PL_FILE_SERVING_TOKEN=12312 PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 python manage.py runserver 0.0.0.0:8000
 ```
 
 
