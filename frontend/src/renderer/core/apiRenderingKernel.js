@@ -290,17 +290,21 @@ export const renderingKernel = {
       });
   },
 
-  async waitForDataReady(datasetSettings, userEmail, cb) {
+  async waitForDataReady(datasetSettings, userEmail, cb, errCallback) {
     const preprocessingSessionId = await renderingKernel.putData(datasetSettings, userEmail);
         
     await (async function () {
       while(1) {
         const res = await renderingKernel.isDataReady(preprocessingSessionId, userEmail);
-        if (res && res.is_complete) {
+          if (res && res.is_complete) {
           break;
         }
         if (res && res.message && cb) {
           cb(res.message);
+        }
+        if (res && res.error && errCallback) {
+          errCallback(res.error);
+          break;
         }
         await new Promise(resolve => {
           setTimeout(resolve, 1000);

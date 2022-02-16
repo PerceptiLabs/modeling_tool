@@ -488,6 +488,10 @@ export default {
         message => {
           this.buildingPreProcessingStatus = message;
         },
+        err => {
+          this.showErrorPopup(err.details);
+          this.closeModal();
+        }
       );
 
       const [modelId, modelRecommendation] = await renderingKernel
@@ -834,7 +838,7 @@ export default {
         if (path) await this.handleDataPathUpdates([path]);
       } catch (err) {
         if (err.message) {
-          this.$store.dispatch("globalView/GP_errorPopup", err.message);
+          this.showErrorPopup(err.message);
         }
       } finally {
         this.uploadStatus = "";
