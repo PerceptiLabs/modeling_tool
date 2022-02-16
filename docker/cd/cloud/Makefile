@@ -2,7 +2,7 @@ ROOT_DIR                = $(shell git rev-parse --show-toplevel)
 TEMPLATE_CMD            = @sed 's+REPLACE_NAMESPACE+${NAMESPACE}+g'#; s+REPLACE_GPU_COUNT+${GPU_COUNT}+g; s+REPLACE_SUBSCRIPTION_NAME+${APP_REPOSITORY}+g'
 DEPLOYMENT_NAME         = perceptilabs
 NAMESPACE_PREFIX        = a
-NAMESPACE               = $(shell oc get namespaces --no-headers --output='custom-columns=NAME:.metadata.name' | grep "^${NAMESPACE_PREFIX}" | head -n 1)
+NAMESPACE               = $(shell oc get namespaces --no-headers --output='custom-columns=NAME:.metadata.name' | grep "^${NAMESPACE_PREFIX}" | head -n 1 | grep ".*" || echo "${NAMESPACE_PREFIX}1")
 NAMESPACE_SEQUENCE      = $(shell echo "${NAMESPACE}" | sed 's/^${NAMESPACE_PREFIX}//g')
 NEXT_NAMESPACE_SEQUENCE = $(shell echo $$((${NAMESPACE_SEQUENCE}+1)))
 NEXT_NAMESPACE          = ${NAMESPACE_PREFIX}${NEXT_NAMESPACE_SEQUENCE}
