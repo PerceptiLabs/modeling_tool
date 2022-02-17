@@ -39,14 +39,14 @@ CELERY_APP = Celery(
     default_retry_delay=5,
     max_retries=3,
 )
-def training_task_wrapper(self, dataset_settings_dict, model_id, training_session_id, training_settings, load_checkpoint, user_email, logrocket_url='', graph_settings=None):
+def training_task_wrapper(self, call_context, dataset_settings_dict, model_id, training_session_id, training_settings, load_checkpoint, logrocket_url='', graph_settings=None):
     training_task(
+        call_context,
         dataset_settings_dict,
         model_id,
         training_session_id,
         training_settings,
         load_checkpoint,
-        user_email,
         is_retry=(self.request.retries > 0),
         logrocket_url=logrocket_url,
         graph_settings=graph_settings
@@ -59,8 +59,8 @@ def training_task_wrapper(self, dataset_settings_dict, model_id, training_sessio
     default_retry_delay=5,
     max_retries=3,
 )
-def testing_task_wrapper(self, *args, **kwargs):
-    testing_task(*args, **kwargs)
+def testing_task_wrapper(self, call_context, *args, **kwargs):
+    testing_task(call_context, *args, **kwargs)
 
 
 @shared_task(
@@ -70,8 +70,8 @@ def testing_task_wrapper(self, *args, **kwargs):
     default_retry_delay=5,
     max_retries=3,
 )
-def serving_task_wrapper(self, *args, **kwargs):
-    serving_task(*args, **kwargs)
+def serving_task_wrapper(self, call_context, *args, **kwargs):
+    serving_task(call_context, *args, **kwargs)
 
 
 @shared_task(
@@ -97,20 +97,20 @@ class CeleryTaskExecutor(TaskExecutor):
     ):
         self._app = app
 
-        self._on_task_sent = on_task_sent        
+        self._on_task_sent = on_task_sent
         self._on_task_received = on_task_received
         self._on_task_started = on_task_started
         self._on_task_succeeded = on_task_succeeded
         self._on_task_failed = on_task_failed
 
         self._monitoring_thread = self._setup_monitoring()
-        
+
     def enqueue(self, task_name, *args, **kwargs):
         res = self._app.tasks[task_name].delay(*args, **kwargs)
 
         if self._on_task_sent:
             self._on_task_sent(res.id, task_name)
-        
+
         return res.id
 
     def _setup_monitoring(self):
@@ -120,7 +120,7 @@ class CeleryTaskExecutor(TaskExecutor):
 
             if event['type'] == 'task-received' and self._on_task_received:
                 self._on_task_received(event['uuid'], event['name'])
-                
+
             if event['type'] == 'task-started' and self._on_task_started:
                 self._on_task_started(event['uuid'])
 
@@ -129,7 +129,7 @@ class CeleryTaskExecutor(TaskExecutor):
 
             if event['type'] == 'task-failed' and self._on_task_failed:
                 self._on_task_failed(event['uuid'])
-                
+
         def _worker():
             try:
                 state = self._app.events.State()
@@ -138,12 +138,12 @@ class CeleryTaskExecutor(TaskExecutor):
                     recv.capture(limit=None, timeout=None, wakeup=False)  # Blocks
             except:
                 logger.exception("Exception in monitoring worker")
-                
+
         thread = threading.Thread(target=_worker, daemon=True)
         thread.start()
-        
+
         return thread
-    
+
     @property
     def num_remaining_tasks(self):
         tasks = self._get_worker_tasks()

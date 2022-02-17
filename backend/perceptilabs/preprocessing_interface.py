@@ -4,7 +4,7 @@ import logging
 import pandas as pd
 import sentry_sdk
 
-import perceptilabs.settings as settings    
+import perceptilabs.settings as settings
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.utils import KernelError
@@ -20,35 +20,38 @@ class PreprocessingSessionInterface:
         self._dataset_access = dataset_access
         self._results_access = results_access
 
-    def run(self, dataset_settings_dict, preprocessing_session_id, user_email, logrocket_url=''):
-        try:        
-            self._run_internal(dataset_settings_dict, preprocessing_session_id)
+    def run(self, call_context, dataset_settings_dict, preprocessing_session_id, logrocket_url=''):
+        try:
+            self._run_internal(call_context, dataset_settings_dict, preprocessing_session_id)
         except Exception as e:
             logger.exception("Exception in preprocessing session interface!")
 
-            error = KernelError.from_exception(e, message="Error during preprocessing!")            
+            error = KernelError.from_exception(e, message="Error during preprocessing!")
             self._results_access.set_results(
                 preprocessing_session_id, 'failed', error=error.to_dict())
 
             with sentry_sdk.push_scope() as scope:
-                scope.set_user({'email': user_email})                
+                scope.set_user({'email': call_context.get('user_email')})
                 scope.set_extra('preprocessing_session_id', preprocessing_session_id)
                 scope.set_extra('dataset_settings_dict', dataset_settings_dict)
-                scope.set_extra('logrocket_url', logrocket_url)            
-            
-                sentry_sdk.capture_exception(e)
-                sentry_sdk.flush()                        
+                scope.set_extra('logrocket_url', logrocket_url)
 
-    def _run_internal(self, dataset_settings_dict, preprocessing_session_id):
+                sentry_sdk.capture_exception(e)
+                sentry_sdk.flush()
+
+    def _run_internal(self, call_context, dataset_settings_dict, preprocessing_session_id):
         dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
 
         num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
-        
+
         self._results_access.set_results(
             preprocessing_session_id, 'Initializing preprocessing...')
 
         df = self._dataset_access.get_dataframe(
-            dataset_settings.dataset_id, fix_paths_for=dataset_settings.file_based_features)
+            call_context,
+            dataset_settings.dataset_id,
+            fix_paths_for=dataset_settings.file_based_features,
+        )
 
         if df is None:
             raise ValueError("Invalid dataframe!")
@@ -58,17 +61,17 @@ class PreprocessingSessionInterface:
                 status_message =  f"Step {steps_completed}/{total_steps} for feature \'{feature_name}\': building {status} pipeline' [{index} / {size} samples processed]"
             else:
                 status_message = f"Step {steps_completed}/{total_steps} for feature \'{feature_name}\': building {status} pipeline"
-            
+
             self._results_access.set_results(preprocessing_session_id, status_message, metadata=None)
 
-            
+
         metadata = DataLoader.compute_metadata(
             df,
             dataset_settings,
             num_repeats=num_repeats,
             on_status_updated=on_status_updated
         )
-            
+
         self._results_access.set_results(
             preprocessing_session_id, 'complete', metadata=metadata)
 

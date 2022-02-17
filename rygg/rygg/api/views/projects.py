@@ -14,7 +14,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
 
     def create(self, request):
+        request.data['owner'] = request.user.username
         protect_read_only_enterprise_field(request, 'default_directory')
+
         return super().create(request)
 
     def update(self, request, **kwargs):
@@ -23,7 +25,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['GET'])
     def default(self, request):
-        found = Project.get_default()
+        found = Project.get_default(request.user.username)
         if not found:
             raise HTTPExceptions.NOT_FOUND
         serializer = ProjectSerializer(found)

@@ -11,6 +11,7 @@ assert_required_variables(){
   echo ${KC_ROOT_USER} > /dev/null
   echo ${KC_ROOT_PWD} > /dev/null
   echo ${HAS_GPU} > /dev/null
+  echo ${PL_SERVER_ADDRESS} > /dev/null
 }
 
 red(){

@@ -1,3 +1,30 @@
+access_log /dev/stdout main;
+error_log stderr debug;
+
+location /rygg/ {
+  proxy_pass http://rygg_api:8000/;
+}
+location / {
+  proxy_pass http://frontend:8080/;
+  proxy_set_header Host $host;
+  proxy_set_header Access-Control-Allow-Origin ${KEYCLOAK_URL};
+}
+location /rygg_url {
+  return 200 $scheme://$host/rygg/;
+}
+location /rendering_kernel_url {
+  return 200 $scheme://$host/render/;
+}
+location /render/ {
+  proxy_pass http://render:5001/;
+}
+location /queues/ {
+  proxy_pass http://flower:5555/queues/;
+  proxy_set_header Host $host;
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_set_header X-Forwarded-Proto $scheme;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
 location /keycloak_url {
   return 200 ${KEYCLOAK_URL};
 }

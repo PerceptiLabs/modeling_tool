@@ -2,7 +2,6 @@ import os
 import pytest
 import time
 
-from rest import RyggRest
 from clients import ProjectClient, ModelClient, NotebookClient, DatasetClient
 from assertions import assert_eventually
 

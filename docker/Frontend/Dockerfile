@@ -16,7 +16,7 @@ RUN npm install --unsafe-perm=true --allow-root && \
 ################
 # PUBLISH PHASE
 ################
-FROM registry.access.redhat.com/ubi8/python-36
+FROM registry.access.redhat.com/ubi8/python-38
 
 LABEL name="PerceptiLabs-Modeling-Web-app" \
       vendor="PerceptiLabs" \

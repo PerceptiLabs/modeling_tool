@@ -326,6 +326,10 @@ def set_wheel_name(package_name):
     # ... so we hack the config directly
     sed_i(f"{BUILD_TMP}/setup.cfg", "^name *=.*$", f"name={package_name}")
 
+def set_auth_env():
+    print("Setting AUTH_ENV to 'prod'")
+    sed_i(f"{BUILD_TMP}/rygg/settings.py", "^AUTH_ENV_DEFAULT.*$", "AUTH_ENV_DEFAULT='prod'")
+    sed_i(f"{BUILD_TMP}/perceptilabs/settings.py", "^AUTH_ENV_DEFAULT.*$", "AUTH_ENV_DEFAULT='prod'")
 
 # PATH isn't obeyed correctly on windows
 def npm_cmd():
@@ -397,8 +401,9 @@ def run_pytest_tests():
 
 def run_django_tests():
     print("Running django tests")
+    env={"AUTH_ENV": '', **os.environ}
     with pushd(RYGG_DIR):
-        run_checked_arr([PYTHON, "-m", "django", "test", "--settings", "rygg.settings"])
+        run_checked_arr([PYTHON, "-m", "django", "test", "--settings", "rygg.settings"], env=env, stderr=subprocess.STDOUT)
 
 def run_integration_tests():
     # Integration tests only work on linux since OSX and Win build agents can't run docker
@@ -543,6 +548,7 @@ def wheel():
     set_wheel_version(version)
     name = get_wheel_name()
     set_wheel_name(name)
+    set_auth_env()
     build_wheel()
     test_wheel()
 

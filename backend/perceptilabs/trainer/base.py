@@ -66,7 +66,7 @@ class Trainer:
 
         self._num_batches_per_epoch = -1  # Not known until data loader is ran
         self._num_batches_all_epochs = -1  # Not known until data loader is ran
-            
+
         if self._initial_state is None:
             self._set_status('Waiting')
             self._training_time = 0.0
@@ -107,7 +107,7 @@ class Trainer:
         state = {
             'cpu_usage': self._cpu_usage,
             'gpu_usage': self._gpu_usage,
-            'mem_usage': self._mem_usage,            
+            'mem_usage': self._mem_usage,
             'status': self._status,
             'training_time': self._training_time,
             'num_epochs_completed': self._num_epochs_completed,
@@ -142,7 +142,7 @@ class Trainer:
             inputs_batch, training=False)
         self._compute_total_loss(
             predictions_batch, targets_batch, self._loss_functions)
-        
+
     def run(self, _=None, on_iterate=None, model_id=None):
         """ Run all training steps """
         # TODO: remove _, on_iterate and model_id when possible
@@ -182,7 +182,7 @@ class Trainer:
                 is_training=True,
                 optimizer=self._optimizer
             )
-            
+
             yield from self._sleep_while_paused()
             if self.is_closed:
                 break
@@ -201,11 +201,11 @@ class Trainer:
             if self.is_closed:
                 break
 
-            epoch_time = time.perf_counter() - t0 
+            epoch_time = time.perf_counter() - t0
 
             if self._on_epoch_completed:
                 self._on_epoch_completed(self._num_epochs_completed, self, epoch_time)
-            
+
             self._num_epochs_completed += 1
             self._log_epoch_summary(epoch_time)
             self._training_time += epoch_time
@@ -218,7 +218,7 @@ class Trainer:
 
         if self._num_epochs_completed == self.num_epochs:
             self._set_status('Finished')
-            
+
         logger.info(
             f"Training completed. Total duration: {round(self._training_time, 3)} s")
 
@@ -249,11 +249,11 @@ class Trainer:
             batch, _ = self._data_loader.get_example_batch(batch_size=1)
         except ValueError:
             logger.exception(
-                f"The model summary failed because the data loader couldn't get an example batch!" 
+                f"The model summary failed because the data loader couldn't get an example batch!"
                 f"This is usually because the data loader isn't instantiated properly."
             )
             return
-            
+
         _ = self._training_model(batch)
         logger.info(self._training_model.summary())
 
@@ -265,7 +265,7 @@ class Trainer:
         )
 
     def _loop_over_dataset(self, model, loss_functions, dataset, set_num_batches_completed_this_epoch, is_closed, is_training=True, optimizer=None):
-        """ Loop over all batches of data once """            
+        """ Loop over all batches of data once """
         for steps_completed, (inputs_batch, targets_batch) in enumerate(dataset):
             if is_closed:
                 break
@@ -362,11 +362,11 @@ class Trainer:
 
         self._input_trackers = {}
         for layer_spec in self._graph_spec.input_layers:
-            if initial_state is None:            
+            if initial_state is None:
                 self._input_trackers[layer_spec.id_] = InputStatsTracker()
             else:
                 self._input_trackers[layer_spec.id_] = initial_state['input_trackers'][layer_spec.id_]
-            
+
         self._output_trackers = {}
         for layer_spec in self._graph_spec.target_layers:
             if initial_state is None:
@@ -401,7 +401,7 @@ class Trainer:
         self._cpu_usage = self._hardware_stats.cpu_usage
         self._gpu_usage = self._hardware_stats.gpu_usage
         self._mem_usage = self._hardware_stats.mem_usage
-        
+
         self._inner_layers_stats_tracker.update(
             outputs=final_and_intermediate_outputs_by_layer,
             trainables_by_layer=trainables_by_layer,
@@ -433,7 +433,7 @@ class Trainer:
                 layer_spec.feature_name)
 
             tracker.update(
-                inputs_batch=inputs_batch,                
+                inputs_batch=inputs_batch,
                 predictions_batch=predictions_batch[layer_spec.feature_name],
                 targets_batch=targets_batch[layer_spec.feature_name],
                 epochs_completed=self._num_epochs_completed,
@@ -479,7 +479,7 @@ class Trainer:
         if value not in ['Waiting', 'Paused', 'Training', 'Validation', 'Finished', 'Stopped']:
             raise ValueError(f"Cannot set status to '{value}'")
         self._status = value
-    
+
     def _get_mixpanel_pricing_metrics(self):
             sample_size = sys.getsizeof(self._data_loader.get_sample(partition='training'))
 
@@ -488,21 +488,21 @@ class Trainer:
             test_size = self._data_loader.get_dataset_size(partition='test')
 
             dataset_size = training_size + validation_size + test_size
-            
+
             num_iters_completed = self._num_batches_completed_all_epochs
             data_units_iter_based = sample_size * num_iters_completed * self._batch_size
             data_units_epoch_based = sample_size * dataset_size * self._num_epochs_completed
 
             model_params = self._training_model.count_params()
             trainable_params = int(np.sum([K.count_params(w) for w in self._training_model.trainable_weights]))
-            
+
             return dataset_size, sample_size, num_iters_completed, data_units_iter_based,\
                 data_units_epoch_based, model_params, trainable_params
 
     @property
     def auto_checkpoint(self):
         return self._auto_checkpoint
-    
+
     @property
     def status(self):
         """ The current training status """
@@ -522,9 +522,9 @@ class Trainer:
 
     @property
     def num_batches_completed_all_epochs(self):
-        """ The number of batches completed is equivelant to the number of iterations completed 
-            as it refers to the number of batches that have completed a forward/backward pass. 
-            We call it a "batch" in this context because 'iterations' is a bit ambiguous in larger 
+        """ The number of batches completed is equivelant to the number of iterations completed
+            as it refers to the number of batches that have completed a forward/backward pass.
+            We call it a "batch" in this context because 'iterations' is a bit ambiguous in larger
             software settings.
         """
         return self._num_batches_completed_all_epochs
@@ -539,9 +539,9 @@ class Trainer:
 
     @property
     def num_batches_completed_this_epoch(self):
-        """ The number of batches completed is equivelant to the number of iterations completed 
-            as it refers to the number of batches that have completed a forward/backward pass. 
-            We call it a "batch" in this context because 'iterations' is a bit ambiguous in larger 
+        """ The number of batches completed is equivelant to the number of iterations completed
+            as it refers to the number of batches that have completed a forward/backward pass.
+            We call it a "batch" in this context because 'iterations' is a bit ambiguous in larger
             software settings.
         """
         return self.num_training_batches_completed_this_epoch + self.num_validation_batches_completed_this_epoch
@@ -596,7 +596,7 @@ class Trainer:
         if self._on_training_stopped:
             dataset_size, sample_size, num_iters_completed, data_units_iter_based, \
                 data_units_epoch_based, model_params, trainable_params = self._get_mixpanel_pricing_metrics()
-            
+
             self._on_training_stopped(
                 self._training_time,
                 dataset_size,
@@ -649,7 +649,7 @@ class Trainer:
 
     def get_layer_stats(self):
         all_stats = {}
-        
+
         for layer_id, tracker in self._input_trackers.items():
             all_stats[layer_id] = tracker.save()
 
@@ -658,7 +658,7 @@ class Trainer:
 
         for layer_id, tracker in self._output_trackers.items():
             all_stats[layer_id] = tracker.save()
-            
+
         return all_stats
 
     def get_global_stats(self):
@@ -671,7 +671,7 @@ class Trainer:
             layer_id: tracker.save()
             for layer_id, tracker in self._output_trackers.items()
         }
-        return output_stats            
+        return output_stats
 
     def get_output_stats_summaries(self):
         """ Collect summary dicts from all output layers and add them to a list """
@@ -776,4 +776,4 @@ class Trainer:
     @property
     def training_session_id(self):
         return self._training_session_id
-    
+

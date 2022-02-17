@@ -40,10 +40,11 @@ class GradioLauncher:
     def get_url(self):
         return self._url_dict['url']
 
-    def start(self, model_id, graph_spec, data_loader, training_session_id, model_name, on_serving_started=None, include_preprocessing=True, include_postprocessing=True):
+    def start(self, call_context, model_id, graph_spec, data_loader, training_session_id, model_name, on_serving_started=None, include_preprocessing=True, include_postprocessing=True):
         self._thread = threading.Thread(
             target=self._worker,
             args=(
+                call_context,
                 model_id,
                 graph_spec,
                 data_loader,
@@ -62,25 +63,41 @@ class GradioLauncher:
         # Gradio has a bug that prevents killing the server (which runs in a non-daemon thread, so killing our worker thread isn't an option).
         # Running it as a forked subprocess - which can be killed - doesn't work on Windows
         # Running it as a spawned subprocess - which can be killed - doesn't work because DataLoader etc cannot be pickled.
-        
+
         raise NotImplementedError
-        
+
         self._stop_event.set()
         self._thread.join()
-        
-    def _worker(self, model_id, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=True, include_postprocessing=True):
+
+    def _worker(self, call_context, model_id, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=True, include_postprocessing=True):
         try:
             return self._worker_internal(
-                model_id, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
+                call_context,
+                model_id,
+                graph_spec,
+                data_loader,
+                training_session_id,
+                model_name,
+                url_dict,
+                on_serving_started,
+                include_preprocessing=include_preprocessing,
+                include_postprocessing=include_postprocessing)
         except:
             logger.exception("Error in worker")
             raise
-        
-    def _worker_internal(self, model_id, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=True, include_postprocessing=True):        
+
+    def _worker_internal(self, call_context, model_id, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=True, include_postprocessing=True):
         inference_model = self._get_inference_model(
-            model_id, graph_spec, data_loader, training_session_id, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
+            call_context,
+            model_id,
+            graph_spec,
+            data_loader,
+            training_session_id,
+            include_preprocessing=include_preprocessing,
+            include_postprocessing=include_postprocessing
+        )
         metadata = data_loader.metadata
-            
+
         inputs = {
             spec.feature_name: self.get_gradio_input(spec.feature_name, spec.datatype, metadata[spec.feature_name])
             for spec in graph_spec.input_layers
@@ -89,21 +106,21 @@ class GradioLauncher:
             spec.feature_name: self.get_gradio_output(spec.feature_name, spec.datatype, metadata[spec.feature_name], include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
             for spec in graph_spec.target_layers
         }
-        
+
         def fn_inference(*input_values):
             x = {}
 
             for feature_name, value in zip(inputs.keys(), input_values):
                 if is_file_type(value):
-                    loader = data_loader.get_loader_pipeline(feature_name)                    
+                    loader = data_loader.get_loader_pipeline(feature_name)
                     value = loader(value.name)
 
                 x[feature_name] = np.array([value])
-            
+
             y = inference_model.predict(x)
             output_values = self._create_output_values(y, targets, metadata, graph_spec, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
 
-            return output_values        
+            return output_values
 
         interface = gr.Interface(
             title=model_name,
@@ -126,31 +143,33 @@ class GradioLauncher:
             time.sleep(0.5)
 
         interface.close()
-        
-    def _get_inference_model(self, model_id, graph_spec, data_loader, training_session_id, include_preprocessing=True, include_postprocessing=True):
+
+    def _get_inference_model(self, call_context, model_id, graph_spec, data_loader, training_session_id, include_preprocessing=True, include_postprocessing=True):
         epoch_id = self._epochs_access.get_latest(
-            training_session_id=training_session_id, 
+            call_context,
+            training_session_id=training_session_id,
             require_checkpoint=True,
             require_trainer_state=False
         )
 
         checkpoint_path = self._epochs_access.get_checkpoint_path(
+            call_context,
             training_session_id=training_session_id, epoch_id=epoch_id)
 
         training_model = TrainingModel.from_graph_spec(
             graph_spec, checkpoint_path=checkpoint_path)
-        
+
         inference_model = training_model.as_inference_model(
             data_loader, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
 
         return inference_model
 
-    def _create_output_values(self, model_output, targets, metadata, graph_spec, include_preprocessing=True, include_postprocessing=True):            
+    def _create_output_values(self, model_output, targets, metadata, graph_spec, include_preprocessing=True, include_postprocessing=True):
         if len(targets) == 1:
             output_values = next(iter(model_output.values())).squeeze().tolist()
         else:
             output_values = [model_output[name].squeeze().tolist() for name in targets.keys()]
-        
+
         dtype = self._get_dtype(graph_spec.target_layers)
         if not include_postprocessing and dtype=='categorical':
             output_values = self._create_categorical_output(model_output, metadata, graph_spec)
@@ -173,20 +192,20 @@ class GradioLauncher:
         for spec in target_layers:
             categories = list(metadata[spec.feature_name]['preprocessing']['mapping'].keys())
             return categories
-    
+
     def _get_dtype(self, target_layers):
         for spec in target_layers:
             dtype = spec.datatype
             return dtype
-        
+
     @staticmethod
     def get_gradio_input(feature_name, datatype, metadata):
-        if datatype == 'numerical':  
+        if datatype == 'numerical':
             return gr.inputs.Number(default=1, label=feature_name)
-        if datatype == 'categorical':  
+        if datatype == 'categorical':
             return gr.inputs.Radio(
-                choices=list(metadata['preprocessing']['mapping'].keys()), label=feature_name)        
-        elif datatype == 'text':  
+                choices=list(metadata['preprocessing']['mapping'].keys()), label=feature_name)
+        elif datatype == 'text':
             return gr.inputs.Textbox(label=feature_name)
         elif datatype == 'image':
             n_channels = metadata['loader']['n_channels']
@@ -196,8 +215,8 @@ class GradioLauncher:
                 image_mode = 'L'  # grayscale
             else:
                 raise ValueError(f"Unexpected number of channels in metadata: {n_channels}")
-            
-            return gr.inputs.Image(image_mode=image_mode, label=feature_name, type='file') 
+
+            return gr.inputs.Image(image_mode=image_mode, label=feature_name, type='file')
         else:
             raise NotImplementedError(f"No gradio input type found for datatype '{datatype}'")
 
@@ -205,10 +224,10 @@ class GradioLauncher:
     def get_gradio_output(feature_name, datatype, metadata, include_preprocessing=True, include_postprocessing=True):
         if datatype == 'numerical':
             return gr.outputs.Textbox(label=feature_name)
-        elif datatype == 'text':  
+        elif datatype == 'text':
             return gr.outputs.Textbox(label=feature_name)
-        elif datatype in ['image', 'mask']: 
-            return gr.outputs.Image(type='numpy', label=feature_name)             
+        elif datatype in ['image', 'mask']:
+            return gr.outputs.Image(type='numpy', label=feature_name)
         elif datatype == 'categorical':
             if include_postprocessing:
                 return gr.outputs.Textbox(label=feature_name)
@@ -216,8 +235,4 @@ class GradioLauncher:
                 return gr.outputs.Label(type='confidences', label=feature_name)
         else:
             raise NotImplementedError(f"No gradio output type found for datatype '{datatype}'")
-    
 
-
-
-    

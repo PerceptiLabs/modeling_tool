@@ -35,6 +35,7 @@ check_prereqs(){
 # The installer will load that into docker and then run docker-compose, which will just use the images that were already therre
 # This way we can use the local migrations by just tarballing them and pretending they were dropped in by the airgapped package
 make_fake_images(){
+  docker pull hello-world
   docker save hello-world --output images.tar
 }
 

@@ -30,15 +30,15 @@ class ThreadedTaskExecutor(TaskExecutor):
         self._submitted_tasks = {}
         self._lock = RLock();
 
-        self._on_task_sent = on_task_sent        
+        self._on_task_sent = on_task_sent
         self._on_task_received = on_task_received
         self._on_task_started = on_task_started
         self._on_task_succeeded = on_task_succeeded
         self._on_task_failed = on_task_failed
-        
+
     def enqueue(self, task_name, *args, **kwargs):
         task_id = uuid.uuid4().hex
-        
+
         if self._on_task_sent:
             self._on_task_sent(task_id, task_name)
 
@@ -55,11 +55,11 @@ class ThreadedTaskExecutor(TaskExecutor):
                 'args': deepcopy(args),
                 'kwargs': deepcopy(kwargs)
             }
-        
+
         return task_id
-    
+
     def _wrap_in_callbacks(self, task_func, task_id, task_name):
-        
+
         def task_func_with_callbacks(*args, **kwargs):
             if self._on_task_received:
                 self._on_task_received(task_id, task_name)
@@ -71,16 +71,16 @@ class ThreadedTaskExecutor(TaskExecutor):
                 result = task_func(*args, **kwargs)
             except:
                 if self._on_task_failed:
-                    self._on_task_failed(task_id)                    
-                raise            
+                    self._on_task_failed(task_id)
+                raise
             else:
                 if self._on_task_succeeded:
                     self._on_task_succeeded(task_id)
 
                 return result
-            
+
         return task_func_with_callbacks
-        
+
     @property
     def num_remaining_tasks(self):
         count = 0
@@ -100,6 +100,6 @@ class ThreadedTaskExecutor(TaskExecutor):
                 }
                 for task_id, task_info in self._submitted_tasks.items()
                 if not task_info['future'].done()
-            }            
+            }
         return results
-    
+

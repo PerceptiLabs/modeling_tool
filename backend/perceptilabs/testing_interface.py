@@ -25,35 +25,35 @@ class TestingSessionInterface():
         self._results_access = results_access
         self._tensorflow_support_access = tensorflow_support_access
 
-    def run(self, *args, **kwargs):
-        for _ in self.run_stepwise(*args, **kwargs):
+    def run(self, call_context, *args, **kwargs):
+        for _ in self.run_stepwise(call_context, *args, **kwargs):
             pass
 
-    def run_stepwise(self, testing_session_id, models, tests, user_email, results_interval=None, logrocket_url=''):
-        self._tensorflow_support_access.set_tfhub_env_var()
+    def run_stepwise(self, call_context, testing_session_id, models, tests, results_interval=None, logrocket_url=''):
+        self._tensorflow_support_access.set_tfhub_env_var(call_context)
         try:
-            test_core = self._setup_test_core(testing_session_id, models, tests, user_email)
+            test_core = self._setup_test_core(testing_session_id, models, tests, call_context.get('user_email'))
 
             with self._message_broker.subscription() as queue:
-                yield from self._main_loop(queue, test_core, results_interval, testing_session_id)
-                
+                yield from self._main_loop(call_context, queue, test_core, results_interval, testing_session_id)
+
         except Exception as e:
-            error = KernelError.from_exception(e, "Error during testing!")            
+            error = KernelError.from_exception(e, "Error during testing!")
             self._results_access.store(testing_session_id, {'error': error.to_dict()})
             logger.exception("Exception in testing session interface!")
 
             with sentry_sdk.push_scope() as scope:
-                scope.set_user({'email': user_email})                
+                scope.set_user({'email': call_context.get('user_email')})
                 scope.set_extra('testing_session_id', testing_session_id)
-                scope.set_extra('logrocket_url', logrocket_url)            
-            
-                sentry_sdk.capture_exception(e)
-                sentry_sdk.flush()                        
+                scope.set_extra('logrocket_url', logrocket_url)
 
-    def _main_loop(self, queue, core, results_interval, testing_session_id):            
-        testing_step = core.run_stepwise()
+                sentry_sdk.capture_exception(e)
+                sentry_sdk.flush()
+
+    def _main_loop(self, call_context, queue, core, results_interval, testing_session_id):
+        testing_step = core.run_stepwise(call_context)
         testing_sentinel = object()
-            
+
         last_update = -1
         is_running = True
 
@@ -62,18 +62,18 @@ class TestingSessionInterface():
 
             testing_step_result = next(testing_step, testing_sentinel)
             is_running = testing_step_result is not testing_sentinel
-            
+
             last_update = self._maybe_write_results(
                 results_interval, last_update, core, testing_session_id, is_running)
 
             yield
 
     def _setup_test_core(self, testing_session_id, models, tests, user_email):
-        
+
         def on_testing_completed(model_id, test):
             tracking.send_testing_completed(
                 self._event_tracker, user_email, model_id, test)
-        
+
         core = TestCore(
             self._model_access,
             self._epochs_access,
@@ -84,11 +84,11 @@ class TestingSessionInterface():
             on_testing_completed=on_testing_completed
         )
         return core
-            
-                
+
+
     def _maybe_write_results(self, results_interval, last_update, core, testing_session_id, is_running):
         time_since_update = time.time() - last_update
-        
+
         if (results_interval is None) or (time_since_update >= results_interval) or not is_running:
 
             self._write_results(core, testing_session_id)
@@ -96,7 +96,7 @@ class TestingSessionInterface():
         else:
             return last_update
 
-    def _write_results(self, core, testing_session_id):         
+    def _write_results(self, core, testing_session_id):
         status = core.get_testcore_status()
         unprocessed_results = core.get_results()
 
@@ -107,7 +107,7 @@ class TestingSessionInterface():
                 processed_output = ProcessResults(
                     unprocessed_results[model_id][test], test).run()
                 results[test][model_id] = processed_output
-                
+
         all_results = {'results': results, 'status': status}
         self._results_access.store(testing_session_id, all_results)
 
@@ -116,8 +116,8 @@ class TestingSessionInterface():
             for message in iter(queue.get_nowait, None):
                 event = message['event']
                 payload = message.get('payload', {})
-                
+
                 if event == 'testing-stop' and payload['testing_session_id'] == core.session_id:
-                    core.stop()                
+                    core.stop()
         except Empty:
             pass

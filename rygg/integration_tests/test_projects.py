@@ -3,7 +3,6 @@ import pytest
 import time
 from pathlib import Path
 
-from rest import RyggRest
 from clients import ProjectClient, ModelClient, NotebookClient, DatasetClient
 from assertions import assert_eventually
 
@@ -38,7 +37,7 @@ def test_project_delete_also_deletes_model(rest):
 @pytest.mark.usefixtures('pip_only')
 def test_project_delete_also_deletes_dataset(rest, tmp_text_file):
     with ProjectClient.make(rest, name="test project") as project:
-        dataset = DatasetClient.make(rest, name="some file", location=tmp_text_file, project=project.id, models=[])
+        dataset = DatasetClient.make(rest, name="some file", location=tmp_text_file, project=project.id, models=[], type='M')
 
     assert not dataset.exists
 
@@ -46,7 +45,7 @@ def test_project_delete_also_deletes_dataset(rest, tmp_text_file):
 @pytest.mark.usefixtures('pip_only')
 def test_project_delete_also_deletes_dataset(rest, tmp_text_file):
     with ProjectClient.make(rest, name="test project") as project:
-        dataset = DatasetClient.make(rest, name="some file", project=project.id, models=[], location=str(tmp_text_file))
+        dataset = DatasetClient.make(rest, name="some file", project=project.id, models=[], location=str(tmp_text_file), type='M')
 
     assert not dataset.exists
 

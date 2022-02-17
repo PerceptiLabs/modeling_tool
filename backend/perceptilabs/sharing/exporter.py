@@ -30,7 +30,7 @@ class Exporter:
         self._data_loader = data_loader
         self._training_model = training_model
         self._on_model_exported = on_model_exported
-        
+
     @property
     def data_loader(self):
         return self._data_loader
@@ -42,7 +42,7 @@ class Exporter:
     def export_checkpoint(self, checkpoint_path):
         """ Save the model weights using the full checkpoint path"""
         checkpoint_path = sanitize_path(checkpoint_path)
-        self._training_model.save_weights(checkpoint_path)        
+        self._training_model.save_weights(checkpoint_path)
 
     def export(self, export_directory, mode, include_preprocessing=True, include_postprocessing=True):
         """calls the export functions based on export mode"""
@@ -59,7 +59,7 @@ class Exporter:
 
         if self._on_model_exported:
             self._on_model_exported()
-            
+
     def _export_inference_model(self, path, model=None, include_preprocessing=True, include_postprocessing=True):
         """ Export the inference model """
         if model is None:

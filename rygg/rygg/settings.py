@@ -18,6 +18,59 @@ import sentry_sdk
 from rygg import __version__
 from sentry_sdk.integrations.django import DjangoIntegration
 
+##### Will be edited by the build script #####
+AUTH_ENV_DEFAULT = 'dev'
+##############################################
+AUTH_ENV = os.getenv('AUTH_ENV', AUTH_ENV_DEFAULT)
+if not AUTH_ENV:
+    AUTH_ISSUER = None
+elif AUTH_ENV == 'dev':
+    AUTH_REALM = 'vue-perceptilabs'
+    AUTH_ISSUER = f"https://keycloak.dev.perceptilabs.com:8443/auth/realms/{AUTH_REALM}"
+    AUTH_CERTS_URL = f"{AUTH_ISSUER}/protocol/openid-connect/certs"
+    AUTH_AUDIENCE = 'account'
+    AUTH_ALGORITHM = 'RS256'
+elif AUTH_ENV == 'prod':
+    AUTH_REALM = os.getenv('AUTH_REALM', 'PerceptiLabs')
+    AUTH_ISSUER = os.getenv('AUTH_ISSUER', f"https://keycloak.perceptilabs.com:8443/auth/realms/{AUTH_REALM}")
+    AUTH_CERTS_URL = os.getenv('AUTH_CERTS_URL', f"{AUTH_ISSUER}/protocol/openid-connect/certs")
+    AUTH_AUDIENCE = os.getenv('AUTH_AUDIENCE', 'account')
+    AUTH_ALGORITHM = os.getenv('AUTH_ALGORITHM', 'RS256')
+else:
+    raise Exception(f"AUTH_ENV is invalid. Got '{AUTH_ENV}'. Expected 'dev', 'prod' or empty string.")
+
+
+AUTH_MIDDLEWARE=[]
+AUTH_CLASSES={}
+
+if AUTH_ISSUER:
+    AUTHENTICATION_BACKENDS = [
+        'django.contrib.auth.backends.ModelBackend',
+        'django.contrib.auth.backends.RemoteUserBackend',
+    ]
+
+    AUTH_MIDDLEWARE = ['django.contrib.auth.middleware.RemoteUserMiddleware']
+
+    AUTH_CLASSES={
+        'DEFAULT_PERMISSION_CLASSES': (
+            'rest_framework.permissions.IsAuthenticated',
+        ),
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+            'rest_framework.authentication.SessionAuthentication',
+            'rest_framework.authentication.BasicAuthentication',
+        ),
+    }
+    JWT_AUTH = {
+        'JWT_PAYLOAD_GET_USERNAME_HANDLER': 'rygg.utils.jwt_get_username_from_payload_handler',
+        'JWT_DECODE_HANDLER': 'rygg.utils.jwt_decode_token',
+        'JWT_ALGORITHM': AUTH_ALGORITHM,
+        'JWT_AUDIENCE': AUTH_AUDIENCE,
+        'JWT_ISSUER': AUTH_ISSUER,
+        'JWT_AUTH_HEADER_PREFIX': 'Bearer',
+    }
+
+
 def is_prod():
     return __version__ != "development"
 
@@ -110,6 +163,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    *AUTH_MIDDLEWARE,
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_http_exceptions.middleware.ExceptionHandlerMiddleware",
@@ -196,9 +250,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 REST_FRAMEWORK = {
-        'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-        'PAGE_SIZE': 10
-        }
+	'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+	'PAGE_SIZE': 10,
+    **AUTH_CLASSES,
+}
 
 # CORS_ALLOW_CREDENTIALS and CORS_ORIGIN_WHITELIST are set to more restrictive values for MixPanel's sake
 CORS_ALLOW_CREDENTIALS = True

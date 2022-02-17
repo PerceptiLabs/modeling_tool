@@ -43,7 +43,7 @@ def data_loader():
         builder.add_row({'x1': 61, 'y1': 1}, dtypes={'y1': np.int32})
         builder.add_row({'x1': 33, 'y1': 0}, dtypes={'y1': np.int32})
         builder.add_row({'x1': 92, 'y1': 0}, dtypes={'y1': np.int32})
-        
+
         dl = builder.get_data_loader()
         yield dl
 
@@ -83,19 +83,19 @@ class Rygg(RyggAdapter):
     def __init__(self, tmp_path):
         self.tmp_path = tmp_path
 
-    def get_dataset(self, dataset_id):
+    def get_dataset(self, call_context, dataset_id):
         raise NotImplementedError
 
-    def create_model(self, project_id, dataset_id, model_name, location=None):
+    def create_model(self, call_context, project_id, dataset_id, model_name, location=None):
         raise NotImplementedError
 
-    def load_model_json(self, model_id):
+    def load_model_json(self, call_context, model_id):
         raise NotImplementedError
 
-    def save_model_json(self, model_id, model):
+    def save_model_json(self, call_context, model_id, model):
         raise NotImplementedError
 
-    def get_model(self, model_id):
+    def get_model(self, call_context, model_id):
         return {'location': '/tmp'}
 
 
@@ -104,7 +104,7 @@ class Rygg(RyggAdapter):
 def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
     training_session_id = '123'
     testing_session_id = '456'
-    
+
     training_model = TrainingModel(script_factory, graph_spec_few_epochs)
     exporter = Exporter(graph_spec_few_epochs, training_model, data_loader)
     checkpoint_path = os.path.join(temp_path, 'checkpoint-0000.ckpt')
@@ -131,18 +131,18 @@ def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
     }
     tests = []
     model_ids = [1]
-    
+
     rygg = Rygg(temp_path)
     epochs_access = EpochsAccess(rygg)
     model_access = ModelAccess(rygg)
 
     testcore = TestCore(
         model_access, epochs_access, testing_session_id, model_ids, models_info, tests)
-    
-    testcore.load_models_and_data()
+
+    testcore.load_models_and_data({})
     yield testcore
 
-    
+
 def test_testcore_is_loading_data(testcore, data_loader):
     assert type(data_loader).__name__ == 'DataLoader'
     dataset_generator = data_loader.get_dataset(partition='test').batch(1)
@@ -152,11 +152,11 @@ def test_testcore_is_loading_data(testcore, data_loader):
         data2 = input_2
     assert data1 == data2
 
-    
+
 def test_model_is_loaded_from_checkpoint(testcore):
     assert testcore._models[1]._model is not None
 
-    
+
 def test_model_outputs_structure_is_accurate(testcore):
     data_iterator = testcore._get_data_generator(1)
     model_inputs, model_outputs = testcore.models[1].run_inference(data_iterator)
@@ -164,7 +164,7 @@ def test_model_outputs_structure_is_accurate(testcore):
     assert list(model_outputs['outputs'][0].keys()) == ['y1']
     assert list(model_outputs['targets'][0].keys()) == ['y1']
 
-    
+
 def test_model_has_compatible_output_layers_for_confusionmatrix(testcore):
     layers = testcore.get_compatible_output_layers('confusion_matrix', 1)
     assert layers == {'y1':'categorical'}
@@ -173,10 +173,10 @@ def test_model_has_compatible_output_layers_for_confusionmatrix(testcore):
 def test_status_messages(testcore, data_loader):
     num_models = len(testcore.models)
     num_samples = data_loader.get_dataset_size(partition='test')
-    
+
     status_messages = []
-    
-    for step in iter(testcore.run_stepwise()):
+
+    for step in iter(testcore.run_stepwise({})):
         status = testcore.get_testcore_status()
         status_messages.append(status)
 

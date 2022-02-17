@@ -1,6 +1,7 @@
 perceptilabs/__init__.py
 perceptilabs/__main__.py
 perceptilabs/app_variables.json
+perceptilabs/auth.py
 perceptilabs/mainServer.py
 perceptilabs/settings.py
 perceptilabs/main_setup.py

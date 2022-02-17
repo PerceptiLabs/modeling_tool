@@ -231,6 +231,15 @@ get_user_input(){
     read -p "Enter the first Perceptilabs user's password [default: resetme]: "
     export KC_INITIAL_PWD="${REPLY:-resetme}"
   fi
+
+  if [ -f .env ]; then
+    source .env
+  fi
+
+  if [ -z "${PL_SERVER_ADDRESS:-}" ]; then
+    read -p "Enter the network-accessible hostname of this server. It must be accessible from users' machines. [default: ${HOSTNAME}]: "
+    export PL_SERVER_ADDRESS=${REPLY:-${HOSTNAME}}
+  fi
 }
 
 ###################################################################################################
@@ -557,6 +566,9 @@ main(){
 
   start_pl
   prune
+
+  echo "The server is now available at http://${PL_SERVER_ADDRESS}"
+
   reboot_if_needed
 
   echo PerceptiLabs is ready!

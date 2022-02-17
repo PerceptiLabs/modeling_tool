@@ -62,7 +62,9 @@ class ProjectSerializer(serializers.ModelSerializer):
                   "updated",
                   "is_removed",
                   "models",
-                  "notebooks"]
+                  "notebooks",
+                  "owner",
+                  ]
 
 
 class DatasetSerializer(serializers.ModelSerializer):

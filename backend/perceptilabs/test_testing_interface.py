@@ -11,12 +11,12 @@ from perceptilabs.script.base import ScriptFactory
 
 
 def make_session_id(string):
-    import base64    
-    return base64.urlsafe_b64encode(string.encode()).decode()    
+    import base64
+    return base64.urlsafe_b64encode(string.encode()).decode()
 
     
 @pytest.fixture
-def data_loader():    
+def data_loader():
     builder = DatasetBuilder.from_features({
         'x': {'datatype': 'numerical', 'iotype': 'input'},
         'y': {'datatype': 'categorical', 'iotype': 'target'},
@@ -25,7 +25,7 @@ def data_loader():
     with builder:
         for _ in range(num_samples):
             builder.add_row({'x': 1.0, 'y': 'a'})
-            
+
         yield builder.get_data_loader()
 
 
@@ -65,7 +65,7 @@ def queue():
     return Queue()
 
 
-@pytest.fixture(scope='function')    
+@pytest.fixture(scope='function')
 def message_broker(queue):
     broker = MagicMock()
     broker.subscription.return_value.__enter__.return_value = queue
@@ -82,7 +82,7 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, results_int
 
     results_access = MagicMock()
     event_tracker = MagicMock()
-    
+
     interface = TestingSessionInterface(
         message_broker,
         event_tracker,
@@ -92,9 +92,14 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, results_int
         tensorflow_support_access=tensorflow_support_access
     )
 
-    tests = ['confusion_matrix']    
-    
+    tests = ['confusion_matrix']
+
     interface.run(
+        call_context={
+            'project_id': 123,
+            'user_token': 'fake token from auth header',
+            'user_email': 'a@b.test',
+        },
         testing_session_id='123',
         models={
             '111': {
@@ -105,7 +110,6 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, results_int
             }
         },
         tests=tests,
-        user_email='a@b.com',
         results_interval=results_interval
     )
 
@@ -121,10 +125,10 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
 
     epochs_access = MagicMock()
     epochs_access.get_checkpoint_path.return_value = None
-    
+
     results_access = MagicMock()
-    event_tracker = MagicMock()        
-    
+    event_tracker = MagicMock()
+
     interface = TestingSessionInterface(
         message_broker,
         event_tracker,
@@ -134,11 +138,12 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
         tensorflow_support_access=tensorflow_support_access
     )
 
-    tests = ['confusion_matrix']    
+    tests = ['confusion_matrix']
 
-    testing_session_id = '123', 
-    
+    testing_session_id = '123',
+
     step = interface.run_stepwise(
+        {'user_email': 'a@b.com'},
         testing_session_id=testing_session_id,
         models={
             '111': {
@@ -149,16 +154,15 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
             }
         },
         tests=tests,
-        user_email='a@b.com',
     )
-    
+
     for counter, _ in enumerate(step):
         if counter == 0:  # Stop after 3 steps
             expected_results = results_access.store.call_args[0][1]['results']
             queue.put(
                 {'event': 'testing-stop', 'payload': {'testing_session_id': testing_session_id}})
 
-    actual_results = results_access.store.call_args[0][1]['results']            
+    actual_results = results_access.store.call_args[0][1]['results']
 
     assert counter > 0  # Assert we actuall went further than just the first iteration
     assert actual_results == expected_results # Assert results doesnt change after stopping

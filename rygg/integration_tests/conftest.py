@@ -1,12 +1,15 @@
-import os
-from pathlib import Path
-import pytest
-import time
-import uuid
-
-from rest import RyggRest
 from assertions import assert_eventually
 from clients import ProjectClient, DatasetClient, ModelClient
+from pathlib import Path
+from rest import RyggRest
+
+import http.client
+import json
+import os
+import pytest
+import time
+import urllib
+import uuid
 
 # allow for specifying the host on the pytest command line
 def pytest_addoption(parser):
@@ -14,6 +17,7 @@ def pytest_addoption(parser):
     parser.addoption("--port", action="store")
     parser.addoption("--path", action="store")
     parser.addoption("--vol_map", action="store")
+    parser.addoption("--auth_env", action="store")
 
 
 @pytest.fixture(scope='session')
@@ -34,10 +38,52 @@ def port(request):
 def path(request):
     return request.config.option.path or ""
 
+
 @pytest.fixture(scope='session')
-def rest(host, port, path):
+def auth_token(request):
+    auth_env = request.config.option.auth_env or 'dev'
+
+    if auth_env == 'dev':
+        # set up keycloak following these directions: https://sahil-khanna.medium.com/rest-api-authentication-using-keycloak-b6afb07eceec
+        AUTH_ISSUER = 'keycloak.dev.perceptilabs.com:8443'
+        TOKEN_PATH = '/auth/realms/vue-perceptilabs/protocol/openid-connect/token'
+        CLIENT_ID = 'integration-test'
+        CLIENT_SECRET = 'c2ce91ea-ce06-493d-9a64-3cb31f1d298b'
+
+        # TODO: Fix verification of the cert
+        import ssl
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        conn = http.client.HTTPSConnection(AUTH_ISSUER, context=ctx)
+        payload = {
+            "client_id": CLIENT_ID,
+            "client_secret": CLIENT_SECRET,
+            "grant_type": "client_credentials",
+        }
+        payload_encoded = urllib.parse.urlencode(payload)
+
+        conn.request("POST", TOKEN_PATH, payload_encoded, headers={"content-type": "application/x-www-form-urlencoded"})
+
+        res = conn.getresponse()
+        data_bytes = res.read()
+        data_json = data_bytes.decode("utf-8")
+        data = json.loads(data_json)
+        token = data['access_token']
+        return token
+
+    elif auth_env == 'prod':
+        raise NotImplementedException("TODO")
+
+    else:
+        raise Exception(f"auth_env option is '{auth_env}'. Expected 'dev' or nothing.")
+
+
+
+@pytest.fixture(scope='session')
+def rest(host, port, path, auth_token):
     url=f"http://{host}:{port}{path}"
-    with RyggRest(url, "12312") as ret:
+    with RyggRest(url, "12312", auth_token) as ret:
         assert_eventually(ret.check, stop_max_delay=60000, wait_fixed=1000)
         yield ret
 

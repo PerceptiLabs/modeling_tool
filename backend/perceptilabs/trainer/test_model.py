@@ -2,16 +2,11 @@ import os
 import pytest
 import tempfile
 
-import numpy as np
-import pandas as pd
-import skimage.io as sk
-
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.script import ScriptFactory
-from perceptilabs.data.base import DataLoader
-from perceptilabs.data.settings import FeatureSpec, DatasetSettings, Partitions
 from perceptilabs.graph.builder import GraphSpecBuilder
 import perceptilabs.data.utils as data_utils
+from perceptilabs.test_utils import make_data_loader
 
 data0 = {
     'x1': {
@@ -60,32 +55,10 @@ data3 = {
 }
 
 
-def make_data_loader(data, working_dir):
-    if data['x1']['type'] == 'image':
-        for path in data['x1']['values']:
-            image = np.random.randint(0, 255, data['x1']['shape'], dtype=np.uint8)
-            sk.imsave(path, image)
-
-    feature_specs = {
-        'x1': FeatureSpec(iotype='input', datatype=data['x1']['type']),
-        'y1': FeatureSpec(iotype='target', datatype=data['y1']['type'])
-    }
-    partitions = Partitions(training_ratio=1.0, validation_ratio=0.0, test_ratio=0.0)
-
-    dataset_settings = DatasetSettings(
-        feature_specs=feature_specs,
-        partitions=partitions,
-    )
-
-    df = pd.DataFrame({'x1': data['x1']['values'], 'y1': data['y1']['values']})
-
-    dl = DataLoader(df, dataset_settings)
-    return dl
-
-
 @pytest.fixture(params=[data0, data1, data2, data3])
-def data_loader(request, temp_path):
-    yield make_data_loader(request.param, temp_path)
+def data_loader(request):
+    with make_data_loader(request.param) as dl:
+        yield dl
 
 
 def make_graph_spec(data_loader):

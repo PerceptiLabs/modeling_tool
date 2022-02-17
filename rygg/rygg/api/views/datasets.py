@@ -14,7 +14,8 @@ from rygg.files.views.util import (
     get_required_param,
     get_optional_param,
     get_optional_int_param,
-    get_project_id_from_request,
+    get_project_from_request,
+    get_project_from_post,
     get_required_choice_param,
     request_as_dict,
     protect_read_only_enterprise_field,
@@ -49,8 +50,10 @@ class DatasetViewSet(viewsets.ModelViewSet):
         if not "project" in request.data:
             if not "project_id" in request.data:
                 raise HTTPExceptions.BAD_REQUEST()
+            else:
+                request.data["project"] = request.data["project_id"]
 
-            request.data["project"] = request.data["project_id"]
+        request.data['project_id'] = request.data['project']
 
     def create(self, request):
         # We don't support creating from a POST in enterprise
@@ -59,6 +62,9 @@ class DatasetViewSet(viewsets.ModelViewSet):
             raise HTTPExceptions.METHOD_NOT_ALLOWED
 
         self.alias_project_id(request)
+
+        # Ensure that the project is available to the user
+        get_project_from_post(request)
         return super().create(request)
 
     @action(detail=True, methods=['DELETE'])
@@ -165,8 +171,8 @@ class DatasetViewSet(viewsets.ModelViewSet):
     def create_from_remote(self, request):
         name = get_optional_param(request, "name", f"New Dataset")
         remote_id = get_required_param(request, "id")
-        project_id = get_required_param(request, "project_id")
-        type = get_required_choice_param(request, "type", Dataset.Type.choices)
+        project_id = get_project_from_request(request).project_id
+        datatype = get_required_choice_param(request, "type", Dataset.Type.choices)
         destination = None if IS_CONTAINERIZED else request_path(request)
 
         task_id, dataset = Dataset.create_from_remote(
@@ -174,7 +180,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
             name,
             remote_id,
             destination,
-            type,
+            datatype,
         )
 
         response = {
@@ -188,7 +194,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
         if not is_upload_allowed():
             return HTTPExceptions.BAD_REQUEST.with_content("This server isn't configured to allow uploads")
 
-        project_id = get_project_id_from_request(request)
+        project_id = get_project_from_request(request).project_id
 
         file_uploaded = request.FILES.get('file_uploaded')
         if not file_uploaded:
@@ -231,7 +237,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['POST'])
     def create_classification_dataset(self, request):
         dataset_path = get_required_param(request, "dataset_path")
-        project_id = get_required_param(request, "project_id")
+        project_id = get_project_from_request(request).project_id
 
         task_id, dataset = Dataset.create_classification_dataset(
             project_id,
@@ -251,7 +257,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
     def create_segmentation_dataset(self, request):
         image_path = get_required_param(request, "image_path")
         mask_path = get_required_param(request, "mask_path")
-        project_id = get_required_param(request, "project_id")
+        project_id = get_project_from_request(request).project_id
         task_id, dataset = Dataset.create_segmentation_dataset(
             project_id,
             image_path,

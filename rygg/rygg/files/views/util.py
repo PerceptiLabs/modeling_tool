@@ -9,11 +9,34 @@ from rygg.files.paths import translate_path_from_user, PathNotAvailable
 from rygg.settings import IS_CONTAINERIZED
 import rygg.files.paths
 
-def get_required_param(request, param):
+def get_required_param(request, param, converter=None):
     qp = request.query_params
     if not qp.__contains__(param):
         raise HTTPExceptions.BAD_REQUEST.with_content(f"Missing {param} parameter")
-    return qp[param]
+
+    val = qp[param]
+
+    if converter:
+        val = convert(val, converter)
+
+    return val
+
+
+def get_required_data_param(request, param, converter=None):
+    val = request.data.get(param)
+    if not val:
+        raise HTTPExceptions.BAD_REQUEST.with_content(f"Missing {param} parameter")
+
+    if converter:
+        val = convert(val, converter)
+
+    return val
+
+def convert(as_str, converter):
+    try:
+        return converter(as_str)
+    except ValueError:
+        raise HTTPExceptions.BAD_REQUEST.with_content(f"{as_str} must be convertable to {converter.__name__}.")
 
 def get_optional_int_param(request, param, default):
     as_str = get_optional_param(request, param, default)
@@ -26,25 +49,39 @@ def get_optional_param(request, param, default):
     qp = request.query_params
     return qp[param] if qp.__contains__(param) else default
 
+
 # Extracts the required "path" parameter from the request and validates it
 # Then passes through to translate_path_from_user where all of the path logic is done
 def get_path_param(request):
     path = get_required_param(request, "path")
     if IS_CONTAINERIZED and path.startswith("~"):
         raise HTTPExceptions.BAD_REQUEST.with_content("Home directory isn't supported.")
-    project_id = get_project_id_from_request(request)
+    project_id = get_project_from_request(request).project_id
     try:
         return rygg.files.paths.translate_path_from_user(path, project_id)
     except PathNotAvailable as e:
         raise HTTPExceptions.NOT_FOUND.with_content(e)
 
 
-
-def get_project_id_from_request(request):
+def get_project_from_request(request):
     project_id = int(get_required_param(request, "project_id"))
-    if not Project.objects.filter(pk=project_id).exists():
+    project = Project.get_by_id(project_id, request.user)
+
+    if not project:
         raise HTTPExceptions.NOT_FOUND.with_content(f"Project {project_id} does not exist")
-    return project_id
+
+    return project
+
+
+def get_project_from_post(request):
+    project_id = get_required_data_param(request, 'project_id', converter=int)
+    project = Project.get_by_id(project_id, request.user)
+
+    if not project:
+        raise HTTPExceptions.NOT_FOUND.with_content(f"Project {project_id} does not exist")
+
+    return project
+
 
 def get_required_choice_param(request, param, choices):
     got = get_required_param(request, param)

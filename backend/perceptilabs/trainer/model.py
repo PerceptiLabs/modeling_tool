@@ -9,10 +9,10 @@ class TrainingModel(tf.keras.Model):
 
         self._script_factory = script_factory
         self._graph_spec = graph_spec
-        
+
         self._layers_by_id = {}
         for layer_spec in self._graph_spec.get_ordered_layers():
-            if layer_spec.is_inner_layer:                    
+            if layer_spec.is_inner_layer:
                 self._layers_by_id[layer_spec.id_] = self._get_layer_from_spec(layer_spec)
 
     @classmethod
@@ -25,17 +25,17 @@ class TrainingModel(tf.keras.Model):
 
             if on_weights_loaded:
                 on_weights_loaded(checkpoint_path)
-            
-        return training_model        
+
+        return training_model
 
     @property
     def graph_spec(self):
-        return self._graph_spec                   
-            
+        return self._graph_spec
+
     def call(self, inputs, training=False):
         outputs = {}
         outputs_by_layer = {}
-                
+
         for layer_spec in self._graph_spec.get_ordered_layers():
             if layer_spec.is_input_layer:
                 outputs_by_layer[layer_spec.id_] = {'output': inputs[layer_spec.feature_name]}
@@ -65,8 +65,8 @@ class TrainingModel(tf.keras.Model):
             dataset = data_loader.get_dataset(apply_pipelines='loader') # Model expects data to be loaded but NOT preprocessed
         else:
             dataset = data_loader.get_dataset(apply_pipelines='all')  # Model expects data to be loaded AND preprocessed
-            
-        inputs_batch, _ = next(iter(dataset))       
+
+        inputs_batch, _ = next(iter(dataset))
 
         inputs = {}
         for layer_spec in self._graph_spec.input_layers:
@@ -89,12 +89,11 @@ class TrainingModel(tf.keras.Model):
 
         outputs, _ = self.__call__(processed_inputs)
 
-        if include_postprocessing:        
+        if include_postprocessing:
             for feature_name, tensor in outputs.items():
                 postprocessing = data_loader.get_postprocessing_pipeline(feature_name)
                 outputs[feature_name] = postprocessing(tensor)
 
         inference_model = tf.keras.Model(inputs=inputs, outputs=outputs)
         return inference_model
-        
-    
+

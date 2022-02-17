@@ -14,8 +14,9 @@ frontend_dev: require-ROOT ## make the developmet frontend image
 	docker build . --file Dockerfile-dev --tag=dev/frontend:latest
 
 env: ## Sets up the env file so docker-compose has the basic env vars
-	echo PL_ROOT=${ROOT} >> .env
+	echo PL_ROOT=${ROOT} > .env
 	echo WORKING_DIR=${PL_WORKING_DIR} >> .env
+	echo AUTH_ENV=dev >> .env
 	mkdir -p ${PL_WORKING_DIR}
 
 dev_all: rygg_dev kernel_dev frontend_dev env ## All dev images and env file

@@ -12,7 +12,7 @@ import rygg.files.views.util
 @api_view(['POST'])
 def github_export(request):
     full_path = rygg.files.views.util.get_path_param(request)
-    project_id = rygg.files.views.util.get_project_id_from_request(request)
+    project_id = rygg.files.views.util.get_project_from_request(request).project_id
     as_dict = request_as_dict(request)
 
     # required

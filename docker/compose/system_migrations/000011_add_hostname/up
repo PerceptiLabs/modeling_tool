@@ -4,32 +4,25 @@ set -Eeo pipefail
 MIGRATIONS_DIR=$(dirname $(dirname $0))
 . "${MIGRATIONS_DIR}/common"
 
-make_directories(){
-  mkdir -p plabsdb
-  sudo chmod -R 777 plabsdb
-
-  mkdir -p plabs/data
-  sudo chmod -R 777 plabs
-}
-
 install_config(){
   # update the docker-compose file and restart to take the changes
   mydir=$(dirname $0)
+  docker-compose rm --stop --force kernel
   customize_docker_compose_file "${mydir}/docker-compose-after.yml"
   cp "${mydir}/docker-compose-after.yml" "${PL_ROOT_DIR}/docker-compose.yml"
   cp "${mydir}/nginx.conf" "${PL_ROOT_DIR}/nginx.conf"
   echo "PL_SERVER_ADDRESS=${PL_SERVER_ADDRESS}" >> .env
 }
 
+short_circuit(){
+  if [ -f .env ] && grep -q "^PL_SERVER_ADDRESS=" .env;
+    echo "The server name has been set"
+    exit 0
+  fi
+}
+
 main(){
-  # we can skip 001 and 002 since they're baked into later migrations
-  make_directories
-
-  # All of the Keycloak init has to happen
-  echo "Starting addition of keycloak"
-  "${MIGRATIONS_DIR}/000003_init_kc/up"
-
-  # use the final migration
+  short_circuit
   install_config
 }
 

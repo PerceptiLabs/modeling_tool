@@ -2,12 +2,13 @@ from perceptilabs.tracking.utils import get_layer_counts, aggregate_summaries, g
 
 
 def send_training_stopped(
-        tracker, user_email, model_id, graph_spec, training_duration, 
-        dataset_size, sample_size, num_iters_completed, num_epochs_completed, 
-        batch_size, data_units_iter_based, data_units_epoch_based,
-        model_params, trainable_params,
-        progress, all_output_summaries
+    call_context, tracker, model_id, graph_spec, training_duration,
+    dataset_size, sample_size, num_iters_completed, num_epochs_completed,
+    batch_size, data_units_iter_based, data_units_epoch_based,
+    model_params, trainable_params,
+    progress, all_output_summaries
 ):
+    user_email = call_context['user_email']
     payload = {
         'user_email': user_email,
         'model_id': model_id,
@@ -23,10 +24,10 @@ def send_training_stopped(
         'training_duration': training_duration,
         'progress': progress,
     }
-    layer_counts = get_layer_counts(graph_spec)    
+    layer_counts = get_layer_counts(graph_spec)
     payload.update(layer_counts)
 
     aggregated_metrics = aggregate_summaries(all_output_summaries)
     payload.update(aggregated_metrics)
 
-    tracker.emit('training-stopped', user_email, payload)     
+    tracker.emit('training-stopped', user_email, payload)

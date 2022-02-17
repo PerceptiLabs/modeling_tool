@@ -40,41 +40,25 @@ class KernelError(Exception):
     def from_exception(cls, exception, message=None):
         if isinstance(exception, cls):
             return exception
-        
+
         if message is None:
             message = repr(exception)
-            
+
         tb_obj = traceback.TracebackException(
             exception.__class__,
             exception,
             exception.__traceback__
         )
         return cls(message=message, details="".join(tb_obj.format()))
-    
+
 
 def get_memory_usage():
     """ Return the fraction of memory used """
     total_memory = psutil.virtual_memory().total # Deceptive naming (virtual memory), but OK according to docs: https://psutil.readthedocs.io/en/latest/
     available_memory = psutil.virtual_memory().available
-        
+
     fraction_used = (total_memory-available_memory)/total_memory
     return fraction_used
-
-
-def parse_jwt(jwt):
-    """ Parses JWT. Copied from frontend parseJWT at frontend/src/renderer/core/helpers.js """
-    import base64
-    import json
-    payload = jwt.split('.')[1]
-    decoded = base64.b64decode(payload + '==').decode()
-    as_dict = json.loads(decoded)
-    return as_dict
-
-
-def parse_user_email(authorization):
-    jwt = authorization[7:]  # Drop "Bearer "
-    parsed = parse_jwt(jwt)
-    return parsed['email']
 
 
 def convert(obj):
@@ -90,7 +74,7 @@ def convert(obj):
     else:
         return json.JSONEncoder.default(obj)
 
-    
+
 def get_app_variables():
     with open(pkg_resources.resource_filename('perceptilabs', 'app_variables.json'), 'r') as f:
         app_variables = json.load(f)
@@ -111,7 +95,7 @@ def is_docker():
         return os.path.isfile("/.dockerenv")
     except:
         return False
-    
+
 
 def is_dev():
     return get_version() == "development"
@@ -166,7 +150,7 @@ def dump_system_info(path):
     info = {}
     info['cpu_count'] = multiprocessing.cpu_count()
     info['time_zone'] = time.tzname
-    
+
     info['platform'] = {
         'platform': platform.platform(),
         'system': platform.system(),
@@ -177,14 +161,14 @@ def dump_system_info(path):
     with open(path, 'w') as f:
         json.dump(info, f, indent=4)
 
-        
+
 def dump_build_info(path):
     import json
 
     info = {}
     info['commit'] = ''
-    info['version'] = ''    
-    
+    info['version'] = ''
+
     with open(path, 'w') as f:
         json.dump(info, f, indent=4)
 
@@ -193,22 +177,22 @@ def stringify(obj, max_len=70, new_lines=False, indent=0, sort=False):
     def _format(value):
         value_str = str(value)
         if not new_lines:
-            value_str = value_str.replace('\n', '')            
+            value_str = value_str.replace('\n', '')
         if len(value_str) > max_len:
             value_str = value_str[0:max_len] + '...'
-        value_str = f'{value_str} [{type(value).__name__}]'            
+        value_str = f'{value_str} [{type(value).__name__}]'
         return value_str
 
     def search(obj, path=''):
         if type(obj) in [list, tuple, set]:
             nesting = any(type(x) in [list, tuple, set, dict] for x in obj)
-            if nesting and len(str(obj).replace('\n', '')) > max_len:            
+            if nesting and len(str(obj).replace('\n', '')) > max_len:
                 for i, o in enumerate(obj):
                     search(o, path=f'{path}/{i}')
             else:
-                val_str = _format(obj)                
+                val_str = _format(obj)
                 pairs.append((path+'/', val_str))
-                
+
         elif isinstance(obj, dict):
             if len(str(obj).replace('\n', '')) > max_len:
                 for k, o in obj.items():
@@ -217,21 +201,21 @@ def stringify(obj, max_len=70, new_lines=False, indent=0, sort=False):
                 val_str = _format(obj)
                 pairs.append((path+'/', val_str))
         else:
-            val_str = _format(obj)                            
+            val_str = _format(obj)
             pairs.append((path, val_str))
-            
+
     pairs = []
     search(obj)
-    
+
     text = ''
     n_chars = max(len(p) for p, _ in pairs)
 
     if sort:
         pairs = sorted(pairs, key=lambda x: x[0])
-    
+
     for path, value in pairs:
         text += ' '*indent + path.ljust(n_chars, ' ') + ' : ' + value + '\n'
-                          
+
     return text
 
 
@@ -243,7 +227,7 @@ def frontend_watcher(process_id, sleep_period=1, grace_period=15, logger=None):
     import os
     import time
     import psutil
-    
+
     while True:
         if not psutil.pid_exists(process_id):
             if logger:
@@ -274,8 +258,8 @@ def loop_until_true(condition, timeout=20.0):
         time.sleep(0.3)
         t1 = time.time()
     return False
-        
-    
+
+
 def wait_for_condition(condition, timeout=20.0):
     return loop_until_true(condition, timeout)
 
@@ -287,13 +271,13 @@ def get_start_nodes(graph):
             start_nodes.append(id_)
         return start_nodes
 
-    
+
 @deprecated
 def patch_net_connections(original_network):
     """ Converts forward/backward connection layers to comply with new standard """
     if True:
         return original_network
-    
+
 
 class DummyExecutor(Executor):
     def __init__(self):
@@ -319,19 +303,19 @@ class DummyExecutor(Executor):
         with self._shutdownLock:
             self._shutdown = True
 
-            
+
 def get_object_size(data_obj, obj_ids: Set[int]) -> int:
     '''Recursively gets an objects total size in bytes
-    
+
     Args:
         obj: Object to get total size of
-    
+
     Returns:
         total_size: Size of object in bytes
     '''
     if data_obj is None:
         return 0
-        
+
     if id(data_obj) in obj_ids:
         return 0
 
@@ -356,23 +340,23 @@ def get_object_size(data_obj, obj_ids: Set[int]) -> int:
     elif isinstance(data_obj, dict):
         data_obj_size = getsizeof(data_obj)
         return data_obj_size + sum([get_object_size(key, obj_ids) + get_object_size(val, obj_ids) for key, val in data_obj.items()])
-    
+
     else:
         return 0
 
 
 
-    
+
 class RateCounter:
-    
+
     class Entry:
         def __init__(self, t, v):
             self.t = t
             self.v = v
-            
+
         def __lt__(self, other):
-            return self.t < other.t            
-    
+            return self.t < other.t
+
     def __init__(self, window):
         self._window = window
         self._entries = []
@@ -384,7 +368,7 @@ class RateCounter:
             if self._entries[i].t < t - self._window:
                 del self._entries[i]
             i += 1
-            
+
     def add_entry(self, value=None):
         bisect.insort(self._entries, self.Entry(time.time(), value or 1))
 
@@ -415,11 +399,11 @@ def format_logs_zipfile_name(session_id, issue_id=None):
     if issue_id is None:
         filename = f"default-{year}-{month}-{day}-{session_id}.txt"
     else:
-        filename = f"issue-{issue_id}-{year}-{month}-{day}-{session_id}.txt"        
+        filename = f"issue-{issue_id}-{year}-{month}-{day}-{session_id}.txt"
 
     return filename
 
-    
+
 def allow_memory_growth_on_gpus():
     """ Prevents crashes for unnecessary resource allocation """
     import tensorflow as tf
@@ -438,7 +422,7 @@ def disable_gpus():
 # Cython doesn't yet play well with annotations (required for Pydantic).
 # See https://github.com/cython/cython/issues/3776
 #
-# There is also an issue with Pydantic and Cython. See below. 
+# There is also an issue with Pydantic and Cython. See below.
 #
 # This workaround BREAKS type checking for the compiled version, so therefore
 # this workaround should be removed as soon as these issues are fixed.
@@ -450,28 +434,28 @@ from pydantic import BaseModel, validator
 class MyModelMetaclass(pydantic.main.ModelMetaclass):
     # Cython has not caught up with Python 3.7. So we have to create __annotations__ manually
     # for Pydantic to work.
-    
+
     def __new__(mcs, name, bases, namespace, **kwargs):
         if '__annotations__' not in namespace:
             untouched_types = pydantic.main.UNTOUCHED_TYPES
-            
+
             annotations = {}
             for var_name, value in namespace.items():
                 if pydantic.main.is_valid_field(var_name) and not isinstance(value, untouched_types):
                     annotations[var_name] = Any
-                    
+
             namespace['__annotations__'] = annotations
-            
+
         return super().__new__(mcs, name, bases, namespace, **kwargs)
 
-    
+
 def dummy_func():
     pass
 
 
 class MyPydanticBaseModel(BaseModel, metaclass=MyModelMetaclass):
     # Pydantic does not know how to ignore Cython functions, so we have to configure that explicitly
-    
+
     class Config:
         arbitrary_types_allowed = True
         keep_untouched = (type(dummy_func),)
@@ -481,24 +465,24 @@ class MyPydanticBaseModel(BaseModel, metaclass=MyModelMetaclass):
 def random_exception(prob=0.5, message="Random error! Disable this method in production!!"):
     import random
     if random.random() <= prob:
-        raise RuntimeError(message)        
-        
-            
+        raise RuntimeError(message)
 
-def get_num_data_repeats(settings_dict):  
-    """ Repeat data once per enabled augmentation setting. 
+
+
+def get_num_data_repeats(settings_dict):
+    """ Repeat data once per enabled augmentation setting.
 
     Temporary until we have a frontend solution
     """
     augmentations = set(['random_flip', 'random_crop', 'random_rotation'])
-    
+
     count = 0
     for spec_dict in settings_dict['featureSpecs'].values():
         for preprocessing in spec_dict['preprocessing'].keys():
             if preprocessing in augmentations:
                 count += 1
 
-    return count + 1  
+    return count + 1
 
 
 class Timer:
@@ -555,8 +539,8 @@ def b64decode_and_sanitize(input_):
     decoded = base64.urlsafe_b64decode(padded).decode()
     sanitized = sanitize_path(decoded)
     return sanitized
-    
-    
+
+
 def get_categories_from_postprocessing(postprocessing):
     num_categories = postprocessing.n_categories
     indices = postprocessing(np.eye(num_categories)).numpy()
@@ -580,9 +564,9 @@ def setup_sentry():
     import sentry_sdk
     from sentry_sdk.integrations.logging import LoggingIntegration
     import perceptilabs.settings as settings
-    
+
     logger = logging.getLogger(__name__)
-    
+
     if is_pytest():
         return
 
@@ -590,7 +574,7 @@ def setup_sentry():
         return
 
     if is_dev() and not settings.SENTRY_ENABLED_DEV:
-        return    
+        return
 
     if is_prod():
         environment = settings.SENTRY_ENV_PROD
@@ -598,7 +582,7 @@ def setup_sentry():
     else:
         environment = settings.SENTRY_ENV_DEV
         release = sentry_sdk.utils.get_default_release()
-    
+
     integrations = [
         LoggingIntegration(
             level=logging.INFO,        # Capture info and above as breadcrumbs
@@ -622,17 +606,17 @@ def directory_tree(path):
     for path, dirs, files in os.walk(path):
         for d in dirs:
             found_path = os.path.join(path, d)
-            
+
             if not found_path.endswith(os.path.sep):
                 found_path += os.path.sep  # dirs should end with /
-                
+
             found.append(found_path)
-                
+
         for f in files:
             found.append(os.path.join(path, f))
 
     return found
-        
-        
-    
-    
+
+
+
+

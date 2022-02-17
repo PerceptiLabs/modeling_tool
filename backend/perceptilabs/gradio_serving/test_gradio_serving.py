@@ -3,19 +3,14 @@ import pytest
 import tempfile
 import requests
 
-import numpy as np
-import pandas as pd
-import skimage.io as sk
-
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.script import ScriptFactory
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.resources.epochs import EpochsAccess
-from perceptilabs.data.base import DataLoader
-from perceptilabs.data.settings import FeatureSpec, DatasetSettings, Partitions
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.trainer.model import TrainingModel
-    
+from perceptilabs.test_utils import make_data_loader
+
 import pytest
 from unittest.mock import MagicMock
 from retrying import retry
@@ -30,7 +25,7 @@ from perceptilabs.gradio_serving.base import GradioLauncher
 @retry(stop_max_attempt_number=5, wait_fixed=2000)
 def wait_for_gradio_up(launcher):
     assert launcher.get_url() is not None
-    
+
     r = requests.head(launcher.get_url(), timeout=3)
     assert r.status_code == 200
 
@@ -45,26 +40,27 @@ def wait_for_gradio_down(launcher):
 
 def test_launcher_starts_endpoint(monkeypatch):
     mock_fn = MagicMock()
-    monkeypatch.setattr(TrainingModel, "from_graph_spec", mock_fn)  
-    
+    monkeypatch.setattr(TrainingModel, "from_graph_spec", mock_fn)
+
     model_access = MagicMock()
-    
+
     launcher = GradioLauncher(
         model_access=model_access,
         epochs_access=MagicMock()
     )
 
     launcher.start(
+        call_context={},
         model_id='123',
         graph_spec=MagicMock(),
         data_loader=MagicMock(),
         training_session_id='456',
-        model_name='my model'                
+        model_name='my model'
     )
     wait_for_gradio_up(launcher)
 
     with pytest.raises(NotImplementedError):
-        launcher.stop()  
+        launcher.stop()
         # wait_for_gradio_down(launcher)  # TODO: enable when removing not implemented error
 
 
@@ -96,7 +92,7 @@ def test_get_gradio_output_returns_value(data):
         metadata=data['metadata']
     )
     assert isinstance(component, OutputComponent)
-    
+
 
 
 data0 = {
@@ -145,33 +141,10 @@ data3 = {
     }
 }
 
-
-def make_data_loader(data):
-    if data['x1']['type'] == 'image':
-        for path in data['x1']['values']:
-            image = np.random.randint(0, 255, data['x1']['shape'], dtype=np.uint8)
-            sk.imsave(path, image)
-
-    df = pd.DataFrame({'x1': data['x1']['values'], 'y1': data['y1']['values']})
-
-    feature_specs = {
-        'x1': FeatureSpec(iotype='input', datatype=data['x1']['type']),
-        'y1': FeatureSpec(iotype='target', datatype=data['y1']['type'])
-    }
-    partitions = Partitions(training_ratio=1.0, validation_ratio=0.0, test_ratio=0.0)
-    
-    dataset_settings = DatasetSettings(
-        feature_specs=feature_specs,
-        partitions=partitions,
-    )
-
-    dl = DataLoader(df, dataset_settings)
-    return dl
-
-
 @pytest.fixture(params=[data0, data1, data2, data3])
 def data_loader(request):
-    yield make_data_loader(request.param)
+    with make_data_loader(request.param) as dl:
+        yield dl
 
 
 def make_graph_spec(data_loader):
@@ -209,22 +182,23 @@ def make_graph_spec(data_loader):
 
     graph_spec = gsb.build()
     return graph_spec
-    
+
 
 def test_predictions_endpoint(script_factory, data_loader):
     launcher = GradioLauncher(
         model_access=ModelAccess(script_factory),
         epochs_access=EpochsAccess(rygg=MagicMock())
     )
-    
+
     launcher.start(
+        call_context={},
         model_id='123',
         graph_spec=make_graph_spec(data_loader),
         data_loader=data_loader,
         training_session_id=None,
         model_name='my model',
         include_preprocessing=True,
-        include_postprocessing=True        
+        include_postprocessing=True
     )
     wait_for_gradio_up(launcher)
 
@@ -234,10 +208,10 @@ def test_predictions_endpoint(script_factory, data_loader):
     data = []
     for value in inputs.values():
         if isinstance(value, (str, bytes)) and os.path.isfile(value):
-            encoded_file = encode_file_to_base64(value)                  
+            encoded_file = encode_file_to_base64(value)
             data.append(encoded_file)
         else:
-            data.append(value)        
+            data.append(value)
 
     url = launcher.get_url() + 'api/predict/'
     response = requests.post(url, json={'data': data})
@@ -246,7 +220,7 @@ def test_predictions_endpoint(script_factory, data_loader):
     assert response.json() != {}  # TODO: validate response
 
     with pytest.raises(NotImplementedError):
-        launcher.stop()  
+        launcher.stop()
         # wait_for_gradio_down(launcher)  # TODO: enable when removing not implemented error
 
 
@@ -255,15 +229,16 @@ def test_predictions_endpoint_no_preprocessing_no_postprocessing_in_gradio(scrip
         model_access=ModelAccess(script_factory),
         epochs_access=EpochsAccess(rygg=MagicMock())
     )
-    
+
     launcher.start(
+        call_context={},
         model_id='123',
         graph_spec=make_graph_spec(data_loader),
         data_loader=data_loader,
         training_session_id=None,
         model_name='my model',
         include_preprocessing=False,
-        include_postprocessing=False        
+        include_postprocessing=False
     )
     wait_for_gradio_up(launcher)
 
@@ -274,11 +249,11 @@ def test_predictions_endpoint_no_preprocessing_no_postprocessing_in_gradio(scrip
         inputs, outputs = data_loader.get_example_batch(
             batch_size=None, output_type='list', apply_pipelines=None)
 
-    
+
     data = []
     for value in inputs.values():
         if isinstance(value, (str, bytes)) and os.path.isfile(value):
-            encoded_file = encode_file_to_base64(value)                  
+            encoded_file = encode_file_to_base64(value)
             data.append(encoded_file)
         else:
             data.append(value)
@@ -290,7 +265,7 @@ def test_predictions_endpoint_no_preprocessing_no_postprocessing_in_gradio(scrip
     assert response.json() != {}  # TODO: validate responseå
 
     with pytest.raises(NotImplementedError):
-        launcher.stop()  
+        launcher.stop()
         # wait_for_gradio_down(launcher)  # TODO: enable when removing not implemented error
 
 
@@ -299,15 +274,16 @@ def test_predictions_endpoint_no_postprocessing_in_gradio(script_factory, data_l
         model_access=ModelAccess(script_factory),
         epochs_access=EpochsAccess(rygg=MagicMock())
     )
-    
+
     launcher.start(
+        call_context={},
         model_id='123',
         graph_spec=make_graph_spec(data_loader),
         data_loader=data_loader,
         training_session_id=None,
         model_name='my model',
         include_preprocessing=True,
-        include_postprocessing=False        
+        include_postprocessing=False
     )
     wait_for_gradio_up(launcher)
 
@@ -317,7 +293,7 @@ def test_predictions_endpoint_no_postprocessing_in_gradio(script_factory, data_l
     data = []
     for value in inputs.values():
         if isinstance(value, (str, bytes)) and os.path.isfile(value):
-            encoded_file = encode_file_to_base64(value)                  
+            encoded_file = encode_file_to_base64(value)
             data.append(encoded_file)
         else:
             data.append(value)
@@ -329,7 +305,7 @@ def test_predictions_endpoint_no_postprocessing_in_gradio(script_factory, data_l
     assert response.json() != {}  # TODO: validate responseå
 
     with pytest.raises(NotImplementedError):
-        launcher.stop()  
+        launcher.stop()
         # wait_for_gradio_down(launcher)  # TODO: enable when removing not implemented error
 
 
@@ -338,15 +314,16 @@ def test_predictions_endpoint_no_preprocessing_in_gradio(script_factory, data_lo
         model_access=ModelAccess(script_factory),
         epochs_access=EpochsAccess(rygg=MagicMock())
     )
-    
+
     launcher.start(
+        call_context={},
         model_id='123',
         graph_spec=make_graph_spec(data_loader),
         data_loader=data_loader,
         training_session_id=None,
         model_name='my model',
         include_preprocessing=False,
-        include_postprocessing=True        
+        include_postprocessing=True
     )
     wait_for_gradio_up(launcher)
 
@@ -361,7 +338,7 @@ def test_predictions_endpoint_no_preprocessing_in_gradio(script_factory, data_lo
     data = []
     for value in inputs.values():
         if isinstance(value, (str, bytes)) and os.path.isfile(value):
-            encoded_file = encode_file_to_base64(value)                  
+            encoded_file = encode_file_to_base64(value)
             data.append(encoded_file)
         else:
             data.append(value)
@@ -373,6 +350,6 @@ def test_predictions_endpoint_no_preprocessing_in_gradio(script_factory, data_lo
     assert response.json() != {}  # TODO: validate responseå
 
     with pytest.raises(NotImplementedError):
-        launcher.stop()  
+        launcher.stop()
         # wait_for_gradio_down(launcher)  # TODO: enable when removing not implemented error
-    
+

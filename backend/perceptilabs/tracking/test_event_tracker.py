@@ -23,7 +23,7 @@ def test_event_fires_despite_some_properties_corrupt(mixpanel_mock):
     tracker = EventTracker()
     tracker.emit(
         'some-event',
-        'a@b.com',
+        'a@b.test',
         properties={
             'something-that-can-be-serialized': 'abc',
             'something-that-cannot-be-serialized': EventTracker
@@ -31,7 +31,7 @@ def test_event_fires_despite_some_properties_corrupt(mixpanel_mock):
     )
     assert mixpanel_mock.track.call_args[1] == {
         'event_name': 'some-event',
-        'distinct_id': 'a@b.com',
+        'distinct_id': 'a@b.test',
         'properties': {'something-that-can-be-serialized': 'abc'}
     }
 
@@ -40,7 +40,7 @@ def test_event_fires_despite_all_properties_corrupt(mixpanel_mock):
     tracker = EventTracker()
     tracker.emit(
         'some-event',
-        'a@b.com',
+        'a@b.test',
         properties={
             'something-that-cannot-be-serialized-1': EventTracker,
             'something-that-cannot-be-serialized-2': EventTracker
@@ -48,7 +48,7 @@ def test_event_fires_despite_all_properties_corrupt(mixpanel_mock):
     )
     assert mixpanel_mock.track.call_args[1] == {
         'event_name': 'some-event',
-        'distinct_id': 'a@b.com',
+        'distinct_id': 'a@b.test',
         'properties': {}
     }
         
@@ -64,7 +64,7 @@ def test_raises_errors(mixpanel_mock, method, raise_errors):
     def closure():
         tracker.emit(
             'some-event',
-            'a@b.com',
+            'a@b.test',
             properties={
                 'something-that-can-be-serialized': 'abc',
             }

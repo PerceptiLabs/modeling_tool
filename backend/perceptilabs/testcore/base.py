@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class TestCore():
     def __init__(self, model_access, epochs_access, testing_session_id, model_ids, models_info, tests, on_testing_completed=None):
         self._model_access = model_access
-        self._epochs_access = epochs_access        
+        self._epochs_access = epochs_access
         self._on_testing_completed = on_testing_completed
         self._testing_session_id = testing_session_id
         self._status = None
@@ -41,12 +41,12 @@ class TestCore():
     @property
     def session_id(self):
         return self._testing_session_id
-        
+
     @property
     def tests(self):
         return self._tests.copy()
 
-    def load_models_and_data(self):
+    def load_models_and_data(self, call_context):
         """
         loads the pretrained models and the data loaders for the testing to begin.
         """
@@ -55,25 +55,30 @@ class TestCore():
             self._current_model_name = model_info['model_name']
             self.load_data(model_info['data_loader'], model_id)
             self.load_model(
+                call_context,
                 model_id,
                 training_session_id=model_info['training_session_id'],
                 graph_spec=model_info['graph_spec']
             )
 
-    def load_model(self, model_id, training_session_id, graph_spec):
+    def load_model(self, call_context, model_id, training_session_id, graph_spec):
         """
         loads model from exported model.pb file or using checkpoints.
         """
         try:
             self._models[model_id] = LoadInferenceModel.from_checkpoint(
-                self._model_access, self._epochs_access,
-                training_session_id, graph_spec, self._data_loaders[model_id]
+                call_context,
+                self._model_access,
+                self._epochs_access,
+                training_session_id,
+                graph_spec,
+                self._data_loaders[model_id]
             )
             logger.info("model %s loaded successfully.", model_id)
         except Exception as e:
             raise KernelError.from_exception(
                 e, message=f"Unable to load the {self._current_model_name} using checkpoint from training session {training_session_id}")
-            
+
     def load_data(self, data_loader, model_id):
         """
         Loads data using DataLoader.
@@ -83,18 +88,18 @@ class TestCore():
             data_loader)
         self._dataset_sizes[model_id] = data_loader.get_dataset_size('test')
 
-    def run(self):
+    def run(self, call_context):
         """
         Runs the list of tests for all models in the testcore and saves the results.
         """
-        for _ in self.run_stepwise():
-            pass        
+        for _ in self.run_stepwise(call_context):
+            pass
 
-    def run_stepwise(self):
+    def run_stepwise(self, call_context):
         self.set_status('Loading')
         yield
-        
-        self.load_models_and_data()
+
+        self.load_models_and_data(call_context)
         self._model_number = 0
         for model_id in self._models:
             self._current_model_id = model_id
@@ -107,7 +112,7 @@ class TestCore():
 
             model_inputs = self._models[model_id].model_inputs
             model_outputs = self._models[model_id].model_outputs
-            
+
             self._results[model_id] = {}
             self._test_number = 0
             yield from self._run_tests(model_id, compatible_layers, model_outputs, model_inputs)
@@ -124,7 +129,7 @@ class TestCore():
 
                 self._results[model_id][test] = self._run_test(
                     test, compatible_layers[test], model_outputs, model_inputs)
-                
+
                 yield
 
     def _run_test(self, test, compatible_output_layers, model_outputs, model_inputs=None):
@@ -142,10 +147,10 @@ class TestCore():
                 elif test == 'outputs_visualization':
                     results = OutputVisualization().run(model_inputs, model_outputs, compatible_output_layers)
                 logger.info("test %s completed for model %s.", test, model_id)
-                
+
                 if self._on_testing_completed and not self._stopped:
                     self._on_testing_completed(model_id, test)
-                    
+
                 return results
 
             else:
@@ -155,11 +160,11 @@ class TestCore():
         data_iterator = self._get_data_generator(model_id)
         logger.info("Generating outputs for model %s.", model_id)
         self.set_status('Inference')
-        
+
         return_inputs = True if "outputs_visualization" in self._tests else False
         try:
             yield from self._models[model_id].run_inference_stepwise(data_iterator, return_inputs)
-            
+
             # TODO(mukund): support inner layer outputs
             if not self._stopped:
                 logger.info("Outputs generated for model %s.", model_id)
@@ -167,7 +172,7 @@ class TestCore():
         except Exception as e:
             raise KernelError.from_exception(
                 e, message=f"Error while running inference on {self._current_model_name} model.")
-            
+
     def get_compatible_layers_for_tests(self):
         compatible_layers = {}
         for test in self._tests:
@@ -310,7 +315,7 @@ class TestCore():
             return self._results
         else:
             return {}
-    
+
     def _get_categories(self, model_id, compatible_layers):
         categories = {}
         data_loader = self._data_loaders[model_id]
@@ -324,7 +329,7 @@ class TestCore():
     @property
     def models(self):
         return self._models.copy()
-        
+
 
 class ProcessResults():
     """process results here.

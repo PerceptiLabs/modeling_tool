@@ -4,18 +4,15 @@ import tempfile
 
 import tensorflow as tf
 import numpy as np
-import pandas as pd
-import skimage.io as sk
 from fastapi.testclient import TestClient
 
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.script import ScriptFactory
-from perceptilabs.data.base import DataLoader
-from perceptilabs.data.settings import FeatureSpec, DatasetSettings, Partitions
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.sharing.exporter import Exporter
 import perceptilabs.sharing.fastapi_utils as fastapi_utils
 import perceptilabs.data.utils as data_utils
+from perceptilabs.test_utils import make_data_loader
 
 
 data0 = {
@@ -65,52 +62,34 @@ data3 = {
 }
 
 
-
-def make_data_loader(data, working_dir):
-    if data['x1']['type'] == 'image':
-        for path in data['x1']['values']:
-            image = np.random.randint(0, 255, data['x1']['shape'], dtype=np.uint8)
-            sk.imsave(path, image)
-
-    feature_specs = {
-        'x1': FeatureSpec(iotype='input', datatype=data['x1']['type']),
-        'y1': FeatureSpec(iotype='target', datatype=data['y1']['type'])
-    }
-    partitions = Partitions(training_ratio=1.0, validation_ratio=0.0, test_ratio=0.0)
-
-    dataset_settings = DatasetSettings(
-        feature_specs=feature_specs,
-        partitions=partitions,
-    )
-
-    df = pd.DataFrame({'x1': data['x1']['values'], 'y1': data['y1']['values']})
-    dl = DataLoader(df, dataset_settings)
-    return dl
-
-
 @pytest.fixture(params=[data0, data1, data2])
-def data_loader(request, temp_path):
-    yield make_data_loader(request.param, temp_path)
+def data_loader(request):
+    with make_data_loader(request.param) as dl:
+        yield dl
 
 
 @pytest.fixture(params=[data0, data1])
-def data_loader_except_image(request, temp_path):
-    yield make_data_loader(request.param, temp_path)
+def data_loader_except_image(request):
+    with make_data_loader(request.param) as dl:
+        yield dl
 
 
 @pytest.fixture()
-def data_loader_numerical(temp_path):
-    yield make_data_loader(data0, temp_path)
+def data_loader_numerical():
+    with make_data_loader(data0) as dl:
+        yield dl
 
 
 @pytest.fixture()
-def data_loader_categorical(temp_path):
-    yield make_data_loader(data1, temp_path)
+def data_loader_categorical():
+    with make_data_loader(data1) as dl:
+        yield dl
 
 
 @pytest.fixture()
-def data_loader_image(temp_path):
-    yield make_data_loader(data2, temp_path)
+def data_loader_image():
+    with make_data_loader(data2) as dl:
+        yield dl
 
 
 def make_graph_spec(data_loader):
@@ -201,7 +180,7 @@ def module_from_path(module_path, module_name='my_module'):
     return module
 
 
-def test_create_exporter_from_graph(script_factory, data_loader, temp_path):
+def test_create_exporter_from_graph(script_factory, data_loader):
     # Use data loader to feed data through the model
     graph_spec = make_graph_spec(data_loader)
     training_model = TrainingModel(script_factory, graph_spec)
@@ -432,61 +411,59 @@ def test_export_fastapi_endpoint_healthy(script_factory, data_loader, temp_path)
 
 @pytest.mark.parametrize("data", [data0, data1, data2, data3])
 def test_export_fastapi_endpoint_predict(data, script_factory, temp_path):
-    data_loader = make_data_loader(data, temp_path)
-    graph_spec = make_graph_spec(data_loader)
-    training_model = TrainingModel(script_factory, graph_spec)
-    exporter = Exporter(graph_spec, training_model, data_loader)
-    exporter.export(temp_path, mode='FastAPI')
+    with make_data_loader(data) as data_loader:
+        graph_spec = make_graph_spec(data_loader)
+        training_model = TrainingModel(script_factory, graph_spec)
+        exporter = Exporter(graph_spec, training_model, data_loader)
+        exporter.export(temp_path, mode='FastAPI')
 
 
-    module = module_from_path(os.path.join(temp_path, fastapi_utils.SCRIPT_FILE))
-    app = module.create_app()
-    client = TestClient(app)
+        module = module_from_path(os.path.join(temp_path, fastapi_utils.SCRIPT_FILE))
+        app = module.create_app()
+        client = TestClient(app)
 
-    def make_payload(dict_):
-        payload = {}
-        for feature, tensor in dict_.items():
-            def f(x):
-                if isinstance(x, bytes):
-                    x = x.decode()
-                return x
+        def make_payload(dict_):
+            payload = {}
+            for feature, tensor in dict_.items():
+                def f(x):
+                    if isinstance(x, bytes):
+                        x = x.decode()
+                    return x
 
-            payload[feature] = [f(x) for x in tensor.numpy().tolist()]
-        return payload
+                payload[feature] = [f(x) for x in tensor.numpy().tolist()]
+            return payload
 
-    inference_model = exporter.get_inference_model()
-    for batch_size in [1, 3]:
-        x, _ = data_loader.get_example_batch(batch_size=batch_size, apply_pipelines='loader')
-        y_expected = make_payload(inference_model(x))
+        inference_model = exporter.get_inference_model()
+        for batch_size in [1, 3]:
+            x, _ = data_loader.get_example_batch(batch_size=batch_size, apply_pipelines='loader')
+            y_expected = make_payload(inference_model(x))
 
-        response = client.post("/predict", json=make_payload(x))
-        y_actual = response.json()
+            response = client.post("/predict", json=make_payload(x))
+            y_actual = response.json()
 
-        assert response.status_code == 200
-        assert y_actual == y_expected
+            assert response.status_code == 200
+            assert y_actual == y_expected
 
 
 @pytest.mark.parametrize("data", [data0, data1, data2, data3])
 def test_export_fastapi_endpoint_predict_using_example_script(data, script_factory, temp_path):
-    data_loader = make_data_loader(data, temp_path)
-    graph_spec = make_graph_spec(data_loader)
-    training_model = TrainingModel(script_factory, graph_spec)
-    exporter = Exporter(graph_spec, training_model, data_loader)
-    exporter.export(temp_path, mode='FastAPI')
+    with make_data_loader(data) as data_loader:
+        graph_spec = make_graph_spec(data_loader)
+        training_model = TrainingModel(script_factory, graph_spec)
+        exporter = Exporter(graph_spec, training_model, data_loader)
+        exporter.export(temp_path, mode='FastAPI')
 
-    server_module = module_from_path(os.path.join(temp_path, fastapi_utils.SCRIPT_FILE))
-    app = server_module.create_app()
-    client = TestClient(app)
+        server_module = module_from_path(os.path.join(temp_path, fastapi_utils.SCRIPT_FILE))
+        app = server_module.create_app()
+        client = TestClient(app)
 
-    example_module = module_from_path(os.path.join(temp_path, fastapi_utils.EXAMPLE_SCRIPT_FILE))
-    data = example_module.make_payload()
-    response = client.post("/predict", json=data).json()
+        example_module = module_from_path(os.path.join(temp_path, fastapi_utils.EXAMPLE_SCRIPT_FILE))
+        data = example_module.make_payload()
+        response = client.post("/predict", json=data).json()
 
-    batch_size = len(next(iter(data.values())))  #  length of arbitrary feature vector
-    _, targets = data_loader.get_example_batch(batch_size=batch_size, apply_pipelines='loader')
+        batch_size = len(next(iter(data.values())))  #  length of arbitrary feature vector
+        _, targets = data_loader.get_example_batch(batch_size=batch_size, apply_pipelines='loader')
 
-    for feature_name in response.keys():
-        assert np.shape(response[feature_name]) == np.shape(targets[feature_name])
-
-
+        for feature_name in response.keys():
+            assert np.shape(response[feature_name]) == np.shape(targets[feature_name])
 

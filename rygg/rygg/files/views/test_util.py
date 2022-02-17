@@ -26,7 +26,15 @@ class GetPathParamEnterprise(TempFileTester, TestCase):
     def test_good_checks_params_and_passes_through_to_translate(self):
         mock = Mock()
         mock.query_params = {"project_id": PROJECT_ID, "path": "a"}
-        with patch("rygg.files.paths.translate_path_from_user") as translate:
+
+        mock_project = Mock()
+        mock_project.project_id = PROJECT_ID
+
+        with patch("rygg.files.paths.translate_path_from_user") as translate, \
+             patch("rygg.api.models.Project.get_by_id") as get_by_id:
+
+            get_by_id.return_value = mock_project
+
             translate.return_value = "ret"
             resp = target.get_path_param(mock)
             self.assertEqual(resp, "ret")

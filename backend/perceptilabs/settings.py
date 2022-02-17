@@ -30,3 +30,24 @@ SENTRY_ENABLED_PROD = True
 SENTRY_ENABLED_DEV = True
 SENTRY_ENV_PROD = "prod"
 SENTRY_ENV_DEV = "dev"
+
+##### Will be edited by the build script #####
+AUTH_ENV_DEFAULT = 'dev'
+##############################################
+AUTH_ENV = os.getenv('AUTH_ENV', AUTH_ENV_DEFAULT)
+if not AUTH_ENV:
+    AUTH_ISSUER = None
+elif AUTH_ENV == 'dev':
+    AUTH_REALM = 'vue-perceptilabs'
+    AUTH_ISSUER = f"https://keycloak.dev.perceptilabs.com:8443/auth/realms/{AUTH_REALM}"
+    AUTH_CERTS_URL = f"{AUTH_ISSUER}/protocol/openid-connect/certs"
+    AUTH_AUDIENCE = 'account'
+    AUTH_ALGORITHM = 'RS256'
+elif AUTH_ENV == 'prod':
+    AUTH_REALM = os.getenv('AUTH_REALM', 'PerceptiLabs')
+    AUTH_ISSUER = os.getenv('AUTH_ISSUER', f"https://keycloak.perceptilabs.com:8443/auth/realms/{AUTH_REALM}")
+    AUTH_CERTS_URL = os.getenv('AUTH_CERTS_URL', f"{AUTH_ISSUER}/protocol/openid-connect/certs")
+    AUTH_AUDIENCE = os.getenv('AUTH_AUDIENCE', 'account')
+    AUTH_ALGORITHM = os.getenv('AUTH_ALGORITHM', 'RS256')
+else:
+    raise Exception(f"AUTH_ENV is invalid. Got '{AUTH_ENV}'. Expected 'dev', 'prod' or empty string.")

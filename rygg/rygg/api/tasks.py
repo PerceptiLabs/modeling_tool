@@ -44,7 +44,6 @@ def delete_path_async(project_id, path):
     if not os.path.exists(path):
         return;
 
-
     # only allow deleting from inside the upload dir
     if IS_CONTAINERIZED:
         full = os.path.abspath(path)

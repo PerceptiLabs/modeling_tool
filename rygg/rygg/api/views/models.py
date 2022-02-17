@@ -8,7 +8,7 @@ import os
 from rygg.api.models import Model, Dataset
 from rygg.api.serializers import ModelSerializer, DatasetSerializer
 from rygg.files.views.util import (
-    get_project_id_from_request,
+    get_project_from_request,
     get_required_param,
     json_response,
     make_path_response,
@@ -92,6 +92,6 @@ class ModelViewSet(viewsets.ModelViewSet):
     @action(methods=['GET'], detail=False)
     def next_name(self, request):
         prefix = get_required_param(request, 'prefix')
-        project_id = get_project_id_from_request(request)
+        project_id = get_project_from_request(request).project_id
         ret = Model.next_name(project_id, prefix)
         return Response({"next_name": ret}, 200)

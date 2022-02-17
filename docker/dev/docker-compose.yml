@@ -14,6 +14,7 @@ x-rygg_base: &rygg_base
   <<: *common_base
   image: dev/rygg:latest
   environment:
+    AUTH_ENV: ${AUTH_ENV}
     PL_CREATE_BASE_UPLOAD_DIR: 1
     DJANGO_SETTINGS_MODULE: rygg.settings
     DJANGO_DATABASE: postgres
@@ -75,8 +76,6 @@ services:
     depends_on:
       rygg_startup:
         condition: service_completed_successfully
-    ports:
-      - "8000:8000"
 
   rygg_worker:
     <<: *rygg_base
@@ -105,17 +104,20 @@ services:
     <<: *kernel_base
     command: python -m celery -A perceptilabs.tasks.celery_executor worker --hostname=training --queues=training --pool=threads
     environment:
+      AUTH_ENV: ${AUTH_ENV}
       PL_REDIS_URL: redis://redis
       PL_RYGG_BASE_URL: http://rygg_api:8000
 
   render:
     <<: *kernel_base
-    command: python main.py
+    command: python main.py --debug
     environment:
       PL_REDIS_URL: redis://redis
       PL_RYGG_BASE_URL: http://rygg_api:8000
       PL_KERNEL_CELERY: 1
       PL_KERNEL_MODE: rendering
+      # TODO: just feed the values to the kernel
+      AUTH_ENV: ${AUTH_ENV}
 
   nginx:
     image: nginx

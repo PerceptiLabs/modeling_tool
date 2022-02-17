@@ -9,17 +9,33 @@ import { LOCAL_STORAGE_CURRENT_PROJECT } from "@/core/constants";
 import { whenUrlIsResolved } from "@/core/urlResolver";
 import { whenVersionIsResolved } from "@/core/versionResolver";
 import { filePickerStorageKey } from "@/core/constants.js";
+import { LOCAL_STORAGE_CURRENT_USER } from "@/core/constants";
 
 export const TASK_SUCCEEDED_STATE = "SUCCESS";
 export const TASK_COMPLETED_STATES = [TASK_SUCCEEDED_STATE, "FAILED"];
 
+function whenHaveUserToken() {
+  return new Promise(function (resolve, reject) {
+    (function waitForToken(){
+      let userToken = localStorage.getItem(LOCAL_STORAGE_CURRENT_USER);
+      if (userToken) return resolve();
+      setTimeout(waitForToken, 200);
+    })();
+  });
+}
+
 const whenRyggReady = Promise.all([
+  whenHaveUserToken(),
   whenUrlIsResolved(RYGG_URL_CONFIG_PATH, RYGG_BASE_URL),
   whenVersionIsResolved(RYGG_VERSION_CONFIG_PATH),
-]).then(([url]) => {
+]).then(([_, url]) => {
+  const userToken = localStorage.getItem(LOCAL_STORAGE_CURRENT_USER);
   let ret = axios.create();
   ret.defaults.baseURL = url;
   ret.defaults.headers.common["Content-Type"] = `application/json`;
+  if (userToken) {
+    ret.defaults.headers["Authorization"] = `Bearer ${userToken}`;
+  }
   ret.defaults.params = {};
   return ret;
 });
