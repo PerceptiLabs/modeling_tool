@@ -17,6 +17,7 @@ class PreTrainedResNet50Spec(InnerLayerSpec):
             params['trainable'] = dict_['Properties']['trainable']
             params['classes'] = dict_['Properties']['classes']
             params['weights'] = dict_['Properties']['weights']
+            params['pooling'] = dict_['Properties']['pooling']
             
         return cls(**params)
 
@@ -28,6 +29,7 @@ class PreTrainedResNet50Spec(InnerLayerSpec):
         props['trainable'] = self.trainable
         props['classes'] = self.classes
         props['weights'] = self.weights
+        props['pooling'] = self.pooling
 
         dict_['Properties'] = props
         

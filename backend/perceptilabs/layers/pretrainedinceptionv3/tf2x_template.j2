@@ -24,7 +24,9 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
 
     def build(self, input_shape):
         """ Called by the Keras framework upon the first invocation of the call method """
-        pooling_ = None
+        {% call indented_if(layer_spec.pooling == 'None' ) %}
+            pooling_ = None
+        {% endcall %}
         input_shape_ = input_shape['input']
         {% call indented_if(layer_spec.weights == 'None') %}
             weights_ = None
@@ -45,8 +47,8 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
         {% endcall %}
 
         {% call indented_if(layer_spec.include_top == False) %}
-            {% call indented_if(layer_spec.pooling != None ) %}
-                pooling_ = 'avg'
+            {% call indented_if(layer_spec.pooling != 'None' ) %}
+                pooling_ = '{{layer_spec.pooling}}'
             {% endcall %}
             if len(input_shape_) > 3:
                 input_shape_ = input_shape_[1:]
@@ -63,11 +65,16 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
             self.kernel = self.inception_v3.layers[-1].weights
             self.bias = self.inception_v3.layers[-1].bias
         {% endcall %}
-
         """ Get the last layer in the model that holds weights and biases if include top is not true. In Inception, it's a Conv2D layer. """
         {% call indented_if(layer_spec.include_top == False) %}
-            self.kernel = self.inception_v3.layers[-12].weights
-            self.bias = self.inception_v3.layers[-12].bias
+            {% call indented_if(layer_spec.pooling == 'None') %}
+                self.kernel = self.inception_v3.layers[-12].weights
+                self.bias = self.inception_v3.layers[-12].bias
+            {% endcall %}
+            {% call indented_if(layer_spec.pooling != 'None') %}
+                self.kernel = self.inception_v3.layers[-13].weights
+                self.bias = self.inception_v3.layers[-13].bias
+            {% endcall %}
         {% endcall %}
 
     def get_config(self):

@@ -7,7 +7,7 @@ class PreTrainedVGG16Spec(InnerLayerSpec):
     include_top: bool = False
     trainable: bool = False
     classes: Union[int, str, None] = None
-    pooling: Union[str, None] = None
+    pooling: str = 'None'
     weights: Union[str, None] = 'imagenet'
 
     @classmethod
@@ -17,6 +17,7 @@ class PreTrainedVGG16Spec(InnerLayerSpec):
             params['trainable'] = dict_['Properties']['trainable']
             params['classes'] = dict_['Properties']['classes']
             params['weights'] = dict_['Properties']['weights']
+            params['pooling'] = dict_['Properties']['pooling']
             
         return cls(**params)
 
@@ -28,7 +29,8 @@ class PreTrainedVGG16Spec(InnerLayerSpec):
         props['trainable'] = self.trainable
         props['classes'] = self.classes
         props['weights'] = self.weights
-
+        props['pooling'] = self.pooling
+        
         dict_['Properties'] = props
         
         return dict_

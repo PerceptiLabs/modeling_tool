@@ -49,8 +49,9 @@ class Tf2xLayer:
         if hasattr(self.keras_layer, 'kernel') and hasattr(self.keras_layer.kernel, 'trainable'):
             if self.keras_layer.kernel.trainable:
                 return {'W': self.keras_layer.kernel}
-        elif hasattr(self.keras_layer, 'conv') and self.keras_layer.conv.kernel.trainable:
-            return {'W': self.keras_layer.conv.kernel}            
+        elif hasattr(self.keras_layer, 'conv') and hasattr(self.keras_layer.conv, 'kernel') and hasattr(self.keras_layer.conv.kernel, 'trainable'):
+            if self.keras_layer.conv.kernel.trainable:
+                return {'W': self.keras_layer.conv.kernel}            
         else:
             return {} 
         
@@ -60,8 +61,9 @@ class Tf2xLayer:
         if hasattr(self.keras_layer, 'bias') and hasattr(self.keras_layer.bias, 'trainable'):
             if self.keras_layer.bias.trainable:        
                 return {'b': self.keras_layer.bias}
-        elif hasattr(self.keras_layer, 'conv') and self.keras_layer.conv.bias.trainable:
-            return {'b': self.keras_layer.conv.bias}            
+        elif hasattr(self.keras_layer, 'conv') and hasattr(self.keras_layer.conv, 'bias') and hasattr(self.keras_layer.conv.bias, 'trainable'):
+            if self.keras_layer.conv.kernel.trainable:
+                return {'b': self.keras_layer.conv.bias}            
         else:
             return {}
 class DataSupervised:

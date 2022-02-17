@@ -12,15 +12,15 @@ from perceptilabs.layers.specbase import LayerConnection
 def script_factory():
     yield ScriptFactory()
 
-    
-def test_mobilenetv2_instantiation(script_factory):
+@pytest.mark.parametrize('pooling',['None', 'avg', 'max'])
+def test_mobilenetv2_instantiation(script_factory, pooling):
     layer_spec = PreTrainedMobileNetV2Spec(
         id_='layer_id',
         name='layer_name',
         include_top=False,
         alpha=1.0,
         weights='None',
-        pooling='max',
+        pooling=pooling,
         trainable=False
     )
 
@@ -47,14 +47,13 @@ def test_mobilenetv2_can_run(script_factory, pooling):
 
     # To get this final output shape
     # please refer to research paper here: https://arxiv.org/pdf/1801.04381.pdf -- Page 5
-    if pooling is None:
+    if pooling == 'None':
         assert y['output'].shape == (10, 7, 7, 1280)
-    if pooling == 'max':
-        assert y['output'].shape == (10, 1280)
-    if pooling == 'avg':
+    else:
         assert y['output'].shape == (10, 1280)
         
-def test_mobilenetv2_output_changes_in_training_mode_with_training_argument(script_factory):
+@pytest.mark.parametrize('pooling',['None', 'avg', 'max'])
+def test_mobilenetv2_output_changes_in_training_mode_with_training_argument(script_factory, pooling):
     layer_spec = PreTrainedMobileNetV2Spec(
         id_='layer_id',
         name='layer_name',
@@ -62,6 +61,7 @@ def test_mobilenetv2_output_changes_in_training_mode_with_training_argument(scri
         alpha=1.0,
         trainable=True,
         weights='None',
+        pooling=pooling,
         backward_connections=(LayerConnection(dst_var='input'),)
     )
     input_data = np.random.random((1, 224, 224, 3))   # [batch, time, features]
@@ -72,7 +72,8 @@ def test_mobilenetv2_output_changes_in_training_mode_with_training_argument(scri
     assert (y1['output'].numpy() != y2['output'].numpy()).any()
 
 
-def test_mobilenetv2_output_doesnot_change_in_inference_mode_with_training_argument(script_factory):
+@pytest.mark.parametrize('pooling',['None', 'avg', 'max'])
+def test_mobilenetv2_output_doesnot_change_in_inference_mode_with_training_argument(script_factory, pooling):
     layer_spec = PreTrainedMobileNetV2Spec(
         id_='layer_id',
         name='layer_name',
@@ -80,6 +81,7 @@ def test_mobilenetv2_output_doesnot_change_in_inference_mode_with_training_argum
         alpha=1.0,
         trainable=False,
         weights='None',
+        pooling=pooling,
         backward_connections=(LayerConnection(dst_var='input'),)
     )
     input_data = np.random.random((1, 224, 224, 3))   # [batch, time, features]

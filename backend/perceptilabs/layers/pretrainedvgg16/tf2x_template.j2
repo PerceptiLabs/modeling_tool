@@ -24,7 +24,9 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
 
     def build(self, input_shape):
         """ Called by the Keras framework upon the first invocation of the call method """
-        pooling_ = None
+        {% call indented_if(layer_spec.pooling == 'None' ) %}
+            pooling_ = None
+        {% endcall %}
         input_shape_ = input_shape['input']
         {% call indented_if(layer_spec.weights == 'None') %}
             weights_ = None
@@ -38,15 +40,13 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
                 classes_ = {{layer_spec.classes}}
                 self.vgg16 = tf.keras.applications.VGG16(include_top={{layer_spec.include_top}}, weights=weights_, classes=classes_)
             {% endcall %}
-
             {% call indented_if(layer_spec.weights != 'None') %}
                 self.vgg16 = tf.keras.applications.VGG16(include_top={{layer_spec.include_top}}, weights=weights_)
             {% endcall %}
         {% endcall %}
-
         {% call indented_if(layer_spec.include_top == False) %}
-            {% call indented_if(layer_spec.pooling != None ) %}
-                pooling_ = 'avg'
+            {% call indented_if(layer_spec.pooling != 'None' ) %}
+                pooling_ = "{{layer_spec.pooling}}"
             {% endcall %}
             if len(input_shape_) > 3:
                 input_shape_ = input_shape_[1:]
@@ -58,16 +58,23 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
         {% endcall %}
 
         {% call indented_if(layer_spec.include_top == True) %}
-            self.kernel = self.vgg16.layers[-1].weights[0]
+            self.kernel = self.vgg16.layers[-1].weights
             self.bias = self.vgg16.layers[-1].bias
+        {% endcall %}
+        {% call indented_if(layer_spec.include_top == False) %}
+            {% call indented_if(layer_spec.pooling == 'None') %}
+                self.kernel = self.vgg16.layers[-2].weights
+                self.bias = self.vgg16.layers[-2].bias
+            {% endcall %}
+            {% call indented_if(layer_spec.pooling != 'None') %}
+                self.kernel = self.vgg16.layers[-3].weights
+                self.bias = self.vgg16.layers[-3].bias
+            {% endcall %}
         {% endcall %}
 
         self.preprocess_input = tf.keras.applications.vgg16.preprocess_input
 
-        {% call indented_if(layer_spec.include_top == False) %}
-            self.kernel = self.vgg16.layers[-2].weights[0]
-            self.bias = self.vgg16.layers[-2].bias
-        {% endcall %}
+        
 
     def get_config(self):
         """Any variables belonging to this layer that should be rendered in the frontend.

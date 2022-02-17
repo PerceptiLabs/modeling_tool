@@ -3,7 +3,7 @@ import hashlib
 
 import numpy as np
 import tensorflow as tf
-
+from tensorflow.python.training.tracking.data_structures import ListWrapper
 from perceptilabs.lwcore.results import LayerResults
 from perceptilabs.lwcore.strategies.base import JinjaLayerStrategy
 from perceptilabs.lwcore.utils import exception_to_error
@@ -45,7 +45,7 @@ class Tf2xInnerStrategy(JinjaLayerStrategy):
         try:
             _ = layer_instance(input_tensors) # Note: we use the SAMPLE tensors and NOT the actual OUTPUT tensors 
             sample_tensors = layer_instance.get_sample()
-            self._maybe_print_weights_hash(layer_name, layer_instance)
+            self._print_weights_hash_if_exist(layer_name, layer_instance)
             
             outputs = {
                 key: tensor.numpy()[0] # Drop batch dimension
@@ -70,12 +70,13 @@ class Tf2xInnerStrategy(JinjaLayerStrategy):
             )
             return results
 
-    def _maybe_print_weights_hash(self, layer_name, layer_instance):
+    def _print_weights_hash_if_exist(self, layer_name, layer_instance):
         hasher = hashlib.md5()
-
         if layer_instance.trainable_variables:
             for key, value in layer_instance.trainable_variables.items():
                 hasher.update(key.encode())
+                if isinstance(value, ListWrapper):
+                    value = value[-1]
                 hasher.update(value.numpy().tobytes())
 
             logger.info(f"Weights hash for {layer_name}: {hasher.hexdigest()}")

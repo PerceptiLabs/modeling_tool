@@ -23,16 +23,22 @@ div
       .form_input
         base-radio(
           group-name="pooling",
-          :value-input="true",
+          :value-input="'None'",
           v-model="settings.pooling"
         )
-          span Yes
+          span None
         base-radio(
           group-name="pooling",
-          :value-input="false",
+          :value-input="'avg'",
           v-model="settings.pooling"
         )
-          span No
+          span avg
+        base-radio(
+          group-name="pooling",
+          :value-input="'max'",
+          v-model="settings.pooling"
+        )
+          span max
 
   .settings-layer_section
     .form_row
@@ -92,7 +98,7 @@ export default {
       showPreview: false,
       settings: {
         include_top: false,
-        pooling: false,
+        pooling: "None",
         trainable: false,
         classes: 0,
         weights: "imagenet"
