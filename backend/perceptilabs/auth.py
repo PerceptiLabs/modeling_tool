@@ -84,7 +84,7 @@ class jwt_middleware():
     def __call__(self, environ, start_response):
         try:
             request = Request(environ)
-            if AUTH_ISSUER and request.path not in self._skipped_paths:
+            if AUTH_ISSUER and request.path not in self._skipped_paths and request.method.lower() != "options":
                 auth_token = get_auth_token(request)
                 decoded = jwt_decode_token(auth_token)
                 environ['user'] = decoded['sub']
