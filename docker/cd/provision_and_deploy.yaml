@@ -218,6 +218,7 @@
         KC_ROOT_PWD: admin
         KC_FIRST_USER: first@user.test
         KC_INITIAL_PWD: resetme
+        PL_SERVER_ADDRESS: "{{ dns_subdomain }}.{{ dns_domain }}"
         HOME: "{{ ansible_env.HOME }}"
       # the long-running installer causes the ssh connection to time out. Poll instead.
       async: 3600

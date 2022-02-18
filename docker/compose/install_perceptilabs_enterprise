@@ -237,6 +237,10 @@ get_user_input(){
   fi
 
   if [ -z "${PL_SERVER_ADDRESS:-}" ]; then
+    if [ $opt_headless -eq 1 ]; then
+      echo "PL_SERVER_ADDRESS must be set to run in headless mode"
+      exit 1
+    fi
     read -p "Enter the network-accessible hostname of this server. It must be accessible from users' machines. [default: ${HOSTNAME}]: "
     export PL_SERVER_ADDRESS=${REPLY:-${HOSTNAME}}
   fi

@@ -12,7 +12,7 @@
     state: latest
   vars:
     # per https://pip.pypa.io/en/stable/news/#id1, 3.5 is unsupported as of pip 21.0
-      pip_version_constraint:  "{{(ansible_python_version is version('3.6', '<'))|ternary('<21.0', '')}}"
+      pip_version_constraint:  "{{(ansible_python_version is version('3.7', '<'))|ternary('<21.0', '')}}"
 
 # Can't just include this in the installation of pip.
 # The stock pip is so old in the python3-pip package that it has a bug that makes it install an unsupported version of setuptools

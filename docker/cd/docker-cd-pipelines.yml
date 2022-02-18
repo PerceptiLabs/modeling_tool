@@ -99,6 +99,7 @@ steps:
         --inventory localhost, \
         --extra-vars "version=${{ variables['version_to_install'] }}" \
         --extra-vars "release_env=${{ parameters.release_env }}" \
+        --extra-vars "dns_domain=perceptilabshosting.com" \
         --extra-vars "dns_subdomain=${{ parameters.subdomain }}" \
         --extra-vars "gpus=${{ parameters.gpus }}" \
         --extra-vars "cpus=${{ parameters.cpus }}" \

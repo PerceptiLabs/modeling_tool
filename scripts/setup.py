@@ -113,7 +113,7 @@ def get_setupargs():
         "description": "",
         "long_description": "",
         "install_requires": get_requirements(__file__),
-        "python_requires": ">=3.6,<3.9",
+        "python_requires": ">=3.7,<3.9",
         "package_data": {},
         "ext_modules": get_all_cythonized_modules(),
         "cmdclass": {"build_py": build_py, "test_cythonize": CythonTestCommand,},

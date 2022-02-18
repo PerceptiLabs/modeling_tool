@@ -26,7 +26,7 @@ agent_name: docker-build-agent
 work_dir: agent/_work
 agent_python: "{{ work_dir }}/_tool/Python"
 python_versions:
-  - 3.6.9
-  - 3.6
+  - 3.8.11
+  - 3.8
   - 3
 ansible_ssh_private_key_file: ~/Downloads/aws/jon.pem
