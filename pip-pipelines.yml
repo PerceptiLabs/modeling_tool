@@ -12,10 +12,6 @@ jobs:
 
     strategy:
       matrix:
-        linux_py3.6:
-          artifact: linux_3.6_wheel
-          image: 'ubuntu-latest'
-          pyver: '3.6'
         linux_py3.7:
           artifact: linux_3.7_wheel
           image: 'ubuntu-latest'
@@ -32,10 +28,6 @@ jobs:
           artifact: osx_3.8_wheel
           image: 'macOS-latest'
           pyver: '3.8'
-        win_py3.6:
-          artifact: windows_3.6_wheel
-          image: "vs2017-win2016"
-          pyver: '3.6'
         win_py3.7:
           artifact: windows_3.7_wheel
           image: "vs2017-win2016"
