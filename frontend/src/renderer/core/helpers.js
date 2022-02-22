@@ -304,7 +304,6 @@ const layerBgColor = function (componentName) {
     case "IoOutput":
       className = "net-color-train";
       break;
-    case "MathArgmax":
     case "MathMerge":
     case "MathSplit":
     case "MathSwitch":
@@ -360,7 +359,6 @@ const layerBgColorTransparent = function (componentName) {
     case "TrainDetector":
       className = "net-element-train";
       break;
-    case "MathArgmax":
     case "MathMerge":
     case "MathSplit":
       className = "net-element-math";

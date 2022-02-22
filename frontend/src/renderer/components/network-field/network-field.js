@@ -14,7 +14,6 @@ import TrainReinforce from "@/components/network-elements/elements/train-reinfor
 import TrainDetector from "@/components/network-elements/elements/train-detector/train-detector.vue";
 import TrainGan from "@/components/network-elements/elements/train-gan/train-gan.vue";
 
-import MathArgmax from "@/components/network-elements/elements/math-argmax/math-argmax.vue";
 import MathMerge from "@/components/network-elements/elements/math-merge/math-merge.vue";
 
 import ClassicMLDbscans from "@/components/network-elements/elements/classic-ml-dbscans/classic-ml-dbscans.vue";
@@ -63,7 +62,6 @@ export default {
     TrainDetector,
     TrainGan,
     // TrainLoss, TrainOptimizer,
-    MathArgmax,
     MathMerge,
     // MathSplit,
 

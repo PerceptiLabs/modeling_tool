@@ -2562,7 +2562,6 @@ const componentsInputs = {
   DeepLearningConv: ['input'],
   DeepLearningRecurrent: ['input'],
 
-  MathArgmax: ['input'],
   MathMerge: ['input1', 'input2'],
   MathSwitch: ['input1', 'input2'],
 
@@ -2600,7 +2599,6 @@ const componentsOutputs = {
   DeepLearningConv: ['output'],
   DeepLearningRecurrent: ['output'],
 
-  MathArgmax: ['output'],
   MathMerge: ['output'],
   MathSwitch: ['output'],
   LayerCustom: ['output'],

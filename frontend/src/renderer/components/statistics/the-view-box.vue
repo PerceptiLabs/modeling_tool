@@ -44,7 +44,6 @@
   import PreTrainedMobileNetV2 from '@/components/network-elements/elements/pretrained-mobilenetv2/viewBox-pretrained-mobilenetv2.vue'
   import PreTrainedVGG16 from '@/components/network-elements/elements/pretrained-vgg16/viewBox-pretrained-vgg16.vue'
   import PreTrainedInceptionV3 from '@/components/network-elements/elements/pretrained-inceptionv3/viewBox-pretrained-inceptionv3.vue'
-  import MathArgmax   from '@/components/network-elements/elements/math-argmax/viewBox-math-argmax.vue'
   import MathMerge    from '@/components/network-elements/elements/math-merge/viewBox-math-merge.vue'
   import LayerCustom          from '@/components/network-elements/elements/layer-custom/viewBox-layer-custom.vue'
   import IoInput          from '@/components/network-elements/elements/io-input/viewBox-io-input.vue'
@@ -62,7 +61,7 @@ export default {
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     TrainNormal, TrainRegression, TrainReinforce, TrainDetector, TrainGan,
     PreTrainedResNet50, PreTrainedMobileNetV2, LayerTfModel, PreTrainedVGG16, PreTrainedInceptionV3,
-    MathArgmax, MathMerge,
+    MathMerge,
     IoInput, IoOutput,
     LayerCustom,
     // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,

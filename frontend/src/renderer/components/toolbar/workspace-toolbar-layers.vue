@@ -62,7 +62,6 @@ import TrainReinforce from "@/components/network-elements/elements/train-reinfor
 import TrainGan from "@/components/network-elements/elements/train-gan/view-train-gan.vue";
 import TrainDetector from "@/components/network-elements/elements/train-detector/view-train-detector.vue";
 
-import MathArgmax from "@/components/network-elements/elements/math-argmax/view-math-argmax.vue";
 import MathMerge from "@/components/network-elements/elements/math-merge/view-math-merge.vue";
 
 import IoInput from "@/components/network-elements/elements/io-input/view-io-input.vue";
@@ -96,7 +95,6 @@ export default {
     TrainReinforce,
     TrainDetector,
     TrainGan,
-    MathArgmax,
     MathMerge,
     LayerCustom,
     LayerTfModel,
@@ -147,7 +145,7 @@ export default {
         {
           tooltip: "Operations",
           showEl: false,
-          networkElements: ["MathArgmax", "MathMerge"],
+          networkElements: ["MathMerge"],
           id: "tutorial_mathematics",
         },
         {

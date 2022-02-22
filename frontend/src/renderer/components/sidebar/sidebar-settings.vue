@@ -60,7 +60,6 @@ import ProcessOneHot from "@/components/network-elements/elements/process-one-ho
 import ProcessReshape from "@/components/network-elements/elements/process-reshape/set-process-reshape.vue";
 import ProcessRescale from "@/components/network-elements/elements/process-rescale/set-process-rescale.vue";
 
-import MathArgmax from "@/components/network-elements/elements/math-argmax/set-math-argmax.vue";
 import MathMerge from "@/components/network-elements/elements/math-merge/set-math-merge.vue";
 
 import TrainNormal from "@/components/network-elements/elements/train-normal/set-train-normal.vue";
@@ -100,7 +99,6 @@ export default {
     ProcessOneHot,
     ProcessReshape,
     ProcessRescale,
-    MathArgmax,
     MathMerge,
     TrainNormal,
     TrainRegression,
