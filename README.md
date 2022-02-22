@@ -9,7 +9,7 @@ frontend, and rygg
 
 For when you want to replicate what the user sees:
 
-```
+```bash
 cd scripts
 
 # create and activate a python virtual environment. For example:
@@ -25,7 +25,7 @@ perceptilabs
 
 ## The docker version
 
-```
+```bash
 pushd scripts
 
 # create and activate a python virtual environment. For example:
@@ -44,17 +44,16 @@ cd build/docker/compose
 # point your browser at http://localhost
 ```
 
-# How to run a development environment
-## As a docker-compose cluster
+# How to run a development environment as a docker-compose cluster
 This will run all of the services in development mode with code reloading.
 
-### Prerequisites
+## Prerequisites
 * docker from docker.com
 * make (included with OSX & Linux, Windows get from chocolatey à la https://stackoverflow.com/a/57042516 )
 
-### Quickstart
+## Quickstart
 Just run it and watch the logs roll by
-   ```
+   ```bash
   cd docker/dev
   make dev_all
   docker-compose up
@@ -62,36 +61,39 @@ Just run it and watch the logs roll by
   <ctrl-c> or close the terminal
   ```
 
-### In the background
+## In the background
 
 Use the `up` and `down` subcommands of `docker-compose`:
-  ```
+  ```bash
   docker-compose up -d
-  # do stuff
+  # ... do stuff ...
   docker-compose down
   ```
 
 To follow the logs of one service, e.g. the rendering kernel:
-  ```
+  ```bash
   docker-compose logs -f render
   ```
 
-### Tests
+## Tests
 To run integration tests against the docker-based services:
-* rygg: `python -m pytest -rfe --capture=tee-sys --host=localhost --port=80 --path="/rygg" --vol_map="${HOME}/Downloads/Perceptilabs_dev:/perceptilabs/Documents/Perceptilabs"`
+* rygg:
+    ```bash
+    python -m pytest -rfe --capture=tee-sys --host=localhost --port=80 --path="/rygg" --vol_map="${HOME}/Downloads/Perceptilabs_dev:/perceptilabs/Documents/Perceptilabs"
+    ```
 * kernel: TBD
 
-### When to rebuild
+## When to rebuild
 * The docker files for development mode will mount your source directory into a volume so normal code changes will be picked up immediately.
 * If you change your requirements.txt file or package.json in frontend, then you need to rebuild with `make`.
 
-### Tear-down
+## Tear-down
 * run `make clean` to tear everything down
 
 
-## As local scripts
+# How to run a development environment as local scripts
 0. To just run everything (with pyenv, venv, and pip on osx or linux):
-    ```
+    ```bash
     cd dev-env
     ./setup
     honcho start -f Procfile -e .env
@@ -99,37 +101,37 @@ To run integration tests against the docker-based services:
    .... or run the following steps
 
 1. Redis server
-    ```
+    ```bash
     docker run -it -p 6379:6379 redis
     ```
 1. Rendering kernel
-    ```
+    ```bash
     cd backend
-    PL_KERNEL_CELERY="1" PL_REDIS_URL="redis://localhost" python main.py
+    PL_KERNEL_CELERY="1" PL_REDIS_URL="redis://localhost" AUTH_ENV=dev python main.py
     ```
 1. Training worker
-    ```
+    ```bash
     cd backend
-    PL_REDIS_URL="redis://localhost" celery -A perceptilabs.tasks.celery_executor worker --loglevel=debug --queues=training --pool=threads
+    PL_REDIS_URL="redis://localhost" AUTH_ENV=dev celery -A perceptilabs.tasks.celery_executor worker --loglevel=debug --queues=training --pool=threads
     ```
 1. Flower (optional)
-    ```
+    ```bash
     cd backend
     PL_REDIS_URL="redis://localhost" celery -A perceptilabs.tasks.celery_executor flower --loglevel=debug
     ```
 1. Rygg server
-    ```
+    ```bash
     cd rygg
-    PL_FILE_SERVING_TOKEN=12312 PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=xyz python -m django migrate --settings rygg.settings
-    PL_FILE_SERVING_TOKEN=12312 PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=xyz python -m django runserver 0.0.0.0:8000 --settings rygg.settings
+    PL_FILE_SERVING_TOKEN=12312 PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=xyz AUTH_ENV=dev python -m django migrate --settings rygg.settings
+    PL_FILE_SERVING_TOKEN=12312 PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=xyz AUTH_ENV=dev python -m django runserver 0.0.0.0:8000 --settings rygg.settings
     ```
 1. Rygg worker
-    ```
+    ```bash
     cd rygg
     PL_FILE_SERVING_TOKEN=12312 PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=a celery -A rygg worker -l INFO --queues=rygg
     ```
 1. Frontend
-    ```
+    ```bash
     cd frontend
     npm install
     npm run-script start:web
@@ -138,10 +140,9 @@ To run integration tests against the docker-based services:
 
 ## Local Build
 
-You won't get auto-reload, but you'll get better handling of the
-fileserver token:
+You won't get auto-reload, but you'll get better handling of the fileserver token:
 
-```
+```bash
 cd frontend
 
 # Build the frontend static page
@@ -153,7 +154,7 @@ cd static_file_server
 
 # create and activate a python virtual environment. For example:
 python -m venv .venv
-. .venv/bin/activate
+source .venv/bin/activate
 
 # Set up and run the static_file_server
 pip install --upgrade pip setuptools
@@ -161,7 +162,7 @@ pip install -r requirements.txt
 python manage.py runserver
 ```
 
-### Running dev env on Windows
+## Running dev env on Windows
 
 Use Anaconda[https://www.anaconda.com/] to manage virtual environments.
 Do the following steps inside `backend` and `rygg` to set up environment for each services
@@ -178,21 +179,15 @@ Do the following steps inside `backend` and `rygg` to set up environment for eac
 Now you have set up 3 environments, Now run the following to start services
 
 ```sh
-
 PL_ROOT=$(git rev-parse--show-toplevel)
-
-# run kernel
-cd backend
-python main.py
 
 # run the rendering kernel
 cd "$PL_ROOT/backend"
-python main.py --mode=rendering --debug
+AUTH_ENV=dev python main.py --mode=rendering --debug
 
 # run rygg
 cd $PL_ROOT/rygg
-PL_FILE_SERVING_TOKEN=12312 PL_FILE_UPLOAD_DIR=$(pwd) python manage.py runserver 0.0.0.0:8000
-
+PL_FILE_SERVING_TOKEN=12312 PL_FILE_UPLOAD_DIR=$(pwd) AUTH_ENV=dev python manage.py runserver 0.0.0.0:8000
 
 # Set up and run the static_file_server
 cd $PL_ROOT/frontend
