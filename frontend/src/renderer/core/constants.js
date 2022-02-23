@@ -124,7 +124,7 @@ export const LOCAL_STORAGE_CURRENT_USER = "currentUser";
 
 export const defaultTrainingSettings = {
   Epochs: 100,
-  Batch_size: 32,
+  Batch_size: 8,
   Shuffle: true,
   Loss: "Cross-Entropy", //[Cross-Entropy, Quadratic, Weighted Cross-Entropy, Dice]
   LossOptions: [

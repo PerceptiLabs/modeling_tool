@@ -45,7 +45,7 @@ export const getModelContent = (model, filepath, location) => ({
     },
     trainingSettings: {
       Epochs: 100,
-      Batch_size: 32,
+      Batch_size: 8,
       Shuffle: true,
       Loss: "Quadratic",
       LossOptions: [
