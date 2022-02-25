@@ -60,7 +60,6 @@ services:
       retries: 5
       timeout: 10s
       start_period: 1m
-
   redis:
     <<: *common_base
     image: redis
@@ -118,6 +117,8 @@ services:
       PL_KERNEL_MODE: rendering
       # TODO: just feed the values to the kernel
       AUTH_ENV: ${AUTH_ENV}
+    stdin_open: true # allows breakpoints to be interact-able
+    tty: true
 
   nginx:
     image: nginx
