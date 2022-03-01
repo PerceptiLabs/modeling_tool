@@ -10,7 +10,6 @@ variables:
     value: true
   ${{ if ne( variables['Build.SourceBranch'], 'refs/heads/master') }}:
     value: false
- 
 
 jobs:
   - job: startvm
@@ -101,7 +100,7 @@ jobs:
         publishLocation: 'Container'
 
     - task: Bash@3
-      displayName: Create Installer for Development Version
+      displayName: Create Enterprise Installer for Development Version
       inputs:
         targetType: 'inline'
         script: |
@@ -168,6 +167,31 @@ jobs:
           inlineScript: |
             az storage blob upload --account-name=perceptilabs --container-name=enterprisedev --file=$(System.ArtifactsDirectory)/installation_dev/system_migrations.tar.gz --name=latest/system_migrations.tar.gz
             az storage blob upload --account-name=perceptilabs --container-name=enterprisedev --file=$(System.ArtifactsDirectory)/installation_dev/install_perceptilabs_enterprise --name=latest/install_perceptilabs_enterprise
+          addSpnToEnvironment: true
+          useGlobalConfig: true
+
+      - task: Bash@3
+        displayName: Build the chart and make an updated index
+        inputs:
+          filePath: '$(Build.SourcesDirectory)/docker/cd/cloud/makehelm'
+          arguments: 'build $(Build.BuildId) $(Build.ArtifactStagingDirectory)'
+
+      - task: PublishBuildArtifacts@1
+        displayName: Save chart build artifact
+        inputs:
+          PathtoPublish: '$(artifact_chart)'
+          ArtifactName: 'chart'
+          publishLocation: 'Container'
+
+      - task: AzureCLI@2
+        displayName: Push the helm chart and updated index to azure blob storage
+        inputs:
+          azureSubscription: 'Perceptilabs Azure'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az storage blob upload --account-name=perceptilabs --container-name=saas --file=$(artifact_chart) --name=$(artifact_name)
+            az storage blob upload --account-name=perceptilabs --container-name=saas --file=$(artifact_index) --name=index.yaml
           addSpnToEnvironment: true
           useGlobalConfig: true
 

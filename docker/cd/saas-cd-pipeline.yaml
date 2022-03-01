@@ -1,0 +1,32 @@
+parameters:
+  - name: requested_buildid
+    displayName: "Requested Build ID"
+    type: string
+    default: latest
+
+variables:
+- name: build_to_install
+  ${{ if and(eq( variables['Build.Reason'], 'BuildCompletion'), eq( variables['Build.TriggeredBy.DefinitionId'], 16)) }}:
+    value: ${{ variables['Build.TriggeredBy.BuildId'] }}
+  ${{ if not(and(eq( variables['Build.Reason'], 'BuildCompletion'), eq( variables['Build.TriggeredBy.DefinitionId'], 16))) }}:
+    value: ${{ parameters.requested_buildid }}
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - task: DownloadSecureFile@1
+    name: kubeconfig
+    displayName: get the cluster creds
+    inputs:
+      secureFile: 'pipeline-deployer-kubeconfig'
+
+
+  - task: Bash@3
+    displayName: Deploy the chart for the requested version
+    inputs:
+      filePath: '$(Build.SourcesDirectory)/docker/cd/cloud/makehelm'
+      arguments: 'deploy $(build_to_install) $(kubeconfig.secureFilePath)'
+    env:
+      PERCEPTILABS_DOCKER_PULL_USER: $(PERCEPTILABS_DOCKER_PULL_USER)
+      PERCEPTILABS_DOCKER_PULL_SECRET: $(PERCEPTILABS_DOCKER_PULL_SECRET)

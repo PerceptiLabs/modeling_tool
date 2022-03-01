@@ -1,4 +1,4 @@
-name: chart
+name: pl-saas
 description: A Helm chart for deploying PerceptiLabs to kubernetes
 version: 0.0.1
 apiVersion: v1

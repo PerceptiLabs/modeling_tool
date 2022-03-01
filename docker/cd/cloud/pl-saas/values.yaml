@@ -43,10 +43,9 @@ rygg:
 imageCredentials:
   name: docker-perceptilabs-azure
   registry: perceptilabs.azurecr.io
-  username: perceptilabs
+  username: perceptilabsreader
 
-# TODO: make these change if we're installing in AWS
+# these are specific to Azure
 rwx_storage_class: azure-file
 rwo_storage_class: managed-premium # use gp2 in AWS
-root_host: apps.os8.perceptilabsapps.com # TODO: parameterize this or detect it programmatically
-# root_host: apps.07.perceptilabshosting.com # For AWS
+root_host: apps.os8.perceptilabsapps.com # Used as the base host for the route

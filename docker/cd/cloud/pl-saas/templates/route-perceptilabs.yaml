@@ -6,8 +6,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     io.kompose.service: nginx
 spec:
-  # TODO: parameterize the namespace
-  host: "{{ .Release.Name }}-{{ .Release.Namespace }}.{{ .Values.root_host }}"
+  host: "{{ .Release.Name }}.{{ required "root_host is a required value" .Values.root_host }}"
   to:
     kind: Service
     name: nginx
