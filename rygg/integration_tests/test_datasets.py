@@ -153,8 +153,8 @@ def test_cancel_download_task(rest, tmpdir, tmp_project):
 
 from contextlib import contextmanager
 @contextmanager
-def spam_dataset(rest, project, name):
-    _, dataset = DatasetClient.create_from_upload(rest, project, name, SPAM_CSV)
+def spam_dataset(rest, project, name, type):
+    _, dataset = DatasetClient.create_from_upload(rest, project, name, type, SPAM_CSV)
     with dataset:
         yield dataset
 
@@ -163,8 +163,8 @@ def spam_dataset(rest, project, name):
 @pytest.mark.usefixtures('enterprise_only')
 def test_dataset_model_association_after_create(rest, tmp_project, tmp_model):
 
-    with spam_dataset(rest, tmp_project, "dataset1") as dataset1, \
-         spam_dataset(rest, tmp_project, "dataset2") as dataset2:
+    with spam_dataset(rest, tmp_project, "dataset1", 'M') as dataset1, \
+         spam_dataset(rest, tmp_project, "dataset2", 'M') as dataset2:
 
         # associate the model to the dataset
         tmp_model.update(datasets = [dataset1.id])
@@ -253,7 +253,7 @@ def test_new_dataset_round_trips_fields_local(rest, tmp_project, tmp_model, tmp_
 def test_new_dataset_round_trips_fields(rest, tmp_project, tmp_model, tmp_text_file):
     filename = os.path.basename(tmp_text_file)
     name = f"data with {filename}"
-    _, dataset = DatasetClient.create_from_upload(rest, tmp_project, name, SPAM_CSV)
+    _, dataset = DatasetClient.create_from_upload(rest, tmp_project, name, 'M', SPAM_CSV)
     with dataset:
 
         def is_ready():
@@ -474,7 +474,7 @@ def test_new_dataset_from_upload(rest, tmp_project):
     DATASET_ZIP = os.path.join(os.path.dirname(__file__), "spam.zip")
 
     # upload a dataset zip with dataset endpoint
-    task, dataset = DatasetClient.create_from_upload(rest, tmp_project, "new dataset", DATASET_ZIP)
+    task, dataset = DatasetClient.create_from_upload(rest, tmp_project, "new dataset", 'M', DATASET_ZIP)
 
     # wait for dataset to be ready
     assert_task_completes(rest, task)
@@ -498,7 +498,7 @@ def test_new_dataset_from_csv_upload(rest, tmp_project):
     DATASET_CSV = os.path.join(os.path.dirname(__file__), "spam.csv")
 
     # upload a dataset csv with dataset endpoint
-    task, dataset = DatasetClient.create_from_upload(rest, tmp_project, "new dataset", DATASET_CSV)
+    task, dataset = DatasetClient.create_from_upload(rest, tmp_project, "new dataset", 'M', DATASET_CSV)
 
     # wait for dataset to be ready
     assert_task_completes(rest, task)
@@ -518,7 +518,7 @@ def test_new_dataset_from_csv_upload(rest, tmp_project):
 @pytest.mark.timeout(10)
 @pytest.mark.usefixtures('enterprise_only')
 def test_dataset_location_read_only(rest, tmpdir, tmp_project):
-    with spam_dataset(rest, tmp_project, 'spam') as dataset:
+    with spam_dataset(rest, tmp_project, 'spam', 'M') as dataset:
         with pytest.raises(Exception, match="400.*location"):
             dataset.update(location=str(tmpdir))
 

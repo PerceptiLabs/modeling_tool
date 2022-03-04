@@ -20,6 +20,7 @@ from rygg.files.views.util import (
     request_as_dict,
     protect_read_only_enterprise_field,
     json_response,
+    get_required_choice_post,
 )
 from rygg.settings import IS_CONTAINERIZED, is_upload_allowed
 import rygg.files.views.util
@@ -207,10 +208,14 @@ class DatasetViewSet(viewsets.ModelViewSet):
         if not dataset_name:
             raise HTTPExceptions.BAD_REQUEST.with_content("name parameter is required")
 
+        datatype = get_required_choice_post(request, "type", Dataset.Type.choices)
+        if not datatype:
+            raise HTTPExceptions.BAD_REQUEST.with_content("type parameter is required")
 
         task_id, dataset = Dataset.create_from_upload(
             project_id,
             dataset_name,
+            datatype,
             file_uploaded.temporary_file_path()
         )
 

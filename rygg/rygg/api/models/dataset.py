@@ -149,7 +149,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         return task_id, dataset
 
     @classmethod
-    def create_from_upload(cls, project_id, dataset_name, uploaded_temp_file):
+    def create_from_upload(cls, project_id, dataset_name, type, uploaded_temp_file):
         if not IS_CONTAINERIZED:
             raise Exception("Not supported!")
 
@@ -162,6 +162,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
             project_id=project_id,
             name=dataset_name,
             location=upload_path,
+            type=type,
             root_dir=dest_dir,         # a way to keep track of the fact that this was an upload
             source_url=f"{UPLOAD_PREFIX}{upload_path}",
         )

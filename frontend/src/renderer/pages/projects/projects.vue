@@ -228,9 +228,6 @@ import ImportModel from "@/components/global-popups/import-model-popup.vue";
 import { mapActions, mapState, mapGetters } from "vuex";
 import { assembleModel } from "@/core/helpers/model-helper";
 import { getNextModelName as rygg_getNextModelName } from "@/core/apiRygg";
-import { uploadDatasetToFileserver as rygg_uploadDatasetToFileserver } from "@/core/apiRygg";
-import { getTaskStatus as rygg_getTaskStatus } from "@/core/apiRygg";
-import { isTaskComplete as rygg_isTaskComplete } from "@/core/apiRygg";
 import {
   pickFile as rygg_pickFile,
   getFileContent as rygg_getFileContent,

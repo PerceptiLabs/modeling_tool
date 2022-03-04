@@ -389,11 +389,12 @@ export const rygg_createSegmentationDataset = async (image_path, mask_path) => {
   }
 };
 
-export const uploadDatasetToFileserver = async (file, overwrite = false) => {
+export const uploadDatasetToFileserver = async (file, overwrite = false, type) => {
   const data = new FormData();
   data.append("file_uploaded", file);
   data.append("name", file.name);
   data.append("overwrite", overwrite ? "true" : "false");
+  data.append("type", type);
   const fs = await whenHaveFileservingToken();
   const res = await fs.post(
     `/datasets/create_from_upload/?project_id=${currentProject()}`,

@@ -90,6 +90,13 @@ def get_required_choice_param(request, param, choices):
         raise HTTPExceptions.BAD_REQUEST.with_content(f"{param} not in {valid}")
     return got
 
+def get_required_choice_post(request, param, choices):
+    got = request.POST.get(param)
+    valid = [k for k,_ in choices]
+    if got not in valid:
+        raise HTTPExceptions.BAD_REQUEST.with_content(f"{param} not in {valid}")
+    return got
+
 def json_response(response_content):
     return Response(response_content, content_type="application/json")
 

@@ -205,8 +205,8 @@ class DatasetClient(ClientBase):
         resp = rest.post('/datasets/create_from_remote/', {}, id=remote_name, path=destination_dir, project_id=project.id, type=dataset_type)
         return TaskClient(rest, resp['task_id']), DatasetClient(rest, resp['dataset_id'])
 
-    def create_from_upload(rest, project, name, upload_file_path):
-        resp = rest.post_file('/datasets/create_from_upload/', upload_file_path, "dataset.zip", project.id, name=name)
+    def create_from_upload(rest, project, name, type, upload_file_path):
+        resp = rest.post_file('/datasets/create_from_upload/', upload_file_path, "dataset.zip", project.id, name=name, type=type)
         return TaskClient(rest, resp['task_id']), DatasetClient(rest, resp['dataset_id'])
 
     def create_classification_dataset(rest, project, dataset_path):

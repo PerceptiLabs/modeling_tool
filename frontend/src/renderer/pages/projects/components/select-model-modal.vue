@@ -761,7 +761,7 @@ export default {
       fileInput.setAttribute("accept", ".csv,.zip");
       fileInput.addEventListener("change", e => {
         const file = e.target.files[0];
-        rygg_uploadDatasetToFileserver(file, false)
+        rygg_uploadDatasetToFileserver(file, false, this.modelType)
           .then(async () => {
             this.handleDataPathUpdates([file.name]);
           })
@@ -831,7 +831,7 @@ export default {
       try {
         const {
           data: { task_id, dataset_id },
-        } = await rygg_uploadDatasetToFileserver(file);
+        } = await rygg_uploadDatasetToFileserver(file, false, this.modelType);
         await whenCeleryTaskDone(task_id, cb => this.handleUploadProgress(cb));
         const response = await rygg_getDataset(dataset_id);
         const { data: { location: path } = {} } = response;

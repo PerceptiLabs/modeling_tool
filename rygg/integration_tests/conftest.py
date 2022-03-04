@@ -150,7 +150,7 @@ def tmp_utf8_file(tmp_file):
 def tmp_dataset(tmp_text_file, rest, tmp_project):
     if rest.is_enterprise:
         filename = os.path.join(os.path.dirname(__file__), "spam.csv")
-        _, dataset = DatasetClient.create_from_upload(rest, tmp_project, "new dataset", filename)
+        _, dataset = DatasetClient.create_from_upload(rest, tmp_project, "new dataset", 'M', filename)
         with dataset:
             yield dataset
     else:
