@@ -137,7 +137,7 @@ jobs:
           scriptType: 'bash'
           scriptLocation: 'inlineScript'
           inlineScript: |
-            az storage blob upload --account-name=perceptilabs --container-name=enterprise --file=$(System.ArtifactsDirectory)/installation/system_migrations.tar.gz --name=latest/system_migrations.tar.gz
-            az storage blob upload --account-name=perceptilabs --container-name=enterprise --file=$(System.ArtifactsDirectory)/installation/install_perceptilabs_enterprise --name=latest/install_perceptilabs_enterprise
+            az storage blob upload --account-name=perceptilabs --container-name=enterprise --overwrite true --file=$(System.ArtifactsDirectory)/installation/system_migrations.tar.gz --name=latest/system_migrations.tar.gz
+            az storage blob upload --account-name=perceptilabs --container-name=enterprise --overwrite true --file=$(System.ArtifactsDirectory)/installation/install_perceptilabs_enterprise --name=latest/install_perceptilabs_enterprise
           addSpnToEnvironment: true
           useGlobalConfig: true
