@@ -77,6 +77,20 @@ def test_raises_errors(mixpanel_mock, method, raise_errors):
         closure() # If an error is raised the test fails with a ValueError
 
     
+def test_raises_error_when_email_is_none(mixpanel_mock):
+    tracker = EventTracker(raise_errors=True)
+    
+    with pytest.raises(ValueError):
+        tracker.emit(
+            'some-event',
+            user_email=None,
+            properties={
+                'something-that-cannot-be-serialized-1': EventTracker,
+                'something-that-cannot-be-serialized-2': EventTracker
+            }
+        )
+
     
     
-    
+
+        

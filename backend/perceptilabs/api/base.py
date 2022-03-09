@@ -64,7 +64,7 @@ def create_app(
     preview_cache = preview_cache or NullCache()
     task_executor = task_executor or get_task_executor()
     message_broker = message_broker or get_message_broker()
-    event_tracker = event_tracker or EventTracker()
+    event_tracker = event_tracker or EventTracker(raise_errors=utils.is_dev())
     models_access = models_access or ModelAccess(rygg)
     model_archives_access = model_archives_access or ModelArchivesAccess()
     epochs_access = epochs_access or EpochsAccess(rygg)
@@ -115,6 +115,7 @@ def create_app(
     @app.route('/user', methods=['POST'])
     def set_user():
         json_data = request.get_json()
+        
         user_email = make_call_context(request).get('user_email')
 
         tracking.send_user_email_set(event_tracker, user_email)
@@ -136,7 +137,7 @@ def create_app(
         auth_token = request.environ.get('auth_token')
         email = None
         if auth_token:
-            email = auth_token.get('user_email')
+            email = auth_token.get('email')
 
         ret = {
             'auth_token': auth_token,

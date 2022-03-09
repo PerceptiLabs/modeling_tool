@@ -122,7 +122,7 @@ class MockAuth():
         environ['user'] = 'the unique user id'
         environ['auth_token'] = {
             'this': 'is the decoded token',
-            'user_email': 'anton.k@perceptilabs.com',
+            'email': 'anton.k@perceptilabs.com',
         }
         environ['auth_token_raw'] = 'this is the raw token'
         return self.app(environ, start_response)

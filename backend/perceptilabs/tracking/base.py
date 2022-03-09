@@ -56,6 +56,9 @@ class EventTracker:
         current_time = datetime.datetime.utcnow()
         try:
             # TODO: is this safe when users share kernels? Could events get mixed up?
+            if user_email is None:
+                raise ValueError("User email was not set")
+            
             self._mp.people_set_once(user_email, {'$created': current_time})
             self._mp.people_set(
                 user_email, {'$email': user_email, '$last_login': current_time})
