@@ -86,6 +86,17 @@ jobs:
     dependsOn: checkvars
     steps:
 
+      - task: AzureCLI@2
+        displayName: Make sure az cli is up to date
+        inputs:
+          azureSubscription: 'Perceptilabs Azure'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az upgrade
+          addSpnToEnvironment: true
+          useGlobalConfig: true
+
       - task: DownloadBuildArtifacts@0
         displayName: Download Release Files
         inputs:
