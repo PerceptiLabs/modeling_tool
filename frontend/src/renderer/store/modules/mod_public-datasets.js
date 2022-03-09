@@ -1,10 +1,10 @@
 import Vue from "vue";
 import {
-  rygg,
   downloadDataset,
   getPublicDatasets,
   getPublicDatasetCategories,
   getTaskStatus,
+  cancelTask,
   isTaskComplete,
   TASK_SUCCEEDED_STATE,
 } from "@/core/apiRygg.js";
@@ -150,9 +150,7 @@ const actions = {
   async deleteDownload({ commit, getters }, name) {
     const dataset = getters.getDatasetByName(name);
     if (dataset) {
-      const res = await rygg.delete(
-        `/tasks/${dataset.downloadStatus.downloadTaskId}`,
-      );
+      const res = await cancelTask(dataset.downloadStatus.downloadTaskId);
 
       clearInterval(dataset.downloadStatus.timerId);
       commit("changeDownloadingCount", false);
