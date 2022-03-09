@@ -190,8 +190,8 @@ jobs:
           scriptType: 'bash'
           scriptLocation: 'inlineScript'
           inlineScript: |
-            az storage blob upload --account-name=perceptilabs --container-name=saas --file=$(artifact_chart) --overwrite --name=$(artifact_name)
-            az storage blob upload --account-name=perceptilabs --container-name=saas --file=$(artifact_index) --overwrite --name=index.yaml
+            az storage blob upload --account-name=perceptilabs --container-name=saas --file=$(artifact_chart) --overwrite true --name=$(artifact_name)
+            az storage blob upload --account-name=perceptilabs --container-name=saas --file=$(artifact_index) --overwrite true --name=index.yaml
           addSpnToEnvironment: true
           useGlobalConfig: true
 
