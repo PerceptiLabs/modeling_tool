@@ -216,7 +216,19 @@ class DatasetClient(ClientBase):
     def create_segmentation_dataset(rest, project, image_path, mask_path):
         response = rest.post('/datasets/create_segmentation_dataset/', {}, image_path=image_path, mask_path=mask_path, project_id=project.id)
         return TaskClient(rest, response['task_id']), DatasetClient(rest, response['dataset_id'])
-
+ 
+    def create_classification_dataset_from_upload(rest, project, name, upload_file_path):
+        response = rest.post_file('/datasets/create_classification_dataset_from_upload/', upload_file_path, "dataset.zip", project.id, name=name)
+        return TaskClient(rest, response['task_id']), DatasetClient(rest, response['dataset_id'])
+    
+    def create_segmentation_dataset_from_upload(rest, project, image_data_path, image_dataset_name, mask_data_path, mask_dataset_name):
+        upload_files = {
+            'image_file': (image_data_path, image_dataset_name),
+            'mask_file': (mask_data_path, mask_dataset_name)
+        } 
+        response = rest.post_files('/datasets/create_segmentation_dataset_from_upload/', project.id, upload_files)
+        return TaskClient(rest, response['task_id']), DatasetClient(rest, response['dataset_id'])
+        
     @property
     def name(self):
         return self.as_dict["name"]

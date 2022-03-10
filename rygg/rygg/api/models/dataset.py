@@ -11,10 +11,11 @@ import shutil
 import uuid
 
 from rygg.api.tasks import delete_path_async
-from rygg.files.tasks import download_async, unzip_async, create_classification_csv_async, create_segmentation_csv_async
+from rygg.files.tasks import download_async, unzip_async, create_classification_csv_async, create_segmentation_csv_async, classification_from_upload_async, segmentation_from_upload_async
 from rygg.settings import IS_CONTAINERIZED, file_upload_dir, IS_SERVING, DATA_BLOB
 from rygg.api.models import Project, Model
 from rygg.files.utils.file import get_text_lines
+
 
 UPLOAD_PREFIX = "upload: "
 
@@ -157,7 +158,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         dest_dir = os.path.join(upload_dir, f"dataset-{uuid.uuid4()}")
 
         upload_path = take_temp_file(uploaded_temp_file, dest_dir, dataset_name)
-
+        
         dataset = Dataset(
             project_id=project_id,
             name=dataset_name,
@@ -171,6 +172,51 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
 
         return task_id, dataset
 
+    @classmethod
+    def create_segmentation_dataset_from_upload(cls, project_id, image_data_path, image_dataset_name, mask_data_path, mask_dataset_name):
+        if not IS_CONTAINERIZED:
+            raise Exception("Not supported!")
+
+        upload_dir = file_upload_dir(project_id)
+        dest_dir = os.path.join(upload_dir, f"dataset-{uuid.uuid4()}")
+        
+        dataset_name = image_dataset_name
+        images_upload_path = take_temp_file(image_data_path, dest_dir, image_dataset_name)
+        masks_upload_path = take_temp_file(mask_data_path, dest_dir, mask_dataset_name)
+        location = dest_dir+'/'+'pl_data.csv'
+        dataset = Dataset(
+            project_id=project_id,
+            name=dataset_name,
+            location=location,  # csv location
+            root_dir=dest_dir,         # a way to keep track of the fact that this was an upload
+            source_url=f"{UPLOAD_PREFIX}{dest_dir}",  # there are two zip files. hence using the root directory
+            type=cls.Type.SEGMENTATION
+        )
+        dataset.save()
+        task_id = segmentation_from_upload_async(dataset.dataset_id, images_upload_path, masks_upload_path)
+
+        return task_id, dataset
+    
+    @classmethod
+    def create_classification_dataset_from_upload(cls, project_id, dataset_name, uploaded_temp_file):
+        if not IS_CONTAINERIZED:
+            raise Exception("Not supported!")
+
+        upload_dir = file_upload_dir(project_id)
+        dest_dir = os.path.join(upload_dir, f"dataset-{uuid.uuid4()}")
+        upload_path = take_temp_file(uploaded_temp_file, dest_dir, dataset_name)
+        dataset = Dataset(
+            project_id=project_id,
+            name=dataset_name,
+            location=upload_path,    # dataset location (not particularly csv)
+            root_dir=dest_dir,         # a way to keep track of the fact that this was an upload
+            source_url=f"{UPLOAD_PREFIX}{upload_path}",
+            type=cls.Type.CLASSIFICATION
+        )
+        dataset.save()
+        task_id = classification_from_upload_async(dataset.dataset_id)
+
+        return task_id, dataset
 
     @classmethod
     def create_classification_dataset(cls, project_id, dataset_path):
@@ -183,7 +229,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         datasetExist = Dataset.get_queryset().filter(
             project_id=project_id,
             name=name,
-            location=location
+            location=location  # csv location
         ).exists()
 
         if datasetExist:

@@ -11,6 +11,8 @@ app = Celery(
         "unzip": { "queue": "rygg" },
         "delete_path": { "queue": "rygg" },
         "download": { "queue": "rygg" },
+        "classification_from_upload": { "queue": "rygg"},
+        "segmentation_from_upload": { "queue": "rygg"}
     }
 )
 

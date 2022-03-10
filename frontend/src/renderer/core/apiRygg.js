@@ -370,6 +370,23 @@ export const rygg_createClassificationDataset = async dataset_path => {
   }
 };
 
+export const createEnterpriseClassificationDataset = async source => {
+  try {
+    const payload = new FormData();
+    payload.append("file_uploaded", source);
+    payload.append("name", source.name);
+    console.log("createEnterpriseClassificationDataset - payload", payload);
+    const fs = await whenHaveFileservingToken();
+    const res = await fs.post(
+      `/datasets/create_classification_dataset_from_upload/?project_id=${currentProject()}`,
+      payload,
+    );
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+};
+
 /**
  * @param {string} image_path - Path to images
  * @param {string} mask_path - Path to masks
@@ -386,6 +403,28 @@ export const rygg_createSegmentationDataset = async (image_path, mask_path) => {
   } catch (e) {
     console.error(e);
     throw e;
+  }
+};
+
+export const createEnterpriseSegmentationDataset = async (
+  imageSource,
+  maskSource,
+) => {
+  try {
+    const payload = new FormData();
+    payload.append("image_file", imageSource);
+    payload.append("image_name", imageSource.name);
+    payload.append("mask_file", maskSource);
+    payload.append("mask_name", maskSource.name);
+    console.log("createEnterpriseSegmentationDataset - payload", payload);
+    const fs = await whenHaveFileservingToken();
+    const res = await fs.post(
+      `/datasets/create_segmentation_dataset_from_upload/?project_id=${currentProject()}`,
+      payload,
+    );
+    return res.data;
+  } catch (err) {
+    throw err;
   }
 };
 

@@ -13,7 +13,7 @@ import {
   pickDirectory as rygg_pickDirectory,
   pickFile as rygg_pickFile,
 } from "@/core/apiRygg.js";
-import { mapState } from "vuex";
+import { mapGetters, mapState } from "vuex";
 export default {
   name: "CreateModelPicker",
   data() {
@@ -31,14 +31,13 @@ export default {
       type: Boolean,
       default: false,
     },
-    isEnterpriseMode: {
-      type: Boolean,
-      default: false,
-    },
   },
   computed: {
     ...mapState({
       startupDatasetPath: state => state.mod_datasetSettings.startupFolder,
+    }),
+    ...mapGetters({
+      isEnterpriseMode: "globalView/get_isEnterpriseApp",
     }),
   },
   methods: {
@@ -50,6 +49,9 @@ export default {
       }
     },
     async selectFolder() {
+      if (this.isEnterpriseMode) {
+        return this.enterpriseSelect();
+      }
       try {
         this.isWaitingToPick = true;
         const { path } = await rygg_pickDirectory(this.label);
@@ -84,7 +86,7 @@ export default {
         this.isWaitingToPick = true;
         const fileInput = document.createElement("input");
         fileInput.setAttribute("type", "file");
-        fileInput.setAttribute("accept", ".csv,.zip");
+        fileInput.setAttribute("accept", ".zip");
         fileInput.addEventListener("change", this.onFilePicked);
         fileInput.click();
       } finally {

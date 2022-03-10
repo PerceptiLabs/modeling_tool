@@ -25,6 +25,7 @@ from rygg.files.views.util import (
 from rygg.settings import IS_CONTAINERIZED, is_upload_allowed
 import rygg.files.views.util
 
+
 def request_path(request):
     return rygg.files.views.util.get_path_param(request)
 
@@ -274,4 +275,80 @@ class DatasetViewSet(viewsets.ModelViewSet):
             "dataset_location": dataset.location,
             "dataset_id": dataset.dataset_id
         }
+        return Response(response, 201)
+
+
+
+    @action(detail=False, methods=['POST'])
+    def create_classification_dataset_from_upload(self, request):
+        if not is_upload_allowed():
+            return HTTPExceptions.BAD_REQUEST.with_content("This server isn't configured to allow uploads")
+
+        project_id = get_project_from_request(request).project_id
+
+        file_uploaded = request.FILES.get('file_uploaded')
+        if not file_uploaded:
+            raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content("A file wasn't uploaded")
+
+        if not file_uploaded.name:
+            raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content("A file name wasn't provided.")
+
+        dataset_name = request.POST.get("name")
+        if not dataset_name:
+            raise HTTPExceptions.BAD_REQUEST.with_content("name parameter is required")
+
+
+        task_id, dataset = Dataset.create_classification_dataset_from_upload(
+            project_id,
+            dataset_name,
+            file_uploaded.temporary_file_path()
+        )
+        response = {
+            "task_id": task_id,
+            "dataset_location": dataset.location,
+            "dataset_id": dataset.dataset_id
+        }
+
+        return Response(response, 201)
+
+
+
+    @action(detail=False, methods=['POST'])
+    def create_segmentation_dataset_from_upload(self, request):
+        if not is_upload_allowed():
+            return HTTPExceptions.BAD_REQUEST.with_content("This server isn't configured to allow uploads")
+
+        project_id = get_project_from_request(request).project_id
+
+        mask_data = request.FILES.get('mask_file')
+        if not mask_data:
+            raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content("A file wasn't uploaded")
+
+        if not mask_data.name:
+            raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content("A file name wasn't provided.")
+        
+        image_data = request.FILES.get('image_file')
+        if not image_data:
+            raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content("A file wasn't uploaded")
+
+        if not image_data.name:
+            raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content("A file name wasn't provided.")
+
+        
+
+
+        task_id, dataset = Dataset.create_segmentation_dataset_from_upload(
+            project_id,
+            image_data.temporary_file_path(),
+            image_data.name,
+            mask_data.temporary_file_path(), 
+            mask_data.name
+        )
+
+        response = {
+            "task_id": task_id,
+            "dataset_location": dataset.location,
+            "dataset_id": dataset.dataset_id
+        }
+
         return Response(response, 201)

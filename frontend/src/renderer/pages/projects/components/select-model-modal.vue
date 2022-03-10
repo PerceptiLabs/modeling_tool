@@ -30,7 +30,7 @@ div
             :isFilePickerOpened="isFilePickerOpened",
             @openPLVideoTutorialPage="openPLVideoTutorialPage()",
             @handleDataPathUpdates="handleDataPathUpdates",
-            :isImageClassificationNextButtonDissabled="isImageClassificationNextButtonDissabled",
+            :isImageClassificationNextButtonDisabled="isImageClassificationNextButtonDisabled",
             @handleImageClassificationFolderPicker="handleImageClassificationFolderPicker",
             @handleImageClassificationNext="handleImageClassificationNext",
             :isImageSegmentationNextButtonDisabled="isImageSegmentationNextButtonDisabled",
@@ -177,7 +177,6 @@ import { assembleModel } from "@/core/helpers/model-helper";
 import {
   debounce,
   isPublicDatasetEnabled,
-  isFolderLoadingEnabled,
 } from "@/core/helpers";
 import {
   doesDirExist as rygg_doesDirExist,
@@ -190,6 +189,8 @@ import {
   pickFile as rygg_pickFile,
   pickDirectory as rygg_pickDirectory,
   rygg_createClassificationDataset,
+  createEnterpriseSegmentationDataset as rygg_createEnterpriseSegmentationDataset,
+  createEnterpriseClassificationDataset as rygg_createEnterpriseClassificationDataset,
   rygg_createSegmentationDataset,
   isTaskComplete as rygg_isTaskComplete,
 } from "@/core/apiRygg";
@@ -292,7 +293,7 @@ export default {
         randomSeed: "123",
       },
       debouncedCreateModelFunction: null,
-      onStep: isFolderLoadingEnabled() ? 5 : 1,
+      onStep: 5,
       settings: defaultTrainingSettings,
       showLoadingSpinner: false,
       isCreateModelLoading: false,
@@ -326,23 +327,23 @@ export default {
     isPublicDatasetEnabled() {
       return isPublicDatasetEnabled();
     },
+    isDataWizardEnabled() {
+      return isEnvDataWizardEnabled();
+    },
     isFolderLoadingEnabled() {
       return isFolderLoadingEnabled();
     },
     getModalTitle() {
       switch (this.onStep) {
         case STEP.LOAD_CSV:
-          if (this.isFolderLoadingEnabled) {
-            switch (this.modelType) {
-              case this.modelTypes.CLASSIFICATION:
-                return "Image Classification";
-              case this.modelTypes.SEGMENTATION:
-                return "Image Segmentation";
-              case this.modelTypes.MULTI_MODAL:
-                return "Multi-Modal";
-            }
+          switch (this.modelType) {
+            case this.modelTypes.CLASSIFICATION:
+              return "Image Classification";
+            case this.modelTypes.SEGMENTATION:
+              return "Image Segmentation";
+            case this.modelTypes.MULTI_MODAL:
+              return "Multi-Modal";
           }
-          return "Load dataset";
         case STEP.PARTITION:
           return "Define your dataset";
         case STEP.TRAINING:
@@ -353,7 +354,7 @@ export default {
           return "What do you want to do?";
       }
     },
-    isImageClassificationNextButtonDissabled() {
+    isImageClassificationNextButtonDisabled() {
       return this.imageClassificationFolderPath === null;
     },
     isImageSegmentationNextButtonDisabled() {
@@ -790,6 +791,9 @@ export default {
       this.imageClassificationFolderPath = folderPath;
     },
     async handleImageClassificationNext() {
+      if (this.isEnterpriseMode) {
+        return this.handleEnterpriseImageClassificationNext();
+      }
       const {
         dataset_location,
         task_id,
@@ -797,9 +801,34 @@ export default {
         this.imageClassificationFolderPath,
       );
       await whenCeleryTaskDone(task_id);
-      this.handleDataPathUpdates([dataset_location]);
+      await this.handleDataPathUpdates([dataset_location]);
+    },
+    async handleEnterpriseImageClassificationNext() {
+      this.uploadStatus = "Processing...";
+
+      try {
+        const { task_id, dataset_id } = await rygg_createEnterpriseClassificationDataset(
+          this.imageClassificationFolderPath,
+        );
+
+        await whenCeleryTaskDone(task_id, cb => this.handleUploadProgress(cb));
+
+        const response = await rygg_getDataset(dataset_id);
+        const { data: { location: path } = {} } = response;
+
+        if (path) await this.handleDataPathUpdates([path]);
+      } catch (err) {
+        if (err.message) {
+          this.$store.dispatch("globalView/GP_errorPopup", err.message);
+        }
+      } finally {
+        this.uploadStatus = "";
+      }
     },
     async handleImageSegmentationNext() {
+      if (this.isEnterpriseMode) {
+        return this.handleEnterpriseImageSegmentationNext();
+      }
       const {
         dataset_location,
         task_id,
@@ -808,7 +837,30 @@ export default {
         this.imageSegmentationMaskFolderPath,
       );
       await whenCeleryTaskDone(task_id);
-      this.handleDataPathUpdates([dataset_location]);
+      await this.handleDataPathUpdates([dataset_location]);
+    },
+    async handleEnterpriseImageSegmentationNext() {
+      this.uploadStatus = "Processing...";
+
+      try {
+        const { task_id, dataset_id } = await rygg_createEnterpriseSegmentationDataset(
+          this.imageSegmentationImageFolderPath,
+          this.imageSegmentationMaskFolderPath,
+        );
+
+        await whenCeleryTaskDone(task_id, cb => this.handleUploadProgress(cb));
+
+        const response = await rygg_getDataset(dataset_id);
+        const { data: { location: path } = {} } = response;
+
+        if (path) await this.handleDataPathUpdates([path]);
+      } catch (err) {
+        if (err.message) {
+          this.$store.dispatch("globalView/GP_errorPopup", err.message);
+        }
+      } finally {
+        this.uploadStatus = "";
+      }
     },
     handleImageSegmentationImageFolderPicker(path) {
       this.imageSegmentationImageFolderPath = path;

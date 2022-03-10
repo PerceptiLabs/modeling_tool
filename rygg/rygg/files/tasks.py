@@ -12,6 +12,7 @@ from rygg.tasks import run_async
 from celery import Celery
 from rygg.tasks.celery import work_in_celery
 
+
 app = Celery()
 
 
@@ -175,7 +176,6 @@ def download_async(dataset_id):
     name="create_classification_csv",
     bind=True,
 )
-
 def create_classification_csv_task(self, dataset_id):
     work_in_celery(self, create_classification_csv, dataset_id)
 
@@ -248,7 +248,6 @@ def create_classification_csv(cancel_token, status_callback, dataset, dataset_pa
 def create_classification_csv_async(dataset, dataset_path):
     return run_async("create_classification_csv", create_classification_csv, dataset, dataset_path)
 
-
 ######################
 # Create segmentation CSV
 @app.task(
@@ -257,7 +256,6 @@ def create_classification_csv_async(dataset, dataset_path):
 )
 def create_segmentation_csv_task(self, dataset_id):
     work_in_celery(self, create_segmentation_csv, dataset_id)
-
 
 def _create_segmentation_csv(dataset, image_path, mask_path):
     csv_path = dataset.location
@@ -325,3 +323,72 @@ def create_segmentation_csv(cancel_token, status_callback, dataset, image_path, 
 
 def create_segmentation_csv_async(dataset, image_path, mask_path):
     return run_async("create_segmentation_csv", create_segmentation_csv, dataset, image_path, mask_path)
+
+######################
+# Create classification CSV from upload
+@app.task(
+    name="classification_from_upload",
+    bind=True,
+)
+def classification_from_upload_task(self, dataset_id):
+    work_in_celery(self, create_classification_csv_from_upload, dataset_id)
+
+def create_classification_csv_from_upload(cancel_token, status_callback, dataset_id):
+    from rygg.api.models import Dataset
+    with dataset_operation(dataset_id) as dataset:
+        filepath = dataset.upload_path
+        dataset_dir = os.path.splitext(filepath)[0]
+        # if the filepath is a zip, then unzip
+        if is_zip(filepath):
+            unzipped = unzipped_files(filepath, dest=dataset.root_dir, cancel_token=cancel_token)
+            for unzipped_ix, _ in enumerate(unzipped):
+                status_callback(1, 0, "Unzipping", len(unzipped), unzipped_ix)
+
+            # point the dataset at the csv
+            dataset_path = os.path.splitext(filepath)[0]
+            dataset.location = os.path.join(dataset_path,'pl_data.csv')
+            dataset.save()
+            
+            # remove the zip
+            rm_f(filepath)
+        
+        create_classification_csv(cancel_token, status_callback, dataset, dataset_path)
+
+
+def classification_from_upload_async(dataset_id):
+    return run_async("classification_from_upload", create_classification_csv_from_upload, dataset_id)
+
+
+######################
+# Create segmentation CSV from upload
+@app.task(
+    name="segmentation_from_upload",
+    bind=True,
+)
+def segmentation_from_upload_task(self, dataset_id, images_upload_path, masks_upload_path):
+    work_in_celery(self, create_segmentation_csv_from_upload, dataset_id, images_upload_path, masks_upload_path)
+
+def create_segmentation_csv_from_upload(cancel_token, status_callback, dataset_id, images_upload_path, masks_upload_path):
+    from rygg.api.models import Dataset
+    with dataset_operation(dataset_id) as dataset:
+    # if the filepath is a zip, then unzip
+        for filepath in [images_upload_path, masks_upload_path]:
+            # filepath = os.path.join(dataset_path, file_path)
+            if is_zip(filepath):
+                unzipped = unzipped_files(filepath, dest=dataset.root_dir, cancel_token=cancel_token)
+                i=0
+                for unzipped_ix, _ in enumerate(unzipped):
+                    status_callback(2, i, "Unzipping", len(unzipped), unzipped_ix)
+                i+=1
+                # remove the zip
+                rm_f(filepath)
+        
+        dataset.save()
+        
+        image_folder = os.path.splitext(images_upload_path)[0]
+        mask_folder = os.path.splitext(masks_upload_path)[0]
+        create_segmentation_csv(cancel_token, status_callback, dataset, image_folder, mask_folder)
+
+
+def segmentation_from_upload_async(dataset_id, images_upload_path, masks_upload_path):
+    return run_async("segmentation_from_upload", create_segmentation_csv_from_upload, dataset_id, images_upload_path, masks_upload_path)

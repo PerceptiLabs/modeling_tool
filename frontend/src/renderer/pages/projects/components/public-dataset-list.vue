@@ -56,13 +56,11 @@
 import { mapActions, mapState, mapGetters } from "vuex";
 import ChartSpinner from "@/components/charts/chart-spinner";
 import { AZURE_BLOB_PATH_PREFIX, modelTypes } from "@/core/constants.js";
-import { isFolderLoadingEnabled } from "@/core/helpers.js";
 import { isTaskComplete as rygg_isTaskComplete } from "@/core/apiRygg";
 import { debounce } from "@/core/helpers";
 export default {
   components: { ChartSpinner },
   data: () => ({
-    isFolderLoadingEnabled: isFolderLoadingEnabled(),
     filter: "",
     modelTypes: modelTypes,
   }),
@@ -92,23 +90,19 @@ export default {
     filteredList() {
       let listToBeFiltered = this.datasetList;
 
-      if (this.isFolderLoadingEnabled) {
-        listToBeFiltered = this.datasetList.filter(item => {
-          switch (this.modelType) {
-            case this.modelTypes.CLASSIFICATION:
-              return item.Category.toLowerCase().includes(
-                "image classification",
-              );
-            case this.modelTypes.SEGMENTATION:
-              return item.Category.toLowerCase().includes("image segmentation");
-            case this.modelTypes.MULTI_MODAL:
-              return (
-                !item.Category.toLowerCase().includes("image classification") &&
-                !item.Category.toLowerCase().includes("image segmentation")
-              );
-          }
-        });
-      }
+      listToBeFiltered = this.datasetList.filter(item => {
+        switch (this.modelType) {
+          case this.modelTypes.CLASSIFICATION:
+            return item.Category.toLowerCase().includes("image classification");
+          case this.modelTypes.SEGMENTATION:
+            return item.Category.toLowerCase().includes("image segmentation");
+          case this.modelTypes.MULTI_MODAL:
+            return (
+              !item.Category.toLowerCase().includes("image classification") &&
+              !item.Category.toLowerCase().includes("image segmentation")
+            );
+        }
+      });
 
       if (this.filter) {
         listToBeFiltered = listToBeFiltered.filter(

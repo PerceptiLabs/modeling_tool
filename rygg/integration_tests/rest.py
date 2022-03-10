@@ -54,6 +54,16 @@ class RyggRest():
             raise Exception(f"Error status {resp.status_code} received. Content: {resp.content}")
         return None if not resp.content else resp.json()
 
+    def post_files(self, relpath, project_id, upload_files, **urlparms):
+        files = {}
+        for file_name in upload_files.keys(): 
+            files[file_name] = (upload_files[file_name][1], open(upload_files[file_name][0], "rb"), "application/octet-stream")
+        url = self.build_query(relpath, project_id=project_id)
+        resp = self._session.post(url, files=files, data={"token": self._token, "project_id": project_id, **urlparms}, headers=self._auth_header)
+        if not resp.ok:
+            raise Exception(f"Error status {resp.status_code} received. Content: {resp.content}")
+        return None if not resp.content else resp.json()
+        
     def build_query(self, relpath, **parms):
         encoded_parms = urlencode({"token": self._token, **parms})
         return f"{self._base_url}{relpath}?{encoded_parms}"

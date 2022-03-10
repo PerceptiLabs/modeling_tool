@@ -19,6 +19,9 @@ SPAM_CSV = os.path.join(os.path.dirname(__file__), "spam.zip")
 CLASSIFICATION_DATASET_DIR = os.path.join(os.path.dirname(__file__), "test_data")
 SEGMENTATION_IMAGE_PATH = os.path.join(os.path.dirname(__file__), 'test_data', "setA")
 SEGMENTATION_MASK_PATH = os.path.join(os.path.dirname(__file__), 'test_data', "setB")
+SEGMENTATION_IMAGE_ZIP_PATH = os.path.join(os.path.dirname(__file__), 'test_data', "segmentation images.zip")
+SEGMENTATION_MASK_ZIP_PATH = os.path.join(os.path.dirname(__file__), 'test_data', "segmentation masks.zip")
+CLASSIFICATION_IMAGE_ZIP_PATH = os.path.join(os.path.dirname(__file__), 'test_data', "classification.zip")
 
 def assert_workingdir(rest, project_id, to_local_translator):
     if rest.is_enterprise:
@@ -584,15 +587,41 @@ def test_create_segmentation_dataset(rest, tmp_project, to_local_translator):
     # make sure we didn't delete too high in the directory tree
     assert_workingdir(rest, tmp_project.id, to_local_translator)
 
-@pytest.mark.timeout(0.2)
+@pytest.mark.timeout(10)
 @pytest.mark.usefixtures('enterprise_only')
 def test_create_classification_dataset_enterprise(rest, tmp_project):
-    with pytest.raises(Exception, match="404"):
-        DatasetClient.create_classification_dataset(rest, dataset_path=CLASSIFICATION_DATASET_DIR, project=tmp_project)
 
+    # upload a dataset zip with dataset endpoint
+    task, dataset = DatasetClient.create_classification_dataset_from_upload(rest, tmp_project, "classification.zip", CLASSIFICATION_IMAGE_ZIP_PATH)
 
-@pytest.mark.timeout(0.2)
+    # wait for dataset to be ready
+    assert_task_completes(rest, task)
+
+    # re-fetch the dataset by id
+    assert dataset.status == "uploaded"
+    assert dataset.is_perceptilabs_sourced == False
+    assert dataset.exists_on_disk == True
+
+    # get dataset's csv data
+    content = dataset.get_content(num_rows=3)['file_contents']
+    assert len(content) == 3
+    assert "," in content[0]
+
+@pytest.mark.timeout(10)
 @pytest.mark.usefixtures('enterprise_only')
 def test_create_segmentation_dataset_enterprise(rest, tmp_project):
-    with pytest.raises(Exception, match="404"):
-        DatasetClient.create_segmentation_dataset(rest, project=tmp_project, image_path=SEGMENTATION_IMAGE_PATH, mask_path=SEGMENTATION_MASK_PATH)
+    # upload a dataset zip with dataset endpoint
+    task, dataset = DatasetClient.create_segmentation_dataset_from_upload(rest, tmp_project, SEGMENTATION_IMAGE_ZIP_PATH, 'segmentation images.zip', SEGMENTATION_MASK_ZIP_PATH, 'segmentation masks.zip')
+
+    # wait for dataset to be ready
+    assert_task_completes(rest, task)
+
+    # re-fetch the dataset by id
+    assert dataset.status == "uploaded"
+    assert dataset.is_perceptilabs_sourced == False
+    assert dataset.exists_on_disk == True
+
+    # get dataset's csv data
+    content = dataset.get_content(num_rows=3)['file_contents']
+    assert len(content) == 3
+    assert "," in content[0]

@@ -544,10 +544,6 @@ export const isServingEnabled = () => {
   return process.env.ENABLE_SERVING === "true";
 };
 
-export const isFolderLoadingEnabled = () => {
-  return process.env.ENABLE_FOLDER_LOADING === "true";
-};
-
 export const isNoKeyCloakEnabled = () => {
   return process.env.NO_KC === "true";
 };

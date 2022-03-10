@@ -13,9 +13,7 @@ div
         @loadDataset="handleDataPathUpdates",
         :modelType="modelType"
       )
-      button.mt-20.link.back-to-previous-step(v-if="isFolderLoadingEnabled")(
-        @click="$emit('back')"
-      )
+      button.mt-20.link.back-to-previous-step(@click="$emit('back')")
         img(src="/static/img/back-arrow.svg")
         | Back
     template(v-else)
@@ -44,7 +42,7 @@ div
             img(src="/static/img/back-arrow.svg")
             | Back
           button.btn.btn--primary(
-            :disabled="isImageClassificationNextButtonDissabled",
+            :disabled="isImageClassificationNextButtonDisabled",
             @click="$emit('handleImageClassificationNext')"
           ) Next
 
@@ -116,8 +114,7 @@ div
           create-model-picker(
             label="Select .csv",
             @onPick="$emit('handleMultiModalCsvPicker', $event)",
-            :pickCsv="true",
-            :isEnterpriseMode="isEnterpriseMode"
+            :pickCsv="true"
           )
         .d-flex.justify-content-between
           button.link.back-to-previous-step(@click="$emit('back')")
@@ -127,15 +124,6 @@ div
             :disabled="isMultiModalNextButtonDisabled",
             @click="$emit('handleMultiModalNext')"
           ) Next
-      template(v-if="!isFolderLoadingEnabled")
-        .main-file-structure-contents
-          .load-contents-group
-            button.btn.btn--primary.load-dataset(
-              @click="openFilePicker('setDataPath')",
-              :disabled="isFilePickerOpened"
-            ) Upload .CSV
-        .find-out-message Find our starting guide
-          span.guide-link(@click="openPLVideoTutorialPage") here.
 </template>
 
 <script>
@@ -143,8 +131,6 @@ import PublicDatasetList from "./public-dataset-list";
 import CreateModelPicker from "./create-model-picker.vue";
 import Spinner from "@/components/charts/chart-spinner";
 import { modelTypes } from "@/core/constants";
-import { isFolderLoadingEnabled } from "@/core/helpers";
-import { mapGetters } from "vuex";
 const LoadDatasetOptions = {
   public: "Public",
   local: "Local",
@@ -165,16 +151,13 @@ export default {
     LoadDatasetOptions: LoadDatasetOptions,
     selectedLoadOption: LoadDatasetOptions.public,
     modelTypes: modelTypes,
-    isFolderLoadingEnabled: isFolderLoadingEnabled(),
-    // under feature flag
-    multiModalPath: null,
   }),
   props: {
     modelType: {
       type: String,
       default: "",
     },
-    isImageClassificationNextButtonDissabled: {
+    isImageClassificationNextButtonDisabled: {
       type: Boolean,
     },
     isImageSegmentationNextButtonDisabled: {
@@ -193,9 +176,6 @@ export default {
     },
   },
   computed: {
-    ...mapGetters({
-      isEnterpriseMode: "globalView/get_isEnterpriseApp",
-    }),
     isUploadingFile() {
       return this.uploadStatus.length;
     },
