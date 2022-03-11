@@ -20,10 +20,11 @@ run_migrations(){
     echo "${all_migrations}" | while read migration; do
       migrate_one $migration
     done
-  else
-    echo "Performing initial system migration"
-    system_migrations/all/up
   fi
+
+  # Now that the numbered migrations are done, make sure everything is synced with latest
+  echo "Performing initial system migration"
+  system_migrations/all/up
 }
 
 main(){

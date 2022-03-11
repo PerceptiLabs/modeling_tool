@@ -232,8 +232,10 @@ get_user_input(){
     export KC_INITIAL_PWD="${REPLY:-resetme}"
   fi
 
-  if [ -f .env ]; then
-    source .env
+  envfile="${PL_ROOT_DIR}/.env"
+
+  if [ -f "${envfile}" ]; then
+    source "${envfile}"
   fi
 
   if [ -z "${PL_SERVER_ADDRESS:-}" ]; then
@@ -243,6 +245,10 @@ get_user_input(){
     fi
     read -p "Enter the network-accessible hostname of this server. It must be accessible from users' machines. [default: ${HOSTNAME}]: "
     export PL_SERVER_ADDRESS=${REPLY:-${HOSTNAME}}
+  else
+    echo "Using existing setting for server address: ${PL_SERVER_ADDRESS:-}"
+    # export the veriable to the environment for child scripts
+    export PL_SERVER_ADDRESS=${PL_SERVER_ADDRESS:-}
   fi
 }
 

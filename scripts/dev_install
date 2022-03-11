@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-delete_existing(){
+stop_services(){
   if [ -f docker-compose.yml ]; then
     docker-compose down --remove-orphans
   fi
+}
 
+delete_existing(){
   rm -rf $(pwd)/* || {
     echo "couldn't delete previous installation"
       exit 1
@@ -59,6 +61,7 @@ main(){
   sudo -p "Sudo is required. Please enter the password: " echo -n ""
   # To simulate an upgrade, just comment out the call to delete_existing
   check_prereqs
+  stop_services
   delete_existing
   make_fake_images
   tarball_system_migrations
