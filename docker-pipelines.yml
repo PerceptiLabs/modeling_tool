@@ -134,6 +134,16 @@ jobs:
     pool:
       vmImage: ubuntu-latest
     steps:
+      - task: AzureCLI@2
+        displayName: Make sure az cli is up to date
+        inputs:
+          azureSubscription: 'Perceptilabs Azure'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az upgrade
+          addSpnToEnvironment: true
+          useGlobalConfig: true
 
       - task: DownloadBuildArtifacts@0
         displayName: Fetch artifacts from the previous job
