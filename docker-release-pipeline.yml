@@ -93,7 +93,7 @@ jobs:
           scriptType: 'bash'
           scriptLocation: 'inlineScript'
           inlineScript: |
-            az upgrade
+            az upgrade --yes
           addSpnToEnvironment: true
           useGlobalConfig: true
 
