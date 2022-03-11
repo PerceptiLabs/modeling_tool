@@ -36,6 +36,16 @@ elif AUTH_ENV == 'prod':
     AUTH_CERTS_URL = os.getenv('AUTH_CERTS_URL', f"{AUTH_ISSUER}/protocol/openid-connect/certs")
     AUTH_AUDIENCE = os.getenv('AUTH_AUDIENCE', 'account')
     AUTH_ALGORITHM = os.getenv('AUTH_ALGORITHM', 'RS256')
+elif AUTH_ENV == 'pre_dev':
+    AUTH_ISSUER = 'https://dev-udw1gl-s.us.auth0.com/'
+    AUTH_CERTS_URL = f"{AUTH_ISSUER}.well-known/jwks.json"
+    AUTH_AUDIENCE = "https://ryggapi.perceptilabs.com/"
+    AUTH_ALGORITHM = 'RS256'
+elif AUTH_ENV == 'dev_a':
+    AUTH_ISSUER = 'https://dev-ymwf5efb.us.auth0.com/'
+    AUTH_CERTS_URL = f"{AUTH_ISSUER}.well-known/jwks.json"
+    AUTH_AUDIENCE = "https://backends-dev.perceptilabs.com/"
+    AUTH_ALGORITHM = 'RS256'
 else:
     raise Exception(f"AUTH_ENV is invalid. Got '{AUTH_ENV}'. Expected 'dev', 'prod' or empty string.")
 

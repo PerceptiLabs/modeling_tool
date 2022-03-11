@@ -39,42 +39,80 @@ def path(request):
     return request.config.option.path or ""
 
 
+def token_from_keycloak(issuer, token_path, client_id, client_secret):
+    import ssl
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    conn = http.client.HTTPSConnection(issuer, context=ctx)
+    payload = {
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "grant_type": "client_credentials",
+    }
+    payload_encoded = urllib.parse.urlencode(payload)
+
+    conn.request("POST", token_path, payload_encoded, headers={"content-type": "application/x-www-form-urlencoded"})
+
+    res = conn.getresponse()
+    data_bytes = res.read()
+    data_json = data_bytes.decode("utf-8")
+    data = json.loads(data_json)
+    token = data['access_token']
+    return token
+
+def token_from_auth0(issuer, client_id, client_secret, api_audience):
+    conn = http.client.HTTPSConnection(issuer)
+
+    payload = {
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "audience": api_audience,
+        "grant_type": "client_credentials"
+    }
+    payload_json = json.dumps(payload)
+
+    headers = { 'content-type': "application/json" }
+
+    conn.request("POST", "/oauth/token", payload_json, headers)
+
+    res = conn.getresponse()
+    data = res.read()
+
+    as_json = data.decode("utf-8")
+    as_dict = json.loads(as_json)
+    ret = as_dict['access_token']
+    return ret
+
+# It's imperative that this be session-scoped to avoid high costs with Auth0
 @pytest.fixture(scope='session')
 def auth_token(request):
     auth_env = request.config.option.auth_env or 'dev'
 
     if auth_env == 'dev':
         # set up keycloak following these directions: https://sahil-khanna.medium.com/rest-api-authentication-using-keycloak-b6afb07eceec
-        AUTH_ISSUER = 'keycloak.dev.perceptilabs.com:8443'
-        TOKEN_PATH = '/auth/realms/vue-perceptilabs/protocol/openid-connect/token'
-        CLIENT_ID = 'integration-test'
-        CLIENT_SECRET = 'c2ce91ea-ce06-493d-9a64-3cb31f1d298b'
+        return token_from_keycloak(
+            'keycloak.dev.perceptilabs.com:8443',
+            '/auth/realms/vue-perceptilabs/protocol/openid-connect/token',
+            'integration-test',
+            'c2ce91ea-ce06-493d-9a64-3cb31f1d298b',
+        )
 
-        # TODO: Fix verification of the cert
-        import ssl
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        conn = http.client.HTTPSConnection(AUTH_ISSUER, context=ctx)
-        payload = {
-            "client_id": CLIENT_ID,
-            "client_secret": CLIENT_SECRET,
-            "grant_type": "client_credentials",
-        }
-        payload_encoded = urllib.parse.urlencode(payload)
+    elif auth_env == 'pre_dev':
+        return token_from_auth0(
+            'dev-udw1gl-s.us.auth0.com',
+            "rJHdjcTchMlXoCKaueAG22WTaGPJY9Fe",
+            "aRGFo0lkmI4lLXb_jlXnnVeO6YOF_5O9gXzbpmIh9z2Y2cyGqDF2X5OnFoDZh5We",
+            'https://ryggapi.perceptilabs.com/',
+        )
 
-        conn.request("POST", TOKEN_PATH, payload_encoded, headers={"content-type": "application/x-www-form-urlencoded"})
-
-        res = conn.getresponse()
-        data_bytes = res.read()
-        data_json = data_bytes.decode("utf-8")
-        data = json.loads(data_json)
-        token = data['access_token']
-        return token
-
-    elif auth_env == 'prod':
-        raise NotImplementedException("TODO")
-
+    elif auth_env == 'dev_a':
+        return token_from_auth0(
+            'dev-ymwf5efb.us.auth0.com',
+            'tspKMSBOiGzoETUnJJFuvUySYI0OevZR',
+            'i15s3u_A33TcBYuZHLBOA0qEQoN1mIC8gUAftmwSp5v2GSUa0ePlRZ9uAKnp5-D1',
+            'https://backends-dev.perceptilabs.com/',
+        )
     else:
         raise Exception(f"auth_env option is '{auth_env}'. Expected 'dev' or nothing.")
 
