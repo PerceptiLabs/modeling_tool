@@ -131,8 +131,7 @@ jobs:
   - job: pushfiles
     displayName: Publish files to Azure storage
     dependsOn: installation_files
-    pool:
-      vmImage: ubuntu-latest
+    pool: Docker Build
     steps:
       - task: AzureCLI@2
         displayName: Make sure az cli is up to date
