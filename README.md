@@ -207,7 +207,7 @@ In case of you are facing some issues with calling rygg, run `python manage.py m
 
 1. Install and test pl-nightly to make sure it's shippable
 1. Do the same tests against cd.perceptilabshosting.com
-1. In the perceptilabs repo:
+1. In the perceptilabs repo, update the VERSION file and tag the branch:
     ```bash
     # Stash your stuff
     CUR_BRANCH=$(git branch --show-current)
@@ -251,6 +251,8 @@ In case of you are facing some issues with calling rygg, run `python manage.py m
     - Use tag $PL_VERSION
     - Build ID to deploy: The build number from above
 1. When Docker Release finishes, run "Release Airgapped"
+    - Branch: master
+    - Requested Version: <the release number>
 1. When Docker Release finishes, run "Docker CD":
     - Branch: master
     - Release Channel: prod
