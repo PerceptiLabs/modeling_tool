@@ -1,9 +1,6 @@
 import pytest
 import tensorflow as tf
 import numpy as np
-import os
-import skimage.io as sk
-import tempfile
 from unittest.mock import MagicMock
 
 
@@ -75,6 +72,32 @@ def test_normalize_minmax_norm_for_single_sample():
         assert np.all(expected == actual)
         assert actual.max() <= 1.0
         assert actual.min() >= 0.0
+
+
+def test_grayscale_for_single_rgb_sample():
+    max_value = 200
+    min_value = 100
+
+    images = [
+        np.random.randint(min_value, max_value + 1, size=(16, 16, 3)).astype(np.uint8)
+        for i in range(10)
+    ]
+
+    def grayscale(x):
+        x = tf.cast(x, dtype=tf.float32)
+        y = tf.image.rgb_to_grayscale(x)
+        return y
+
+    dataset = tf.data.Dataset.from_tensor_slices(images)
+    preprocessing = ImagePreprocessingSpec(grayscale=True)
+    pipeline = ImagePreprocessing.from_data(preprocessing, dataset)
+
+    for original in dataset:
+        expected = grayscale(original)
+        actual = pipeline(original)
+
+        assert expected.shape == actual.shape
+        assert np.all(expected.numpy() == actual.numpy())
 
 
 def test_mask_data_preprocessing():

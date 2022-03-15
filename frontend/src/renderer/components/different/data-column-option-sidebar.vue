@@ -205,6 +205,11 @@ header(:class="{ 'is-open': isOpen }")
                   min="1",
                   v-model="options.random_crop.height"
                 )
+        .mb-20
+          base-checkbox.bold.size-16(
+            v-if="helper_showIfTypeIs(['image'])",
+            v-model="options.grayscale"
+          ) Gray Scale
     footer.d-flex.justify-content-between
       button.btn.btn--secondary(@click="onCancel") Cancel
       button.btn.btn--primary(@click="onSave") Save
@@ -245,6 +250,7 @@ export default {
         normalize: { value: false, type: "standardization" },
         random_flip: { value: false, mode: "both", seed: 123 },
         random_crop: { value: false, seed: 123, width: 32, height: 32 },
+        grayscale: false,
         random_rotation: {
           value: false,
           fill_mode: "",
@@ -371,6 +377,11 @@ export default {
       if (this.helper_showIfTypeIs(["mask"])) {
         saveResponse["mask"] = true;
       }
+      
+      if (this.helper_showIfTypeIs(["image"])) {
+        saveResponse["grayscale"] = this.options.grayscale;
+      }
+      
       this.$emit("handleChange", this.elementIndex, saveResponse);
       this.onCancel();
     },

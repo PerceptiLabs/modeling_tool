@@ -106,6 +106,8 @@ class BaseImagePreprocessingSpec(PreprocessingSpec):
     random_crop_height: int = None
     random_crop_width: int = None
 
+    grayscale: bool = False
+
 
     def _get_base_kwargs(self, dict_):
         kwargs = {}
@@ -138,6 +140,10 @@ class BaseImagePreprocessingSpec(PreprocessingSpec):
             kwargs['random_crop_seed'] = dict_['random_crop']['seed']
             kwargs['random_crop_height'] = dict_['random_crop']['height']
             kwargs['random_crop_width'] = dict_['random_crop']['width']
+        
+        if 'grayscale' in dict_:
+            kwargs['grayscale'] = dict_['grayscale']
+        
 
         return kwargs
 

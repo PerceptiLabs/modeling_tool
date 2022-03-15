@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+from skimage import color
 
 from perceptilabs.data.pipelines.base import BasePipeline
 
@@ -9,11 +10,15 @@ class ImagePreprocessing(BasePipeline):
         x = tf.cast(x, dtype=tf.float32)
         if self.normalization:
             x = self.normalization(x)
+        if self.grayscale:
+            x = self.grayscale(x)
+
         return x
 
     def build(self, input_shape):
         self.image_shape = input_shape
         self.normalization = self._get_normalization()
+        self.grayscale = self._get_grayscale()
 
     def _get_normalization(self):
         normalization = None
@@ -40,6 +45,18 @@ class ImagePreprocessing(BasePipeline):
                     return y
                     
         return normalization
+    
+    def _get_grayscale(self):
+        grayscale = None
+
+        if self.preprocessing and self.preprocessing.grayscale:
+
+            def grayscale(x):
+                if len(x.shape) > 2:
+                    y = tf.image.rgb_to_grayscale(x)
+                return y
+                
+        return grayscale
 
     @classmethod
     def from_data(cls, preprocessing, dataset):
