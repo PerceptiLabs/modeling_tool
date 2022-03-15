@@ -334,6 +334,7 @@ perceptilabs/tracking/model_served.py
 perceptilabs/tracking/testing_completed.py
 perceptilabs/tracking/data_selected.py
 perceptilabs/tracking/user_email_set.py
+perceptilabs/tracking/model_imported.py
 
 # backend/perceptilabs/api/
 perceptilabs/api/base.py

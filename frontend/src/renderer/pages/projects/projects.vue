@@ -751,14 +751,27 @@ export default {
       this.popupNewModel({ datasetId });
     },
     async loadModelIntoExistingDataset(datasetId) {
+      this.$store.dispatch('mod_tracker/TRACK_datasetLoadModel', {
+        datasetId
+      }, {root: true});
+
       const selectedModelFile = await rygg_pickFile(
         "Choose model to load",
         this.startupDatasetPath,
         [{ extensions: ["*.zip"] }],
       );
+      
+
+      if (!selectedModelFile.path) {
+        this.$store.dispatch('mod_tracker/TRACK_datasetLoadModelCancelled', {
+          datasetId
+        }, {root: true});
+        return;
+      }
 
       const namePrefix = "Loaded";
       const modelName = await rygg_getNextModelName(namePrefix);
+
 
       const res = await renderingKernel.importModel(
         selectedModelFile.path,

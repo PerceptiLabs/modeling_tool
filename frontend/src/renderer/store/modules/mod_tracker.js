@@ -1,5 +1,5 @@
 import mixPanel from "mixpanel-browser";
-import { isDevelopMode } from "@/core/constants";
+import { isDevelopMode, LOCAL_STORAGE_CURRENT_USER } from "@/core/constants";
 import Analytics from "@/core/analytics";
 import { resolveProxyUrl } from "@/core/helpers/mixpanel-helper";
 
@@ -48,11 +48,18 @@ const actions = {
   TRACK_initMixPanel() {
     resolveProxyUrl().then(proxyUrl => {
       if (proxyUrl) {
+        const userToken = localStorage.getItem(LOCAL_STORAGE_CURRENT_USER);
         mixPanel.init(mixPanelWebToken, {
           api_host: proxyUrl,
+          debug: isDevelopMode,
+          xhr_headers: {
+            Authorization: `Bearer ${userToken}`      
+          }
         });
       } else {
-        mixPanel.init(mixPanelWebToken);
+        mixPanel.init(mixPanelWebToken, {
+          debug: isDevelopMode
+        });
       }
 
       if (isDevelopMode) {
@@ -246,6 +253,13 @@ const actions = {
   },
   TRACK_datasetSearch(_, value) {
     mixPanel.track("Dataset search", { value });
+  },
+  // Load Model
+  TRACK_datasetLoadModel(_, payload) {
+    mixPanel.track("Dataset load model", payload);
+  },
+  TRACK_datasetLoadModelCancelled(_, payload) {
+    mixPanel.track("Dataset load model cancelled", payload);
   },
 };
 

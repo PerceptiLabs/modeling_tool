@@ -859,12 +859,15 @@ def test_sharing_flow(client, mixpanel_mock, tmp_path, dataset_settings, trainin
             'modelFilePath': tmp_path,
         },
     )
-
+    
+    assert has_been_called_with(
+        mixpanel_mock.track,
+        kwargs={'distinct_id': 'anton.k@perceptilabs.com', 'event_name': 'model-imported'}
+    )
     assert_training(
         client, mixpanel_mock, res.json['modelId'],
         res.json['datasetSettings'], res.json['trainingSettings']   # TODO: these should NOT be returned. We should instead return the dataset settings ID (hash? or model id?) and training session ID (model id)... What about frontend settings? Leave for now?
     )
-
 
 @pytest.fixture(scope='function', autouse=True)
 def client_with_no_auth():

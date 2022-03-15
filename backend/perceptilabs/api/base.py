@@ -209,10 +209,9 @@ def create_app(
     @app.route('/models/import', methods=['POST'])
     def import_model():
         json_data = request.get_json()
-
         output = models_interface.import_model(
             make_call_context(request),
-            json_data["archiveFilePath"],
+            json_data["archiveFilePath"],                        
             json_data["datasetId"],
             json_data["modelName"],
             json_data["modelFilePath"],

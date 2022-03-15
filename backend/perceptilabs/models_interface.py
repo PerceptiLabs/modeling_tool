@@ -364,7 +364,7 @@ class ModelsInterface:
             is_perceptilabs_sourced=is_plabs_sourced,
             dataset_id=data_loader.settings.dataset_id
         )
-
+    
     def import_model(self, call_context, archive_path, dataset_id, model_name, model_path):
         importer = Importer(self._dataset_access, self._model_archives_access)
         dataset_settings_dict, graph_spec_dict, training_settings_dict = \
@@ -382,7 +382,9 @@ class ModelsInterface:
             'graphSpec': graph_spec_dict,
             'trainingSettings': training_settings_dict
         }
-
+        user_email = call_context.get('user_email')
+        tracking.send_model_imported(
+            self._event_tracker, user_email, model_id)
         return output
 
     def _export_as_archive(self, call_context, model_id, location, dataset_settings_dict, training_settings_dict, frontend_settings, graph_settings=None):
