@@ -25,4 +25,5 @@ module.exports = merge(prodEnv, {
   ENABLE_SERVING: '"true"',
   ENABLE_FOLDER_LOADING: '"true"',
   NO_KC: '"false"',
+  AUTH_METHOD: '"Auth0"', // Auth0, KeyCloak
 });
