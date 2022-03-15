@@ -114,14 +114,15 @@ def create_app(
 
     @app.route('/user', methods=['POST'])
     def set_user():
-        json_data = request.get_json()
-        
         user_email = make_call_context(request).get('user_email')
-
-        tracking.send_user_email_set(event_tracker, user_email)
-
-        logger.info("User has been set to %s" % str(user_email))
-        return jsonify(f"User has been set to {user_email}")
+        try:
+            tracking.send_user_email_set(event_tracker, user_email)
+                
+            logger.info("User has been set to %s" % str(user_email))
+            return jsonify(f"User has been set to {user_email}")
+        except:
+            logger.exception("User has not been set: %s" % str(user_email))
+            raise
 
 
     @app.route('/version', methods=['GET'])
