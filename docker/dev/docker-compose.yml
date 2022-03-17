@@ -101,7 +101,7 @@ services:
 
   training:
     <<: *kernel_base
-    command: python -m celery -A perceptilabs.tasks.celery_executor worker --hostname=training --queues=training --pool=threads
+    command: python -m celery -A perceptilabs.tasks.celery_executor worker --hostname=training --queues=training --pool=threads --loglevel INFO
     environment:
       AUTH_ENV: ${AUTH_ENV}
       PL_REDIS_URL: redis://redis

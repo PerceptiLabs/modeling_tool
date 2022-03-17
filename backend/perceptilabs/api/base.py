@@ -1,10 +1,11 @@
+import os
 import time
 import logging
 import sys
 
 from flask_cors import CORS
 from flask_compress import Compress
-from flask import Flask, request, g, jsonify, abort, make_response, json
+from flask import Flask, request, g, jsonify, abort, make_response, json, send_from_directory
 from flask.json import JSONEncoder
 from werkzeug.exceptions import HTTPException
 import tensorflow as tf
@@ -33,7 +34,7 @@ from perceptilabs import __version__
 from perceptilabs.tracking.base import EventTracker
 import perceptilabs.utils as utils
 import perceptilabs.tracking as tracking
-
+import perceptilabs.settings as settings
 
 
 logger = logging.getLogger(__name__)
@@ -71,7 +72,7 @@ def create_app(
     dataset_access = dataset_access or DatasetAccess(rygg)
     training_results_access = training_results_access or TrainingResultsAccess(rygg)
     testing_results_access = testing_results_access or TestingResultsAccess()
-    serving_results_access = serving_results_access or ServingResultsAccess()
+    serving_results_access = serving_results_access or ServingResultsAccess(rygg)
     preprocessing_results_access = preprocessing_results_access or PreprocessingResultsAccess(get_data_metadata_cache())
     tensorflow_support_access = TensorflowSupportAccess(rygg)
 
@@ -110,6 +111,7 @@ def create_app(
         message_broker,
         testing_results_access,
         serving_results_access,
+        max_serving_ttl=settings.SERVING_MAX_TTL
     )
 
     @app.route('/user', methods=['POST'])
@@ -359,6 +361,7 @@ def create_app(
             model_id,
             request.args.get('training_session_id'),
             json_data['modelName'],
+            json_data['ttl'],
             logrocket_url=request.headers.get('X-LogRocket-URL', ''),
             graph_settings=json_data.get('graphSettings')
         )
@@ -368,6 +371,13 @@ def create_app(
     def serving_status(serving_session_id):
         output = inference_interface.get_serving_status(serving_session_id)
         return jsonify(output)
+
+    @app.route('/inference/serving/<serving_session_id>/file', methods=['GET'])
+    def serving_file(serving_session_id):
+        path = inference_interface.get_serving_file(serving_session_id)
+        directory, filename = os.path.split(path)        
+        return send_from_directory(
+            directory, filename, mimetype='application/zip')        
 
     @app.route('/inference/serving/<serving_session_id>/stop', methods=['POST'])
     def stop_serving(serving_session_id):

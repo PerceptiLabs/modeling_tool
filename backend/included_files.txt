@@ -16,6 +16,7 @@ perceptilabs/inference_interface.py
 perceptilabs/training_interface.py
 perceptilabs/testing_interface.py
 perceptilabs/serving_interface.py
+perceptilabs/zipfile_serving.py
 perceptilabs/preprocessing_interface.py
 perceptilabs/rygg.py
 

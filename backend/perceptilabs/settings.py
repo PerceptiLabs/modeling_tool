@@ -14,7 +14,7 @@ TRAINING_DUMP_ROWS = os.getenv("PL_TRAINING_DUMP_ROWS")
 TRAINING_RESULTS_REFRESH_INTERVAL = 3.0 # seconds [None == for every iteration]
 TESTING_RESULTS_REFRESH_INTERVAL = None # seconds [None == for every iteration]
 SERVING_RESULTS_REFRESH_INTERVAL = 1.0 # seconds [None == for every iteration]
-
+SERVING_MAX_TTL = 300 # seconds
 
 RYGG_FILE_SERVING_TOKEN = os.getenv("PL_FILE_SERVING_TOKEN", "12312")
 RYGG_BASE_URL = os.getenv("PL_RYGG_BASE_URL", "http://127.0.0.1:8000")

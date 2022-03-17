@@ -1,6 +1,7 @@
 import os
 import pytest
 import tempfile
+from unittest.mock import MagicMock
 
 import tensorflow as tf
 import numpy as np
@@ -191,45 +192,61 @@ def test_create_exporter_from_graph(script_factory, data_loader):
 def test_export_inference_model(script_factory, data_loader, temp_path):
     graph_spec = make_graph_spec(data_loader)
     training_model = TrainingModel(script_factory, graph_spec)
-    exporter = Exporter(graph_spec, training_model, data_loader)
+    on_exported = MagicMock()
+    
+    exporter = Exporter(
+        graph_spec, training_model, data_loader, on_model_exported=on_exported)
 
     target_dir = os.path.join(temp_path, 'inference_model')
     assert not os.path.isdir(target_dir)
 
-    exporter.export(target_dir, mode='Standard')
+    created_paths = exporter.export(target_dir, mode='Standard')
 
     assert has_inference_model(target_dir)
+    assert all(os.path.exists(p) for p in created_paths)
+    assert on_exported.call_count == 1
 
 
 def test_export_compressed_model(script_factory, data_loader, temp_path):
     graph_spec = make_graph_spec(data_loader)
     training_model = TrainingModel(script_factory, graph_spec)
-    exporter = Exporter(graph_spec, training_model, data_loader)
+    on_exported = MagicMock()
+    exporter = Exporter(
+        graph_spec, training_model, data_loader, on_model_exported=on_exported)
 
     target_dir = os.path.join(temp_path, 'inference_model')
     assert not os.path.isdir(target_dir)
 
-    exporter.export(target_dir, mode='Compressed')
+    created_paths = exporter.export(target_dir, mode='Compressed')
 
     assert os.path.isfile(os.path.join(target_dir, 'model.tflite'))
+    assert all(os.path.exists(p) for p in created_paths)
+    assert on_exported.call_count == 1    
 
 
 def test_export_quantized_model(script_factory, data_loader_numerical, temp_path):
     graph_spec = make_graph_spec(data_loader_numerical)
     training_model = TrainingModel(script_factory, graph_spec)
-    exporter = Exporter(graph_spec, training_model, data_loader_numerical)
+    on_exported = MagicMock()    
+    exporter = Exporter(
+        graph_spec, training_model,
+        data_loader_numerical, on_model_exported=on_exported
+    )
 
     target_dir = os.path.join(temp_path, 'inference_model')
     assert not os.path.isdir(target_dir)
 
-    output = exporter.export(target_dir, mode='Quantized')
-    assert (os.path.isfile(os.path.join(target_dir, 'quantized_model.tflite')) or output)
-
+    created_paths = exporter.export(target_dir, mode='Quantized')
+    assert (os.path.isfile(os.path.join(target_dir, 'quantized_model.tflite')))
+    assert all(os.path.exists(p) for p in created_paths)    
 
 def test_export_checkpoint_creates_files(script_factory, data_loader, temp_path):
     graph_spec = make_graph_spec(data_loader)
     training_model = TrainingModel(script_factory, graph_spec)
-    exporter = Exporter(graph_spec, training_model, data_loader)
+    
+    exporter = Exporter(
+        graph_spec, training_model, data_loader)
+
     target_dir = os.path.join(temp_path, 'checkpoint_dir')
     assert not os.path.isdir(target_dir)
     assert tf.train.latest_checkpoint(target_dir) is None
@@ -371,7 +388,9 @@ def test_inference_takes_matrix_input(script_factory, data_loader_image):
 def test_export_fastapi_files_are_present(script_factory, data_loader, temp_path):
     graph_spec = make_graph_spec(data_loader)
     training_model = TrainingModel(script_factory, graph_spec)
-    exporter = Exporter(graph_spec, training_model, data_loader)
+    on_exported = MagicMock()
+    exporter = Exporter(
+        graph_spec, training_model, data_loader, on_model_exported=on_exported)
 
 
     required_files = [
@@ -383,16 +402,23 @@ def test_export_fastapi_files_are_present(script_factory, data_loader, temp_path
         fastapi_utils.EXAMPLE_CSV_FILE
     ]
 
+    expected_paths = [
+        os.path.join(temp_path, file_name)
+        for file_name in required_files
+    ]    
+
     assert not has_inference_model(temp_path)
     for file_name in required_files:
         assert not os.path.isfile(os.path.join(temp_path, file_name))
 
-    exporter.export(temp_path, mode='FastAPI')
+    actual_paths = exporter.export(temp_path, mode='FastAPI')
 
     assert has_inference_model(temp_path)
-    for file_name in required_files:
-        assert os.path.isfile(os.path.join(temp_path, file_name))
+    assert set(expected_paths).issubset(actual_paths)
+    assert all(os.path.exists(p) for p in actual_paths)
+    assert on_exported.call_count == 1
 
+    
 def test_export_fastapi_endpoint_healthy(script_factory, data_loader, temp_path):
     graph_spec = make_graph_spec(data_loader)
     training_model = TrainingModel(script_factory, graph_spec)

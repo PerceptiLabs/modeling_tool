@@ -26,9 +26,10 @@ def is_file_type(obj):
     return isinstance(obj, _TemporaryFileWrapper)
 
 
-class GradioLauncher:
-    def __init__(self, model_access, epochs_access):
+class GradioStrategy:
+    def __init__(self, call_context, model_access, epochs_access, model_id, graph_spec, data_loader, training_session_id, model_name, on_serving_started=None, include_preprocessing=True, include_postprocessing=True):
         self._thread = None
+        self._call_context = call_context
         self._stop_event = threading.Event()
 
         self._model_access = model_access
@@ -36,36 +37,59 @@ class GradioLauncher:
 
         self._url_dict = dict()  # multiprocessing.Manager().dict()  # So we can pass url between processes
         self._url_dict['url'] = None
+        self._running = False
 
+        self._model_id = model_id
+        self._graph_spec = graph_spec
+        self._data_loader = data_loader
+        self._training_session_id = training_session_id
+        self._model_name = model_name
+        self._on_serving_started = on_serving_started
+        self._include_preprocessing = include_preprocessing
+        self._include_postprocessing = include_postprocessing
+        
     def get_url(self):
         return self._url_dict['url']
 
-    def start(self, call_context, model_id, graph_spec, data_loader, training_session_id, model_name, on_serving_started=None, include_preprocessing=True, include_postprocessing=True):
+    def get_path(self):
+        return None
+
+    @property
+    def is_running(self):
+        return self._running
+
+    def cleanup(self):
+        pass
+
+    def start(self):
+        self._running = True
         self._thread = threading.Thread(
             target=self._worker,
             args=(
-                call_context,
-                model_id,
-                graph_spec,
-                data_loader,
-                training_session_id,
-                model_name,
+                self._call_context,
+                self._model_id,
+                self._graph_spec,
+                self._data_loader,
+                self._training_session_id,
+                self._model_name,
                 self._url_dict,
-                on_serving_started,
-                include_preprocessing,
-                include_postprocessing
+                self._on_serving_started,
+                self._include_preprocessing,
+                self._include_postprocessing
             ),
             daemon=True
         )
         self._thread.start()
 
     def stop(self):
+        self._running = False
+        self._stop_worker()
+        
+    def _stop_worker(self):
         # Gradio has a bug that prevents killing the server (which runs in a non-daemon thread, so killing our worker thread isn't an option).
         # Running it as a forked subprocess - which can be killed - doesn't work on Windows
         # Running it as a spawned subprocess - which can be killed - doesn't work because DataLoader etc cannot be pickled.
-
-        raise NotImplementedError
-
+        raise NotImplementedError()        
         self._stop_event.set()
         self._thread.join()
 

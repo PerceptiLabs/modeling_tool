@@ -46,31 +46,54 @@ class Exporter:
 
     def export(self, export_directory, mode, include_preprocessing=True, include_postprocessing=True):
         """calls the export functions based on export mode"""
+        created_paths = []
+        
         if mode == 'Standard':
-            self._export_inference_model(export_directory, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
+            created_paths = self._export_inference_model(
+                export_directory,
+                include_preprocessing=include_preprocessing,
+                include_postprocessing=include_postprocessing
+            )
         elif mode == 'Compressed':
-            self._export_compressed_model(export_directory)
+            created_paths = self._export_compressed_model(export_directory)
         elif mode == 'Quantized':
-            self._export_quantized_model(export_directory)
+            created_paths = self._export_quantized_model(export_directory)
         elif mode == 'FastAPI':
-            self._export_fastapi_service(export_directory, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
+            created_paths = self._export_fastapi_service(
+                export_directory,
+                include_preprocessing=include_preprocessing,
+                include_postprocessing=include_postprocessing
+            )
         else:
             raise NotImplementedError(f"Unknown export mode '{mode}'")
 
         if self._on_model_exported:
             self._on_model_exported()
+            
+        return created_paths
 
-    def _export_inference_model(self, path, model=None, include_preprocessing=True, include_postprocessing=True):
+        return created_paths
+            
+    def _export_inference_model(self, directory, model=None, include_preprocessing=True, include_postprocessing=True):
         """ Export the inference model """
         if model is None:
-            model = self.get_inference_model(include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
+            model = self.get_inference_model(
+                include_preprocessing=include_preprocessing,
+                include_postprocessing=include_postprocessing
+            )
 
-        model.save(sanitize_path(path))
+        directory = sanitize_path(directory)
+        model.save(directory)
+        
+        return [
+            os.path.join(directory, name) for name in
+            ('saved_model.pb', 'variables', 'keras_metadata.pb', 'assets')
+        ]
 
     def _export_fastapi_service(self, path, include_preprocessing=True, include_postprocessing=True):
         """ Export the inference model wrapped in a REST endpoint script """
         model = self.get_inference_model(include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
-        self._export_inference_model(path, model=model)
+        inference_model_paths = self._export_inference_model(path, model=model)  # TODO: not used!
 
 
         dataset = self._data_loader.get_dataset(
@@ -88,20 +111,27 @@ class Exporter:
             else:
                 return obj
 
-        with open(os.path.join(path, 'example.json'), 'w') as f:
+        example_json = os.path.join(path, 'example.json')
+        with open(example_json, 'w') as f:
             json.dump(example_data, f, default=convert, indent=4)
 
         for partition in ['test', 'validation', 'training']:
             df = self._data_loader.get_data_frame(partition=partition).head(10)  # keep N first rows
             if len(df) > 0:
                 break
-        df.to_csv(os.path.join(path, fastapi_utils.EXAMPLE_CSV_FILE), index=False)
+        example_csv = os.path.join(path, fastapi_utils.EXAMPLE_CSV_FILE)            
+        df.to_csv(example_csv, index=False)
 
-        fastapi_utils.render_fastapi_requirements(path)
-        fastapi_utils.render_fastapi_example_requirements(path)
-        fastapi_utils.render_fastapi_example_script(path, self._data_loader.feature_specs)
-        fastapi_utils.render_fastapi_script(
-            path, model, self._graph_spec, self._data_loader.metadata)
+        fastapi_paths = [
+            example_csv,
+            example_json,
+            fastapi_utils.render_fastapi_requirements(path),
+            fastapi_utils.render_fastapi_example_requirements(path),
+            fastapi_utils.render_fastapi_example_script(path, self._data_loader.feature_specs),
+            fastapi_utils.render_fastapi_script(
+                path, model, self._graph_spec, self._data_loader.metadata)
+        ]
+        return inference_model_paths + fastapi_paths
 
     def _export_compressed_model(self, path):
         """ Export the compressed model """
@@ -122,6 +152,8 @@ class Exporter:
         tflite_model = converter.convert()
         with open(frozen_path, "wb") as f:
             f.write(tflite_model)
+
+        return [frozen_path]
 
     def _export_quantized_model(self, path):
         """ Export the quantized model """
@@ -161,6 +193,8 @@ class Exporter:
         with open(frozen_path, "wb") as f:
             f.write(tflite_model)
 
+        return [frozen_path]
+
     def get_inference_model(self, include_preprocessing=True, include_postprocessing=True):
         """ Convert the Training Model to a simpler version (e.g., skip intermediate outputs)  """
         inference_model = self._training_model.as_inference_model(
@@ -168,3 +202,17 @@ class Exporter:
 
         return inference_model
 
+    @staticmethod
+    def parse_export_mode(export_settings):
+        type_ = export_settings['Type']
+        if type_== 'TFModel':
+            if export_settings['Compressed']:
+                return 'Compressed'
+            elif export_settings['Quantized']:
+                return 'Quantized'
+            else:
+                return 'Standard'
+        else:
+            return type_
+
+        

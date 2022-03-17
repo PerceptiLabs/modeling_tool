@@ -125,7 +125,7 @@ export default {
           Type: exportType,
         };
         await this.$store.dispatch('mod_api/API_exportData', payload);
-        this.$store.dispatch('globalView/GP_infoPopup', 'Exported with success.')
+        this.$store.dispatch('globalView/GP_infoPopup', 'Exported with success.');
       }
     },
     getSettingExportType(settings) {

@@ -765,25 +765,34 @@ const actions = {
 
       if (settings.Type != "Serve Gradio") {
         const trainingSettings =
-          settings.Type == "Archive"
+          settings.Type == "PlPackage"
             ? deepCopy(disassembledModel.trainingSettings)
             : null;
 
         const frontendSettings =
-          settings.Type == "Archive"
+          settings.Type == "PlPackage"
             ? deepCopy(disassembledModel.frontendSettings)
             : null;
 
-        return renderingKernel.exportModel(
-          settings,
+        const url = renderingKernel.waitForServedModelReady(
           disassembledModel.datasetSettings,
           userEmail,
           modelId,
           disassembledModel.graphSettings,
           trainingSessionId,
-          trainingSettings,
-          frontendSettings,
-        );
+          networkName,
+          {
+            mode: "zip", 	      
+            exportSettings: settings,
+            ExcludePreProcessing: settings.ExcludePreProcessing,
+            ExcludePostProcessing: settings.ExcludePostProcessing,
+	    datasetSettings: disassembledModel.datasetSettings,
+	    frontendSettings: frontendSettings,
+	    graphSettings: disassembledModel.graphSettings,
+	    trainingSettings: trainingSettings,	    
+          }
+        );	  
+        return url;
       } else {
         const url = renderingKernel.waitForServedModelReady(
           disassembledModel.datasetSettings,
@@ -793,7 +802,7 @@ const actions = {
           trainingSessionId,
           networkName,
           {
-            type: "gradio",
+            mode: "gradio", 
             ExcludePreProcessing: settings.ExcludePreProcessing,
             ExcludePostProcessing: settings.ExcludePostProcessing
           }

@@ -22,7 +22,9 @@ class ModelArchivesAccess:
         logger.info(f"Successfully read model from '{location}'")
         return results
 
-    def write(self, model_id, location, dataset_settings, graph_spec, training_settings, frontend_settings):
+    def write(self, archive_path, dataset_settings=None, graph_spec=None, training_settings=None, frontend_settings=None, extra_files=None):
+        archive_path = archive_path.replace('\\', '/')
+
         content = {
             'datasetSettings': dataset_settings,
             'graphSettings': graph_spec,            
@@ -30,14 +32,16 @@ class ModelArchivesAccess:
             'frontendSettings': frontend_settings
         }
 
-        path = os.path.join(location, f'model_{model_id}.zip').replace('\\', '/')
-
-        with ZipFile(path, 'w') as archive:
+        with ZipFile(archive_path, 'w') as archive:
             model_json = json.dumps(content, indent=4)
             archive.writestr('model.json', model_json)
 
-        logger.info(f"Successfully wrote model to '{path}'")
-        return path
+            for included_path in (extra_files or []):
+                file_name = os.path.basename(included_path)
+                archive.write(included_path, arcname=file_name)
+                
+        logger.info(f"Successfully wrote model to '{archive_path}'")
+        return archive_path
 
             
     

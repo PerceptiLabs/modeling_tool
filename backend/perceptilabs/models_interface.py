@@ -391,13 +391,15 @@ class ModelsInterface:
         if graph_settings is None:
             graph_settings = self._model_access.get_graph(call_context, model_id)
 
+        archive_location = os.path.join(
+            location, f'model_{model_id}.zip')
+
         path = self._model_archives_access.write(
-            model_id,
-            location,
-            dataset_settings_dict,
-            graph_settings,
-            training_settings_dict,
-            frontend_settings
+            archive_location,
+            dataset_settings=dataset_settings_dict,
+            graph_spec=graph_settings,
+            training_settings=training_settings_dict,
+            frontend_settings=frontend_settings
         )
         tracking.send_model_exported(call_context, self._event_tracker, model_id)
         return f"Model exported to '{path}'"

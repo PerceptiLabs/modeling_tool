@@ -173,8 +173,10 @@ def render_fastapi_script(path, model, graph_spec, feature_metadata):
     code += _render_create_app_snippet()
     code += _render_main_snippet(SERVER_PORT)
 
-    with open(os.path.join(path, SCRIPT_FILE), 'w') as f:
+    path = os.path.join(path, SCRIPT_FILE)
+    with open(path, 'w') as f:
         f.write(code)
+    return path
 
 
 def render_fastapi_requirements(path):
@@ -182,9 +184,12 @@ def render_fastapi_requirements(path):
     for module in sorted(THIRD_PARTY_IMPORTS):
         version = pkg_resources.get_distribution(module).version
         text += f"{module}=={version}\n"
-        
-    with open(os.path.join(path, REQUIREMENTS_FILE), 'w') as f:    
+
+    path = os.path.join(path, REQUIREMENTS_FILE)
+    with open(path, 'w') as f:    
         f.write(text)
+
+    return path
 
 
 def render_fastapi_example_requirements(path):
@@ -198,10 +203,12 @@ def render_fastapi_example_requirements(path):
     for module in sorted(third_party_imports):
         version = pkg_resources.get_distribution(module).version
         text += f"{module}=={version}\n"
-        
-    with open(os.path.join(path, EXAMPLE_REQUIREMENTS_FILE), 'w') as f:    
-        f.write(text)
 
+    path = os.path.join(path, EXAMPLE_REQUIREMENTS_FILE)
+    with open(path, 'w') as f:    
+        f.write(text)
+        
+    return path
         
 def render_fastapi_example_script(path, feature_specs):
     def has_image_data():
@@ -255,5 +262,8 @@ def render_fastapi_example_script(path, feature_specs):
         port=SERVER_PORT)
     code += "    pprint(response.json())\n"
 
-    with open(os.path.join(path, EXAMPLE_SCRIPT_FILE), 'w') as f:    
+    path = os.path.join(path, EXAMPLE_SCRIPT_FILE)
+    with open(path, 'w') as f:    
         f.write(code)
+
+    return path

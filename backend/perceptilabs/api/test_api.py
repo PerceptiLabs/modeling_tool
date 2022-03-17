@@ -260,27 +260,58 @@ def assert_export(client, mixpanel_mock, dataset_settings, model_id, training_se
         kwargs={'distinct_id': 'anton.k@perceptilabs.com', 'event_name': 'model-exported'}
     )
 
-def assert_serving(client, mixpanel_mock, dataset_settings, model_id, training_session_id, graph_settings=None):
+def assert_serving(mode, client, mixpanel_mock, dataset_settings, model_id, training_session_id, graph_settings=None):
+
+    if mode == 'zip':
+        serving_settings = {
+            'mode': 'zip',
+            'exportSettings': {
+                'Type': 'Standard',
+            },
+            'ExcludePreProcessing': False,
+            'ExcludePostProcessing': False,
+        }
+    else:
+        serving_settings = {
+            'mode': 'gradio',
+            'ExcludePreProcessing': False,
+            'ExcludePostProcessing': False,
+        }        
+    
     res = client.post(
         f'/inference/serving/{model_id}?training_session_id={training_session_id}',
         json={
-            'settings': {'ExcludePreProcessing': False, 'ExcludePostProcessing': False},
+            'settings': serving_settings,
             'datasetSettings': dataset_settings,
             'modelName': 'my-model',
-            'graphSettings': graph_settings
+            'graphSettings': graph_settings,
+            'ttl': 10
         },
     )
     assert res.status_code == 200
     serving_session_id = res.json
 
 
-    def has_expired(last_update):
-        from datetime import datetime
-        current_time = datetime.now().timestamp()  # Current unix time
-        time_since_update = current_time - last_update
+    def assert_download_model_zip(url):
+        import requests
+        import zipfile
+        import io
 
-        return time_since_update > 2 * settings.SERVING_RESULTS_REFRESH_INTERVAL
+        # TODO: cleanup
+        # url = 'https://golang.org/dl/go1.17.3.windows-amd64.zip'  # TODO: remove 
+        #url = "return (resp.text, resp.status_code, resp.headers.items())"
+        #url = f'localhost:5001/inference/serving/{serving_session_id}/proxy'
+        #res = requests.get(url, stream=True, headers={'Authorization': user_token})
+        res = client.get(url)
 
+        file_like = io.BytesIO(res.data)
+        zipfile = zipfile.ZipFile(file_like)
+        files = zipfile.namelist()
+
+        assert 'saved_model.pb' in files
+        assert 'variables/' in files
+        assert 'assets/' in files
+    
     @retry(stop_max_attempt_number=10, wait_fixed=1000)
     def wait_for_serving_up():
         res = client.get(
@@ -288,8 +319,10 @@ def assert_serving(client, mixpanel_mock, dataset_settings, model_id, training_s
         )
         assert res.status_code == 200
         assert 'url' in res.json
-        assert not has_expired(res.json['last_update'])
 
+        if mode == 'zip':
+            assert_download_model_zip(res.json['url'])            
+        
         assert has_been_called_with(
             mixpanel_mock.track,
             kwargs={'distinct_id': 'anton.k@perceptilabs.com', 'event_name': 'model-exported'}
@@ -308,9 +341,8 @@ def assert_serving(client, mixpanel_mock, dataset_settings, model_id, training_s
             f"/inference/serving/{serving_session_id}/status",
         )
         assert res.status_code == 200
-        assert has_expired(res.json['last_update'])
-
-    wait_for_serving_down()
+    
+    wait_for_serving_down()            
 
 
 def assert_data(client, dataset_settings):
@@ -522,11 +554,10 @@ def assert_testing(client, mixpanel_mock, model_id, training_session_id, dataset
     wait_for_testing()
     return testing_session_id
 
-
-
-@pytest.mark.parametrize("deployment", ["export", "serving"])
+    
+@pytest.mark.parametrize("deployment", ["export", "serve_gradio", "serve_zip"])    
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
-def test_modeling_flow(client, deployment, mixpanel_mock, tmp_path, dataset_settings, training_settings):
+def test_modeling_flow_basic(client, deployment, mixpanel_mock, tmp_path, dataset_settings, training_settings):
     assert_data(client, dataset_settings)
     model_id, _ = assert_model_recommendation(
         client, mixpanel_mock, dataset_settings)
@@ -544,13 +575,16 @@ def test_modeling_flow(client, deployment, mixpanel_mock, tmp_path, dataset_sett
 
     if deployment == 'export':
         assert_export(client, mixpanel_mock, dataset_settings, model_id, training_session_id, tmp_path)
-    elif deployment == 'serving':
-        assert_serving(client, mixpanel_mock, dataset_settings, model_id, training_session_id)
+    elif deployment == 'serve_gradio':
+        assert_serving('gradio', client, mixpanel_mock, dataset_settings, model_id, training_session_id)
+    elif deployment == 'serve_zip':
+        assert_serving('zip', client, mixpanel_mock, dataset_settings, model_id, training_session_id)
 
-
-@pytest.mark.parametrize("deployment", ["export", "serving"])
+        
+@pytest.mark.parametrize("deployment", ["export", "serve_gradio"])
 def test_modeling_flow_with_graph_settings_in_payload(client, deployment, mixpanel_mock, tmp_path, dataset_settings, training_settings):
     assert_data(client, dataset_settings)
+    
     model_id, graph_settings = assert_model_recommendation(
         client, mixpanel_mock, dataset_settings)
 
@@ -568,12 +602,11 @@ def test_modeling_flow_with_graph_settings_in_payload(client, deployment, mixpan
     if deployment == 'export':
         assert_export(
             client, mixpanel_mock, dataset_settings, model_id, training_session_id, tmp_path, graph_settings=graph_settings)
-    elif deployment == 'serving':
+    elif deployment == 'serve_gradio':
         assert_serving(
-            client, mixpanel_mock, dataset_settings, model_id, training_session_id, graph_settings=graph_settings)
-
-
-
+            'gradio', client, mixpanel_mock, dataset_settings, model_id, training_session_id, graph_settings=graph_settings)
+        
+        
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
 def test_multi_input_modeling_flow(client, mixpanel_mock, tmp_path, dataset_settings, training_settings):
     dataset_settings["featureSpecs"]["x2"]["iotype"] = "input"  # Enable more inputs

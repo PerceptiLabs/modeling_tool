@@ -92,7 +92,8 @@ export const renderingKernel = {
       graphSettings: network,
       userEmail: userEmail,
       modelName: modelName,
-      settings: settings
+      settings: settings,
+      ttl: 60
     };
     return whenRenderingKernelReady
       .then(rk =>
@@ -149,6 +150,20 @@ export const renderingKernel = {
       return url;
     })();
   },
+
+  async downloadFile(url) {
+    return whenRenderingKernelReady
+      .then(rk => rk.get(url, {responseType: 'arraybuffer'}))
+      .then(res => {
+        // Since the browser cannot download directly from the backend url
+        const type = res.headers['content-type']
+        const blob = new Blob([res.data], {type: type})
+        const link = document.createElement('a')
+        link.href = window.URL.createObjectURL(blob)
+        link.download = 'model.zip'
+        link.click()    
+      });    
+  },  
 
   async getCode(network, modelId, layerId) {
     const payload = {

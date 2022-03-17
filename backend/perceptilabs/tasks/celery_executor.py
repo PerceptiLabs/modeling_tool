@@ -70,8 +70,8 @@ def testing_task_wrapper(self, call_context, *args, **kwargs):
     default_retry_delay=5,
     max_retries=3,
 )
-def serving_task_wrapper(self, call_context, *args, **kwargs):
-    serving_task(call_context, *args, **kwargs)
+def serving_task_wrapper(self, *args, **kwargs):
+    serving_task(*args, **kwargs)
 
 
 @shared_task(

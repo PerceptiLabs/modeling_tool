@@ -183,14 +183,14 @@ def testing_task(call_context, testing_session_id, models_info, tests, is_retry=
         logrocket_url=logrocket_url
     )
 
-
-@handle_exceptions
-def serving_task(call_context, serving_settings, dataset_settings_dict, model_id, training_session_id, model_name, serving_session_id, graph_settings=None, is_retry=False, logrocket_url=''):
-    import perceptilabs.settings as settings
+@handle_exceptions    
+def serving_task(call_context, serving_settings, dataset_settings_dict, model_id, training_session_id, model_name, serving_session_id, ttl, graph_settings=None, is_retry=False, logrocket_url=''):
+    import perceptilabs.settings as settings    
     from perceptilabs.serving_interface import ServingSessionInterface
     from perceptilabs.caching.utils import get_data_metadata_cache
     from perceptilabs.script.base import ScriptFactory
     from perceptilabs.resources.models import ModelAccess
+    from perceptilabs.resources.model_archives import ModelArchivesAccess
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.serving_results import ServingResultsAccess
     from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess
@@ -210,7 +210,8 @@ def serving_task(call_context, serving_settings, dataset_settings_dict, model_id
 
     model_access = ModelAccess(rygg)
     epochs_access = EpochsAccess(rygg)
-    serving_results_access = ServingResultsAccess()
+    
+    serving_results_access = ServingResultsAccess(rygg)
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
 
     num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
@@ -238,9 +239,19 @@ def serving_task(call_context, serving_settings, dataset_settings_dict, model_id
     )
 
     event_tracker = EventTracker()
+    model_archives_access = ModelArchivesAccess()        
 
     interface = ServingSessionInterface(
-        serving_settings, message_broker, event_tracker, model_access, epochs_access, serving_results_access, tensorflow_support_access)
+        serving_settings,
+        message_broker,
+        event_tracker,
+        model_access,
+        model_archives_access,
+        epochs_access,
+        serving_results_access,
+        tensorflow_support_access,
+        ttl
+    )
 
     interface.run(
         call_context,

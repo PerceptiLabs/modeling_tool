@@ -88,19 +88,6 @@ div(v-else)
   )
     template(slot="Confirm Export-content")
       .settings-table
-        .row.d-flex.align-center
-          .bold.mr-10 Save to:
-          .flex-1.input_group.form_row
-            input.form_input(
-              type="text",
-              v-model="settings.Location",
-              readonly
-            )
-            button.btn.btn--primary(
-              type="button",
-              @click="saveLoadFile",
-              :class="{ 'flash-button': !wasSavePathChosen }"
-            ) Browse
         .row(v-if="isModalOpenedFor === 'tensorflow'")
           .bold.mb-5 Optimize:
           .d-flex.flex-column.justify-content-between
@@ -119,7 +106,6 @@ div(v-else)
     template(slot="action")
       button.btn.btn--default(type="button", @click="closeTensorFlowExport") Cancel
       button.btn.btn--primary(
-        :disabled="!wasSavePathChosen",
         type="button",
         @click="handleExportAs"
       ) Export
@@ -164,6 +150,7 @@ import { isModelTrained } from "@/core/modelHelpers";
 import { isServingEnabled } from "@/core/helpers.js";
 import cloneDeep from "lodash.clonedeep";
 import { pickDirectory as rygg_pickDirectory } from "@/core/apiRygg.js";
+import { renderingKernel } from "@/core/apiRenderingKernel.js";
 
 export default {
   name: "ExportPage",
@@ -318,11 +305,11 @@ export default {
     },
     handleExportAs() {
       if (this.isModalOpenedFor === "tensorflow") {
-        this.exportAsTensorflow();
+        this.exportAs("TFModel");
       } else if (this.isModalOpenedFor === "fastapi") {
-        this.exportAsFastApi();
+        this.exportAs("FastAPI");
       } else if (this.isModalOpenedFor === "archive") {
-        this.exportAsArchive();
+        this.exportAs("PlPackage");	
       }
     },
     handleDeployFor() {
@@ -367,52 +354,12 @@ export default {
       this.isDeployModalOpened = false;
       this.isModalOpenedFor = null;
     },
-    async exportAsArchive() {
+    async exportAs(type) {
       const modelToExport = this.trainedModels.find(m => m.isChecked);
       const exportPayload = {
         modelId: modelToExport.networkID,
         name: modelToExport.networkName,
-        Type: "Archive",
-        Location: this.settings.Location,
-      };
-      this.loadingMessage = `Exporting model: ${modelToExport.networkName}.. archive`;
-      const retMessage = await this.$store.dispatch(
-        "mod_api/API_exportData",
-        exportPayload,
-      );
-      this.loadingMessage = "";
-      this.closeTensorFlowExport();
-      this.$store.dispatch("globalView/GP_infoPopup", retMessage, {
-        root: true,
-      });
-    },
-    async exportAsFastApi() {
-      const modelToExport = this.trainedModels.find(m => m.isChecked);
-      const exportPayload = {
-        modelId: modelToExport.networkID,
-        name: modelToExport.networkName,
-        Type: "FastAPI",
-        Location: this.settings.Location,
-        ExcludePreProcessing: this.settings.ExcludePreProcessing,
-        ExcludePostProcessing: this.settings.ExcludePostProcessing
-      };
-      this.loadingMessage = `Exporting model: ${modelToExport.networkName}.. fastaApi`;
-      const retMessage = await this.$store.dispatch(
-        "mod_api/API_exportData",
-        exportPayload,
-      );
-      this.loadingMessage = "";
-      this.closeTensorFlowExport();
-      this.$store.dispatch("globalView/GP_infoPopup", retMessage, {
-        root: true,
-      });
-    },
-    async exportAsTensorflow() {
-      const modelToExport = this.trainedModels.find(m => m.isChecked);
-      const exportPayload = {
-        modelId: modelToExport.networkID,
-        name: modelToExport.networkName,
-        Type: "TFModel",
+        Type: type,
         Compressed: this.settings.Compressed,
         Quantized: this.settings.Quantized,
         Location: this.settings.Location,
@@ -420,15 +367,14 @@ export default {
         ExcludePostProcessing: this.settings.ExcludePostProcessing
       };
       this.loadingMessage = `Exporting model: ${modelToExport.networkName}..`;
-      const retMessage = await this.$store.dispatch(
+      const url = await this.$store.dispatch(
         "mod_api/API_exportData",
         exportPayload,
       );
       this.loadingMessage = "";
       this.closeTensorFlowExport();
-      this.$store.dispatch("globalView/GP_infoPopup", retMessage, {
-        root: true,
-      });
+
+      renderingKernel.downloadFile(url);
     },
     openExportAsTensorflowModal() {
       if (!this.checkIsAtLeastModelSelected()) {

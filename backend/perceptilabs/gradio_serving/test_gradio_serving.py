@@ -19,50 +19,48 @@ from gradio.inputs import InputComponent
 from gradio.outputs import OutputComponent
 from gradio.processing_utils import encode_file_to_base64
 
-from perceptilabs.gradio_serving.base import GradioLauncher
+from perceptilabs.gradio_serving.base import GradioStrategy
 
 
 @retry(stop_max_attempt_number=5, wait_fixed=2000)
-def wait_for_gradio_up(launcher):
-    assert launcher.get_url() is not None
-
-    r = requests.head(launcher.get_url(), timeout=3)
+def wait_for_gradio_up(strategy):
+    assert strategy.get_url() is not None
+    
+    r = requests.head(strategy.get_url(), timeout=3)
     assert r.status_code == 200
 
 
 @retry(stop_max_attempt_number=5, wait_fixed=2000)
-def wait_for_gradio_down(launcher):
-    assert launcher.get_url() is not None
+def wait_for_gradio_down(strategy):
+    assert strategy.get_url() is not None
 
     with pytest.raises(requests.exceptions.ConnectionError):
-        r = requests.head(launcher.get_url(), timeout=3)
+        r = requests.head(strategy.get_url(), timeout=3)
 
 
-def test_launcher_starts_endpoint(monkeypatch):
+def test_strategy_starts_endpoint(monkeypatch):
     mock_fn = MagicMock()
     monkeypatch.setattr(TrainingModel, "from_graph_spec", mock_fn)
 
     model_access = MagicMock()
-
-    launcher = GradioLauncher(
-        model_access=model_access,
-        epochs_access=MagicMock()
-    )
-
-    launcher.start(
+    
+    strategy = GradioStrategy(
         call_context={},
+        model_access=model_access,
+        epochs_access=MagicMock(),
         model_id='123',
         graph_spec=MagicMock(),
         data_loader=MagicMock(),
         training_session_id='456',
         model_name='my model'
     )
-    wait_for_gradio_up(launcher)
+
+    strategy.start()
+    wait_for_gradio_up(strategy)
 
     with pytest.raises(NotImplementedError):
-        launcher.stop()
-        # wait_for_gradio_down(launcher)  # TODO: enable when removing not implemented error
-
+        strategy.stop()  
+        # wait_for_gradio_down(strategy)  # TODO: enable when removing not implemented error
 
 
 INPUT_OUTPUT_CONVERSION_DATA = [
@@ -76,7 +74,7 @@ INPUT_OUTPUT_CONVERSION_DATA = [
 
 @pytest.mark.parametrize("data", INPUT_OUTPUT_CONVERSION_DATA)
 def test_get_gradio_input_returns_value(data):
-    component = GradioLauncher.get_gradio_input(
+    component = GradioStrategy.get_gradio_input(
         feature_name='x',
         datatype=data['datatype'],
         metadata=data['metadata']
@@ -86,7 +84,7 @@ def test_get_gradio_input_returns_value(data):
 
 @pytest.mark.parametrize("data", INPUT_OUTPUT_CONVERSION_DATA)
 def test_get_gradio_output_returns_value(data):
-    component = GradioLauncher.get_gradio_output(
+    component = GradioStrategy.get_gradio_output(
         feature_name='x',
         datatype=data['datatype'],
         metadata=data['metadata']
@@ -185,13 +183,10 @@ def make_graph_spec(data_loader):
 
 
 def test_predictions_endpoint(script_factory, data_loader):
-    launcher = GradioLauncher(
-        model_access=ModelAccess(script_factory),
-        epochs_access=EpochsAccess(rygg=MagicMock())
-    )
-
-    launcher.start(
+    strategy = GradioStrategy(
         call_context={},
+        model_access=ModelAccess(script_factory),
+        epochs_access=EpochsAccess(rygg=MagicMock()),
         model_id='123',
         graph_spec=make_graph_spec(data_loader),
         data_loader=data_loader,
@@ -200,7 +195,9 @@ def test_predictions_endpoint(script_factory, data_loader):
         include_preprocessing=True,
         include_postprocessing=True
     )
-    wait_for_gradio_up(launcher)
+    
+    strategy.start()
+    wait_for_gradio_up(strategy)
 
     inputs, outputs = data_loader.get_example_batch(
         batch_size=None, output_type='list', apply_pipelines=None)
@@ -213,25 +210,22 @@ def test_predictions_endpoint(script_factory, data_loader):
         else:
             data.append(value)
 
-    url = launcher.get_url() + 'api/predict/'
+    url = strategy.get_url() + 'api/predict/'
     response = requests.post(url, json={'data': data})
 
     assert response.status_code == 200
     assert response.json() != {}  # TODO: validate response
 
     with pytest.raises(NotImplementedError):
-        launcher.stop()
-        # wait_for_gradio_down(launcher)  # TODO: enable when removing not implemented error
+        strategy.stop()  
+        # wait_for_gradio_down(strategy)  # TODO: enable when removing not implemented error
 
 
 def test_predictions_endpoint_no_preprocessing_no_postprocessing_in_gradio(script_factory, data_loader):
-    launcher = GradioLauncher(
-        model_access=ModelAccess(script_factory),
-        epochs_access=EpochsAccess(rygg=MagicMock())
-    )
-
-    launcher.start(
+    strategy = GradioStrategy(
         call_context={},
+        model_access=ModelAccess(script_factory),
+        epochs_access=EpochsAccess(rygg=MagicMock()),
         model_id='123',
         graph_spec=make_graph_spec(data_loader),
         data_loader=data_loader,
@@ -240,7 +234,9 @@ def test_predictions_endpoint_no_preprocessing_no_postprocessing_in_gradio(scrip
         include_preprocessing=False,
         include_postprocessing=False
     )
-    wait_for_gradio_up(launcher)
+    
+    strategy.start()
+    wait_for_gradio_up(strategy)
 
     if data_loader.feature_specs['x1'].datatype == 'categorical':
         inputs, outputs = data_loader.get_example_batch(
@@ -258,25 +254,21 @@ def test_predictions_endpoint_no_preprocessing_no_postprocessing_in_gradio(scrip
         else:
             data.append(value)
 
-    url = launcher.get_url() + 'api/predict/'
+    url = strategy.get_url() + 'api/predict/'
     response = requests.post(url, json={'data': data})
 
     assert response.status_code == 200
     assert response.json() != {}  # TODO: validate responseå
 
     with pytest.raises(NotImplementedError):
-        launcher.stop()
-        # wait_for_gradio_down(launcher)  # TODO: enable when removing not implemented error
-
+        strategy.stop()  
+        # wait_for_gradio_down(strategy)  # TODO: enable when removing not implemented error
 
 def test_predictions_endpoint_no_postprocessing_in_gradio(script_factory, data_loader):
-    launcher = GradioLauncher(
-        model_access=ModelAccess(script_factory),
-        epochs_access=EpochsAccess(rygg=MagicMock())
-    )
-
-    launcher.start(
+    strategy = GradioStrategy(
         call_context={},
+        model_access=ModelAccess(script_factory),
+        epochs_access=EpochsAccess(rygg=MagicMock()),
         model_id='123',
         graph_spec=make_graph_spec(data_loader),
         data_loader=data_loader,
@@ -285,7 +277,9 @@ def test_predictions_endpoint_no_postprocessing_in_gradio(script_factory, data_l
         include_preprocessing=True,
         include_postprocessing=False
     )
-    wait_for_gradio_up(launcher)
+    
+    strategy.start()
+    wait_for_gradio_up(strategy)
 
     inputs, outputs = data_loader.get_example_batch(
         batch_size=None, output_type='list', apply_pipelines=None)
@@ -298,25 +292,22 @@ def test_predictions_endpoint_no_postprocessing_in_gradio(script_factory, data_l
         else:
             data.append(value)
 
-    url = launcher.get_url() + 'api/predict/'
+    url = strategy.get_url() + 'api/predict/'
     response = requests.post(url, json={'data': data})
 
     assert response.status_code == 200
     assert response.json() != {}  # TODO: validate responseå
 
     with pytest.raises(NotImplementedError):
-        launcher.stop()
-        # wait_for_gradio_down(launcher)  # TODO: enable when removing not implemented error
+        strategy.stop()  
+        # wait_for_gradio_down(strategy)  # TODO: enable when removing not implemented error
 
 
 def test_predictions_endpoint_no_preprocessing_in_gradio(script_factory, data_loader):
-    launcher = GradioLauncher(
-        model_access=ModelAccess(script_factory),
-        epochs_access=EpochsAccess(rygg=MagicMock())
-    )
-
-    launcher.start(
+    strategy = GradioStrategy(
         call_context={},
+        model_access=ModelAccess(script_factory),
+        epochs_access=EpochsAccess(rygg=MagicMock()),
         model_id='123',
         graph_spec=make_graph_spec(data_loader),
         data_loader=data_loader,
@@ -325,7 +316,9 @@ def test_predictions_endpoint_no_preprocessing_in_gradio(script_factory, data_lo
         include_preprocessing=False,
         include_postprocessing=True
     )
-    wait_for_gradio_up(launcher)
+    
+    strategy.start()
+    wait_for_gradio_up(strategy)
 
     if data_loader.feature_specs['x1'].datatype == 'categorical':
         inputs, outputs = data_loader.get_example_batch(
@@ -343,13 +336,13 @@ def test_predictions_endpoint_no_preprocessing_in_gradio(script_factory, data_lo
         else:
             data.append(value)
 
-    url = launcher.get_url() + 'api/predict/'
+    url = strategy.get_url() + 'api/predict/'
     response = requests.post(url, json={'data': data})
 
     assert response.status_code == 200
     assert response.json() != {}  # TODO: validate responseå
 
     with pytest.raises(NotImplementedError):
-        launcher.stop()
-        # wait_for_gradio_down(launcher)  # TODO: enable when removing not implemented error
-
+        strategy.stop()  
+        # wait_for_gradio_down(strategy)  # TODO: enable when removing not implemented error
+    
