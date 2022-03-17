@@ -107,17 +107,6 @@ jobs:
         verbose: true
 
     - task: AzureCLI@2
-      displayName: Make sure az cli is up to date
-      inputs:
-        azureSubscription: 'Perceptilabs Azure'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          az upgrade --yes
-        addSpnToEnvironment: true
-        useGlobalConfig: true
-
-    - task: AzureCLI@2
       displayName: Publish the installation files
       env:
         ZIP_NAME: perceptilabs-${{ parameters.versionid }}-airgapped.zip

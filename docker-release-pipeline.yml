@@ -86,16 +86,30 @@ jobs:
     dependsOn: checkvars
     steps:
 
-      - task: AzureCLI@2
-        displayName: Make sure az cli is up to date
+      - task: Bash@3
         inputs:
-          azureSubscription: 'Perceptilabs Azure'
-          scriptType: 'bash'
-          scriptLocation: 'inlineScript'
-          inlineScript: |
-            az upgrade --yes
-          addSpnToEnvironment: true
-          useGlobalConfig: true
+          targetType: 'inline'
+          script: |
+            set -x
+
+            # short-circuit if the cli is up-to-date
+            if az --version | grep -q "azure-cli[[:space:]]*2.34" ; then
+              exit 0
+            fi
+
+            # from https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt#option-2-step-by-step-installation-instructions
+            sudo apt-get update
+            sudo apt-get install ca-certificates curl apt-transport-https lsb-release gnupg
+            curl -sL https://packages.microsoft.com/keys/microsoft.asc |
+              gpg --dearmor |
+              sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
+
+            AZ_REPO=$(lsb_release -cs)
+            echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" |
+                sudo tee /etc/apt/sources.list.d/azure-cli.list
+            sudo apt-get update
+            sudo apt remove azure-cli -y
+            sudo apt install azure-cli -y
 
       - task: DownloadBuildArtifacts@0
         displayName: Download Release Files
