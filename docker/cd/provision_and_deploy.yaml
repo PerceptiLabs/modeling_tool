@@ -59,6 +59,10 @@
         description: 1 GPU, 4 vCPU, 61GiB, 90¢/hr high bandwidth (Can run training on GPU)
         gpus: 1
         cpus: 4
+      - id: p2.8xlarge
+        description: 8 GPU, 32 vCPU, 488GiB, 720¢/hr 10Gb bandwidth (Can run training on GPU)
+        gpus: 8
+        cpus: 32
 
     ansible_python_interpreter: python # we expect to run this in a virtualenv
 

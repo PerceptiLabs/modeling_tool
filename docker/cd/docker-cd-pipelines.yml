@@ -18,6 +18,7 @@ parameters:
     values:
       - 0
       - 1
+      - 8
   - name: cpus
     displayName: Requested CPU count
     type: number
@@ -25,6 +26,7 @@ parameters:
     values:
       - 1
       - 4
+      - 32
   - name: release_env
     displayName: Release Environment
     default: cd
