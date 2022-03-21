@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+if [ $# -lt 2 ]; then
+    echo "USAGE: $0 <source dir> <dataset name>"
+    exit 1
+fi
+
+# assume project 1
+PROJECT_ID=1
+SRC_DIR=$1
+DS_NAME=$2
+
+if [ ! -d "${SRC_DIR}" ]; then
+    echo "Source dir isn't a directory"
+    exit 1
+fi
+
+if [ ! -f "${SRC_DIR}/data.csv" ]; then
+    echo "There's no file named data.csv in ${SRC_DIR}."
+    exit 1
+fi
+
+# make sure the project's there
+if ! curl -I -s -o /dev/null -w "%{http_code}" localhost/rygg/projects/1/ | grep --quiet 200; then
+    echo "Missing project 1"
+fi
+
+# Strip spaces out of the ds name to make the dir name
+named_dir=$(echo "${DS_NAME}" | tr ' ' '-')
+
+# Where we'll store the data
+common="data/${PROJECT_ID}/dataset-$(date +%Y%m%d%H%M%S)/${named_dir}"
+dest_dir="${HOME}/plabs/${common}"
+
+echo -n "Moving ${SRC_DIR} to ${dest_dir} ..."
+sudo mkdir -p "$(dirname ${dest_dir})"
+sudo mv "${SRC_DIR}" "${dest_dir}"
+sudo chmod -R 755 "${dest_dir}"
+echo " done"
+
+echo -n "Making the dataset record in the db ... "
+cmd="from rygg.api.models import Dataset, Project; import os; rootdir=os.path.expanduser('~/Documents/Perceptilabs'); ds = Dataset(project_id=${PROJECT_ID}, name='${DS_NAME}', location=os.path.join(rootdir, '${common}', 'data.csv'), type=Dataset.Type.SEGMENTATION); ds.save()"
+sudo docker-compose exec -- rygg python -m django shell --command "${cmd}" --settings rygg.settings -v3
+echo "done"
