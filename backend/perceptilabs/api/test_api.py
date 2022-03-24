@@ -554,7 +554,8 @@ def assert_testing(client, mixpanel_mock, model_id, training_session_id, dataset
     wait_for_testing()
     return testing_session_id
 
-    
+
+@pytest.mark.skip
 @pytest.mark.parametrize("deployment", ["export", "serve_gradio", "serve_zip"])    
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
 def test_modeling_flow_basic(client, deployment, mixpanel_mock, tmp_path, dataset_settings, training_settings):
