@@ -32,9 +32,9 @@ class ModelsInterface:
         self._preprocessing_results_access = preprocessing_results_access
         self._preview_cache = preview_cache
         self._tensorflow_support_access = tensorflow_support_access
-        
+
         self._script_factory = ScriptFactory()
-        
+
 
     def start_training(self, call_context, dataset_settings_dict, model_id, training_settings, load_checkpoint, logrocket_url='', graph_settings=None):
         training_session_id = model_id  # Training session ID == model ID for now...
@@ -177,7 +177,8 @@ class ModelsInterface:
                 'export_directory': export_path,
                 'graph_settings': graph_settings,
                 'mode': mode,
-                'user_email': call_context.get('user_email')
+                'user_email': call_context.get('user_email'),
+                'user_id': call_context.get('user_id'),
             }
         }
         self._message_broker.publish(message)
@@ -217,7 +218,7 @@ class ModelsInterface:
         mode = self._get_export_mode(options)
         exporter.export(export_path, mode=mode, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
 
-        tracking.send_model_exported(call_context, self._event_tracker, model_id)
+        tracking.send_model_exported(self._event_tracker, call_context, model_id)
 
         return f"Model exported to '{export_path}'"
 
@@ -364,7 +365,7 @@ class ModelsInterface:
             is_perceptilabs_sourced=is_plabs_sourced,
             dataset_id=data_loader.settings.dataset_id
         )
-    
+
     def import_model(self, call_context, archive_path, dataset_id, model_name, model_path):
         importer = Importer(self._dataset_access, self._model_archives_access)
         dataset_settings_dict, graph_spec_dict, training_settings_dict = \
@@ -382,9 +383,7 @@ class ModelsInterface:
             'graphSpec': graph_spec_dict,
             'trainingSettings': training_settings_dict
         }
-        user_email = call_context.get('user_email')
-        tracking.send_model_imported(
-            self._event_tracker, user_email, model_id)
+        tracking.send_model_imported(self._event_tracker, call_context, model_id)
         return output
 
     def _export_as_archive(self, call_context, model_id, location, dataset_settings_dict, training_settings_dict, frontend_settings, graph_settings=None):
@@ -401,7 +400,7 @@ class ModelsInterface:
             training_settings=training_settings_dict,
             frontend_settings=frontend_settings
         )
-        tracking.send_model_exported(call_context, self._event_tracker, model_id)
+        tracking.send_model_exported(self._event_tracker, call_context, model_id)
         return f"Model exported to '{path}'"
 
 

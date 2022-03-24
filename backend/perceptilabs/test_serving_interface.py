@@ -9,6 +9,7 @@ from retrying import retry
 from unittest.mock import MagicMock
 from queue import Queue
 
+from perceptilabs.call_context import CallContext
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.data.utils.builder import DatasetBuilder
 from perceptilabs.serving_interface import ServingSessionInterface
@@ -28,7 +29,7 @@ def rygg_mock(temp_path):
 
 
 @pytest.fixture
-def data_loader():    
+def data_loader():
     builder = DatasetBuilder.from_features({
         'x': {'datatype': 'numerical', 'iotype': 'input'},
         'y': {'datatype': 'categorical', 'iotype': 'target'},
@@ -37,7 +38,7 @@ def data_loader():
     with builder:
         for _ in range(num_samples):
             builder.add_row({'x': 1.0, 'y': 'a'})
-            
+
         yield builder.get_data_loader()
 
 
@@ -77,14 +78,14 @@ def queue():
     return Queue()
 
 
-@pytest.fixture(scope='function')    
+@pytest.fixture(scope='function')
 def message_broker(queue):
     broker = MagicMock()
     broker.subscription.return_value.__enter__.return_value = queue
     yield broker
 
-    
-@pytest.mark.parametrize("export_type", ["Standard", "FastAPI", "PlPackage"])    
+
+@pytest.mark.parametrize("export_type", ["Standard", "FastAPI", "PlPackage"])
 def test_zipfile_is_written_to_writable_path(export_type, message_broker, data_loader, graph_spec, temp_path, tensorflow_support_access):
     model_access = MagicMock()
     model_access.get_graph_spec.return_value = graph_spec
@@ -92,7 +93,7 @@ def test_zipfile_is_written_to_writable_path(export_type, message_broker, data_l
     epochs_access = MagicMock()
     epochs_access.get_checkpoint_path.return_value = None
 
-    model_archives_access = MagicMock()    
+    model_archives_access = MagicMock()
 
     results_access = MagicMock()
     results_access.get_serving_directory.return_value = temp_path
@@ -105,7 +106,7 @@ def test_zipfile_is_written_to_writable_path(export_type, message_broker, data_l
             'Type': export_type,
         },
         'ExcludePreProcessing': False,
-        'ExcludePostProcessing': False,        
+        'ExcludePostProcessing': False,
     }
 
     interface = ServingSessionInterface(
@@ -113,21 +114,19 @@ def test_zipfile_is_written_to_writable_path(export_type, message_broker, data_l
         message_broker,
         event_tracker,
         model_access=model_access,
-        model_archives_access=model_archives_access,        
+        model_archives_access=model_archives_access,
         epochs_access=epochs_access,
         results_access=results_access,
         tensorflow_support_access=tensorflow_support_access,
         ttl=10
     )
 
-    step = interface.run_stepwise(
-        {}, data_loader,
-        '123', '456', '789', 'my_model')
+    step = interface.run_stepwise(CallContext(), data_loader, '123', '456', '789', 'my_model')
     next(step)
 
     archive_dest = model_archives_access.write.call_args.args[0]
     assert archive_dest == os.path.join(temp_path, 'model.zip')
-    
+
     extra_files = {
         os.path.basename(file_path)
         for file_path in model_archives_access.write.call_args.kwargs['extra_files']
@@ -148,12 +147,12 @@ def test_zipfile_is_written_to_writable_path(export_type, message_broker, data_l
             fastapi_utils.EXAMPLE_JSON_FILE,
             fastapi_utils.EXAMPLE_SCRIPT_FILE,
             fastapi_utils.EXAMPLE_CSV_FILE,
-            fastapi_utils.EXAMPLE_REQUIREMENTS_FILE            
+            fastapi_utils.EXAMPLE_REQUIREMENTS_FILE
         }
         expected_files = set.union(
             inference_model_files, fastapi_files)
     elif export_type == 'PlPackage':
-        expected_files = set()  
+        expected_files = set()
 
     assert extra_files == expected_files
 
@@ -172,9 +171,9 @@ def test_zipfile_has_model_json(rygg_mock, message_broker, data_loader, graph_sp
 
     graph_settings = {'abc': '123'}
     training_settings = {'def': '456'}
-    dataset_settings = {'xyz': '789'}            
+    dataset_settings = {'xyz': '789'}
     frontend_settings = {'wasd': '1234'}
-    
+
     serving_settings = {
         'mode': 'zip',
         'exportSettings': {
@@ -193,21 +192,26 @@ def test_zipfile_has_model_json(rygg_mock, message_broker, data_loader, graph_sp
         message_broker,
         event_tracker,
         model_access=model_access,
-        model_archives_access=model_archives_access,        
+        model_archives_access=model_archives_access,
         epochs_access=epochs_access,
         results_access=results_access,
         tensorflow_support_access=tensorflow_support_access,
         ttl=10
     )
     serving_session_id = results_access.new_id({}, '123')
-    
+
     step = interface.run_stepwise(
-        {}, data_loader,
-        '123', '456', serving_session_id, 'my_model')
+        CallContext(),
+        data_loader,
+        '123',
+        '456',
+        serving_session_id,
+        'my_model'
+    )
     next(step)
 
     archive_path = results_access.get_served_zip(serving_session_id)
-    
+
     with zipfile.ZipFile(archive_path, 'r') as archive:
         model_json = archive.read('model.json').decode('utf-8')
         content = json.loads(model_json)
@@ -220,14 +224,14 @@ def test_zipfile_has_model_json(rygg_mock, message_broker, data_loader, graph_sp
 
 def test_cleanup_after_ttl(message_broker, data_loader, graph_spec, temp_path, tensorflow_support_access):
     num_seconds_to_live = 5 # seconds
-    
+
     model_access = MagicMock()
     model_access.get_graph_spec.return_value = graph_spec
 
     epochs_access = MagicMock()
     epochs_access.get_checkpoint_path.return_value = None
 
-    model_archives_access = MagicMock()    
+    model_archives_access = MagicMock()
 
     results_access = MagicMock()
     results_access.get_serving_directory.return_value = temp_path
@@ -251,7 +255,7 @@ def test_cleanup_after_ttl(message_broker, data_loader, graph_spec, temp_path, t
         message_broker,
         event_tracker,
         model_access=model_access,
-        model_archives_access=model_archives_access,        
+        model_archives_access=model_archives_access,
         epochs_access=epochs_access,
         results_access=results_access,
         tensorflow_support_access=tensorflow_support_access,
@@ -262,9 +266,12 @@ def test_cleanup_after_ttl(message_broker, data_loader, graph_spec, temp_path, t
     results_interval = 1.0
 
     step = interface.run_stepwise(
-        {},
+        CallContext(),
         data_loader,
-        '123', '456', serving_session_id, 'my_model',
+        '123',
+        '456',
+        serving_session_id,
+        'my_model',
         results_interval=results_interval,
     )
     next(step)  # Take an initial step to start the serving up
@@ -284,19 +291,19 @@ def test_cleanup_after_ttl(message_broker, data_loader, graph_spec, temp_path, t
         assert t_elapsed() >= num_seconds_to_live
         assert results_access.remove.call_count == 1
         assert results_access.remove.call_args.args == (serving_session_id,)
-        
+
     wait_for_ttl()
-            
+
 def zip_file_names(path):
     with zipfile.ZipFile(path, 'r') as archive:
         return set(archive.namelist())
-    
+
 
 def test_serve_two_different_models(rygg_mock, message_broker, data_loader, graph_spec, temp_path):
     results_access = ServingResultsAccess(rygg=rygg_mock)
-    
+
     tf_support_access = MagicMock()
-    
+
     model_access = MagicMock()
     model_access.get_graph_spec.return_value = graph_spec
 
@@ -312,15 +319,15 @@ def test_serve_two_different_models(rygg_mock, message_broker, data_loader, grap
             'mode': 'zip',
             'exportSettings': export_settings,
             'ExcludePreProcessing': False,
-            'ExcludePostProcessing': False,        
+            'ExcludePostProcessing': False,
         }
-    
+
         interface = ServingSessionInterface(
             settings,
             message_broker,
             event_tracker,
             model_access=model_access,
-            model_archives_access=model_archives_access,        
+            model_archives_access=model_archives_access,
             epochs_access=epochs_access,
             results_access=results_access,
             tensorflow_support_access=tf_support_access,
@@ -328,7 +335,7 @@ def test_serve_two_different_models(rygg_mock, message_broker, data_loader, grap
         )
 
         return interface.run_stepwise(
-            {},
+            CallContext(),
             data_loader,
             '123',
             '456',
@@ -343,13 +350,13 @@ def test_serve_two_different_models(rygg_mock, message_broker, data_loader, grap
     )
     next(step_a)
 
-    serving_session_b = results_access.new_id({}, '123')    
+    serving_session_b = results_access.new_id({}, '123')
     step_b = serve_model(
         serving_session_id=serving_session_b,
         export_settings={'Type': 'Compressed'}
     )
-    next(step_b)    
-    
+    next(step_b)
+
     path_a = results_access.get_served_zip(serving_session_a)
     path_b = results_access.get_served_zip(serving_session_b)
 
@@ -357,10 +364,8 @@ def test_serve_two_different_models(rygg_mock, message_broker, data_loader, grap
     assert path_a.endswith('model.zip')
 
     assert os.path.isfile(path_b)
-    assert path_b.endswith('model.zip')    
+    assert path_b.endswith('model.zip')
 
     assert path_a != path_b
     assert zip_file_names(path_a) != zip_file_names(path_b)
 
-    
-    

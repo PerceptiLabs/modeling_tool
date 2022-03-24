@@ -90,8 +90,8 @@ class GradioStrategy:
         # Running it as a forked subprocess - which can be killed - doesn't work on Windows
         # Running it as a spawned subprocess - which can be killed - doesn't work because DataLoader etc cannot be pickled.
         raise NotImplementedError()        
-        self._stop_event.set()
-        self._thread.join()
+        # self._stop_event.set()
+        # self._thread.join()
 
     def _worker(self, call_context, model_id, graph_spec, data_loader, training_session_id, model_name, url_dict, on_serving_started, include_preprocessing=True, include_postprocessing=True):
         try:

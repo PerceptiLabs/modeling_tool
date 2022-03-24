@@ -2,26 +2,24 @@ import logging
 import functools
 from abc import ABC, abstractmethod
 
-import sentry_sdk
-
+from perceptilabs.call_context import CallContext
 from perceptilabs.graph.spec import GraphSpec
-from perceptilabs.utils import setup_sentry
+from perceptilabs.utils import setup_sentry, send_ex_to_sentry
 
 logger = logging.getLogger(__name__)
 
 
+
 def handle_exceptions(function):
     @functools.wraps(function)
-    def func(*args, **kwargs):
+    def func(call_context_dict, *args, **kwargs):
+        call_context = CallContext(call_context_dict)
         try:
             setup_sentry()  # Ensures sentry is configured in a multiprocessing environment
-            return function(*args, **kwargs)
+            return function(call_context, *args, **kwargs)
         except Exception as e:
             logger.exception(f"Exception in task: {function.__name__}")
-
-            sentry_sdk.capture_exception(e)
-            sentry_sdk.flush()
-
+            send_ex_to_sentry(e, call_context)
             raise
 
     return func

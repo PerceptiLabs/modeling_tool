@@ -25,7 +25,7 @@ gputil>=1.4.0
 gradio>=2.3.0
 gym-unity>=0.20.0
 h5py==3.1.0
-jinja2>=2.10.3
+jinja2>=2.10.3,<=3.0.3 # 3.1 removed @jinja.contextfilter decorator
 keras2onnx==1.7.0
 keras_unet_collection==0.1.10
 matplotlib<=3.4.2 # 3.4.3 introduced an incompatibility with numpy

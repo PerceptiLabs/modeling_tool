@@ -4,9 +4,10 @@ import time
 from unittest.mock import MagicMock
 from queue import Queue
 
-import sentry_sdk
+import perceptilabs.utils
 import tensorflow as tf
 
+from perceptilabs.call_context import CallContext
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.data.utils.builder import DatasetBuilder
 from perceptilabs.training_interface import TrainingSessionInterface
@@ -114,7 +115,7 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, training_mo
     )
 
     interface.run(
-        {'user_email': 'a@b.test'},
+        CallContext({'user_email': 'a@b.test', 'user_id': 'a1234'}),
         data_loader,
         model_id='456',
         graph_settings=graph_spec.to_dict(),
@@ -153,7 +154,7 @@ def test_auto_checkpoint(monkeypatch, auto_checkpoint, message_broker, data_load
     )
 
     interface.run(
-        {'user_email': 'a@b.test'},
+        CallContext({'user_email': 'a@b.test', 'user_id': 'a1234'}),
         data_loader,
         model_id='456',
         graph_settings=graph_spec.to_dict(),
@@ -190,7 +191,7 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
     training_session_id = '789'
 
     step = interface.run_stepwise(
-        {'user_email': 'a@b.test'},
+        CallContext({'user_email': 'a@b.test', 'user_id': 'a1234'}),
         data_loader,
         model_id=model_id,
         graph_settings=graph_spec.to_dict(),
@@ -235,7 +236,7 @@ def test_pausing_mid_training(queue, message_broker, data_loader, graph_spec, tr
     training_session_id = '789'
 
     step = interface.run_stepwise(
-        {'user_email': 'a@b.test'},
+        CallContext({'user_email': 'a@b.test', 'user_id': 'a1234'}),
         data_loader,
         model_id=model_id,
         graph_settings=graph_spec.to_dict(),
@@ -291,9 +292,10 @@ def test_export_mid_training(monkeypatch, queue, message_broker, data_loader, gr
     model_id = '456'
     training_session_id = '789'
     user_email = 'a@b.test'
+    user_id = 'a1234'
 
     step = interface.run_stepwise(
-        {'user_email': user_email},
+        CallContext({'user_email': user_email, 'user_id': user_id}),
         data_loader,
         model_id=model_id,
         graph_settings=graph_spec.to_dict(),
@@ -316,7 +318,8 @@ def test_export_mid_training(monkeypatch, queue, message_broker, data_loader, gr
                     'training_session_id': training_session_id,
                     'export_directory': str(tmp_path),
                     'mode': 'Standard',
-                    'user_email': user_email
+                    'user_email': user_email,
+                    'user_id': user_id,
                 }
             })
 
@@ -350,7 +353,7 @@ def test_load_checkpoint(monkeypatch, message_broker, data_loader, graph_spec, t
     )
 
     interface.run(
-        {'user_email': 'a@b.test'},
+        CallContext({'user_email': 'a@b.test', 'user_id': 'a1234'}),
         data_loader,
         model_id='456',
         graph_settings=graph_spec.to_dict(),
@@ -400,7 +403,7 @@ def test_ignores_stopping_for_different_interface(model_id, session_id, expect_f
     actual_training_session_id = 'correct'
 
     step = interface.run_stepwise(
-        {'user_email': 'a@b.test'},
+        CallContext({'user_email': 'a@b.test', 'user_id': 'a1234'}),
         data_loader,
         model_id=actual_model_id,
         graph_settings=graph_spec.to_dict(),
@@ -451,7 +454,7 @@ def test_errors_are_stored(monkeypatch, message_broker, data_loader, graph_spec,
     )
 
     interface.run(
-        {'user_email': 'a@b.test'},
+        CallContext({'user_email': 'a@b.test', 'user_id': 'a1234'}),
         data_loader,
         model_id='456',
         graph_settings=graph_spec.to_dict(),
@@ -470,7 +473,7 @@ def test_slowdown_is_detected(monkeypatch, slowdown_rate, queue, message_broker,
     max_slowdown_rate = 0.1
 
     fake_sentry_call = MagicMock()
-    monkeypatch.setattr(sentry_sdk, 'capture_message', fake_sentry_call, raising=True)
+    monkeypatch.setattr(perceptilabs.utils, 'send_message_to_sentry', fake_sentry_call, raising=True)
 
     model_access = MagicMock()
     model_access.get_training_model.return_value = training_model
@@ -496,7 +499,7 @@ def test_slowdown_is_detected(monkeypatch, slowdown_rate, queue, message_broker,
     training_session_id = '789'
 
     step = interface.run_stepwise(
-        {'user_email': 'a@b.test'},
+        CallContext({'user_email': 'a@b.test', 'user_id': 'a1234'}),
         data_loader,
         model_id=model_id,
         graph_settings=graph_spec.to_dict(),

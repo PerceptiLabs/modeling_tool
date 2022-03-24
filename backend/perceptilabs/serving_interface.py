@@ -3,12 +3,12 @@ import logging
 from queue import Empty
 from datetime import datetime
 import os
-import sentry_sdk
 
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.gradio_serving.base import GradioStrategy
 from perceptilabs.zipfile_serving import ZipfileStrategy
 import perceptilabs.tracking as tracking
+import perceptilabs.utils as utils
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +30,13 @@ class ServingSessionInterface:
             pass
 
     def run_stepwise(self, call_context, data_loader, model_id, training_session_id, serving_session_id, model_name, results_interval=3.0, is_retry=False, logrocket_url='', graph_settings=None):
+        call_context = call_context.push(
+            dataset_settings = data_loader.settings,
+            model_id = model_id,
+            training_session_id = training_session_id,
+            logrocket_url = logrocket_url,
+        )
+
         try:
             self._tensorflow_support_access.set_tfhub_env_var(call_context)
             
@@ -43,17 +50,7 @@ class ServingSessionInterface:
                 yield from self._main_loop(queue, results_interval, serving_session_id, strategy)
         except Exception as e:
             logger.exception("Exception in serving session interface!")
-
-            with sentry_sdk.push_scope() as scope:
-                scope.set_user({'email': call_context.get('user_email')})
-                scope.set_extra('dataset_settings', data_loader.settings)
-                scope.set_extra('model_id', model_id)
-                scope.set_extra('training_session_id', training_session_id)
-                scope.set_extra('logrocket_url', logrocket_url)
-
-                sentry_sdk.capture_exception(e)
-                sentry_sdk.flush()
-
+            utils.send_ex_to_sentry(e, call_context)
             raise  # TODO. the other interfaces has a handle_error method.... they DON'T re-raise, but they do insert an error
         finally:
             self._results_access.remove(serving_session_id)
@@ -68,7 +65,7 @@ class ServingSessionInterface:
             graph_spec = self._model_access.get_graph_spec(call_context, model_id)
             
         def on_serving_started():
-            tracking.send_model_served(self._event_tracker, call_context.get('user_email'), model_id)
+            tracking.send_model_served(self._event_tracker, call_context, model_id)
             logger.info("Serving strategy called")
 
         include_preprocessing = not self._serving_settings['ExcludePreProcessing']
@@ -88,7 +85,6 @@ class ServingSessionInterface:
                 include_preprocessing=include_preprocessing,
                 include_postprocessing=include_postprocessing,
             )
-            return
         elif mode == 'zip':
             target_url = f"inference/serving/{serving_session_id}/file"
             

@@ -4,8 +4,19 @@ from unittest.mock import MagicMock
 from perceptilabs.models_interface import ModelsInterface
 from perceptilabs.utils import KernelError
 
-def make_interface(tensorflow_support_access, task_executor=None, message_broker=None, event_tracker=None, dataset_access=None, model_access=None, model_archives_access=None, epochs_access=None, training_results_access=None, preprocessing_results_access=None, preview_cache=None):
-    
+def make_interface(
+    tensorflow_support_access,
+    task_executor=None,
+    message_broker=None,
+    event_tracker=None,
+    dataset_access=None,
+    model_access=None,
+    model_archives_access=None,
+    epochs_access=None,
+    training_results_access=None,
+    preprocessing_results_access=None,
+    preview_cache=None,
+):
     interface = ModelsInterface(
         task_executor=task_executor or MagicMock(),
         message_broker=message_broker or MagicMock(),
@@ -29,17 +40,17 @@ def test_export_archive_failure_raises_kernel_error(tensorflow_support_access, t
 
     with pytest.raises(KernelError):
         interface.export(
+            call_context=MagicMock(),
             model_id=MagicMock(),
             options={'Type': 'Archive', 'Location': tmp_path},
             dataset_settings_dict=MagicMock(),
             graph_spec_dict=MagicMock(),
-            user_email=MagicMock(),
             training_settings_dict=MagicMock(),
             frontend_settings=MagicMock(),
-            training_session_id=MagicMock(),            
+            training_session_id=MagicMock(),
         )
 
-    
+
 def test_export_archive_failure_raises_kernel_error(tmp_path, tensorflow_support_access):
     model_archives_access = MagicMock()
     model_archives_access.write.side_effect = ValueError("Crash!")
@@ -47,17 +58,17 @@ def test_export_archive_failure_raises_kernel_error(tmp_path, tensorflow_support
 
     with pytest.raises(KernelError):
         interface.export(
+            call_context=MagicMock(),
             model_id=MagicMock(),
             options={'Type': 'Archive', 'Location': tmp_path},
             dataset_settings_dict=MagicMock(),
             graph_spec_dict=MagicMock(),
-            user_email=MagicMock(),
             training_settings_dict=MagicMock(),
             frontend_settings=MagicMock(),
-            training_session_id=MagicMock(),            
+            training_session_id=MagicMock(),
         )
 
-    
+
 def test_export_normal_failure_raises_kernel_error(tensorflow_support_access, monkeypatch):
     epochs_access = MagicMock()
     epochs_access.has_checkpoint = True
@@ -66,26 +77,19 @@ def test_export_normal_failure_raises_kernel_error(tensorflow_support_access, mo
     fn_export.side_effect = ValueError("Crash!")
 
     from perceptilabs.sharing.exporter import Exporter
-    monkeypatch.setattr(Exporter, "export", fn_export)  
-    
+    monkeypatch.setattr(Exporter, "export", fn_export)
+
     interface = make_interface(tensorflow_support_access, epochs_access=epochs_access)
 
     with pytest.raises(KernelError):
         interface.export(
+            call_context=MagicMock(),
             model_id=MagicMock(),
             options=MagicMock(),
             dataset_settings_dict=MagicMock(),
             graph_spec_dict=MagicMock(),
-            user_email=MagicMock(),
             training_settings_dict=MagicMock(),
             frontend_settings=MagicMock(),
-            training_session_id=MagicMock(),            
+            training_session_id=MagicMock(),
         )
 
-    
-    
-        
-    
-    
-        
-    

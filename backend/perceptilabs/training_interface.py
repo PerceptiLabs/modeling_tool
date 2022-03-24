@@ -5,9 +5,6 @@ from queue import Empty
 import os
 from contextlib import contextmanager
 
-import sentry_sdk
-
-
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.trainer import Trainer
 from perceptilabs.trainer.model import TrainingModel
@@ -15,6 +12,7 @@ from perceptilabs.sharing.exporter import Exporter
 from perceptilabs.utils import KernelError
 from perceptilabs.trainer.utils import EpochSlowdownTracker
 import perceptilabs.tracking as tracking
+import perceptilabs.utils as utils
 
 logger = logging.getLogger(__name__)
 
@@ -34,25 +32,22 @@ class TrainingSessionInterface:
         self._has_reported_slowdown = False
         self._slowdown_tracker = EpochSlowdownTracker()
 
-    def run(self, *args, **kwargs):
-        for _ in self.run_stepwise(*args, **kwargs):
+    def run(self, call_context, *args, **kwargs):
+        assert call_context.user_unique_id
+        for _ in self.run_stepwise(call_context, *args, **kwargs):
             pass
 
     def run_stepwise(self, call_context, data_loader, model_id, training_session_id, training_settings, load_checkpoint, results_interval=None, is_retry=False, logrocket_url='', graph_settings=None):
         self._tensorflow_support_access.set_tfhub_env_var(call_context)
 
-        @contextmanager
-        def sentry_closure():
-            with sentry_sdk.push_scope() as scope:
-                scope.set_user({'email': call_context['user_email']})
-                scope.set_extra('model_id', model_id)
-                scope.set_extra('training_session_id', training_session_id)
-                scope.set_extra('training_settings', training_settings)
-                scope.set_extra('dataset_settings', data_loader.settings)
-                scope.set_extra('graph_settings', graph_settings)
-                scope.set_extra('logrocket_url', logrocket_url)
-                yield scope
-                sentry_sdk.flush()
+        call_context = call_context.push(
+            model_id = model_id,
+            training_session_id = training_session_id,
+            training_settings = training_settings,
+            dataset_settings = data_loader.settings,
+            graph_settings = graph_settings,
+            logrocket_url = logrocket_url,
+        )
 
         try:
             self._clean_old_status(call_context, training_session_id)
@@ -65,21 +60,18 @@ class TrainingSessionInterface:
                 training_settings,
                 use_checkpoint=(load_checkpoint or is_retry),
                 graph_settings=graph_settings,
-                sentry_closure=sentry_closure,
             )
             with self._message_broker.subscription() as queue:
                 yield from self._main_loop(call_context, queue, trainer, results_interval, training_session_id)
 
         except Exception as e:
-            self._handle_error(call_context, e, training_session_id, sentry_closure)
+            self._handle_error(call_context, e, training_session_id)
 
-    def _handle_error(self, call_context, e, training_session_id, sentry_closure):
+    def _handle_error(self, call_context, e, training_session_id):
         error = KernelError.from_exception(e, message="Error during training!")
         self._results_access.store(call_context, training_session_id, {'error': error.to_dict()})
         logger.exception("Exception in training session interface!")
-
-        with sentry_closure() as scope:
-            sentry_sdk.capture_exception(e)
+        utils.send_ex_to_sentry(e, call_context)
 
     def _main_loop(self, call_context, queue, trainer, results_interval, training_session_id):
         training_step = trainer.run_stepwise()
@@ -99,7 +91,7 @@ class TrainingSessionInterface:
 
             yield
 
-    def _setup_trainer(self, call_context, data_loader, model_id, training_session_id, training_settings, use_checkpoint, graph_settings, sentry_closure):
+    def _setup_trainer(self, call_context, data_loader, model_id, training_session_id, training_settings, use_checkpoint, graph_settings):
 
         if graph_settings:
             graph_spec = GraphSpec.from_dict(graph_settings)
@@ -130,22 +122,22 @@ class TrainingSessionInterface:
         self._exporter = Exporter(graph_spec, training_model, data_loader)
 
         def on_training_started():
-            tracking.send_training_started(call_context, self._event_tracker, model_id, graph_spec)
+            tracking.send_training_started(self._event_tracker, call_context, model_id, graph_spec)
 
         def on_training_stopped(*args):
-            tracking.send_training_stopped(call_context, self._event_tracker, model_id, graph_spec, *args)
+            tracking.send_training_stopped(self._event_tracker, call_context, model_id, graph_spec, *args)
 
         def on_training_completed(trainer, *args):
             if not trainer.auto_checkpoint:  # At least save the final one.
                 self._save_epoch(call_context, trainer)
 
-            tracking.send_training_completed(call_context, self._event_tracker, model_id, graph_spec, *args)
+            tracking.send_training_completed(self._event_tracker, call_context, model_id, graph_spec, *args)
 
         def on_epoch_completed(epoch, trainer, epoch_time):
             if trainer.auto_checkpoint:
                 self._save_epoch(call_context, trainer)
 
-            self._check_for_slowdown(epoch, epoch_time, sentry_closure)
+            self._check_for_slowdown(epoch, epoch_time, call_context)
 
         trainer = Trainer(
             data_loader,
@@ -207,7 +199,7 @@ class TrainingSessionInterface:
     def _handle_export(self, call_context, export_directory, mode, model_id):
         if mode != 'Checkpoint':
             self._exporter.export(export_directory, mode)
-            tracking.send_model_exported(call_context, self._event_tracker, model_id)
+            tracking.send_model_exported(self._event_tracker, call_context, model_id)
         else:
             self._exporter.export_checkpoint(
                 os.path.join(export_directory, 'checkpoint.ckpt'))
@@ -238,7 +230,7 @@ class TrainingSessionInterface:
             state_dict
         )
 
-    def _check_for_slowdown(self, epoch, epoch_time, sentry_closure):
+    def _check_for_slowdown(self, epoch, epoch_time, call_context):
         self._slowdown_tracker.add_time(epoch_time)
 
         if self._slowdown_tracker.num_epochs_measured < self._min_epochs_for_slowdown:
@@ -252,12 +244,14 @@ class TrainingSessionInterface:
                 f"Epoch durations: {self._slowdown_tracker.times}"
             )
 
-            with sentry_closure() as scope:
-                scope.set_extra('epoch_number', epoch)
-                scope.set_extra('epoch_durations', self._slowdown_tracker.times)
-                scope.set_extra('slowdown_rate', slowdown_per_epoch)
-                scope.set_extra('slowdown_rate_max', self._max_slowdown_rate)
-                sentry_sdk.capture_message("Training slowdown detected")
+            call_context = call_context.push(
+                epoch_number = epoch,
+                epoch_durations = self._slowdown_tracker.times,
+                slowdown_rate = slowdown_per_epoch,
+                slowdown_rate_max = self._max_slowdown_rate,
+            )
+
+            utils.send_message_to_sentry("Training slowdown detected")
 
             self._has_reported_slowdown = True
 

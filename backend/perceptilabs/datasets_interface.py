@@ -60,14 +60,13 @@ class DatasetsInterface:
             raise KernelError.from_exception(
                 e, message="Couldn't get data types because the Kernel responded with an error")
         else:
-            user_email = call_context.get('user_email')
-            if user_email and dataset_id:
+            if call_context.user_unique_id and dataset_id:
                 is_plabs_sourced = self._dataset_access.is_perceptilabs_sourced(call_context, dataset_id)
                 path = self._dataset_access.get_location(call_context, dataset_id)
 
                 tracking.send_data_selected(
-                    call_context,
                     self._event_tracker,
+                    call_context,
                     path,
                     is_plabs_sourced,
                     dataset_id)

@@ -43,6 +43,11 @@ elif AUTH_ENV == 'dev':
     AUTH_CERTS_URL = f"{AUTH_ISSUER}/protocol/openid-connect/certs"
     AUTH_AUDIENCE = 'account'
     AUTH_ALGORITHM = 'RS256'
+elif AUTH_ENV == 'dev_a':
+    AUTH_ISSUER = 'https://dev-ymwf5efb.us.auth0.com/'
+    AUTH_CERTS_URL = f"{AUTH_ISSUER}.well-known/jwks.json"
+    AUTH_AUDIENCE = "https://backends-dev.perceptilabs.com/"
+    AUTH_ALGORITHM = 'RS256'
 elif AUTH_ENV == 'prod':
     AUTH_REALM = os.getenv('AUTH_REALM', 'PerceptiLabs')
     AUTH_ISSUER = os.getenv('AUTH_ISSUER', f"https://keycloak.perceptilabs.com:8443/auth/realms/{AUTH_REALM}")

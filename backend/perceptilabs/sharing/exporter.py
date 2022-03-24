@@ -71,8 +71,6 @@ class Exporter:
             self._on_model_exported()
             
         return created_paths
-
-        return created_paths
             
     def _export_inference_model(self, directory, model=None, include_preprocessing=True, include_postprocessing=True):
         """ Export the inference model """

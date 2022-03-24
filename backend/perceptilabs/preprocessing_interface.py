@@ -2,7 +2,6 @@ import os
 import logging
 
 import pandas as pd
-import sentry_sdk
 
 import perceptilabs.settings as settings
 from perceptilabs.data.base import DataLoader
@@ -30,14 +29,12 @@ class PreprocessingSessionInterface:
             self._results_access.set_results(
                 preprocessing_session_id, 'failed', error=error.to_dict())
 
-            with sentry_sdk.push_scope() as scope:
-                scope.set_user({'email': call_context.get('user_email')})
-                scope.set_extra('preprocessing_session_id', preprocessing_session_id)
-                scope.set_extra('dataset_settings_dict', dataset_settings_dict)
-                scope.set_extra('logrocket_url', logrocket_url)
-
-                sentry_sdk.capture_exception(e)
-                sentry_sdk.flush()
+            call_context = call_context.push(
+                preprocessing_session_id = preprocessing_session_id,
+                dataset_settings_dict = dataset_settings_dict,
+                logrocket_url = logrocket_url,
+            )
+            utils.send_ex_to_sentry(e, call_context)
 
     def _run_internal(self, call_context, dataset_settings_dict, preprocessing_session_id):
         dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)

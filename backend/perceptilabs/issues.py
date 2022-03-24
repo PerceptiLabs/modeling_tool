@@ -3,7 +3,6 @@ import uuid
 import queue
 import inspect
 import traceback
-import sentry_sdk
 import logging
 
 from perceptilabs.utils import add_line_numbering

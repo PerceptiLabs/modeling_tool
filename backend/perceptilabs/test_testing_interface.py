@@ -4,6 +4,7 @@ from queue import Queue
 
 import tensorflow as tf
 
+from perceptilabs.call_context import CallContext
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.data.utils.builder import DatasetBuilder
 from perceptilabs.testing_interface import TestingSessionInterface
@@ -95,11 +96,11 @@ def test_results_are_stored(message_broker, data_loader, graph_spec, results_int
     tests = ['confusion_matrix']
 
     interface.run(
-        call_context={
+        call_context=CallContext({
             'project_id': 123,
             'user_token': 'fake token from auth header',
-            'user_email': 'a@b.test',
-        },
+            'user_id': 'a12312',
+        }),
         testing_session_id='123',
         models={
             '111': {
@@ -143,7 +144,7 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
     testing_session_id = '123',
 
     step = interface.run_stepwise(
-        {'user_email': 'a@b.com'},
+        CallContext({'user_email': 'a@b.test'}),
         testing_session_id=testing_session_id,
         models={
             '111': {

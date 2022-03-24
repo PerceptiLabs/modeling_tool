@@ -28,11 +28,12 @@ class EventTracker:
         self._mp = Mixpanel(_TOKEN)
         self._raise_errors = raise_errors
 
-    def emit(self, event_name, user_email, properties):
+
+    def emit(self, event_name, call_context, properties):
         try:
-            self._set_user_meta(user_email)
-            properties = self._prepare_properties(properties)
-            self._send_event(user_email, event_name, properties)
+            self._set_user_meta(call_context)
+            properties = self._prepare_properties(call_context, properties)
+            self._send_event(call_context, event_name, properties)
         except:
             if is_dev():
                 logger.exception("Event might not have been sent!")
@@ -40,11 +41,14 @@ class EventTracker:
             if self._raise_errors:
                 raise
 
-    def _send_event(self, user_email, event_name, properties):
+    def _send_event(self, call_context, event_name, properties):
         self._assert_enabled()
 
+        distinct_id = call_context.user_unique_id
+        if not distinct_id:
+            raise ValueError("Neither email nor id have been given.")
         self._mp.track(
-            distinct_id=user_email,
+            distinct_id=distinct_id,
             event_name=event_name,
             properties=properties
         )
@@ -52,23 +56,34 @@ class EventTracker:
         if is_dev():
             logger.info(f"Event {event_name} sent!")
 
-    def _set_user_meta(self, user_email):
+
+    def _user_dict(self, call_context, email_key, id_key):
+        ret = {}
+        user_email = call_context.get('user_email')
+        if user_email:
+            ret[email_key] = user_email
+
+        user_id = call_context.get('user_id')
+        if user_id:
+            ret[id_key] = user_id
+
+        return ret
+
+
+    def _set_user_meta(self, call_context):
         current_time = datetime.datetime.utcnow()
         try:
-            # TODO: is this safe when users share kernels? Could events get mixed up?
-            if user_email is None:
-                raise ValueError("User email was not set")
-            
-            self._mp.people_set_once(user_email, {'$created': current_time})
-            self._mp.people_set(
-                user_email, {'$email': user_email, '$last_login': current_time})
+            distinct_id = call_context.user_unique_id
+            user_props = self._user_dict(call_context, "$email", "$user_id")
+            self._mp.people_set_once(distinct_id, {'$created': current_time})
+            self._mp.people_set(distinct_id, {**user_props, '$last_login': current_time})
         except:
             if self._raise_errors:
                 raise
 
-    def _prepare_properties(self, properties):
+    def _prepare_properties(self, call_context, properties):
         """ Drop invalid args """
-        new_properties = {}
+        new_properties = self._user_dict(call_context, 'user_email', 'user_id')
         for key, value in properties.items():
             if _is_valid_json(value):
                 new_properties[key] = value

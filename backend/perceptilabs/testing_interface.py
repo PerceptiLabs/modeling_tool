@@ -3,8 +3,6 @@ import logging
 from queue import Empty
 import os
 
-import sentry_sdk
-
 import perceptilabs.utils as utils
 from perceptilabs.testcore import TestCore, ProcessResults
 from perceptilabs.utils import KernelError
@@ -31,8 +29,13 @@ class TestingSessionInterface():
 
     def run_stepwise(self, call_context, testing_session_id, models, tests, results_interval=None, logrocket_url=''):
         self._tensorflow_support_access.set_tfhub_env_var(call_context)
+        call_context = call_context.push(
+            testing_session_id = testing_session_id,
+            logrocket_url = logrocket_url,
+        )
+
         try:
-            test_core = self._setup_test_core(testing_session_id, models, tests, call_context.get('user_email'))
+            test_core = self._setup_test_core(call_context, testing_session_id, models, tests)
 
             with self._message_broker.subscription() as queue:
                 yield from self._main_loop(call_context, queue, test_core, results_interval, testing_session_id)
@@ -41,14 +44,7 @@ class TestingSessionInterface():
             error = KernelError.from_exception(e, "Error during testing!")
             self._results_access.store(testing_session_id, {'error': error.to_dict()})
             logger.exception("Exception in testing session interface!")
-
-            with sentry_sdk.push_scope() as scope:
-                scope.set_user({'email': call_context.get('user_email')})
-                scope.set_extra('testing_session_id', testing_session_id)
-                scope.set_extra('logrocket_url', logrocket_url)
-
-                sentry_sdk.capture_exception(e)
-                sentry_sdk.flush()
+            utils.send_ex_to_sentry(e, call_context)
 
     def _main_loop(self, call_context, queue, core, results_interval, testing_session_id):
         testing_step = core.run_stepwise(call_context)
@@ -68,11 +64,10 @@ class TestingSessionInterface():
 
             yield
 
-    def _setup_test_core(self, testing_session_id, models, tests, user_email):
+    def _setup_test_core(self, call_context, testing_session_id, models, tests):
 
         def on_testing_completed(model_id, test):
-            tracking.send_testing_completed(
-                self._event_tracker, user_email, model_id, test)
+            tracking.send_testing_completed(self._event_tracker, call_context, model_id, test)
 
         core = TestCore(
             self._model_access,

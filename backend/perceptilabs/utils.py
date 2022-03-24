@@ -24,6 +24,7 @@ import pandas as pd
 from sys import getsizeof
 from typing import Set, Any
 
+import sentry_sdk
 
 class KernelError(Exception):
     def __init__(self, message, details=""):
@@ -561,7 +562,6 @@ def get_categories_from_postprocessing(postprocessing):
 
 def setup_sentry():
     import logging
-    import sentry_sdk
     from sentry_sdk.integrations.logging import LoggingIntegration
     import perceptilabs.settings as settings
 
@@ -596,6 +596,42 @@ def setup_sentry():
         release=release
     )
     logger.info(f"Initialized sentry for environment '{environment}' and release '{release}'")
+
+def send_ex_to_sentry(ex, call_context):
+    with _sentry_context(call_context):
+        sentry_sdk.capture_exception(ex)
+
+def send_message_to_sentry(message, call_context):
+    with _sentry_context(call_context):
+        sentry_sdk.capture_message(message)
+
+@contextmanager
+def _sentry_context(call_context):
+    import sentry_sdk
+    user_email = call_context.get('user_email')
+    user_id = call_context.get('user_id')
+
+    # if we received the email in the call_context (e.g. with Keycloak), then send that. Otherwise use the id
+    if user_email:
+        user = {'email': user_email}
+    elif user_id:
+        # Sentry filters out strings with "auth" or "|" in them, thinking that they're passwords.
+        # Work around that by cleaning up the user_id
+        user = {'id': user_id.lower().replace('auth0|', 'a0:')}
+    else:
+        user = None
+
+    with sentry_sdk.push_scope() as scope:
+        if user:
+            scope.set_user(user)
+
+        for k,v in call_context.items():
+            scope.set_extra(k, v)
+
+        scope.set_extra('user_email', user_email)
+        scope.set_extra('user_id', user_id)
+        yield scope
+        sentry_sdk.flush()
 
 
 def directory_tree(path):

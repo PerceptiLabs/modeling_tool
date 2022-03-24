@@ -7,7 +7,6 @@ def send_model_recommended(
 ):
     """ Sends a MixPanel event describing the model recommendation """
     payload = {
-        'user_email': call_context.get('user_email'),
         'model_id': model_id,
         'dataset_size_bytes': dataset_size_bytes,
         'is_perceptilabs_sourced': is_perceptilabs_sourced,
@@ -21,5 +20,5 @@ def send_model_recommended(
     preprocessing_counts = get_preprocessing_counts(dataset_settings_dict)
     payload.update(preprocessing_counts)
 
-    tracker.emit('model-recommended', call_context.get('user_email'), payload)
+    tracker.emit('model-recommended', call_context, payload)
 

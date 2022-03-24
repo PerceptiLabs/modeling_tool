@@ -9,10 +9,10 @@ from flask import Flask, request, g, jsonify, abort, make_response, json, send_f
 from flask.json import JSONEncoder
 from werkzeug.exceptions import HTTPException
 import tensorflow as tf
-import sentry_sdk
 
 from perceptilabs.auth import jwt_middleware
 from perceptilabs.caching.utils import get_preview_cache, get_data_metadata_cache, NullCache, DictCache
+from perceptilabs.call_context import CallContext
 from perceptilabs.messaging.base import get_message_broker
 from perceptilabs.tasks.utils import get_task_executor
 from perceptilabs.datasets_interface import DatasetsInterface
@@ -116,14 +116,15 @@ def create_app(
 
     @app.route('/user', methods=['POST'])
     def set_user():
-        user_email = make_call_context(request).get('user_email')
+        call_context = CallContext.from_flask_request(request)
+        id_str = str(call_context.user_unique_id)
+
         try:
-            tracking.send_user_email_set(event_tracker, user_email)
-                
-            logger.info("User has been set to %s" % str(user_email))
-            return jsonify(f"User has been set to {user_email}")
+            tracking.send_user_email_set(event_tracker, call_context)
+            logger.info("User has been set to %s" % id_str)
+            return jsonify(f"User has been set to {id_str}")
         except:
-            logger.exception("User has not been set: %s" % str(user_email))
+            logger.exception("User has not been set: %s" % id_str)
             raise
 
 
@@ -136,41 +137,14 @@ def create_app(
         }
         return jsonify(content)
 
-    def make_call_context(request):
-        auth_token = request.environ.get('auth_token')
-        email = None
-        if auth_token:
-            email = auth_token.get('email')
-
-        ret = {
-            'auth_token': auth_token,
-            'auth_token_raw': request.environ.get('auth_token_raw'),
-            'user_email': email,
-        }
-
-        # TODO: infer the project id when it's not in the request
-        # .... or just the require project id every time
-
-        body = request.get_json()
-        if body:
-            if 'project_id' in body:
-                ret['project_id'] = body['project_id']
-            if 'projectId' in body:
-                ret['project_id'] = body['projectId']
-
-        return ret
-
-
     @app.route('/datasets/preprocessing', methods=['PUT'])
     def put_preprocessing():
         json_data = request.get_json()
         settings_dict = json_data['datasetSettings']
         logrocket_url = request.headers.get('X-LogRocket-URL', '')
+        cc = CallContext.from_flask_request(request)
 
-        session_id = datasets_interface.start_preprocessing(
-            make_call_context(request),
-            settings_dict,
-            logrocket_url=logrocket_url)
+        session_id = datasets_interface.start_preprocessing(cc, settings_dict, logrocket_url=logrocket_url)
 
         return jsonify({"preprocessingSessionId": session_id})
 
@@ -196,7 +170,7 @@ def create_app(
     def get_model_recommendation():
         json_data = request.get_json()
         model_id, graph_settings = models_interface.get_model_recommendation(
-            make_call_context(request),
+            CallContext.from_flask_request(request),
             json_data['datasetId'],
             json_data['modelName'],
             json_data.get('skippedWorkspace'),
@@ -213,8 +187,8 @@ def create_app(
     def import_model():
         json_data = request.get_json()
         output = models_interface.import_model(
-            make_call_context(request),
-            json_data["archiveFilePath"],                        
+            CallContext.from_flask_request(request),
+            json_data["archiveFilePath"],
             json_data["datasetId"],
             json_data["modelName"],
             json_data["modelFilePath"],
@@ -226,7 +200,7 @@ def create_app(
     def get_layer_code(model_id, layer_id):
         json_data = request.get_json() or {}
         return models_interface.get_layer_code(
-            make_call_context(request),
+            CallContext.from_flask_request(request),
             model_id,
             layer_id,
             graph_settings=json_data.get('graphSettings'),
@@ -236,7 +210,7 @@ def create_app(
     def get_previews(model_id):
         json_data = request.get_json()
         content = models_interface.get_previews(
-            make_call_context(request),
+            CallContext.from_flask_request(request),
             model_id,
             dataset_settings_dict=json_data['datasetSettings'],
             graph_settings=json_data.get('graphSettings')
@@ -248,7 +222,7 @@ def create_app(
     def get_layer_info(model_id, layer_id=None):
         json_data = request.get_json()
         content = models_interface.get_layer_info(
-            make_call_context(request),
+            CallContext.from_flask_request(request),
             model_id,
             dataset_settings_dict=json_data['datasetSettings'],
             layer_id=layer_id,
@@ -259,7 +233,7 @@ def create_app(
     @app.route('/datasets/type_inference', methods=['GET'])
     def type_inference():
         datatypes = datasets_interface.infer_datatypes(
-            make_call_context(request),
+            CallContext.from_flask_request(request),
             request.args['dataset_id'],
         )
         return jsonify(datatypes)
@@ -278,7 +252,7 @@ def create_app(
         logrocket_url = request.headers.get('X-LogRocket-URL', '')
 
         training_session_id = models_interface.start_training(
-            make_call_context(request),
+            CallContext.from_flask_request(request),
             dataset_settings,
             model_id,
             training_settings,
@@ -306,7 +280,7 @@ def create_app(
     @app.route('/models/<model_id>/training/<training_session_id>/has_checkpoint', methods=['GET'])
     def has_checkpoint(model_id, training_session_id):
         has_checkpoint = models_interface.has_checkpoint(
-            make_call_context(request),
+            CallContext.from_flask_request(request),
             model_id,
             training_session_id
         )
@@ -315,7 +289,7 @@ def create_app(
     @app.route('/models/<model_id>/training/<training_session_id>/status', methods=['GET'])
     def training_status(model_id, training_session_id):
         output = models_interface.get_training_status(
-            make_call_context(request),
+            CallContext.from_flask_request(request),
             model_id,
             training_session_id,
         )
@@ -324,7 +298,7 @@ def create_app(
     @app.route('/models/<model_id>/training/<training_session_id>/results', methods=['GET'])
     def training_results(model_id, training_session_id):
         output = models_interface.get_training_results(
-            make_call_context(request), model_id, training_session_id, request.args.get('type'),
+            CallContext.from_flask_request(request), model_id, training_session_id, request.args.get('type'),
             layer_id=request.args.get('layerId'), view=request.args.get('view'))
         return jsonify(output)
 
@@ -339,7 +313,7 @@ def create_app(
         graph_settings = json_data.get('graphSettings')
 
         status = models_interface.export(
-            make_call_context(request),
+            CallContext.from_flask_request(request),
             export_options,
             model_id,
             dataset_settings_dict,
@@ -355,7 +329,7 @@ def create_app(
         json_data = request.get_json()
 
         session_id = inference_interface.start_serving(
-            make_call_context(request),
+            CallContext.from_flask_request(request),
             json_data['settings'],
             json_data['datasetSettings'],
             model_id,
@@ -392,7 +366,7 @@ def create_app(
         logrocket_url = request.headers.get('X-LogRocket-URL', '')
 
         session_id = inference_interface.start_testing(
-            make_call_context(request),
+            CallContext.from_flask_request(request),
             models_info,
             tests,
             logrocket_url=logrocket_url,
@@ -438,16 +412,14 @@ def create_app(
             error = original_error
 
         response = {"error": error.to_dict()}
+        ctxt = CallContext.from_flask_request(request).push(
+            url = request.url,
+            request = request.json,
+            response = response,
+            logrocket_url = request.headers.get('X-LogRocket-URL', ''),
+        )
 
-        email = make_call_context(request).get('user_email')
-
-        with sentry_sdk.push_scope() as scope:
-            scope.set_user({'email': email})
-            scope.set_extra('url', request.url)
-            scope.set_extra('request', request.json)
-            scope.set_extra('response', response)
-            scope.set_extra('logrocket-url', request.headers.get('X-LogRocket-URL', ''))
-            sentry_sdk.capture_exception(original_error)
+        utils.send_ex_to_sentry(original_error, ctxt)
 
         return jsonify(response), 200
 

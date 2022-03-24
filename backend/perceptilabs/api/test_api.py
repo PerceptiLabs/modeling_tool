@@ -101,7 +101,6 @@ def rygg_mock(monkeypatch, tmp_path):
         return models.get(model_id, {}).get('meta', {})
 
     def save_model_json(self, call_context, model_id, model):
-        #import pdb; pdb.set_trace()
         models[model_id]['model_json'] = model
 
     def load_model_json(self, call_context, model_id):
@@ -114,33 +113,37 @@ def rygg_mock(monkeypatch, tmp_path):
     monkeypatch.setattr(RyggWrapper, 'save_model_json', save_model_json)
     monkeypatch.setattr(RyggWrapper, 'load_model_json', load_model_json)
 
+@pytest.fixture(scope='function')
+def auth_token():
+    return {
+        'this': 'is the decoded token',
+        'email': 'anton.k@perceptilabs.com',
+    }
+
 class MockAuth():
-    def __init__(self, app, **kwargs):
+    def __init__(self, auth_token, app, **kwargs):
+        self._auth_token = auth_token
         self.app = app
 
     def __call__(self, environ, start_response):
         environ['user'] = 'the unique user id'
-        environ['auth_token'] = {
-            'this': 'is the decoded token',
-            'email': 'anton.k@perceptilabs.com',
-        }
+        environ['auth_token'] = self._auth_token
         environ['auth_token_raw'] = 'this is the raw token'
         return self.app(environ, start_response)
 
-def mock_auth(monkeypatch):
+def mock_auth(monkeypatch, auth_token):
     import perceptilabs.api.base as app
     import perceptilabs.auth
 
-    # monkeypatch.setattr(auth, 'AUTH_ISSUER', 'unittest', raising=True)
-    def foo(*args, **kwargs):
-        return MockAuth(*args, **kwargs)
-    monkeypatch.setattr(app, 'jwt_middleware', foo)
+    def inner(*args, **kwargs):
+        return MockAuth(auth_token, *args, **kwargs)
+    monkeypatch.setattr(app, 'jwt_middleware', inner)
 
 
 
 @pytest.fixture(scope='function')
-def client(monkeypatch, request, celery_worker):
-    mock_auth(monkeypatch)
+def client(monkeypatch, request, celery_worker, auth_token):
+    mock_auth(monkeypatch, auth_token)
     if not hasattr(request, 'param') or request.param == 'threaded':
         task_executor = ThreadedTaskExecutor()
     elif request.param == 'celery':
@@ -276,8 +279,8 @@ def assert_serving(mode, client, mixpanel_mock, dataset_settings, model_id, trai
             'mode': 'gradio',
             'ExcludePreProcessing': False,
             'ExcludePostProcessing': False,
-        }        
-    
+        }
+
     res = client.post(
         f'/inference/serving/{model_id}?training_session_id={training_session_id}',
         json={
@@ -298,7 +301,7 @@ def assert_serving(mode, client, mixpanel_mock, dataset_settings, model_id, trai
         import io
 
         # TODO: cleanup
-        # url = 'https://golang.org/dl/go1.17.3.windows-amd64.zip'  # TODO: remove 
+        # url = 'https://golang.org/dl/go1.17.3.windows-amd64.zip'  # TODO: remove
         #url = "return (resp.text, resp.status_code, resp.headers.items())"
         #url = f'localhost:5001/inference/serving/{serving_session_id}/proxy'
         #res = requests.get(url, stream=True, headers={'Authorization': user_token})
@@ -311,7 +314,7 @@ def assert_serving(mode, client, mixpanel_mock, dataset_settings, model_id, trai
         assert 'saved_model.pb' in files
         assert 'variables/' in files
         assert 'assets/' in files
-    
+
     @retry(stop_max_attempt_number=10, wait_fixed=1000)
     def wait_for_serving_up():
         res = client.get(
@@ -321,8 +324,8 @@ def assert_serving(mode, client, mixpanel_mock, dataset_settings, model_id, trai
         assert 'url' in res.json
 
         if mode == 'zip':
-            assert_download_model_zip(res.json['url'])            
-        
+            assert_download_model_zip(res.json['url'])
+
         assert has_been_called_with(
             mixpanel_mock.track,
             kwargs={'distinct_id': 'anton.k@perceptilabs.com', 'event_name': 'model-exported'}
@@ -341,8 +344,8 @@ def assert_serving(mode, client, mixpanel_mock, dataset_settings, model_id, trai
             f"/inference/serving/{serving_session_id}/status",
         )
         assert res.status_code == 200
-    
-    wait_for_serving_down()            
+
+    wait_for_serving_down()
 
 
 def assert_data(client, dataset_settings):
@@ -532,9 +535,7 @@ def assert_testing(client, mixpanel_mock, model_id, training_session_id, dataset
 
     @retry(stop_max_attempt_number=10, wait_fixed=1000)
     def wait_for_testing():
-        res = client.get(
-            f'/inference/testing/{testing_session_id}/status',
-        )
+        res = client.get(f'/inference/testing/{testing_session_id}/status')
 
         assert res.status_code == 200
         assert res.json['status'] == 'Completed'
@@ -556,7 +557,7 @@ def assert_testing(client, mixpanel_mock, model_id, training_session_id, dataset
 
 
 @pytest.mark.skip
-@pytest.mark.parametrize("deployment", ["export", "serve_gradio", "serve_zip"])    
+@pytest.mark.parametrize("deployment", ["export", "serve_gradio", "serve_zip"])
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
 def test_modeling_flow_basic(client, deployment, mixpanel_mock, tmp_path, dataset_settings, training_settings):
     assert_data(client, dataset_settings)
@@ -581,11 +582,11 @@ def test_modeling_flow_basic(client, deployment, mixpanel_mock, tmp_path, datase
     elif deployment == 'serve_zip':
         assert_serving('zip', client, mixpanel_mock, dataset_settings, model_id, training_session_id)
 
-        
+
 @pytest.mark.parametrize("deployment", ["export", "serve_gradio"])
 def test_modeling_flow_with_graph_settings_in_payload(client, deployment, mixpanel_mock, tmp_path, dataset_settings, training_settings):
     assert_data(client, dataset_settings)
-    
+
     model_id, graph_settings = assert_model_recommendation(
         client, mixpanel_mock, dataset_settings)
 
@@ -606,8 +607,8 @@ def test_modeling_flow_with_graph_settings_in_payload(client, deployment, mixpan
     elif deployment == 'serve_gradio':
         assert_serving(
             'gradio', client, mixpanel_mock, dataset_settings, model_id, training_session_id, graph_settings=graph_settings)
-        
-        
+
+
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
 def test_multi_input_modeling_flow(client, mixpanel_mock, tmp_path, dataset_settings, training_settings):
     dataset_settings["featureSpecs"]["x2"]["iotype"] = "input"  # Enable more inputs
@@ -831,6 +832,10 @@ def test_testing_error(monkeypatch, client, tmp_path, dataset_settings, training
     wait_for_testing_error()
 
 
+@pytest.mark.parametrize("auth_token", [
+    {'this': 'is the decoded token', 'email': 'anton.k@perceptilabs.com'},
+    {'this': 'is the decoded token', 'sub': 'a123', 'email': 'anton.k@perceptilabs.com'},
+])
 def test_set_user(client, mixpanel_mock):
     res = client.post('/user')
     assert res.status_code == 200
@@ -839,6 +844,18 @@ def test_set_user(client, mixpanel_mock):
     assert has_been_called_with(
         mixpanel_mock.track,
         kwargs={'distinct_id': 'anton.k@perceptilabs.com', 'event_name': 'user_email_set'}
+    )
+
+# sub is OAuth2-speak for user_id
+@pytest.mark.parametrize("auth_token", [{'this': 'is the decoded token', 'sub': 'a123'}])
+def test_set_user_with_no_email(client, mixpanel_mock):
+    res = client.post('/user')
+    assert res.status_code == 200
+    assert res.json == "User has been set to a123"
+
+    assert has_been_called_with(
+        mixpanel_mock.track,
+        kwargs={'distinct_id': 'a123', 'event_name': 'user_email_set'}
     )
 
 
@@ -882,7 +899,6 @@ def test_sharing_flow(client, mixpanel_mock, tmp_path, dataset_settings, trainin
     archive_path = os.path.join(tmp_path, f'model_{model_id}.zip')
     assert os.path.isfile(archive_path)
 
-
     res = client.post(
         f'/models/import',
         json={
@@ -893,7 +909,7 @@ def test_sharing_flow(client, mixpanel_mock, tmp_path, dataset_settings, trainin
             'modelFilePath': tmp_path,
         },
     )
-    
+
     assert has_been_called_with(
         mixpanel_mock.track,
         kwargs={'distinct_id': 'anton.k@perceptilabs.com', 'event_name': 'model-imported'}
