@@ -746,6 +746,7 @@ def test_preprocessing_error(monkeypatch, client, tmp_path, dataset_settings, tr
     wait_for_data_error()
 
 
+@pytest.mark.skip(reason="flaky test")
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
 def test_training_error(monkeypatch, client, tmp_path, dataset_settings, training_settings, mixpanel_mock):
     assert_data(client, dataset_settings)
