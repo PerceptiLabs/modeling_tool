@@ -35,7 +35,7 @@ dest_dir="${HOME}/plabs/${common}"
 
 echo -n "Moving ${SRC_DIR} to ${dest_dir} ..."
 sudo mkdir -p "$(dirname ${dest_dir})"
-sudo mv "${SRC_DIR}" "${dest_dir}"
+sudo cp -R "${SRC_DIR}" "${dest_dir}"
 sudo chmod -R 755 "${dest_dir}"
 echo " done"
 
