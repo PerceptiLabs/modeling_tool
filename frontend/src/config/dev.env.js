@@ -26,4 +26,6 @@ module.exports = merge(prodEnv, {
   ENABLE_FOLDER_LOADING: '"true"',
   NO_KC: '"false"',
   AUTH_METHOD: '"Auth0"', // Auth0, KeyCloak
+  AUTH0_DOMAIN: '"dev-ymwf5efb.us.auth0.com"',
+  AUTH0_CLIENT_ID: '"AcXo2McPteR0CkzXZyIym9OrCMg3SvgP"',
 });
