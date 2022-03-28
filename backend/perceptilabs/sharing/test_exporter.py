@@ -16,6 +16,12 @@ import perceptilabs.data.utils as data_utils
 from perceptilabs.test_utils import make_data_loader
 
 
+def join_and_sanitize(*args):
+    path = os.path.join(*args)
+    path = path.replace('\\', '/')
+    return path
+
+
 data0 = {
     'x1': {
         'type': 'numerical',
@@ -162,14 +168,6 @@ def equal_training_model_outputs(all1, all2):
     return True
 
 
-def has_inference_model(target_dir):
-    return (
-        os.path.isfile(os.path.join(target_dir, 'saved_model.pb')) and
-        os.path.isdir(os.path.join(target_dir, 'variables')) and
-        os.path.isdir(os.path.join(target_dir, 'assets'))
-    )
-
-
 def module_from_path(module_path, module_name='my_module'):
     import sys
     import importlib
@@ -197,13 +195,22 @@ def test_export_inference_model(script_factory, data_loader, temp_path):
     exporter = Exporter(
         graph_spec, training_model, data_loader, on_model_exported=on_exported)
 
-    target_dir = os.path.join(temp_path, 'inference_model')
+    target_dir = join_and_sanitize(temp_path, 'inference_model')
     assert not os.path.isdir(target_dir)
 
-    created_paths = exporter.export(target_dir, mode='Standard')
-
-    assert has_inference_model(target_dir)
-    assert all(os.path.exists(p) for p in created_paths)
+    expected_files = {
+        'saved_model.pb',
+        'keras_metadata.pb',
+        'assets',
+        'variables',
+        join_and_sanitize('variables', 'variables.index'),
+        join_and_sanitize('variables', 'variables.data-00000-of-00001')
+    }
+    
+    actual_files = set(exporter.export(target_dir, mode='Standard'))
+    
+    assert actual_files == expected_files
+    assert all(os.path.exists(join_and_sanitize(target_dir, p)) for p in expected_files)
     assert on_exported.call_count == 1
 
 
@@ -214,13 +221,14 @@ def test_export_compressed_model(script_factory, data_loader, temp_path):
     exporter = Exporter(
         graph_spec, training_model, data_loader, on_model_exported=on_exported)
 
-    target_dir = os.path.join(temp_path, 'inference_model')
+    target_dir = join_and_sanitize(temp_path, 'inference_model')
     assert not os.path.isdir(target_dir)
 
-    created_paths = exporter.export(target_dir, mode='Compressed')
+    expected_files = {'model.tflite'}
+    actual_files = set(exporter.export(target_dir, mode='Compressed'))
 
-    assert os.path.isfile(os.path.join(target_dir, 'model.tflite'))
-    assert all(os.path.exists(p) for p in created_paths)
+    assert actual_files == expected_files
+    assert all(os.path.exists(join_and_sanitize(target_dir, p)) for p in expected_files)    
     assert on_exported.call_count == 1    
 
 
@@ -233,12 +241,16 @@ def test_export_quantized_model(script_factory, data_loader_numerical, temp_path
         data_loader_numerical, on_model_exported=on_exported
     )
 
-    target_dir = os.path.join(temp_path, 'inference_model')
+    target_dir = join_and_sanitize(temp_path, 'inference_model')
     assert not os.path.isdir(target_dir)
+    
+    expected_files = {'quantized_model.tflite'}
+    actual_files = set(exporter.export(target_dir, mode='Quantized'))
 
-    created_paths = exporter.export(target_dir, mode='Quantized')
-    assert (os.path.isfile(os.path.join(target_dir, 'quantized_model.tflite')))
-    assert all(os.path.exists(p) for p in created_paths)    
+    assert actual_files == expected_files
+    assert all(os.path.exists(join_and_sanitize(target_dir, p)) for p in expected_files)    
+    assert on_exported.call_count == 1    
+    
 
 def test_export_checkpoint_creates_files(script_factory, data_loader, temp_path):
     graph_spec = make_graph_spec(data_loader)
@@ -247,11 +259,11 @@ def test_export_checkpoint_creates_files(script_factory, data_loader, temp_path)
     exporter = Exporter(
         graph_spec, training_model, data_loader)
 
-    target_dir = os.path.join(temp_path, 'checkpoint_dir')
+    target_dir = join_and_sanitize(temp_path, 'checkpoint_dir')
     assert not os.path.isdir(target_dir)
     assert tf.train.latest_checkpoint(target_dir) is None
 
-    checkpoint_path = os.path.join(target_dir, 'checkpoint.ckpt')
+    checkpoint_path = join_and_sanitize(target_dir, 'checkpoint.ckpt')
     exporter.export_checkpoint(checkpoint_path)
     ckpt = tf.train.latest_checkpoint(target_dir)
     assert ckpt is not None
@@ -263,19 +275,19 @@ def test_export_checkpoint_creates_multiple_files(script_factory, data_loader, t
     training_model = TrainingModel(script_factory, graph_spec)
     exporter = Exporter(graph_spec, training_model, data_loader)
 
-    target_dir = os.path.join(temp_path, 'checkpoint_dir')
+    target_dir = join_and_sanitize(temp_path, 'checkpoint_dir')
     assert not os.path.isdir(target_dir)
     assert tf.train.latest_checkpoint(target_dir) is None
 
 
     exporter.export_checkpoint(
-        os.path.join(target_dir, 'checkpoint-0000.ckpt'))
+        join_and_sanitize(target_dir, 'checkpoint-0000.ckpt'))
     first_ckpt = tf.train.latest_checkpoint(target_dir)
     assert first_ckpt is not None
     training_model.load_weights(first_ckpt).assert_consumed()
 
     exporter.export_checkpoint(
-        os.path.join(target_dir, 'checkpoint-0001.ckpt'))
+        join_and_sanitize(target_dir, 'checkpoint-0001.ckpt'))
     second_ckpt = tf.train.latest_checkpoint(target_dir)
     assert second_ckpt is not None
     assert second_ckpt != first_ckpt
@@ -289,14 +301,14 @@ def test_loading_different_checkpoints_consistent_results(script_factory, data_l
     training_model = TrainingModel(script_factory, graph_spec)
 
     exporter = Exporter(graph_spec, training_model, data_loader)
-    target_dir = os.path.join(temp_path, 'checkpoint_dir')
+    target_dir = join_and_sanitize(temp_path, 'checkpoint_dir')
 
     inputs, targets = data_loader.get_example_batch(2)
 
     # Infer and export for epoch 0
     expected_output_epoch_0 = training_model(inputs)
     exporter.export_checkpoint(
-        os.path.join(target_dir, 'checkpoint-0000.ckpt'))
+        join_and_sanitize(target_dir, 'checkpoint-0000.ckpt'))
     ckpt_epoch_0 = tf.train.latest_checkpoint(target_dir)
 
     # Update the weights with random values to simulate a new epoch
@@ -307,7 +319,7 @@ def test_loading_different_checkpoints_consistent_results(script_factory, data_l
     # Infer and export for epoch 1
     expected_output_epoch_1 = training_model(inputs)
     exporter.export_checkpoint(
-        os.path.join(target_dir, 'checkpoint-0001.ckpt'))
+        join_and_sanitize(target_dir, 'checkpoint-0001.ckpt'))
     ckpt_epoch_1 = tf.train.latest_checkpoint(target_dir)
 
     # Check that two different checkpoints exist
@@ -393,29 +405,28 @@ def test_export_fastapi_files_are_present(script_factory, data_loader, temp_path
         graph_spec, training_model, data_loader, on_model_exported=on_exported)
 
 
-    required_files = [
+    expected_files = {
+        'saved_model.pb',
+        'keras_metadata.pb',
+        'assets',
+        'variables',
+        join_and_sanitize('variables', 'variables.index'),
+        join_and_sanitize('variables', 'variables.data-00000-of-00001'),
         fastapi_utils.SCRIPT_FILE,
         fastapi_utils.REQUIREMENTS_FILE,
         fastapi_utils.EXAMPLE_REQUIREMENTS_FILE,
         fastapi_utils.EXAMPLE_JSON_FILE,
         fastapi_utils.EXAMPLE_SCRIPT_FILE,
         fastapi_utils.EXAMPLE_CSV_FILE
-    ]
+    }
+    
+    target_dir = join_and_sanitize(temp_path, 'export_model')
+    assert not os.path.isdir(target_dir)
+        
+    actual_files = set(exporter.export(target_dir, mode='FastAPI'))
 
-    expected_paths = [
-        os.path.join(temp_path, file_name)
-        for file_name in required_files
-    ]    
-
-    assert not has_inference_model(temp_path)
-    for file_name in required_files:
-        assert not os.path.isfile(os.path.join(temp_path, file_name))
-
-    actual_paths = exporter.export(temp_path, mode='FastAPI')
-
-    assert has_inference_model(temp_path)
-    assert set(expected_paths).issubset(actual_paths)
-    assert all(os.path.exists(p) for p in actual_paths)
+    assert actual_files == expected_files
+    assert all(os.path.exists(join_and_sanitize(target_dir, p)) for p in expected_files)
     assert on_exported.call_count == 1
 
     
@@ -425,7 +436,7 @@ def test_export_fastapi_endpoint_healthy(script_factory, data_loader, temp_path)
     exporter = Exporter(graph_spec, training_model, data_loader)
     exporter.export(temp_path, mode='FastAPI')
 
-    module = module_from_path(os.path.join(temp_path, fastapi_utils.SCRIPT_FILE))
+    module = module_from_path(join_and_sanitize(temp_path, fastapi_utils.SCRIPT_FILE))
 
     app = module.create_app()
     client = TestClient(app)
@@ -444,7 +455,7 @@ def test_export_fastapi_endpoint_predict(data, script_factory, temp_path):
         exporter.export(temp_path, mode='FastAPI')
 
 
-        module = module_from_path(os.path.join(temp_path, fastapi_utils.SCRIPT_FILE))
+        module = module_from_path(join_and_sanitize(temp_path, fastapi_utils.SCRIPT_FILE))
         app = module.create_app()
         client = TestClient(app)
 
@@ -479,11 +490,11 @@ def test_export_fastapi_endpoint_predict_using_example_script(data, script_facto
         exporter = Exporter(graph_spec, training_model, data_loader)
         exporter.export(temp_path, mode='FastAPI')
 
-        server_module = module_from_path(os.path.join(temp_path, fastapi_utils.SCRIPT_FILE))
+        server_module = module_from_path(join_and_sanitize(temp_path, fastapi_utils.SCRIPT_FILE))
         app = server_module.create_app()
         client = TestClient(app)
 
-        example_module = module_from_path(os.path.join(temp_path, fastapi_utils.EXAMPLE_SCRIPT_FILE))
+        example_module = module_from_path(join_and_sanitize(temp_path, fastapi_utils.EXAMPLE_SCRIPT_FILE))
         data = example_module.make_payload()
         response = client.post("/predict", json=data).json()
 

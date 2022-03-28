@@ -313,7 +313,10 @@ def assert_serving(mode, client, mixpanel_mock, dataset_settings, model_id, trai
         files = zipfile.namelist()
 
         assert 'saved_model.pb' in files
-        assert 'variables/' in files
+        assert 'keras_metadata.pb' in files        
+        assert 'variables/variables.index' in files
+        assert 'variables/variables.data-00000-of-00001' in files        
+        assert 'variables/' in files        
         assert 'assets/' in files
 
     @retry(stop_max_attempt_number=10, wait_fixed=1000)

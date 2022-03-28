@@ -29,7 +29,7 @@ class ZipfileStrategy:
         self._graph_settings = graph_settings
         self._training_settings = training_settings        
         self._target_url = target_url
-        self._zipfile_path = os.path.join(self._export_directory, 'model.zip')
+        self._zipfile_path = os.path.join(self._export_directory, 'model.zip').replace('\\', '/')
         self._time_started = None
         self._ttl = ttl
         
@@ -57,9 +57,13 @@ class ZipfileStrategy:
                  
     def start(self):
         if self._export_settings['Type'] == 'PlPackage':
-            created_files = []
+            created_paths = {}
         else:
-            created_files = self._export_non_archive()
+            created_paths = {}
+            for relative_path in self._export_non_archive():
+                file_path = os.path.join(
+                    self._export_directory, relative_path).replace('\\', '/')
+                created_paths[file_path] = relative_path
 
         self._model_archives_access.write(
             self._zipfile_path,
@@ -67,7 +71,7 @@ class ZipfileStrategy:
             training_settings=self._training_settings,
             frontend_settings=self._frontend_settings,
             dataset_settings=self._dataset_settings,
-            extra_files=created_files
+            extra_paths=created_paths
         )
         
         logger.info(

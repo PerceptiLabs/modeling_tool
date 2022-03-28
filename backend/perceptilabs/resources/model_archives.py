@@ -22,9 +22,10 @@ class ModelArchivesAccess:
         logger.info(f"Successfully read model from '{location}'")
         return results
 
-    def write(self, archive_path, dataset_settings=None, graph_spec=None, training_settings=None, frontend_settings=None, extra_files=None):
+    def write(self, archive_path, dataset_settings=None, graph_spec=None, training_settings=None, frontend_settings=None, extra_paths=None):
         archive_path = archive_path.replace('\\', '/')
-
+        extra_paths = extra_paths or {}
+        
         content = {
             'datasetSettings': dataset_settings,
             'graphSettings': graph_spec,            
@@ -36,9 +37,11 @@ class ModelArchivesAccess:
             model_json = json.dumps(content, indent=4)
             archive.writestr('model.json', model_json)
 
-            for included_path in (extra_files or []):
-                file_name = os.path.basename(included_path)
-                archive.write(included_path, arcname=file_name)
+            for included_path, arc_name in extra_paths.items():
+                if arc_name is None:
+                    arc_name = os.path.basename(included_path)
+                    
+                archive.write(included_path, arcname=arc_name)
                 
         logger.info(f"Successfully wrote model to '{archive_path}'")
         return archive_path

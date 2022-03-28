@@ -19,6 +19,12 @@ from perceptilabs.resources.model_archives import ModelArchivesAccess
 import perceptilabs.sharing.fastapi_utils as fastapi_utils
 
 
+def join_and_sanitize(*args):
+    path = os.path.join(*args)
+    path = path.replace('\\', '/')
+    return path
+
+
 @pytest.fixture
 def rygg_mock(temp_path):
     class RyggMock:
@@ -125,36 +131,35 @@ def test_zipfile_is_written_to_writable_path(export_type, message_broker, data_l
     next(step)
 
     archive_dest = model_archives_access.write.call_args.args[0]
-    assert archive_dest == os.path.join(temp_path, 'model.zip')
+    assert archive_dest == join_and_sanitize(temp_path, 'model.zip')
+    
+    actual_included_paths = set(model_archives_access.write.call_args.kwargs['extra_paths'])
 
-    extra_files = {
-        os.path.basename(file_path)
-        for file_path in model_archives_access.write.call_args.kwargs['extra_files']
-    }
-
-    inference_model_files = {
-        'saved_model.pb',
-        'keras_metadata.pb',
-        'variables',
-        'assets'
+    inference_model_paths = {
+        join_and_sanitize(temp_path, 'saved_model.pb'),
+        join_and_sanitize(temp_path, 'keras_metadata.pb'),
+        join_and_sanitize(temp_path, 'assets'),
+        join_and_sanitize(temp_path, 'variables'),                
+        join_and_sanitize(temp_path, 'variables', 'variables.index'),
+        join_and_sanitize(temp_path, 'variables', 'variables.data-00000-of-00001')
     }
     if export_type == 'Standard':
-        expected_files = inference_model_files
+        expected_included_paths = inference_model_paths
     elif export_type == 'FastAPI':
-        fastapi_files = {
-            fastapi_utils.SCRIPT_FILE,
-            fastapi_utils.REQUIREMENTS_FILE,
-            fastapi_utils.EXAMPLE_JSON_FILE,
-            fastapi_utils.EXAMPLE_SCRIPT_FILE,
-            fastapi_utils.EXAMPLE_CSV_FILE,
-            fastapi_utils.EXAMPLE_REQUIREMENTS_FILE
+        fastapi_paths = {
+            join_and_sanitize(temp_path, fastapi_utils.SCRIPT_FILE),
+            join_and_sanitize(temp_path, fastapi_utils.REQUIREMENTS_FILE),
+            join_and_sanitize(temp_path, fastapi_utils.EXAMPLE_JSON_FILE),
+            join_and_sanitize(temp_path, fastapi_utils.EXAMPLE_SCRIPT_FILE),
+            join_and_sanitize(temp_path, fastapi_utils.EXAMPLE_CSV_FILE),
+            join_and_sanitize(temp_path, fastapi_utils.EXAMPLE_REQUIREMENTS_FILE)            
         }
-        expected_files = set.union(
-            inference_model_files, fastapi_files)
+        expected_included_paths = set.union(
+            inference_model_paths, fastapi_paths)
     elif export_type == 'PlPackage':
-        expected_files = set()
+        expected_included_paths = set()  
 
-    assert extra_files == expected_files
+    assert actual_included_paths == expected_included_paths
 
 
 def test_zipfile_has_model_json(rygg_mock, message_broker, data_loader, graph_spec, temp_path, tensorflow_support_access):
