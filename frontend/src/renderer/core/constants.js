@@ -194,7 +194,12 @@ export const TestTypes = {
   // }
 };
 
-export const modelTypes = {
+export const modelTypes = process.env.ENABLE_OBJECT_DETECTION === 'true' ? {
+  CLASSIFICATION: "C",
+  SEGMENTATION: "S",
+  MULTI_MODAL: "M",
+  OBJECT_DETECTION: "O",
+} : {
   CLASSIFICATION: "C",
   SEGMENTATION: "S",
   MULTI_MODAL: "M",

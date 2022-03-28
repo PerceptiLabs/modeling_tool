@@ -124,6 +124,40 @@ div
             :disabled="isMultiModalNextButtonDisabled",
             @click="$emit('handleMultiModalNext')"
           ) Next
+      template(v-if="modelType === modelTypes.OBJECT_DETECTION")
+        .model-local-wrapper
+          .d-flex
+            .w-50
+              h4.load-guide-title File Guide
+              .load-guide-list
+                .d-flex
+                  span 1.
+                  p Ensure CSV file links to images, and contains the bounding boxes, coordinates and classes.
+                .d-flex
+                  span 2.
+                  p If there multiple bounding boxes in one image, enter one bounding box per row, linking to the same image.
+                .d-flex
+                  span 3.
+                  p Ensure that the images are in any of the following formats: .jpg/.jpeg/.png/.tiff/.tif.
+            .w-50.d-flex.flex-row-reverse
+              .object-detection-image-wrapper
+                img(src="static/img/object-detection-guide-csv.png")
+
+        // LOADING FILE BUTTONS
+        .d-flex.justify-content-center.mb-20
+          create-model-picker(
+            label="Select .csv",
+            @onPick="$emit('handleObjectDetectionCsvPicker', $event)",
+            :pickCsv="true"
+          )
+        .d-flex.justify-content-between
+          button.link.back-to-previous-step(@click="$emit('back')")
+            img(src="/static/img/back-arrow.svg")
+            | Back
+          button.btn.btn--primary(
+            :disabled="isObjectDetectionNextButtonDisabled",
+            @click="$emit('handleObjectDetectionNext')"
+          ) Next
 </template>
 
 <script>
@@ -257,7 +291,7 @@ export default {
   padding: 20px;
   background-color: #fff;
 }
-.multi-modal-image-wrapper {
+.multi-modal-image-wrapper, .object-detection-image-wrapper {
   border: $border-1;
   padding: 20px;
   background-color: var(--neutral-8);

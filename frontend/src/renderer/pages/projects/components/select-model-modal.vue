@@ -40,6 +40,9 @@ div
             :isMultiModalNextButtonDisabled="isMultiModalNextButtonDisabled",
             @handleMultiModalCsvPicker="handleMultiModalCsvPicker",
             @handleMultiModalNext="handleMultiModalNext",
+            :isObjectDetectionNextButtonDisabled="isObjectDetectionNextButtonDisabled",
+            @handleObjectDetectionCsvPicker="handleObjectDetectionCsvPicker",
+            @handleObjectDetectionNext="handleObjectDetectionNext",
             :modelType="modelType",
             @back="gotoTypeStep",
             :uploadStatus="uploadStatus"
@@ -277,7 +280,17 @@ export default {
             modelTypes.MULTI_MODAL,
           ),
         },
-      ],
+        process.env.ENABLE_OBJECT_DETECTION === 'true' && {
+          id: 4,
+          title: "Object Detection",
+          description: "Train your model to find objects in images",
+          imgPath: "./static/img/project-page/upload-object-detection.jpg",
+          onClick: this.handleChoosingModelType.bind(
+            null,
+            modelTypes.OBJECT_DETECTION,
+          ),
+        },
+      ].filter(v => !!v),
       chosenTemplate: null,
       modelName: "",
       description: "",
@@ -305,6 +318,7 @@ export default {
       imageSegmentationImageFolderPath: null,
       imageSegmentationMaskFolderPath: null,
       multiModalCsvPath: null,
+      objectDetectionCsvPath: null,
       isFilePickerOpened: false,
       uploadStatus: "",
     };
@@ -343,6 +357,8 @@ export default {
               return "Image Segmentation";
             case this.modelTypes.MULTI_MODAL:
               return "Multi-Modal";
+            case this.modelTypes.OBJECT_DETECTION:
+              return "Object Detection";
           }
         case STEP.PARTITION:
           return "Define your dataset";
@@ -365,6 +381,9 @@ export default {
     },
     isMultiModalNextButtonDisabled() {
       return this.multiModalCsvPath === null;
+    },
+    isObjectDetectionNextButtonDisabled() {
+      return this.objectDetectionCsvPath === null;
     },
   },
   mounted() {
@@ -879,6 +898,34 @@ export default {
     },
     async handleEnterpriseMultiModalNext() {
       const file = this.multiModalCsvPath;
+      this.uploadStatus = "Processing...";
+      try {
+        const {
+          data: { task_id, dataset_id },
+        } = await rygg_uploadDatasetToFileserver(file, false, this.modelType);
+        await whenCeleryTaskDone(task_id, cb => this.handleUploadProgress(cb));
+        const response = await rygg_getDataset(dataset_id);
+        const { data: { location: path } = {} } = response;
+        if (path) await this.handleDataPathUpdates([path]);
+      } catch (err) {
+        if (err.message) {
+          this.showErrorPopup(err.message);
+        }
+      } finally {
+        this.uploadStatus = "";
+      }
+    },
+    handleObjectDetectionCsvPicker(path) {
+      this.objectDetectionCsvPath = path;
+    },
+    handleObjectDetectionNext() {
+      if (this.isEnterpriseMode) {
+        return this.handleEnterpriseObjectDetectionNext();
+      }
+      this.handleDataPathUpdates([this.objectDetectionCsvPath]);
+    },
+    async handleEnterpriseObjectDetectionNext() {
+      const file = this.objectDetectionCsvPath;
       this.uploadStatus = "Processing...";
       try {
         const {

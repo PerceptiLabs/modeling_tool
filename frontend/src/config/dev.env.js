@@ -24,6 +24,7 @@ module.exports = merge(prodEnv, {
   ENABLE_BILLING_LINK: '"true"',
   ENABLE_SERVING: '"true"',
   ENABLE_FOLDER_LOADING: '"true"',
+  ENABLE_OBJECT_DETECTION: '"false"',
   NO_KC: '"false"',
   AUTH_METHOD: '"Auth0"', // Auth0, KeyCloak
   AUTH0_DOMAIN: '"dev-ymwf5efb.us.auth0.com"',

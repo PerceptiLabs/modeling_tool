@@ -62,6 +62,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         CLASSIFICATION = 'C', _('classification')
         SEGMENTATION = 'S', _('segmentation')
         MULTI_MODAL = 'M', _('multimodal')
+        OBJECT_DETECTION = 'O', _('objectdetection')
 
 
     # set status to building csv initially. when the csv file exists, it will be updated to uploaded
