@@ -109,7 +109,6 @@ def test_success(executor, callbacks):
     wait_for_task()
 
 
-@pytest.mark.skip(reason="flaky test")
 @pytest.mark.parametrize('mode', ['threaded', 'celery'])
 def test_failure(executor, callbacks, monkeypatch):
     task_name = 'crash_task'

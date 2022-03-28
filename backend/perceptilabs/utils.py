@@ -142,6 +142,10 @@ def line_nums(text):
 add_line_numbering = lambda x: line_nums(x) # backwards compatibility
 
 
+def is_windows():
+    return os.name == 'nt'
+
+
 def dump_system_info(path):
     import multiprocessing
     import platform

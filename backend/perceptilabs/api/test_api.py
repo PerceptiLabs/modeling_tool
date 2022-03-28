@@ -18,6 +18,7 @@ from perceptilabs.caching.utils import DictCache
 from perceptilabs.api.base import create_app
 from perceptilabs.tasks.celery_executor import CeleryTaskExecutor
 from perceptilabs.tasks.threaded_executor import ThreadedTaskExecutor
+from perceptilabs.utils import is_windows
 import perceptilabs.settings as settings
 
 
@@ -343,7 +344,7 @@ def assert_serving(mode, client, mixpanel_mock, dataset_settings, model_id, trai
         res = client.get(
             f"/inference/serving/{serving_session_id}/status",
         )
-        assert res.status_code == 200
+        assert res.status_code == 204
 
     wait_for_serving_down()
 
@@ -556,7 +557,6 @@ def assert_testing(client, mixpanel_mock, model_id, training_session_id, dataset
     return testing_session_id
 
 
-@pytest.mark.skip
 @pytest.mark.parametrize("deployment", ["export", "serve_gradio", "serve_zip"])
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
 def test_modeling_flow_basic(client, deployment, mixpanel_mock, tmp_path, dataset_settings, training_settings):
@@ -713,9 +713,9 @@ def test_type_inference(client, mixpanel_mock):
         kwargs={'distinct_id': 'anton.k@perceptilabs.com', 'event_name': 'data-selected'}
     )
 
-
+@pytest.mark.skipif(is_windows(), reason="flaky")
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
-def test_preprocessing_error(monkeypatch, client, tmp_path, dataset_settings, training_settings):
+def test_error_preprocessing(monkeypatch, client, tmp_path, dataset_settings, training_settings):
     error_message = 'some-random-error-message'
 
     def fake_call(*args, **kwargs):
@@ -746,9 +746,9 @@ def test_preprocessing_error(monkeypatch, client, tmp_path, dataset_settings, tr
     wait_for_data_error()
 
 
-@pytest.mark.skip(reason="flaky test")
+@pytest.mark.skipif(is_windows(), reason="flaky")    
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
-def test_training_error(monkeypatch, client, tmp_path, dataset_settings, training_settings, mixpanel_mock):
+def test_error_training(monkeypatch, client, tmp_path, dataset_settings, training_settings, mixpanel_mock):
     assert_data(client, dataset_settings)
     model_id, _ = assert_model_recommendation(client, mixpanel_mock, dataset_settings)
 
@@ -786,8 +786,9 @@ def test_training_error(monkeypatch, client, tmp_path, dataset_settings, trainin
     wait_for_training_error()
 
 
+@pytest.mark.skipif(is_windows(), reason="flaky")
 @pytest.mark.parametrize("client", ["threaded", "celery"], indirect=True)
-def test_testing_error(monkeypatch, client, tmp_path, dataset_settings, training_settings, mixpanel_mock):
+def test_error_testing(monkeypatch, client, tmp_path, dataset_settings, training_settings, mixpanel_mock):
     assert_data(client, dataset_settings)
     model_id, _ = assert_model_recommendation(client, mixpanel_mock, dataset_settings)
 

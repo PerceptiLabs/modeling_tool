@@ -2,6 +2,8 @@ import os
 import time
 import logging
 import sys
+import http
+
 
 from flask_cors import CORS
 from flask_compress import Compress
@@ -163,7 +165,7 @@ def create_app(
 
             return jsonify(response)
         else:
-            return make_response('', 204)
+            return make_response('', http.HTTPStatus.NO_CONTENT)
 
 
     @app.route('/models/recommendations', methods=['POST'])
@@ -344,7 +346,10 @@ def create_app(
     @app.route('/inference/serving/<serving_session_id>/status', methods=['GET'])
     def serving_status(serving_session_id):
         output = inference_interface.get_serving_status(serving_session_id)
-        return jsonify(output)
+        if output is not None:
+            return jsonify(output)
+        else:
+            return make_response('', 204)
 
     @app.route('/inference/serving/<serving_session_id>/file', methods=['GET'])
     def serving_file(serving_session_id):
