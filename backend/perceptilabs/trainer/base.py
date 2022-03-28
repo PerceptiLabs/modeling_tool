@@ -152,6 +152,7 @@ class Trainer:
     def run_stepwise(self):
         """ Take a training/validation step and yield """
         self.ensure_data_initialized()
+
         peak_memory_usage = get_memory_usage()
 
         if self._num_epochs_completed == 0:

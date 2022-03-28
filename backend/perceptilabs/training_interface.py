@@ -38,7 +38,7 @@ class TrainingSessionInterface:
             pass
 
     def run_stepwise(self, call_context, data_loader, model_id, training_session_id, training_settings, load_checkpoint, results_interval=None, is_retry=False, logrocket_url='', graph_settings=None):
-        self._tensorflow_support_access.set_tfhub_env_var(call_context)
+        self._tensorflow_support_access.set_tf_dependencies(call_context)
 
         call_context = call_context.push(
             model_id = model_id,

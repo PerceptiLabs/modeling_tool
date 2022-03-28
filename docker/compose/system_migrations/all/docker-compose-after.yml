@@ -146,6 +146,7 @@ services:
       HOME: /perceptilabs
       PL_REDIS_URL: redis://redis
       PL_RYGG_BASE_URL: http://rygg:8000
+      ENABLE_TF_GPU_MEMORY_GROWTH: "True"
     # with gpu
     deploy:
       resources:

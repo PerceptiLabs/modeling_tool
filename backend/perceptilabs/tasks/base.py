@@ -42,8 +42,8 @@ def training_task(call_context, dataset_settings_dict, model_id, training_sessio
     from perceptilabs.resources.models import ModelAccess
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.training_results import TrainingResultsAccess
-    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess
-    from perceptilabs.resources.tfhub_cache_dir import TensorflowSupportAccess
+    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess    
+    from perceptilabs.resources.tf_support_access import TensorflowSupportAccess     
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     from perceptilabs.resources.datasets import DatasetAccess
@@ -68,7 +68,7 @@ def training_task(call_context, dataset_settings_dict, model_id, training_sessio
 
     dataset_access = DatasetAccess(rygg)
 
-    tensorflow_support_access = TensorflowSupportAccess(rygg)
+    tensorflow_support_access = TensorflowSupportAccess(rygg, enable_tf_gpu_memory_growth=settings.ENABLE_TF_GPU_MEMORY_GROWTH)
     
     df = dataset_access.get_dataframe(
         call_context,
@@ -111,8 +111,8 @@ def testing_task(call_context, testing_session_id, models_info, tests, is_retry=
     from perceptilabs.resources.models import ModelAccess
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.testing_results import TestingResultsAccess
-    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess
-    from perceptilabs.resources.tfhub_cache_dir import TensorflowSupportAccess     
+    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess   
+    from perceptilabs.resources.tf_support_access import TensorflowSupportAccess     
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     from perceptilabs.tracking.base import EventTracker
@@ -131,8 +131,8 @@ def testing_task(call_context, testing_session_id, models_info, tests, is_retry=
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
 
     dataset_access = DatasetAccess(rygg)
-    tensorflow_support_access = TensorflowSupportAccess(rygg)
-
+    tensorflow_support_access = TensorflowSupportAccess(rygg, enable_tf_gpu_memory_growth=settings.ENABLE_TF_GPU_MEMORY_GROWTH)
+        
     # TODO: all this data loader etup should be moved into the test interface!!!
     models = {}
     for model_id in models_info.keys():
@@ -191,8 +191,8 @@ def serving_task(call_context, serving_settings, dataset_settings_dict, model_id
     from perceptilabs.resources.model_archives import ModelArchivesAccess
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.serving_results import ServingResultsAccess
-    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess
-    from perceptilabs.resources.tfhub_cache_dir import TensorflowSupportAccess
+    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess        
+    from perceptilabs.resources.tf_support_access import TensorflowSupportAccess
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     from perceptilabs.messaging.base import get_message_broker
@@ -221,7 +221,7 @@ def serving_task(call_context, serving_settings, dataset_settings_dict, model_id
     rygg = RyggWrapper.with_default_settings()
 
     dataset_access = DatasetAccess(rygg)
-    tensorflow_support_access = TensorflowSupportAccess(rygg)
+    tensorflow_support_access = TensorflowSupportAccess(rygg, enable_tf_gpu_memory_growth=settings.ENABLE_TF_GPU_MEMORY_GROWTH)
     
     df = dataset_access.get_dataframe(
         call_context,

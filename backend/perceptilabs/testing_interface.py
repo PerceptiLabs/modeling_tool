@@ -28,7 +28,8 @@ class TestingSessionInterface():
             pass
 
     def run_stepwise(self, call_context, testing_session_id, models, tests, results_interval=None, logrocket_url=''):
-        self._tensorflow_support_access.set_tfhub_env_var(call_context)
+        self._tensorflow_support_access.set_tf_dependencies(call_context)
+        
         call_context = call_context.push(
             testing_session_id = testing_session_id,
             logrocket_url = logrocket_url,

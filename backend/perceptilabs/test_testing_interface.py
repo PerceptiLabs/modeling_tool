@@ -1,4 +1,6 @@
+from cgitb import enable
 import pytest
+import os
 from unittest.mock import MagicMock
 from queue import Queue
 
@@ -9,6 +11,8 @@ from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.data.utils.builder import DatasetBuilder
 from perceptilabs.testing_interface import TestingSessionInterface
 from perceptilabs.script.base import ScriptFactory
+from perceptilabs.rygg import RyggWrapper
+from perceptilabs.resources.tf_support_access import TensorflowSupportAccess
 
 
 def make_session_id(string):
@@ -128,8 +132,7 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
     epochs_access.get_checkpoint_path.return_value = None
 
     results_access = MagicMock()
-    event_tracker = MagicMock()
-
+    event_tracker = MagicMock()        
     interface = TestingSessionInterface(
         message_broker,
         event_tracker,
@@ -169,3 +172,48 @@ def test_stopping_mid_training(monkeypatch, queue, message_broker, data_loader, 
     assert actual_results == expected_results # Assert results doesnt change after stopping
     assert results_access.store.call_args[0][1]['status']['status'] == 'Stopped'
 
+
+def test_tf_memory_growth_enabled(message_broker, data_loader, graph_spec):
+    model_access = MagicMock()
+    model_access.get_graph_spec.return_value = graph_spec
+
+    epochs_access = MagicMock()
+    epochs_access.get_checkpoint_path.return_value = None
+
+    results_access = MagicMock()
+    event_tracker = MagicMock()
+
+    tf_support_access = MagicMock()
+    tf_support_access.enable_tf_gpu_memory_growth.return_value = True
+
+    interface = TestingSessionInterface(
+        message_broker,
+        event_tracker,
+        model_access=model_access,
+        epochs_access=epochs_access,
+        results_access=results_access,
+        tensorflow_support_access=tf_support_access
+    )
+
+    tests = ['confusion_matrix']    
+    
+    interface.run(
+        call_context=CallContext({
+            'project_id': 123,
+            'user_token': 'fake token from auth header',
+            'user_email': 'a@b.test',
+        }),
+        testing_session_id='123',
+        models={
+            '111': {
+                'graph_spec': graph_spec,
+                'data_loader': data_loader,
+                'model_name': 'model111',
+                'training_session_id': '134'
+            }
+        },
+        tests=tests,
+        results_interval=None
+    )
+
+    assert tf_support_access.set_tf_dependencies.call_count > 0

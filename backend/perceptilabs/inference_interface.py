@@ -56,7 +56,6 @@ class InferenceInterface:
 
     def get_testing_status(self, testing_session_id):
         results_dict = self._testing_results_access.get_latest(testing_session_id)
-
         if results_dict:
             results = results_dict.get('status', {})
             results['error'] = results_dict.get('error')

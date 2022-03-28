@@ -28,7 +28,7 @@ from perceptilabs.resources.preprocessing_results import PreprocessingResultsAcc
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.resources.model_archives import ModelArchivesAccess
 from perceptilabs.resources.epochs import EpochsAccess
-from perceptilabs.resources.tfhub_cache_dir import TensorflowSupportAccess
+from perceptilabs.resources.tf_support_access import TensorflowSupportAccess
 from perceptilabs.script import ScriptFactory
 from perceptilabs.issues import traceback_from_exception
 from perceptilabs.rygg import RyggWrapper
@@ -76,8 +76,8 @@ def create_app(
     testing_results_access = testing_results_access or TestingResultsAccess()
     serving_results_access = serving_results_access or ServingResultsAccess(rygg)
     preprocessing_results_access = preprocessing_results_access or PreprocessingResultsAccess(get_data_metadata_cache())
-    tensorflow_support_access = TensorflowSupportAccess(rygg)
-
+    tensorflow_support_access = TensorflowSupportAccess(rygg, enable_tf_gpu_memory_growth=settings.ENABLE_TF_GPU_MEMORY_GROWTH)
+    
     app = Flask(__name__)
     app.json_encoder = MyJSONEncoder
     PUBLIC_ROUTES = set([

@@ -260,6 +260,7 @@ def test_trainer_can_pause_stop(data_loader, training_model, training_settings, 
     next(step)
     trainer.stop()
     assert trainer.status == 'Stopped'
+    
 
 '''
 def test_trainer_export_checkpoints_atleast_once(graph_spec, data_loader, training_model, training_settings, exporter, temp_path, training_session_id):
@@ -356,8 +357,7 @@ def test_trainer_calls_epoch_callback(graph_spec, data_loader, training_model, t
     assert fn.call_count == training_settings['Epochs']
 
     for epoch in range(training_settings['Epochs']):
-        arg1, arg2, arg3 = fn.call_args_list[epoch].args
-
+        arg1, arg2, arg3 = fn.call_args_list[epoch][0]
         assert arg1 == epoch
         assert arg2 == trainer
         assert isinstance(arg3, float) and arg3 >= 0.0  # This is the epoch time.

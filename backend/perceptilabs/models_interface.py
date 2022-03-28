@@ -403,8 +403,7 @@ class ModelsInterface:
         tracking.send_model_exported(self._event_tracker, call_context, model_id)
         return f"Model exported to '{path}'"
 
-
     def _initialize_lw_core(self, call_context, data_loader):
-        self._tensorflow_support_access.set_tfhub_env_var(call_context)
+        self._tensorflow_support_access.set_tf_dependencies(call_context)
         lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
         return lw_core

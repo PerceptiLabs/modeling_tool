@@ -7,7 +7,6 @@ from waitress import serve
 
 
 import perceptilabs.utils as utils
-import perceptilabs.settings as settings
 from perceptilabs.caching.utils import get_preview_cache
 
 
@@ -31,8 +30,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--debug', default=False, action='store_true', help="Run in debug mode")
     args = parser.parse_args()
-
-    utils.allow_memory_growth_on_gpus()
 
     from perceptilabs.api.base import create_app
 

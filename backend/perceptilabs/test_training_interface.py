@@ -1,5 +1,7 @@
+from ast import Call
 import os
 import pytest
+import os
 import time
 from unittest.mock import MagicMock
 from queue import Queue
@@ -14,6 +16,9 @@ from perceptilabs.training_interface import TrainingSessionInterface
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.script.base import ScriptFactory
 from perceptilabs.resources.epochs import EpochsAccess
+from perceptilabs.rygg import RyggWrapper
+from perceptilabs.resources.tf_support_access import TensorflowSupportAccess
+
 
 
 @pytest.fixture
@@ -363,8 +368,7 @@ def test_load_checkpoint(monkeypatch, message_broker, data_loader, graph_spec, t
     )
 
     assert fn_mock.call_count == 1
-
-    requested_checkpoint = fn_mock.call_args.kwargs['checkpoint_path']
+    requested_checkpoint = fn_mock.call_args[1]['checkpoint_path']
     if load_checkpoint:
         assert requested_checkpoint is not None
     else:
@@ -468,6 +472,42 @@ def test_errors_are_stored(monkeypatch, message_broker, data_loader, graph_spec,
     assert error_message in results_access.store.call_args[0][2]['error']['details']
 
 
+def test_tf_memory_growth_enabled(message_broker, data_loader, graph_spec, training_model, training_settings):
+    model_access = MagicMock()
+    epochs_access = MagicMock()
+    results_access = MagicMock()
+    event_tracker = MagicMock()
+    
+    tf_support_access = MagicMock()
+    tf_support_access.enable_tf_gpu_memory_growth.return_value = True
+
+    interface = TrainingSessionInterface(
+        message_broker,
+        event_tracker,
+        model_access=model_access,
+        epochs_access=epochs_access,
+        results_access=results_access,
+        tensorflow_support_access=tf_support_access
+    )
+
+    interface.run(
+        call_context=CallContext({
+            'project_id': 123,
+            'user_token': 'fake token from auth header',
+            'user_email': 'a@b.test',
+        }),
+        data_loader=data_loader,
+        model_id='456',
+        graph_settings=graph_spec.to_dict(),
+        training_session_id='789',
+        training_settings=training_settings,
+        load_checkpoint=False,
+        results_interval=None
+    )
+
+    assert tf_support_access.set_tf_dependencies.call_count > 0
+    
+
 @pytest.mark.parametrize("slowdown_rate", [0.0, 0.2])
 def test_slowdown_is_detected(monkeypatch, slowdown_rate, queue, message_broker, data_loader, graph_spec, training_model, training_settings, tensorflow_support_access, tmpdir):
     max_slowdown_rate = 0.1
@@ -517,4 +557,4 @@ def test_slowdown_is_detected(monkeypatch, slowdown_rate, queue, message_broker,
         assert fake_sentry_call.call_count == 0
     else:
         assert fake_sentry_call.call_count == 1
-        assert fake_sentry_call.call_args.args == ("Training slowdown detected",)
+        assert fake_sentry_call.call_args[0] == ("Training slowdown detected",)
