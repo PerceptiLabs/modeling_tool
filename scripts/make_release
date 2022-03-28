@@ -33,6 +33,11 @@ prep_git(){
   fi
 }
 
+make_tag(){
+  git tag $1
+  git push $REMOTE $1
+}
+
 git_work(){
   git checkout $BRANCH
   git reset --hard $REMOTE/$BRANCH
@@ -50,8 +55,9 @@ git_work(){
   git add "${root_dir}/VERSION"
   git commit -m "Bumped version to ${VERSION}"
   git push $REMOTE HEAD
-  git tag $TAG
-  git push $REMOTE $TAG
+  make_tag $TAG
+  make_tag $VERSION
+  make_tag enterprise_$VERSION
 }
 
 

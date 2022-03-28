@@ -224,11 +224,7 @@ In case of you are facing some issues with calling rygg, run `python manage.py m
     # make the release tags
     git checkout -b tmp
     export PL_VERSION=<new version>
-    scripts/release_pip tmp $PL_VERSION origin
-    git tag $PL_VERSION
-    git push origin $PL_VERSION
-    git tag enterprise_$PL_VERSION
-    git push origin enterprise_$PL_VERSION
+    scripts/make_release tmp $PL_VERSION origin
 
     # merge the tags into master
     git checkout master
