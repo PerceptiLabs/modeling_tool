@@ -61,6 +61,7 @@ git_work(){
 }
 
 
+python check_pypi_space.py
 prep_git
 git_work
 echo "Now run the PerceptiLabs Pip pipeline on tag $TAG with variables FORCE_PUBLISH=true and PACKAGE_NAME_OVERRIDE=perceptilabs"
