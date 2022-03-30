@@ -130,10 +130,10 @@ def test_zipfile_is_written_to_writable_path(export_type, message_broker, data_l
     step = interface.run_stepwise(CallContext(), data_loader, '123', '456', '789', 'my_model')
     next(step)
 
-    archive_dest = model_archives_access.write.call_args.args[0]
-    assert archive_dest == join_and_sanitize(temp_path, 'model.zip')
+    archive_dest = model_archives_access.write.call_args[0]
+    assert archive_dest[0] == join_and_sanitize(temp_path, 'model.zip')
     
-    actual_included_paths = set(model_archives_access.write.call_args.kwargs['extra_paths'])
+    actual_included_paths = set(model_archives_access.write.call_args[-1]['extra_paths'])
 
     inference_model_paths = {
         join_and_sanitize(temp_path, 'saved_model.pb'),
@@ -184,8 +184,8 @@ def test_zipfile_has_model_json(rygg_mock, message_broker, data_loader, graph_sp
         'exportSettings': {
             'Type': 'PlPackage',
         },
-        'ExcludePreProcessing': False,
-        'ExcludePostProcessing': False,
+        'ExcludePreProcessing': True,
+        'ExcludePostProcessing': True,
         'datasetSettings': dataset_settings,
         'graphSettings': graph_settings,
         'trainingSettings': training_settings,
@@ -248,8 +248,8 @@ def test_cleanup_after_ttl(message_broker, data_loader, graph_spec, temp_path, t
         'exportSettings': {
             'Type': 'Standard',
         },
-        'ExcludePreProcessing': False,
-        'ExcludePostProcessing': False,
+        'ExcludePreProcessing': True,
+        'ExcludePostProcessing': True,
         'ttl': num_seconds_to_live
     }
 
@@ -289,13 +289,13 @@ def test_cleanup_after_ttl(message_broker, data_loader, graph_spec, temp_path, t
             assert results_access.remove.call_count == 0
         else:
             assert results_access.remove.call_count == 1
-            assert results_access.remove.call_args.args == (serving_session_id,)
+            assert results_access.remove.call_args[0] == (serving_session_id,)
 
     @retry(stop_max_attempt_number=10, wait_fixed=1000)
     def wait_for_ttl():
         assert t_elapsed() >= num_seconds_to_live
         assert results_access.remove.call_count == 1
-        assert results_access.remove.call_args.args == (serving_session_id,)
+        assert results_access.remove.call_args[0] == (serving_session_id,)
 
     wait_for_ttl()
 
@@ -323,8 +323,8 @@ def test_serve_two_different_models(rygg_mock, message_broker, data_loader, grap
         settings = {
             'mode': 'zip',
             'exportSettings': export_settings,
-            'ExcludePreProcessing': False,
-            'ExcludePostProcessing': False,
+            'ExcludePreProcessing': True,
+            'ExcludePostProcessing': True,
         }
 
         interface = ServingSessionInterface(

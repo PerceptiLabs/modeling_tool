@@ -7,6 +7,8 @@ import shutil
 import logging
 from retrying import retry
 from filelock import FileLock
+from PIL import Image
+from pathlib import Path
 
 from perceptilabs.utils import b64decode_and_sanitize
 from perceptilabs.utils import sanitize_path
@@ -73,6 +75,27 @@ class ServingResultsAccess:
             return directory
         else:
             return None
+
+    def create_dir_for_gradio_examples(samples):
+        examples = list()
+        examples_path = 'gradio_examples'
+        Path(examples_path).mkdir(parents=True, exist_ok=True)
+        for index, path in enumerate(samples):
+            im = Image.open(path)
+            file_name = 'example_' + str(index) + '.jpg'
+            full_path = Path(examples_path, file_name)
+            try:
+                im = im.save(full_path)
+                examples.append([str(full_path)])
+            except NotImplementedError: # If we run into write issues in docker, catch the exception and return 
+                return
+        
+        return examples
+
+    def remove_gradio_examples_dir():
+        if Path.is_dir('gradio_examples'):
+            Path.rmdir('gradio_examples')
+            logger.info(f"Removed gradio examples directory")
             
     def remove(self, serving_session_id):
         directory = self.get_serving_directory(serving_session_id, allow_create=False)

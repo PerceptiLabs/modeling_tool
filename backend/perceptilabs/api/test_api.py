@@ -272,14 +272,14 @@ def assert_serving(mode, client, mixpanel_mock, dataset_settings, model_id, trai
             'exportSettings': {
                 'Type': 'Standard',
             },
-            'ExcludePreProcessing': False,
-            'ExcludePostProcessing': False,
+            'ExcludePreProcessing': True,
+            'ExcludePostProcessing': True,
         }
     else:
         serving_settings = {
             'mode': 'gradio',
-            'ExcludePreProcessing': False,
-            'ExcludePostProcessing': False,
+            'ExcludePreProcessing': True,
+            'ExcludePostProcessing': True,
         }
 
     res = client.post(

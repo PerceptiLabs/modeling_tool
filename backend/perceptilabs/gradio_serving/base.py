@@ -1,15 +1,13 @@
 import threading
 import logging
 import time
-import os
 
-import tensorflow as tf
 import numpy as np
 import gradio as gr
 
-
 from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.resources.models import ModelAccess
+from perceptilabs.resources.serving_results import ServingResultsAccess
 from perceptilabs.script import ScriptFactory
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.graph.spec import GraphSpec
@@ -146,17 +144,30 @@ class GradioStrategy:
 
             return output_values
 
-        interface = gr.Interface(
-            title=model_name,
-            article='This model was built using [PerceptiLabs](https://www.perceptilabs.com/)<br><p align="center">![image](https://assets-global.website-files.com/60adcbb2ee6df32cbf46b7cc/60aed0284f5d624b91f4ed4e_logo-footer.svg)</p>',
-            thumbnail='https://assets-global.website-files.com/60adcbb2ee6df32cbf46b7cc/60aed0284f5d624b91f4ed4e_logo-footer.svg',
-            fn=fn_inference,
-            inputs=list(inputs.values()),
-            outputs=list(targets.values())
-        )
+        examples = self._get_gradio_examples(data_loader=data_loader, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
+        try:
+            interface = gr.Interface(
+                title=model_name,
+                article='This model was built using [PerceptiLabs](https://www.perceptilabs.com/)<br><p align="center">![image](https://assets-global.website-files.com/60adcbb2ee6df32cbf46b7cc/60aed0284f5d624b91f4ed4e_logo-footer.svg)</p>',
+                thumbnail='https://assets-global.website-files.com/60adcbb2ee6df32cbf46b7cc/60aed0284f5d624b91f4ed4e_logo-footer.svg',
+                fn=fn_inference,
+                inputs=list(inputs.values()),
+                outputs=list(targets.values()),
+                examples=examples
+            )
+        except:
+            interface = gr.Interface(
+                title=model_name,
+                article='This model was built using [PerceptiLabs](https://www.perceptilabs.com/)<br><p align="center">![image](https://assets-global.website-files.com/60adcbb2ee6df32cbf46b7cc/60aed0284f5d624b91f4ed4e_logo-footer.svg)</p>',
+                thumbnail='https://assets-global.website-files.com/60adcbb2ee6df32cbf46b7cc/60aed0284f5d624b91f4ed4e_logo-footer.svg',
+                fn=fn_inference,
+                inputs=list(inputs.values()),
+                outputs=list(targets.values()),
+            )
 
         flask_app, path_to_local_server, share_url = \
             interface.launch(share=False, prevent_thread_lock=True)  # Warning: Gradio conflicts with our Flask development server. URL is only valid when we run the kernel with debug == False
+
 
         url_dict['url'] = path_to_local_server
 
@@ -167,6 +178,7 @@ class GradioStrategy:
             time.sleep(0.5)
 
         interface.close()
+        ServingResultsAccess.remove_gradio_examples_dir()
 
     def _get_inference_model(self, call_context, model_id, graph_spec, data_loader, training_session_id, include_preprocessing=True, include_postprocessing=True):
         epoch_id = self._epochs_access.get_latest(
@@ -216,6 +228,18 @@ class GradioStrategy:
         for spec in target_layers:
             categories = list(metadata[spec.feature_name]['preprocessing']['mapping'].keys())
             return categories
+    
+    def _get_gradio_examples(self, data_loader, include_preprocessing, include_postprocessing):
+        if not include_preprocessing or not include_postprocessing:
+            return
+        
+        # Get the first column since that's the input
+        test_set_df = data_loader.get_data_frame(partition='test')
+
+        if len(test_set_df) > 0:
+            samples = test_set_df.sample(n=3).values.tolist()
+            examples = ServingResultsAccess.create_dir_for_gradio_examples(samples=samples) # A list of paths
+            return examples
 
     def _get_dtype(self, target_layers):
         for spec in target_layers:
