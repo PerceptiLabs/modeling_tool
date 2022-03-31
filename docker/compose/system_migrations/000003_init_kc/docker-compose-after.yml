@@ -14,57 +14,6 @@ services:
     networks:
       - perceptilabs
 
-  rygg:
-    image: ${CONTAINER_REGISTRY}/rygg:${PL_VERSION}
-    restart: unless-stopped
-    environment:
-      DJANGO_DATABASE: postgres
-      DB_NAME: rygg
-      DB_HOST: db
-      DB_USER: rygg
-      DB_PASS: rygg
-      HOME: /perceptilabs
-      PL_FILE_SERVING_TOKEN: thetoken
-      PL_TUTORIALS_DATA: /tutorial_data
-      PL_FILE_UPLOAD_DIR: /perceptilabs/Documents/Perceptilabs/data
-    volumes:
-      - ${PL_ROOT_DIR}/plabs:/perceptilabs/Documents/Perceptilabs
-    depends_on:
-      - db
-    networks:
-      - perceptilabs
-
-  frontend:
-    image: ${CONTAINER_REGISTRY}/frontend:${PL_VERSION}
-    restart: unless-stopped
-    depends_on:
-      - rygg
-      - kernel
-    networks:
-      - perceptilabs
-    environment:
-      PL_KEYCLOAK_URL: /auth/
-
-  kernel:
-    image: ${CONTAINER_REGISTRY}/kernel:${PL_VERSION}
-    restart: unless-stopped
-    volumes:
-      - ${PL_ROOT_DIR}/plabs:/perceptilabs/Documents/Perceptilabs
-    environment:
-      HOME: /perceptilabs
-      PL_FILE_SERVING_TOKEN: thetoken
-      PL_TUTORIALS_DATA: /tutorial_data
-      PL_FILE_UPLOAD_DIR: /perceptilabs/Documents/Perceptilabs/data
-    # with gpu
-    deploy:
-      resources:
-        reservations:
-          devices:
-          - capabilities: [gpu]
-    # end with gpu
-    networks:
-      - perceptilabs
-
   keycloak:
     image: quay.io/keycloak/keycloak:13.0.0
     restart: unless-stopped
@@ -91,9 +40,6 @@ services:
     volumes:
       - ${PL_ROOT_DIR}/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
-      - rygg
-      - kernel
-      - frontend
       - keycloak
     networks:
       - perceptilabs

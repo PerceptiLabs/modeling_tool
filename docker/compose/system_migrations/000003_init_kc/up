@@ -30,7 +30,7 @@ EOF
 
 ensure_db_created(){
   echo -n "Ensuring keycloak db is present ..."
-  sudo docker-compose up --detach db rygg
+  sudo docker-compose up --detach db
   sudo docker-compose exec -T db sh -c "${script}"
 }
 
