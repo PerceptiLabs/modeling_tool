@@ -37,6 +37,7 @@ if num_releases_remaininig < SAFETY_CUSHION:
     msg = cleandoc(
         f"""
                     There is only space left for about {num_releases_remaininig} more releases. Free up space before trying to release more.
+                    (BUT DON'T DELETE 0.11.15 w/o checking with Robert)
                     Account Max: {round(ACCT_LIMIT / GB, 2)} GB
                     Used: {round(total / GB, 2)} GB
                     Max Release Size: {round(max_release_size / MB, 1)} MB
