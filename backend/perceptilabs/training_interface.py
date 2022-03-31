@@ -251,7 +251,7 @@ class TrainingSessionInterface:
                 slowdown_rate_max = self._max_slowdown_rate,
             )
 
-            utils.send_message_to_sentry("Training slowdown detected")
+            utils.send_message_to_sentry("Training slowdown detected", call_context)
 
             self._has_reported_slowdown = True
 

@@ -557,4 +557,5 @@ def test_slowdown_is_detected(monkeypatch, slowdown_rate, queue, message_broker,
         assert fake_sentry_call.call_count == 0
     else:
         assert fake_sentry_call.call_count == 1
-        assert fake_sentry_call.call_args[0] == ("Training slowdown detected",)
+        first_call_args = fake_sentry_call.call_args[0]
+        assert "Training slowdown detected" in first_call_args
