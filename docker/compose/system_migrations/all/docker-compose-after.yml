@@ -36,7 +36,7 @@ services:
     image: ${CONTAINER_REGISTRY}/rygg:${PL_VERSION}
     restart: unless-stopped
     environment:
-      AUTH_ENV: ""
+      AUTH_ENV: prod
       AUTH_REALM: perceptilabs
       AUTH_CERTS_URL: http://keycloak:8080/auth/realms/perceptilabs/protocol/openid-connect/certs
       AUTH_ISSUER: http://${PL_SERVER_ADDRESS}/auth/realms/perceptilabs
@@ -65,7 +65,7 @@ services:
     command: python -m celery -A rygg worker --queues=rygg
     restart: unless-stopped
     environment:
-      AUTH_ENV: ""
+      AUTH_ENV: prod
       AUTH_REALM: perceptilabs
       AUTH_CERTS_URL: http://keycloak:8080/auth/realms/perceptilabs/protocol/openid-connect/certs
       AUTH_ISSUER: http://${PL_SERVER_ADDRESS}/auth/realms/perceptilabs
@@ -139,7 +139,7 @@ services:
     volumes:
       - ${PL_ROOT_DIR}/plabs:/perceptilabs/Documents/Perceptilabs
     environment:
-      AUTH_ENV: ""
+      AUTH_ENV: prod
       AUTH_REALM: perceptilabs
       AUTH_CERTS_URL: http://keycloak:8080/auth/realms/perceptilabs/protocol/openid-connect/certs
       AUTH_ISSUER: http://${PL_SERVER_ADDRESS}/auth/realms/perceptilabs
@@ -164,7 +164,7 @@ services:
     volumes:
       - ${PL_ROOT_DIR}/plabs:/perceptilabs/Documents/Perceptilabs
     environment:
-      AUTH_ENV: ""
+      AUTH_ENV: prod
       AUTH_REALM: perceptilabs
       AUTH_CERTS_URL: http://keycloak:8080/auth/realms/perceptilabs/protocol/openid-connect/certs
       AUTH_ISSUER: http://${PL_SERVER_ADDRESS}/auth/realms/perceptilabs
