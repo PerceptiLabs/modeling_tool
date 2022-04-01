@@ -32,9 +32,9 @@ jobs:
         # kernel:
         #   target: kernel
         #   repository: kernel
-        frontend:
-          target: frontend
-          repository: frontend
+        # frontend:
+        #   target: frontend
+        #   repository: frontend
         rygg:
           target: rygg
           repository: rygg
