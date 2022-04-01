@@ -25,7 +25,9 @@ jobs:
         inlineScript: 'aws ec2 start-instances --instance-ids i-02d83a036ea61ccd1 --region us-east-2'
         failOnStandardError: true
 
-  - job: dockerbuild
+  # old-style builds that don't stage to build/docker/*
+  - job: dockerbuild_old
+    displayName: Old-style Docker build
     dependsOn: startvm
     strategy:
       matrix:
@@ -70,8 +72,50 @@ jobs:
         command: 'buildAndPush'
         Dockerfile: 'build/docker/$(target)/Dockerfile'
 
+  # new-style builds that don't stage to build/docker/*
+  - job: dockerbuild_new
+    displayName: New-style Docker build
+    dependsOn: startvm
+    strategy:
+      matrix:
+        monitor:
+          project_path: monitor/Dockerfile
+          repository: monitor
+    pool: Docker Build
+
+    steps:
+    - checkout: self
+      clean: true
+      submodules: recursive
+      persistCredentials: true
+
+    - task: Bash@3
+      name: read_version_file
+      inputs:
+        targetType: 'inline'
+        script: |
+          VERSION=$(cat "$(Build.SourcesDirectory)/VERSION")
+          echo "##vso[task.setvariable variable=product_version]${VERSION}"
+
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'perceptilabs'
+        repository: '$(repository)'
+        command: 'build'
+        Dockerfile: '$(project_path)'
+        arguments: '--build-arg VERSION=$(product_version)'
+
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'perceptilabs'
+        repository: $(repository)
+        command: 'push'
+        Dockerfile: 'build/docker/$(target)/Dockerfile'
+
   - job: installation_files
-    dependsOn: dockerbuild
+    dependsOn:
+    - dockerbuild_old
+    - dockerbuild_new
     pool: Docker Build
     steps:
 
