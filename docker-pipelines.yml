@@ -29,12 +29,12 @@ jobs:
     dependsOn: startvm
     strategy:
       matrix:
-        # kernel:
-        #   target: kernel
-        #   repository: kernel
-        # frontend:
-        #   target: frontend
-        #   repository: frontend
+        kernel:
+          target: kernel
+          repository: kernel
+        frontend:
+          target: frontend
+          repository: frontend
         rygg:
           target: rygg
           repository: rygg
