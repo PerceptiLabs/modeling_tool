@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      {{- with .Values.imageCredentials.name }}
+      imagePullSecrets:
+        - name: {{ . }}
+      {{- end }}
+      containers:
+        - name: frontend
+          {{- if .Values.frontend.docker_image_override }}
+          image: {{ .Values.frontend.docker_image_override | quote }}
+          {{- else }}
+          image: "{{ .Values.frontend.docker_repo }}:{{ required "pl_docker_tag is a required value" .Values.pl_docker_tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.frontend.pull_policy | default "IfNotPresent" | quote }}
+          env:
+            - name: container
+              value: a
+            - name: PL_KEYCLOAK_URL
+              value: /auth/
+          livenessProbe:
+            exec:
+              command:
+                - bash
+                - -c
+                - curl --fail --silent localhost:8080/is_enterprise/ > /dev/null || exit 1
+            failureThreshold: 5
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 10
+          ports:
+            - containerPort: 8080
+          resources: {}
+      restartPolicy: Always

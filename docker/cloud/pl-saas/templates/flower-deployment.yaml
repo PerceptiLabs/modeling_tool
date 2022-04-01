@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: flower
+  name: flower
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flower
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: flower
+    spec:
+      {{- with .Values.imageCredentials.name }}
+      imagePullSecrets:
+        - name: {{ . }}
+      {{- end }}
+      containers:
+        - name: flower
+          {{- if .Values.flower.docker_image_override }}
+          image: {{ .Values.flower.docker_image_override | quote }}
+          {{- else }}
+          image: "{{ .Values.flower.docker_repo }}:{{ required "pl_docker_tag is a required value" .Values.pl_docker_tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.flower.pull_policy | default "IfNotPresent" | quote }}
+          args:
+            - python
+            - -m
+            - celery
+            - -A
+            - perceptilabs.tasks.celery_executor
+            - flower
+            - --url_prefix=queues
+          env:
+            - name: HOME
+              value: /perceptilabs
+            - name: PL_REDIS_URL
+              value: redis://{{ .Values.redis_host }}
+            - name: FLOWER_PORT
+              value: "5555"
+          ports:
+            - containerPort: 5555
+          resources: {}
+      restartPolicy: Always

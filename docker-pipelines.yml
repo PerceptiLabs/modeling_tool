@@ -171,7 +171,7 @@ jobs:
       - task: Bash@3
         displayName: Build the chart and make an updated index
         inputs:
-          filePath: '$(Build.SourcesDirectory)/docker/cd/cloud/makehelm'
+          filePath: '$(Build.SourcesDirectory)/docker/cloud/makehelm'
           arguments: 'build $(Build.BuildId) $(Build.ArtifactStagingDirectory)'
 
       - task: PublishBuildArtifacts@1

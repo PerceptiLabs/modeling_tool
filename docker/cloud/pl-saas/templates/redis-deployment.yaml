@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: redis
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      {{- with .Values.imageCredentials.name }}
+      imagePullSecrets:
+        - name: {{ . }}
+      {{- end }}
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-data
+      containers:
+        - name: redis
+          image: {{ .Values.redis.docker_image | quote }}
+          imagePullPolicy: {{ .Values.redis.pull_policy | default "IfNotPresent" | quote }}
+          livenessProbe:
+            exec:
+              command:
+                - bash
+                - -c
+                - redis-cli ping | grep -wq "PONG"
+            failureThreshold: 10
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 2
+          volumeMounts:
+            - mountPath: /data
+              name: redis-data
+          ports:
+            - containerPort: 6379
+      restartPolicy: Always

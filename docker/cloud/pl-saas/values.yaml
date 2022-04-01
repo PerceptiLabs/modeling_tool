@@ -1,0 +1,61 @@
+db_host: db
+db_port: 5432
+db_name: rygg
+# TODO move to secrets
+db_user: rygg
+db_pass: rygg
+db_vendor: postgres
+
+redis_host: redis
+
+log_level: DEBUG
+
+unzip_to_tmp: true
+
+pl_docker_tag: null
+keycloak:
+  url: https://keycloak.dev.perceptilabs.com:8443/auth
+  realm: vue-perceptilabs
+  clientid: vue-perceptilabs-client-id
+bash_host:
+  image: registry.access.redhat.com/ubi8/ubi:latest
+nginx:
+  docker_image: perceptilabs.azurecr.io/nginx:latest
+redis:
+  docker_image: perceptilabs.azurecr.io/redis:latest
+db:
+  docker_image: perceptilabs.azurecr.io/postgres:12
+frontend:
+  docker_repo: perceptilabs.azurecr.io/frontend
+flower:
+  # docker_repo: perceptilabs.azurecr.io/kernel
+  docker_image_override: quay.io/perceptilabs/kernel-dev:latest
+  pull_policy: Always
+render:
+  # docker_repo: perceptilabs.azurecr.io/kernel
+  docker_image_override: quay.io/perceptilabs/kernel-dev:latest
+  pull_policy: Always
+training:
+  # docker_repo: perceptilabs.azurecr.io/kernel
+  docker_image_override: quay.io/perceptilabs/kernel-dev:latest
+  pull_policy: Always
+rygg:
+  docker_repo: perceptilabs.azurecr.io/rygg
+monitor:
+  # docker_repo: perceptilabs.azurecr.io/monitor
+  docker_image_override: quay.io/perceptilabs/monitor-dev:latest
+  pull_policy: Always
+
+  # Example of how to debug
+  # docker_image_override: quay.io/perceptilabs/rygg-dev:latest
+  # pull_policy: Always
+
+imageCredentials:
+  name: docker-perceptilabs-azure
+  registry: perceptilabs.azurecr.io
+  username: perceptilabsreader
+
+# these are specific to Azure
+rwx_storage_class: azure-file
+rwo_storage_class: managed-premium # use gp2 in AWS
+root_host: apps.os8.perceptilabsapps.com # Used as the base host for the route

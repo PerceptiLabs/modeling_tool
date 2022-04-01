@@ -15,7 +15,9 @@ RUN rm requirements.txt
 # build
 FROM base as build
 
-RUN yum -y update && \
+# Don't refresh the nvidia packages since we're not using them (https://forums.developer.nvidia.com/t/error-apt-get-updating-from-nvidia-cuda11-2-1-base-ubuntu20-04/209836/10)
+RUN rm /etc/yum.repos.d/nvidia-ml.repo /etc/yum.repos.d/cuda.repo && \
+    yum -y update && \
     yum -y install rsync && \
     yum clean all
 
@@ -45,18 +47,19 @@ RUN find . -name "__init__.pyx" | xargs dirname | xargs -I {} mv '{}/__init__.py
 # publish
 FROM base
 
-LABEL name="PerceptiLabs-Modelling-Backend" \
+LABEL name="PerceptiLabs-Modeling-Backend" \
       maintainer="contact@perceptilabs.com" \
       vendor="PerceptiLabs" \
       version="replaceme" \
       release="1" \
-      summary="This is the free version of the backend of our modelling platform v1." \
-      description="This will build a server for you which will act as a backend for our modelling platform. It listens to port 5000 to communicate with the frontend."
+      summary="This is the free version of the backend of our modeling platform v1." \
+      description="This will build a server for you which will act as a backend for our modeling platform."
 
 USER 0
 
 WORKDIR /opt/app-root/src
 COPY --from=build --chown=1001 /out .
+ADD run_worker_from_config.py queues.yaml ./
 RUN mkdir /tutorial_data
 RUN chown 1001 /tutorial_data
 

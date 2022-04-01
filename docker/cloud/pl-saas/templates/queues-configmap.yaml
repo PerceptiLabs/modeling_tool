@@ -1,0 +1,41 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: queues-config
+data:
+  queues.yaml: |
+    queues:
+      misc:
+        tasks:
+          preprocessing_task:
+            expected_sec_per_task: 300
+            max_wait_time_sec: 600
+            worker_type: misc_worker
+          # TODO: we need a way to factor in tasks that will run as long as the user leaves them up
+          # ... for now, we just set the expected_sec_per_task == max_wait_time_sec to add one worker per task
+          serving_task:
+            expected_sec_per_task: 600
+            max_wait_time_sec: 600
+            worker_type: misc_worker
+          testing_task:
+            expected_sec_per_task: 300
+            max_wait_time_sec: 600
+            worker_type: misc_worker
+      # TODO: change expected_sec_per_task to a more intelligent measure, e.g. number of images or layers or something
+      # Maybe have kernel calculate it
+      training:
+        tasks:
+          training_task:
+            expected_sec_per_task: 300
+            max_concurrency: 1
+            max_wait_time_sec: 600
+            worker_type: training_worker_cpu
+    worker_types:
+      misc_worker:
+        deployment: misc-kernel-worker
+        deployment: misc-worker
+        class: perceptilabs.tasks.celery_executor
+      training_worker_cpu:
+        deployment: training-worker
+        concurrency: 1
+        class: perceptilabs.tasks.celery_executor

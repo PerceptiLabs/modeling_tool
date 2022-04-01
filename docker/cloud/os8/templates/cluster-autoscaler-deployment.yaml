@@ -1,0 +1,55 @@
+# using a deployment rather than the built-in ClusterAutoScaler because that one seems to be unable to scale down on Azure
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: cluster-autoscaler-manual
+  namespace: openshift-machine-api
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      k8s-app: cluster-autoscaler-manual
+  template:
+    metadata:
+      labels:
+        k8s-app: cluster-autoscaler-manual
+    spec:
+      containers:
+        - name: cluster-autoscaler
+          image: >-
+            # TODO: use an external version
+            # TODO: use the correct version for the cluster
+            quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:712b021c4b536fae269e059b5e6e651344aa2327912bf186112a346f66f091c2
+          # resources:
+          #   requests:
+          #     cpu: 10m
+          #     memory: 20Mi
+          terminationMessagePath: /dev/termination-log
+          command:
+            - cluster-autoscaler
+          env:
+            - name: CAPI_GROUP
+              value: machine.openshift.io
+          ports:
+            - name: metrics
+              containerPort: 8085
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          args:
+            # https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca
+            - '--logtostderr'
+            - '--v=1'
+            - '--cloud-provider=clusterapi'
+            - '--namespace=openshift-machine-api'
+            - '--max-graceful-termination-sec=20'
+            - '--max-node-provision-time=10m'
+            - '--scale-down-enabled=true'
+            - '--scale-down-delay-after-add=10m'
+            - '--scale-down-delay-after-delete=5m'
+            - '--scale-down-delay-after-failure=30s'
+            - '--scale-down-unneeded-time=5m'
+            - '--balance-similar-node-groups=true'
+            - '--skip-nodes-with-local-storage=false'
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      serviceAccountName: cluster-autoscaler

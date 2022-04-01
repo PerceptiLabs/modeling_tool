@@ -31,6 +31,8 @@ x-rygg_base: &rygg_base
   depends_on:
     db:
       condition: service_healthy
+    redis:
+      condition: service_started
   volumes:
     - ${PL_ROOT}/rygg/rygg:/app/rygg
     - ${WORKING_DIR}:/perceptilabs/Documents/Perceptilabs
@@ -42,6 +44,12 @@ x-kernel_base: &kernel_base
   volumes:
     - ${PL_ROOT}/backend:/app
     - ${WORKING_DIR}:/perceptilabs/Documents/Perceptilabs
+    - ./queues.yaml:/opt/app-root/src/queues.yaml
+  depends_on:
+    redis:
+      condition: service_started
+    rygg_api:
+      condition: service_started
 
 services:
   db:
@@ -60,6 +68,7 @@ services:
       retries: 5
       timeout: 10s
       start_period: 1m
+
   redis:
     <<: *common_base
     image: redis
@@ -101,7 +110,7 @@ services:
 
   training:
     <<: *kernel_base
-    command: python -m celery -A perceptilabs.tasks.celery_executor worker --hostname=training --queues=training --pool=threads --loglevel INFO
+    command: python run_worker_from_config.py training_worker_cpu --loglevel INFO
     environment:
       AUTH_ENV: ${AUTH_ENV}
       PL_REDIS_URL: redis://redis
@@ -121,19 +130,41 @@ services:
     tty: true
 
   nginx:
+    <<: *common_base
     image: nginx
     ports:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./configs.conf.template:/etc/nginx/templates/configs.conf.template
+    depends_on:
+      rygg_api:
+        condition: service_started
+      frontend:
+        condition: service_started
+      render:
+        condition: service_started
+      flower:
+        condition: service_started
     environment:
       KEYCLOAK_URL: https://keycloak.dev.perceptilabs.com:8443/auth
       KEYCLOAK_REALM: vue-perceptilabs
       KEYCLOAK_CLIENTID: vue-perceptilabs-client-id
-    restart: unless-stopped
-    networks:
-      - perceptilabs
+
+  monitor:
+    <<: *common_base
+    image: dev/monitor:latest
+    command: python main.py --dry-run
+    restart: "no"
+    volumes:
+      - ${PL_ROOT}/monitor:/app
+      - ./queues.yaml:/app/queues.yaml
+    depends_on:
+      redis:
+        condition: service_started
+    environment:
+      PL_REDIS_URL: redis://redis:6379
+      PL_MONITOR_LOG_LEVEL: DEBUG
 
 networks:
   perceptilabs:

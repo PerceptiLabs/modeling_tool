@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+if [ $# -lt 2 ]; then
+  echo "USAGE $0 (build | deploy) (<build_id> | latest) ..."
+  exit 1
+fi
+
+ACTION=$1
+BUILD_ID=$2 # in the pipeline pass "${{ variables.build_to_install }}"
+
+BLOB_ACCOUNT=perceptilabs
+BLOB_CONTAINER=saas
+REPO_URL=https://${BLOB_ACCOUNT}.blob.core.windows.net/${BLOB_CONTAINER}
+REPO_NAME=pl-saas
+ROOT_DIR=$(git rev-parse --show-toplevel)
+CHART_DIR="${ROOT_DIR}/docker/cloud/pl-saas"
+
+RELEASE_NAME=cd
+
+SED=$([[ ${OSTYPE} =~ darwin ]] && echo gsed || echo sed)
+
+if [ "${ACTION}" = "build" ]; then
+
+  if [ $# -lt 3 ]; then
+    echo "USAGE $0 build (build id) (destination directory)"
+    exit 1
+  fi
+
+  OUTPUT_DIR=$3
+
+  if [ -n "${VERSION_OVERRIDE:-}" ]; then
+    echo "VERSION_OVERRIDE is set"
+    VERSION=${VERSION_OVERRIDE}
+  else
+    VERSION_FILE="${ROOT_DIR}/VERSION"
+    echo "VERSION_FILE=${VERSION_FILE}"
+    VERSION=$(cat ${VERSION_FILE})
+    if [ -n "${VERSION_EXTENSION:-}" ]; then
+      echo "Appending VERSION_EXTENSION"
+      VERSION="${VERSION}-${VERSION_EXTENSION}"
+    fi
+  fi
+  echo "VERSION=${VERSION}"
+  ARTIFACT_NAME=${REPO_NAME}-${VERSION}-${BUILD_ID}.tgz
+  echo "ARTIFACT_NAME=${ARTIFACT_NAME}"
+
+  ARTIFACT_CHART="${OUTPUT_DIR}/${ARTIFACT_NAME}"
+  ARTIFACT_INDEX="${OUTPUT_DIR}/index.yaml"
+
+  # Save the VERSION and ARTIFACT_NAME variables for later tasks
+  echo "##vso[task.setvariable variable=app_version]${VERSION}"
+  echo "##vso[task.setvariable variable=artifact_name]${ARTIFACT_NAME}"
+  echo "##vso[task.setvariable variable=artifact_chart]${ARTIFACT_CHART}"
+  echo "##vso[task.setvariable variable=artifact_index]${ARTIFACT_INDEX}"
+
+  # Add the docker tag version for this build to the chart
+  ${SED} -i "s/^pl_docker_tag:.*/pl_docker_tag: ${BUILD_ID}/g" "${CHART_DIR}/values.yaml"
+
+	helm package \
+		"${CHART_DIR}" \
+    --version "${VERSION}-${BUILD_ID}" \
+    --app-version ${VERSION} \
+    --destination ${OUTPUT_DIR}
+
+  # Build this index with the new item and merge in old stuff as well
+  wget --no-clobber ${REPO_URL}/index.yaml
+  helm repo index "${OUTPUT_DIR}" --url ${REPO_URL} --merge index.yaml
+  rm index.yaml
+
+  # az storage blob upload --account-name=${BLOB_ACCOUNT} --container-name=${BLOB_CONTAINER} --file=${ARTIFACT_CHART} --name=${ARTIFACT_NAME}
+  # az storage blob upload --account-name=${BLOB_ACCOUNT} --container-name=${BLOB_CONTAINER} --file=${ARTIFACT_INDEX} --name=index.yaml
+
+
+elif [ "${ACTION}" = "deploy" ]; then
+
+  if [ $# -lt 3 ]; then
+    echo "USAGE $0 deploy (<build_id>) (<path-to-kubeconfig>)"
+    exit 1
+  fi
+
+  KUBECONFIG=$3 # in the pipeline, pass downloaded secure file $(kubeconfig.secureFilePath)
+
+  if [ ! -f "${KUBECONFIG}" ]; then
+    echo "${KUBECONFIG} isn't a file"
+    exit 1
+  fi
+
+  chmod 600 "${KUBECONFIG}"
+
+  if [ -z "${PERCEPTILABS_DOCKER_PULL_USER:-}" ]; then
+    echo "PERCEPTILABS_DOCKER_PULL_USER wasn't set"
+    exit 1
+  fi
+
+  if [ -z "${PERCEPTILABS_DOCKER_PULL_SECRET:-}" ]; then
+    echo "PERCEPTILABS_DOCKER_PULL_SECRET wasn't set"
+    exit 1
+  fi
+
+  helm repo add pl ${REPO_URL}
+  helm repo update
+
+  RELEASE_VERSION_PATTERN="[[:digit:]](\.[[:digit:]]+){2}"
+
+  #s/^.*[[:space:]]([[:digit:]](\.[[:digit:]]+){2}-[[:digit:]]{4,}).*$/\1/p
+
+  if [ "${BUILD_ID}" = "latest" ]; then
+    VERSION_PATTERN="${RELEASE_VERSION_PATTERN}-[[:digit:]]{4,}"
+    SED_PATTERN="s/^.*[[:space:]](${VERSION_PATTERN})[[:space:]].*$/\1/p"
+
+    # list the charts, scrape out the versions, sort them and take the max
+    CHART_VERSION=$(helm search repo pl --versions --devel | $SED --silent --regexp-extended ${SED_PATTERN} | grep . | sort -t'-' -k2 | tail -n 1)
+  else
+    # Helm is limited in its ability to search for semver and uses the poorly documented semver library from go
+    # ...so just use sed to scrape it out of the output
+    VERSION_PATTERN="${RELEASE_VERSION_PATTERN}-${BUILD_ID}"
+    SED_PATTERN="s/^.*[[:space:]](${VERSION_PATTERN})[[:space:]].*$/\1/p"
+    CHART_VERSION=$(helm search repo pl --versions --devel | $SED --silent --regexp-extended ${SED_PATTERN})
+  fi
+
+  if [ -z "$CHART_VERSION" ]; then
+    echo "No build ${BUILD_ID} found in the repo"
+    exit 1
+  fi
+
+  echo "Installing $CHART_VERSION"
+  ROOT_HOST="apps.os8.perceptilabsapps.com"
+
+  helm upgrade \
+    ${RELEASE_NAME} \
+    ${REPO_NAME} \
+    --install \
+    --repo ${REPO_URL} \
+    --version ${CHART_VERSION} \
+    --namespace cd \
+    --create-namespace \
+    --set "root_host=${ROOT_HOST}" \
+    --set "imageCredentials.username=${PERCEPTILABS_DOCKER_PULL_USER}" \
+    --set "imageCredentials.password=${PERCEPTILABS_DOCKER_PULL_SECRET}" \
+    --debug \
+    --atomic \
+    --kubeconfig "${KUBECONFIG}"
+fi

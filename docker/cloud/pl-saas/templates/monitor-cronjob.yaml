@@ -1,0 +1,56 @@
+# TODO: the ops-supportability of cron jobs is way worse than a deployment that runs in a loop
+# switch to a deployment
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: monitor
+spec:
+          #  ┌───────────── minute (0 - 59)
+          #  │ ┌───────────── hour (0 - 23)
+          #  │ │ ┌───────────── day of the month (1 - 31)
+          #  │ │ │ ┌───────────── month (1 - 12)
+          #  │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday; 7 is also Sunday on some systems)
+          #  │ │ │ │ │
+          #  * * * * *
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 60 # since it runs every minute and is idempotent
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          serviceAccountName: monitor-sa
+          serviceAccount: monitor-sa
+          volumes:
+            - name: queues-config
+              configMap:
+                name: queues-config
+                items:
+                  - key: queues.yaml
+                    path: queues.yaml
+          {{- with .Values.imageCredentials.name }}
+          imagePullSecrets:
+            - name: {{ . }}
+          {{- end }}
+          containers:
+            - name: monitor
+              {{- if .Values.monitor.docker_image_override }}
+              image: {{ .Values.monitor.docker_image_override | quote }}
+              {{- else }}
+              image: "{{ .Values.monitor.docker_repo }}:{{ required "pl_docker_tag is a required value" .Values.pl_docker_tag }}"
+              {{- end }}
+              imagePullPolicy: {{ .Values.monitor.pull_policy | default "IfNotPresent" | quote }}
+              command: ["python", "main.py"]
+              securityContext:
+                readOnlyRootFilesystem: true
+              volumeMounts:
+                - mountPath: /app/queues.yaml
+                  subPath: queues.yaml
+                  name: queues-config
+                  readOnly: true
+              env:
+                - name: PL_REDIS_URL
+                  value: redis://{{ .Values.redis_host }}
+                - name: PL_MONITOR_LOG_LEVEL
+                  value: {{ .Values.log_level }}

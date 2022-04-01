@@ -2,7 +2,7 @@ import logging
 import threading
 from celery import Celery, shared_task
 from celery.result import AsyncResult
-
+import yaml
 
 import perceptilabs.settings as settings
 from perceptilabs.tasks.base import (
@@ -16,29 +16,46 @@ from perceptilabs.tasks.base import (
 
 logger = logging.getLogger(__name__)
 
+QUEUES_CONFIG_FILE = "queues.yaml"
+def load_task_routes():
+    import os
+
+    if not os.path.isfile(QUEUES_CONFIG_FILE):
+        return {}
+
+    with open(QUEUES_CONFIG_FILE, "r") as f:
+        config = yaml.safe_load(f)
+
+    return {
+        task: {"queue": queue}
+        for queue, queue_config in config["queues"].items()
+        for task, task_config in queue_config["tasks"].items()
+    }
+
+TASK_ROUTES = load_task_routes()
+logger.debug(f"task_routes: {TASK_ROUTES}")
+
 
 CELERY_APP = Celery(
-    'training',
+    'training_celery_app',
     backend=settings.CELERY_REDIS_URL,
     broker=settings.CELERY_REDIS_URL,
     imports=('perceptilabs',),
     worker_send_task_events=True,
     task_send_sent_event=False,
-    task_routes={
-        'training_task': {'queue': 'training'},
-        'testing_task': {'queue': 'training'},
-        'serving_task': {'queue': 'training'},
-        'preprocessing_task': {'queue': 'training'},
-    }
+    task_routes=TASK_ROUTES,
 )
 
-@shared_task(
-    bind=True,
-    name="training_task",
-    autoretry_for=(Exception,),
-    default_retry_delay=5,
-    max_retries=3,
-)
+TASK_SETTINGS = {
+    'bind': True,
+    'autoretry_for': (Exception,),
+    'default_retry_delay': 5,
+    'max_retries': 3,
+    'task_reject_on_worker_lost': True,
+    'worker_prefetch_multiplier': 1,
+}
+
+@shared_task(name="training_task", **TASK_SETTINGS)
 def training_task_wrapper(self, call_context, dataset_settings_dict, model_id, training_session_id, training_settings, load_checkpoint, logrocket_url='', graph_settings=None):
     training_task(
         call_context,
@@ -52,35 +69,17 @@ def training_task_wrapper(self, call_context, dataset_settings_dict, model_id, t
         graph_settings=graph_settings
     )
 
-@shared_task(
-    bind=True,
-    name="testing_task",
-    autoretry_for=(Exception,),
-    default_retry_delay=5,
-    max_retries=3,
-)
+@shared_task(name="testing_task", **TASK_SETTINGS)
 def testing_task_wrapper(self, call_context, *args, **kwargs):
     testing_task(call_context, *args, **kwargs)
 
 
-@shared_task(
-    bind=True,
-    name="serving_task",
-    autoretry_for=(Exception,),
-    default_retry_delay=5,
-    max_retries=3,
-)
+@shared_task(name="serving_task", **TASK_SETTINGS)
 def serving_task_wrapper(self, *args, **kwargs):
     serving_task(*args, **kwargs)
 
 
-@shared_task(
-    bind=True,
-    name="preprocessing_task",
-    autoretry_for=(Exception,),
-    default_retry_delay=5,
-    max_retries=3,
-)
+@shared_task(name="preprocessing_task", **TASK_SETTINGS)
 def preprocessing_task_wrapper(self, *args, **kwargs):
     preprocessing_task(*args, **kwargs)
 

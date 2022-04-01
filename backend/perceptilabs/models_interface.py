@@ -38,6 +38,7 @@ class ModelsInterface:
 
     def start_training(self, call_context, dataset_settings_dict, model_id, training_settings, load_checkpoint, logrocket_url='', graph_settings=None):
         training_session_id = model_id  # Training session ID == model ID for now...
+        assert call_context.user_unique_id
 
         self._task_executor.enqueue(
             'training_task',

@@ -13,18 +13,22 @@ frontend_dev: require-ROOT ## make the developmet frontend image
 	cd ${ROOT}/frontend && \
 	docker build . --file Dockerfile-dev --tag=dev/frontend:latest
 
+monitor_dev: require-ROOT ## make the developmet monitor image
+	cd ${ROOT}/monitor && \
+	docker build . --file Dockerfile-dev --tag=dev/monitor:latest
+
 env: ## Sets up the env file so docker-compose has the basic env vars
 	echo PL_ROOT=${ROOT} > .env
 	echo WORKING_DIR=${PL_WORKING_DIR} >> .env
 	echo AUTH_ENV=dev >> .env
 	mkdir -p ${PL_WORKING_DIR}
 
-dev_all: rygg_dev kernel_dev frontend_dev env ## All dev images and env file
+dev_all: monitor_dev rygg_dev kernel_dev frontend_dev env ## All dev images and env file
 
 clean: ## Cleans up the .env file and docker detrius
 	rm .env
 	docker-compose down
-	docker rmi dev/rygg:latest dev/kernel:latest dev/frontend:latest
+	docker rmi dev/monitor:latest dev/rygg:latest dev/kernel:latest dev/frontend:latest
 
 
 #######################################################

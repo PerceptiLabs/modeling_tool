@@ -134,7 +134,7 @@ services:
 
   training:
     image: ${CONTAINER_REGISTRY}/kernel:${PL_VERSION}
-    command: python -m celery -A perceptilabs.tasks.celery_executor worker --hostname=training --queues=training --pool=threads --loglevel INFO
+    command: python run_worker_from_config.py training_worker_cpu -- --loglevel INFO
     restart: unless-stopped
     volumes:
       - ${PL_ROOT_DIR}/plabs:/perceptilabs/Documents/Perceptilabs

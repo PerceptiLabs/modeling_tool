@@ -45,6 +45,7 @@ PROJECT_ROOT = os.path.dirname(SCRIPTS_DIR)
 BACKEND_SRC = os.path.join(PROJECT_ROOT, "backend")
 FRONTEND_SRC_ROOT = os.path.join(PROJECT_ROOT, "frontend")
 RYGG_DIR = os.path.join(PROJECT_ROOT, "rygg")
+MONITOR_DIR = os.path.join(PROJECT_ROOT, "monitor")
 WHEELFILES_DIR = os.path.join(PROJECT_ROOT, "wheelfiles")
 BUILD_DIR = os.path.join(PROJECT_ROOT, "build")
 BUILD_TMP = os.path.join(BUILD_DIR, "tmp")
@@ -289,6 +290,10 @@ def set_staticfileserver_inner_version(rootDir, versions: Versions):
 
 def set_rygg_inner_version(rootDir, versions: Versions):
     init_py = os.path.join(rootDir, "rygg", "__init__.py")
+    sed_i(init_py, "^__version__ *=.*", f"__version__='{versions.as_pep440}'")
+
+def set_monitor_inner_version(rootDir, versions: Versions):
+    init_py = os.path.join(rootDir, "monitor", "__init__.py")
     sed_i(init_py, "^__version__ *=.*", f"__version__='{versions.as_pep440}'")
 
 def write_version_file(rootDir, versions: Versions):
@@ -583,6 +588,7 @@ class DockerBuilder():
         DockerBuilder.build_kernel()
         DockerBuilder.build_frontend()
         DockerBuilder.build_rygg()
+        DockerBuilder.build_monitor()
 
 
     @staticmethod
@@ -702,8 +708,17 @@ class DockerBuilder():
     def build_rygg():
         with pushd(BUILD_DOCKER_RYGG):
             run_checked("docker build . --tag=dev/rygg:latest")
-        # TODO: get rygg to build with obfuscation like the kernel does
         # TODO: run a sanity check on rygg
+
+    @staticmethod
+    def build_monitor():
+        with pushd(MONITOR_DIR):
+            versionString = calc_version().as_pep440
+            run_checked(f"docker build . --tag=dev/monitor:latest --build-arg VERSION={versionString}")
+
+            # Sanity-check the image
+            py_script = f"import monitor; assert monitor.__version__ == \"{versionString}\";"
+            run_checked_arr(["docker", "run", "-it", "--rm", "dev/monitor:latest", "python", "-c", py_script])
 
 def clean():
     rm_rf(BUILD_DIR)
@@ -739,6 +754,8 @@ if __name__ == "__main__":
             DockerBuilder.assembleFrontend(do_clean=do_clean)
         elif dockertype == "rygg":
             DockerBuilder.assembleRygg(do_clean=do_clean)
+        elif dockertype == "monitor":
+            DockerBuilder.build_monitor()
         elif dockertype == "all":
             DockerBuilder.all(do_clean=do_clean)
         else:
@@ -746,7 +763,7 @@ if __name__ == "__main__":
             print(USAGE)
             sys.exit(1)
 
-        if not dockertype in ["all", "compose"]:
+        if not dockertype in ["all", "compose", "monitor"]:
             print(f"\nTo run the docker build. cd into build/docker/{dockertype} and run `docker build .`")
     else:
         print(f"Invalid build type: {build_type}")

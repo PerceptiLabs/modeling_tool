@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: render
+  name: render
+spec:
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 5001
+  selector:
+    app: render

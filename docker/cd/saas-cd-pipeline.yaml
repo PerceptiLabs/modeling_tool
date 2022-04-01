@@ -25,7 +25,7 @@ steps:
   - task: Bash@3
     displayName: Deploy the chart for the requested version
     inputs:
-      filePath: '$(Build.SourcesDirectory)/docker/cd/cloud/makehelm'
+      filePath: '$(Build.SourcesDirectory)/docker/cloud/makehelm'
       arguments: 'deploy $(build_to_install) $(kubeconfig.secureFilePath)'
     env:
       PERCEPTILABS_DOCKER_PULL_USER: $(PERCEPTILABS_DOCKER_PULL_USER)

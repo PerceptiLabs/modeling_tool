@@ -1,0 +1,10 @@
+# Default values for os8.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+cluster_name: os8-fwvdm
+region: eastus2
+machinesets:
+  - name: os8-fwvdm-worker-eastus21
+  - name: os8-fwvdm-worker-eastus22
+  - name: os8-fwvdm-worker-eastus23

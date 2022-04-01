@@ -1,0 +1,37 @@
+﻿# apiVersion: autoscaling.openshift.io/v1
+# kind: ClusterAutoscaler
+# metadata:
+#   name: default
+# spec:
+#   # config values from:
+#   #    https://docs.openshift.com/container-platform/4.9/rest_api/autoscale_apis/clusterautoscaler-autoscaling-openshift-io-v1.html
+#   #    https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca
+#
+#   # Maximum time CA waits for node to be provisioned
+#   maxNodeProvisionTime: 10m
+#
+#   # automatically identify node groups with the same instance type and the same set of labels and try to keep the respective sizes of those node groups balanced.
+#   balanceSimilarNodeGroups: true
+#
+#   # Gives pods graceful termination time before scaling down (in seconds?)
+#   maxPodGracePeriod: 20
+#
+#   # If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath. true by default at autoscaler
+#   # ... we have no pods with local storage
+#   skipNodesWithLocalStorage: false
+#
+#   scaleDown:
+#     # How long after scale up that scale down evaluation resumes
+#     delayAfterAdd: 10m
+#
+#     # How long after node deletion that scale down evaluation resumes, defaults to scan-interval
+#     delayAfterDelete: 5m
+#
+#     # How long after scale down failure that scale down evaluation resumes
+#     delayAfterFailure: 30s
+#
+#     # Should CA scale down the cluster
+#     enabled: true
+#
+#     # How long a node should be unneeded before it is eligible for scale down
+#     unneededTime: 5m

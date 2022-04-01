@@ -1,0 +1,15 @@
+# stub for the (much more complex) config that would normally be mounted in the pods in the cluster
+queues:
+  training:
+    tasks:
+      preprocessing_task:
+        worker_type: training_worker_cpu
+      serving_task:
+        worker_type: training_worker_cpu
+      testing_task:
+        worker_type: training_worker_cpu
+      training_task:
+        worker_type: training_worker_cpu
+worker_types:
+  training_worker_cpu:
+    class: perceptilabs.tasks.celery_executor
