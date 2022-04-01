@@ -138,6 +138,7 @@ elif [ "${ACTION}" = "deploy" ]; then
     --set "root_host=${ROOT_HOST}" \
     --set "imageCredentials.username=${PERCEPTILABS_DOCKER_PULL_USER}" \
     --set "imageCredentials.password=${PERCEPTILABS_DOCKER_PULL_SECRET}" \
+    --set "pl_docker_tag=${BUILD_ID}" \
     --debug \
     --atomic \
     --kubeconfig "${KUBECONFIG}"
