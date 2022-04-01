@@ -80,7 +80,9 @@ class ServingResultsAccess:
         examples = list()
         examples_path = 'gradio_examples'
         Path(examples_path).mkdir(parents=True, exist_ok=True)
-        for index, path in enumerate(samples):
+        
+        for index, item in enumerate(samples):
+            path = item[0]
             im = Image.open(path)
             file_name = 'example_' + str(index) + '.jpg'
             full_path = Path(examples_path, file_name)

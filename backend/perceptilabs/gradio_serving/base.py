@@ -145,25 +145,15 @@ class GradioStrategy:
             return output_values
 
         examples = self._get_gradio_examples(data_loader=data_loader, include_preprocessing=include_preprocessing, include_postprocessing=include_postprocessing)
-        try:
-            interface = gr.Interface(
-                title=model_name,
-                article='This model was built using [PerceptiLabs](https://www.perceptilabs.com/)<br><p align="center">![image](https://assets-global.website-files.com/60adcbb2ee6df32cbf46b7cc/60aed0284f5d624b91f4ed4e_logo-footer.svg)</p>',
-                thumbnail='https://assets-global.website-files.com/60adcbb2ee6df32cbf46b7cc/60aed0284f5d624b91f4ed4e_logo-footer.svg',
-                fn=fn_inference,
-                inputs=list(inputs.values()),
-                outputs=list(targets.values()),
-                examples=examples
-            )
-        except:
-            interface = gr.Interface(
-                title=model_name,
-                article='This model was built using [PerceptiLabs](https://www.perceptilabs.com/)<br><p align="center">![image](https://assets-global.website-files.com/60adcbb2ee6df32cbf46b7cc/60aed0284f5d624b91f4ed4e_logo-footer.svg)</p>',
-                thumbnail='https://assets-global.website-files.com/60adcbb2ee6df32cbf46b7cc/60aed0284f5d624b91f4ed4e_logo-footer.svg',
-                fn=fn_inference,
-                inputs=list(inputs.values()),
-                outputs=list(targets.values()),
-            )
+        interface = gr.Interface(
+            title=model_name,
+            article='This model was built using [PerceptiLabs](https://www.perceptilabs.com/)<br><p align="center">![image](https://assets-global.website-files.com/60adcbb2ee6df32cbf46b7cc/60aed0284f5d624b91f4ed4e_logo-footer.svg)</p>',
+            thumbnail='https://assets-global.website-files.com/60adcbb2ee6df32cbf46b7cc/60aed0284f5d624b91f4ed4e_logo-footer.svg',
+            fn=fn_inference,
+            inputs=list(inputs.values()),
+            outputs=list(targets.values()),
+            examples=examples
+        )
 
         flask_app, path_to_local_server, share_url = \
             interface.launch(share=False, prevent_thread_lock=True)  # Warning: Gradio conflicts with our Flask development server. URL is only valid when we run the kernel with debug == False
