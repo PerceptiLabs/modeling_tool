@@ -25,6 +25,26 @@ jobs:
       arguments: '$(System.DefaultWorkingDirectory)/rygg'
       failOnStderr: true
 
+- job: checkformatting
+  displayName: Check python formatting
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.8'
+        architecture: 'x64'
+        addToPath: true
+
+    - task: Bash@3
+      name: runblack
+      displayName: Check formatting with Black
+      inputs:
+        targetType: 'inline'
+        script: |
+          pip install black
+          black $(System.DefaultWorkingDirectory)/monitor --check
+
 - job: testpython_linux
   displayName: Test python on linux
   dependsOn: checkincludedfiles
