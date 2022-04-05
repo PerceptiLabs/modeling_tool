@@ -16,8 +16,11 @@ def get_cpu_count():
 
 def get_gpu_count():
     """returns number of gpu"""
-    gpus = GPUtil.getGPUs()
-    return len(gpus)
+    try:
+        gpus = GPUtil.getGPUs()
+        return len(gpus)
+    except:
+        return 0
 
 def get_system():
     """ Retrieves the system OS """
