@@ -2,6 +2,15 @@ def slice(d, *keys):
     return {k: d[k] for k in keys if k in d}
 
 
+def dig(dict, *keys):
+    ret = dict
+    for k in keys:
+        ret = dict.get(k)
+        if not ret:
+            break
+    return ret
+
+
 # mashup of multi-level group_by and reduce
 def aggregate_flat(seq, keys, func, initializer=None):
     if not keys:

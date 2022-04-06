@@ -7,11 +7,7 @@ import itertools
 import json
 import logging
 
-TASK_ROUTES = {
-    tn: {"queue": qn}
-    for qn, qd in CONFIG["queues"].items()
-    for tn, v in qd["tasks"].items()
-}
+TASK_ROUTES = {tn: {"queue": qn} for tn, qn in CONFIG.tasks}
 
 celery_app = Celery("", broker=REDIS_URL, task_routes=TASK_ROUTES)
 
@@ -51,9 +47,7 @@ def unsafe_iter_redis_list(key):
 def pending_tasks():
     r = Redis.from_url(REDIS_URL)
     tally = {}
-    for q, t in CONFIG["queues"].items():
-        tasks = t["tasks"]
-        queue_tally = {}
+    for q, t in CONFIG.tasks:
         for task in unsafe_iter_redis_list(q):
             yield {
                 "queue": q,

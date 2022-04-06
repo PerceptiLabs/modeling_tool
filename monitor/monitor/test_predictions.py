@@ -1,25 +1,30 @@
+from debug_print import _d
 import pytest
-from monitor.predictions import get_predictions
+from monitor.predictions import Predictor
 
-
-def test_empty():
-    ret = get_predictions([])
-    assert not ret
+from monitor.config import Config
 
 
 @pytest.fixture
-def config(mocker):
-    ret = {
-        "expected_sec_per_task": 26,
-        "max_wait_time_sec": 100,
-        "worker_type": "the_worker_type",
-    }
-    mocker.patch("monitor.predictions._get_task_config", return_value=ret)
-    worker_config = "the-worker-deployment"
-    mocker.patch(
-        "monitor.predictions._deployment_for_worker_type", return_value=worker_config
+def config():
+    return Config(
+        {
+            "queues": {
+                "the_queue_name": {
+                    "tasks": {
+                        "the_task_name": {
+                            "expected_sec_per_task": 26,
+                            "max_wait_time_sec": 100,
+                            "worker_type": "the_worker_type",
+                        },
+                    },
+                },
+            },
+            "worker_types": {
+                "the_worker_type": {"deployment": "the-worker-deployment"}
+            },
+        }
     )
-    return True
 
 
 @pytest.fixture
@@ -30,8 +35,23 @@ def task():
     }
 
 
+def test_empty(config):
+    ret = Predictor(config).get_predictions([])
+    assert not ret
+
+
 @pytest.mark.parametrize("num_tasks,expected", [(1, 1), (5, 2)])
 def test_simple(config, task, num_tasks, expected):
     tasks = [task] * num_tasks
-    ret = get_predictions(tasks)
+    ret = Predictor(config).get_predictions(tasks)
     assert ret == {"the-worker-deployment": expected}
+
+
+def test_extra_queue(config, task):
+    unrelated_task = {
+        "queue": "unrelated queue",
+        "name": "another task",
+    }
+    tasks = [task, unrelated_task]
+    ret = Predictor(config).get_predictions(tasks)
+    assert ret == {"the-worker-deployment": 1}

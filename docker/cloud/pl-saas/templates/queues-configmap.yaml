@@ -32,7 +32,6 @@ data:
             worker_type: training_worker_cpu
     worker_types:
       misc_worker:
-        deployment: misc-kernel-worker
         deployment: misc-worker
         class: perceptilabs.tasks.celery_executor
       training_worker_cpu:

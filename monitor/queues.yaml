@@ -12,4 +12,5 @@ queues:
         worker_type: training_worker_cpu
 worker_types:
   training_worker_cpu:
+    deployment: ""
     class: perceptilabs.tasks.celery_executor
