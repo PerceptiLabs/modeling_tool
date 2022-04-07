@@ -101,6 +101,25 @@ def get_data_metadata_cache():
     return _DATA_METADATA_CACHE
 
 
+_TEST_RESULTS_CACHE = None
+
+
+def get_test_results_cache():
+    global _TEST_RESULTS_CACHE
+
+    if _TEST_RESULTS_CACHE is None:
+        redis_url = settings.CACHE_REDIS_URL
+
+        if redis_url is not None:
+            logger.info("Using 'Redis' cache for test results...")
+            _TEST_RESULTS_CACHE = RedisCache(redis_url)
+        else:
+            logger.info("Using 'Dict' cache for test results...")
+            _TEST_RESULTS_CACHE = DictCache()
+
+    return _TEST_RESULTS_CACHE
+
+
 _PREVIEW_CACHE = None
 
 

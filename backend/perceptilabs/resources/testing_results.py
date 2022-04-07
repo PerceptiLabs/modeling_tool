@@ -1,14 +1,16 @@
 import base64
 import tempfile
-import pickle
-import os
+
 from perceptilabs.utils import b64decode_and_sanitize
 from perceptilabs.utils import sanitize_path
-from filelock import FileLock
+from perceptilabs.caching.utils import get_test_results_cache
 
 
 class TestingResultsAccess:
     FILE_NAME = "latest-testing-results.pkl"
+
+    def __init__(self):
+        self.results_cache = get_test_results_cache()
 
     def new_id(self):
         dirpath = tempfile.mkdtemp()
@@ -19,28 +21,11 @@ class TestingResultsAccess:
         if testing_session_id is None:
             return None
 
-        path = self._get_path(testing_session_id)
-        with FileLock(path + ".lock"):
-            with open(path, "wb") as f:
-                pickle.dump(results, f)
+        self.results_cache.put(testing_session_id, results)
 
     def get_latest(self, testing_session_id):
         if testing_session_id is None:
             return None
 
-        path = self._get_path(testing_session_id)
-        if not os.path.isfile(path):
-            return None
-        with FileLock(path + ".lock"):
-            with open(path, "rb") as f:
-                results_dict = pickle.load(f)
-                return results_dict
-
-    def _get_path(self, testing_session_id):
-        directory = b64decode_and_sanitize(
-            testing_session_id
-        )  # For now it's just a base64 path
-
-        os.makedirs(directory, exist_ok=True)
-        file_path = os.path.join(directory, self.FILE_NAME).replace("\\", "/")
-        return file_path
+        results_dict = self.results_cache.get(testing_session_id)
+        return results_dict

@@ -109,7 +109,6 @@ class TestingSessionInterface:
         self, results_interval, last_update, core, testing_session_id, is_running
     ):
         time_since_update = time.time() - last_update
-
         if (
             (results_interval is None)
             or (time_since_update >= results_interval)

@@ -92,7 +92,6 @@ class InferenceInterface:
 
     def get_testing_results(self, testing_session_id):
         results_dict = self._testing_results_access.get_latest(testing_session_id)
-
         if results_dict:
             return results_dict["results"]
         else:

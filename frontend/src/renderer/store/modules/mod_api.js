@@ -379,6 +379,10 @@ const actions = {
       return
     }*/
 
+    if (rootGetters['mod_test/GET_testRunning'] === false) {
+      return Promise.resolve();
+    }
+
     let startTime = new Date().getTime();
 
     return renderingKernel
