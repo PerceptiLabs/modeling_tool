@@ -3,7 +3,7 @@ import pandas as pd
 
 
 class TypeInferrer:
-    IMAGE_TYPES = ('.jpg', '.jpeg', '.png', '.tif', '.tiff')
+    IMAGE_TYPES = (".jpg", ".jpeg", ".png", ".tif", ".tiff")
 
     def __init__(self, max_categories=50, always_allowed=None, never_allowed=None):
         """
@@ -17,7 +17,7 @@ class TypeInferrer:
         self.never_allowed = never_allowed or list()
 
     def get_valid_and_default_datatypes(self, series):
-        """ Get the datatypes that are valid for this series. Also returns the index of the default one"""
+        """Get the datatypes that are valid for this series. Also returns the index of the default one"""
         types_by_priority = self.get_types_by_priority(series)
 
         valid_datatypes = []
@@ -40,28 +40,28 @@ class TypeInferrer:
         return valid_datatypes, default_index
 
     def get_types_by_priority(self, series):
-        if 'mask' in series.name.lower():  # Frontend passes mask/masks sometimes
+        if "mask" in series.name.lower():  # Frontend passes mask/masks sometimes
             priority_list = {
-                'mask': self.is_valid_image,
-                'binary': self.is_valid_binary,
-                'image': self.is_valid_image,
-                'categorical': self.is_valid_categorical,
-                'numerical': self.is_valid_numerical,
-                'text': self.is_valid_text,
+                "mask": self.is_valid_image,
+                "binary": self.is_valid_binary,
+                "image": self.is_valid_image,
+                "categorical": self.is_valid_categorical,
+                "numerical": self.is_valid_numerical,
+                "text": self.is_valid_text,
             }
         else:
             priority_list = {
-                'binary': self.is_valid_binary,
-                'image': self.is_valid_image,
-                'mask': self.is_valid_image,
-                'categorical': self.is_valid_categorical,
-                'numerical': self.is_valid_numerical,
-                'text': self.is_valid_text,
+                "binary": self.is_valid_binary,
+                "image": self.is_valid_image,
+                "mask": self.is_valid_image,
+                "categorical": self.is_valid_categorical,
+                "numerical": self.is_valid_numerical,
+                "text": self.is_valid_text,
             }
-        
+
         return priority_list
-        
-    def get_default_datatype(self, series):  
+
+    def get_default_datatype(self, series):
         valid_datatypes, prob_idx = self.get_valid_and_default_datatypes(series)
         if valid_datatypes:
             return valid_datatypes[prob_idx]
@@ -69,7 +69,7 @@ class TypeInferrer:
             return None
 
     def get_valid_and_default_datatypes_for_dataframe(self, df):
-        """ Get the datatypes that are valid for each dataframe
+        """Get the datatypes that are valid for each dataframe
 
         Arguments:
             df: a pandas dataframe
@@ -79,7 +79,7 @@ class TypeInferrer:
         """
         if df is None:
             raise ValueError("Dataframe cannot be None!")
-        
+
         if len(df) == 0:
             raise ValueError("Data is empty!")
 
@@ -99,10 +99,7 @@ class TypeInferrer:
         return series.nunique() == 2
 
     def is_valid_numerical(self, series):
-        return (
-            series.apply(type).eq(float).all() or
-            series.apply(type).eq(int).all()
-        )
+        return series.apply(type).eq(float).all() or series.apply(type).eq(int).all()
 
     def is_valid_image(self, series):
         def has_image_ext(value):
@@ -114,17 +111,8 @@ class TypeInferrer:
 
         return series.apply(has_image_ext).all()
 
-
     @classmethod
     def with_default_settings(cls):
         return cls(
-            max_categories=50,
-            always_allowed=['categorical'],
-            never_allowed=['binary']
+            max_categories=50, always_allowed=["categorical"], never_allowed=["binary"]
         )
-
-
-
-
-
-

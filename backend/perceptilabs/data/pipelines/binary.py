@@ -10,7 +10,7 @@ class PreprocessingStep(BasePipeline):
         elif x.dtype == tf.string:
             return self.lookup_string(x)
         else:
-            raise ValueError("Invalid Binary inputs")                
+            raise ValueError("Invalid Binary inputs")
 
     def build(self, tensor_shape):
         self.lookup_string = self._build_string_lookup()
@@ -18,23 +18,25 @@ class PreprocessingStep(BasePipeline):
 
     def _build_number_lookup(self):
         return lambda x: tf.cast(x, tf.float32)
-        
+
     def _build_string_lookup(self):
-        positives = ['true', 'spam']
-        negatives = ['false', 'ham']
-        
+        positives = ["true", "spam"]
+        negatives = ["false", "ham"]
+
         keys = tf.constant(positives + negatives)
-        values = tf.constant([1.0 for _ in range(len(positives))] + [0.0 for _ in range(len(negatives))])
-            
+        values = tf.constant(
+            [1.0 for _ in range(len(positives))] + [0.0 for _ in range(len(negatives))]
+        )
+
         init = tf.lookup.KeyValueTensorInitializer(keys, values)
         self.table = tf.lookup.StaticHashTable(init, default_value=0)
-                                 
+
         def func(x):
             x = tf.strings.lower(x)
             x = self.table.lookup(x)
-            return x                
+            return x
 
-        return func    
+        return func
 
 
 class BinaryPipelineBuilder(PipelineBuilder):
@@ -43,6 +45,7 @@ class BinaryPipelineBuilder(PipelineBuilder):
     _preprocessing_class = PreprocessingStep
     _postprocessing_class = None
 
-    def _compute_processing_metadata(self, preprocessing, dataset, on_status_updated=None):
-        return {'n_categories': 1}, {}
-    
+    def _compute_processing_metadata(
+        self, preprocessing, dataset, on_status_updated=None
+    ):
+        return {"n_categories": 1}, {}

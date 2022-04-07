@@ -14,10 +14,10 @@ class _Node:
     def __hash__(self):
         return self._hash
 
-    
+
 class GraphSplitter:
     def _build_complete_graph(self, node_ids, edges_by_id):
-        id_to_node = {}        
+        id_to_node = {}
         graph = nx.DiGraph()
 
         for id1, id2 in edges_by_id:
@@ -31,24 +31,27 @@ class GraphSplitter:
             if id_ not in id_to_node:
                 id_to_node[id_] = _Node(id_)
             graph.add_node(id_to_node[id_])
-                
+
         return graph
 
     def _get_subgraphs(self, disjoint_graphs, split_ids):
         if split_ids is None:
             return disjoint_graphs
-        
+
         all_subgraphs = []
         for graph in disjoint_graphs:
-            # Split the graph at select nodes. 
-            # Remove their outgoing connections and create an equivalent node with those.            
+            # Split the graph at select nodes.
+            # Remove their outgoing connections and create an equivalent node with those.
             new_edges = []
             for edge in graph.edges:
                 node1, node2 = edge
                 if node1.id in split_ids:
                     print("replacing edge!")
-                    edge = (_Node(node1.id), node2) # Create a new, equivalent, instance
-                    
+                    edge = (
+                        _Node(node1.id),
+                        node2,
+                    )  # Create a new, equivalent, instance
+
                 new_edges.append(edge)
 
             # Pick up isolated nodes
@@ -64,8 +67,8 @@ class GraphSplitter:
 
             # Extract disjoint subgraphs
             subgraphs = self._get_disjoint_graphs(new_graph)
-            all_subgraphs.extend(subgraphs)            
-                
+            all_subgraphs.extend(subgraphs)
+
         return all_subgraphs
 
     def _get_disjoint_graphs(self, graph):
@@ -73,8 +76,8 @@ class GraphSplitter:
         for nodes in nx.weakly_connected_components(graph):
             new_graph = graph.subgraph(nodes).copy()
             disj_graphs.append(new_graph)
-        return disj_graphs    
-        
+        return disj_graphs
+
     def split(self, node_ids, edges_by_id, split_ids=None):
         complete_graph = self._build_complete_graph(node_ids, edges_by_id)
         disjoint_graphs = self._get_disjoint_graphs(complete_graph)

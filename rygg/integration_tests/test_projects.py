@@ -6,8 +6,9 @@ from pathlib import Path
 from clients import ProjectClient, ModelClient, NotebookClient, DatasetClient
 from assertions import assert_eventually
 
+
 @pytest.mark.timeout(1)
-@pytest.mark.usefixtures('enterprise_only')
+@pytest.mark.usefixtures("enterprise_only")
 def test_project_creates_and_deletes_dir(rest, to_local_translator):
     # create project
     with ProjectClient.make(rest, name="test project") as project:
@@ -17,7 +18,9 @@ def test_project_creates_and_deletes_dir(rest, to_local_translator):
         local_dir = to_local_translator(project_dir)
         assert os.path.isdir(local_dir)
 
-    assert_eventually(lambda: not os.path.isdir(project_dir), stop_max_delay=2000, wait_fixed=100)
+    assert_eventually(
+        lambda: not os.path.isdir(project_dir), stop_max_delay=2000, wait_fixed=100
+    )
 
 
 def test_project_delete(rest):
@@ -34,18 +37,32 @@ def test_project_delete_also_deletes_model(rest):
     assert not model.exists
 
 
-@pytest.mark.usefixtures('pip_only')
+@pytest.mark.usefixtures("pip_only")
 def test_project_delete_also_deletes_dataset(rest, tmp_text_file):
     with ProjectClient.make(rest, name="test project") as project:
-        dataset = DatasetClient.make(rest, name="some file", location=tmp_text_file, project=project.id, models=[], type='M')
+        dataset = DatasetClient.make(
+            rest,
+            name="some file",
+            location=tmp_text_file,
+            project=project.id,
+            models=[],
+            type="M",
+        )
 
     assert not dataset.exists
 
 
-@pytest.mark.usefixtures('pip_only')
+@pytest.mark.usefixtures("pip_only")
 def test_project_delete_also_deletes_dataset(rest, tmp_text_file):
     with ProjectClient.make(rest, name="test project") as project:
-        dataset = DatasetClient.make(rest, name="some file", project=project.id, models=[], location=str(tmp_text_file), type='M')
+        dataset = DatasetClient.make(
+            rest,
+            name="some file",
+            project=project.id,
+            models=[],
+            location=str(tmp_text_file),
+            type="M",
+        )
 
     assert not dataset.exists
 
@@ -58,7 +75,9 @@ def test_project_delete_also_deletes_notebook(rest):
 
 
 def test_notebook_project_link(rest, tmp_project):
-    with NotebookClient.make(rest, project=tmp_project.id, name="notebook1") as notebook:
+    with NotebookClient.make(
+        rest, project=tmp_project.id, name="notebook1"
+    ) as notebook:
         tmp_project.refresh()
         assert notebook.id in [n["notebook_id"] for n in tmp_project.notebooks]
 
@@ -78,25 +97,32 @@ def test_project_update(tmp_project):
     assert tmp_project.updated > tmp_project.created
     assert tmp_project.name == "this is a new name"
 
-@pytest.mark.usefixtures('pip_only')
+
+@pytest.mark.usefixtures("pip_only")
 def test_allows_default_directory_in_local(rest, tmpdir):
     with ProjectClient.make(rest, name="name", default_directory=str(tmpdir)):
         pass
 
-@pytest.mark.usefixtures('enterprise_only')
+
+@pytest.mark.usefixtures("enterprise_only")
 def test_create_rejects_default_directory_in_enterprise(rest, tmpdir):
     with pytest.raises(Exception, match="400.*default_directory"):
         ProjectClient.make(rest, name="name", default_directory=str(tmpdir))
 
-@pytest.mark.usefixtures('enterprise_only')
+
+@pytest.mark.usefixtures("enterprise_only")
 def test_update_rejects_default_directory_in_enterprise(rest, tmpdir, tmp_project):
     with pytest.raises(Exception, match="400.*default_directory"):
         tmp_project.update(default_directory=str(tmpdir))
 
 
 DEFAULT_PATH = os.path.join(Path.home(), "Documents", "Perceptilabs", "Default")
+
+
 @pytest.mark.skipif(not Path.home(), reason="Default project requires a HOME directory")
-@pytest.mark.skipif(os.path.isdir(DEFAULT_PATH), reason="Default project requires a HOME directory")
+@pytest.mark.skipif(
+    os.path.isdir(DEFAULT_PATH), reason="Default project requires a HOME directory"
+)
 def test_get_default_mode_project(rest, vol_map):
     if vol_map:
         pytest.skip("Don't run against remote machine")
@@ -105,4 +131,3 @@ def test_get_default_mode_project(rest, vol_map):
     p = ProjectClient.get_default(rest)
     assert os.path.isdir(p.default_directory)
     assert p.default_directory == DEFAULT_PATH
-

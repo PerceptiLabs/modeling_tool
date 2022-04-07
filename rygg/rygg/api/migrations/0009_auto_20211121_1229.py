@@ -8,23 +8,26 @@ import os
 
 logger = logging.getLogger(__name__)
 # rygg.settings isn't obeyed. Make it obey
-logger.setLevel(os.getenv('PL_RYGG_LOG_LEVEL', 'WARNING'))
+logger.setLevel(os.getenv("PL_RYGG_LOG_LEVEL", "WARNING"))
 
 
 def path_join(*paths):
-    return os.path.join(*paths).replace('\\','/')
+    return os.path.join(*paths).replace("\\", "/")
+
 
 def dig(d, *keys):
     cur = d
     for k in keys:
-        if not cur or not hasattr(cur, 'get'):
+        if not cur or not hasattr(cur, "get"):
             return None
         elif k in cur:
             cur = cur.get(k)
     return cur
 
+
 def fix_path(path):
-    return os.path.expanduser(path).replace('\\','/')
+    return os.path.expanduser(path).replace("\\", "/")
+
 
 def log_update(pre, post):
     if post == pre:
@@ -32,15 +35,16 @@ def log_update(pre, post):
     else:
         logger.debug(f"Updating '{pre}' to '{post}'.")
 
+
 def fix_model_dict(m):
-    dss = dig(m, 'networkMeta', 'datasetSettings')
-    if 'filePath' in dss:
-        pre = dss['filePath']
+    dss = dig(m, "networkMeta", "datasetSettings")
+    if "filePath" in dss:
+        pre = dss["filePath"]
         post = fix_path(pre)
-        dss['filePath'] = post
+        dss["filePath"] = post
         log_update(pre, post)
 
-    ne = dig(m, 'networkElementList')
+    ne = dig(m, "networkElementList")
     if not ne:
         return
     for v in ne.values():
@@ -54,16 +58,17 @@ def fix_model_dict(m):
 
 def fix_model_file(filename):
     logger.debug(f"Migrating {filename}...")
-    j = open(filename, 'r').read()
+    j = open(filename, "r").read()
     as_dict = json.loads(j)
     fix_model_dict(as_dict)
     j = json.dumps(as_dict)
-    open(filename, 'w').write(j)
+    open(filename, "w").write(j)
+
 
 def files_to_fix():
     # call objects() instead of available_objects() to migrate all models, just in case...
-    for result in Model.objects.values('location'):
-        raw_location = result.get('location')
+    for result in Model.objects.values("location"):
+        raw_location = result.get("location")
         if not raw_location:
             continue
 
@@ -75,20 +80,23 @@ def files_to_fix():
 
         yield path_join(abs_location, "model.json")
 
+
 def fix_model_paths(app, schema_editor):
     logging.debug(f"Starting...")
     for f in files_to_fix():
         fix_model_file(f)
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0008_dataset_root_dir'),
+        ("api", "0008_dataset_root_dir"),
     ]
 
     operations = [
         migrations.RunPython(
             fix_model_paths,
             # Unapply isn't needed since apply just expands the ~
-            migrations.RunPython.noop),
+            migrations.RunPython.noop,
+        ),
     ]

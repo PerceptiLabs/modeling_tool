@@ -4,6 +4,7 @@ import json
 
 from rygg.api.models import Project
 
+
 class TestCaseBase(TestCase):
     def build_request(self, method_name, path, body=None):
         self.factory = APIRequestFactory()
@@ -30,12 +31,10 @@ class TestCaseBase(TestCase):
         response = call()
         self.assertEqual(response.status_code, 200)
         as_dict = json.loads(response.content)
-        self.maxDiff=None
+        self.maxDiff = None
         self.assertDictEqual(as_dict, expected_body)
         return response
 
     def call_and_expect_error(self, method_name, path, error_class, body=None):
         call = self.build_call(method_name, path, body=body)
         self.assertRaises(error_class, call)
-
-

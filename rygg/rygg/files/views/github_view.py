@@ -5,11 +5,16 @@ import os
 
 from rygg.files.exceptions import UserError
 from rygg.files.interfaces.github_issue import CreateIssueAPI
-from rygg.files.views.util import get_required_param, request_as_dict, get_required_body_param
+from rygg.files.views.util import (
+    get_required_param,
+    request_as_dict,
+    get_required_body_param,
+)
 import rygg.files.paths
 import rygg.files.views.util
 
-@api_view(['POST'])
+
+@api_view(["POST"])
 def github_export(request):
     full_path = rygg.files.views.util.get_path_param(request)
     project_id = rygg.files.views.util.get_project_from_request(request).project_id
@@ -25,18 +30,35 @@ def github_export(request):
     include_trained = bool(as_dict.get("include_trained_model"))
     raw_data_paths = list(as_dict.get("data_path"))
 
-    resolve_path = lambda data_path: rygg.files.paths.translate_path_from_user(data_path, project_id)
+    resolve_path = lambda data_path: rygg.files.paths.translate_path_from_user(
+        data_path, project_id
+    )
 
     data_paths = [resolve_path(data_path) for data_path in raw_data_paths]
 
     try:
         if export_type == "basic":
-            sha_and_url = rygg.files.models.github.export_repo_basic(github_token, repo_name, full_path, include_trained, data_paths, commit_message=commit_message)
+            sha_and_url = rygg.files.models.github.export_repo_basic(
+                github_token,
+                repo_name,
+                full_path,
+                include_trained,
+                data_paths,
+                commit_message=commit_message,
+            )
 
         elif export_type == "advanced":
             tensorfiles_list = list(as_dict.get("tensorfiles"))
             datafiles_list = list(as_dict.get("datafiles"))
-            sha_and_url = rygg.files.models.github.export_repo_advanced(github_token, repo_name, full_path, tensorfiles_list, datafiles_list, data_paths, commit_message=commit_message)
+            sha_and_url = rygg.files.models.github.export_repo_advanced(
+                github_token,
+                repo_name,
+                full_path,
+                tensorfiles_list,
+                datafiles_list,
+                data_paths,
+                commit_message=commit_message,
+            )
 
         else:
             raise HTTPExceptions.BAD_REQUEST.with_content("Invaild github export type")
@@ -49,8 +71,7 @@ def github_export(request):
         raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content(e.message)
 
 
-
-@api_view(['POST'])
+@api_view(["POST"])
 def github_import(request):
     path = rygg.files.views.util.get_path_param(request)
     url = get_required_param(request, "url")
@@ -72,7 +93,7 @@ def github_import(request):
         raise HTTPExceptions.INTERNAL_SERVER_ERROR.with_content(e.message)
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 def github_issue(request):
     as_dict = request_as_dict(request)
     github_token = get_required_body_param("github_token", as_dict)
@@ -81,7 +102,9 @@ def github_issue(request):
     body = as_dict.get("body")
 
     try:
-        number = rygg.files.models.github.create_issue(github_token, issue_type, title, body)
+        number = rygg.files.models.github.create_issue(
+            github_token, issue_type, title, body
+        )
 
         response = {"Issue Number": number}
         return Response(response, content_type="application/json")

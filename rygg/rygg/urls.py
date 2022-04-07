@@ -23,7 +23,7 @@ from rygg.files.views.directory_view import (
     get_resolved_dir,
     pick_directory,
 )
-from rygg.files.views.github_view import (github_export, github_import, github_issue)
+from rygg.files.views.github_view import github_export, github_import, github_issue
 from rygg.files.views.upload_view import get_upload_dir
 from rygg.files.views.tf_hub_cache_view import get_tf_hub_cache_dir
 
@@ -32,7 +32,7 @@ router.register(r"projects", ProjectViewSet)
 router.register(r"models", ModelViewSet)
 router.register(r"datasets", DatasetViewSet)
 router.register(r"notebooks", NotebookViewSet)
-router.register(r"issues", IssuesViewSet, basename='Issues')
+router.register(r"issues", IssuesViewSet, basename="Issues")
 router.register(r"tasks", TaskViewSet, basename="task")
 
 urlpatterns = [
@@ -40,9 +40,9 @@ urlpatterns = [
     path(r"app/version/", get_version),
     path(r"app/updates_available/", get_updates_available),
     path(r"app/is_enterprise/", is_enterprise),
-    path('mixpanel/track/', mixpanel_views.track),
-    path('mixpanel/decide/', mixpanel_views.decide),
-    path('mixpanel/engage/', mixpanel_views.engage),
+    path("mixpanel/track/", mixpanel_views.track),
+    path("mixpanel/decide/", mixpanel_views.decide),
+    path("mixpanel/engage/", mixpanel_views.engage),
     path("files", FileView.as_view()),
     path("files/pick_file", pick_file),
     path("files/saveas_file", saveas_file),

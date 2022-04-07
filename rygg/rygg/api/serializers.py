@@ -2,23 +2,21 @@ from rest_framework import serializers
 
 from rygg.api.models import Project, Model, Notebook, FileLink, Dataset
 
+
 class NotebookSerializer(serializers.ModelSerializer):
-    project = serializers.PrimaryKeyRelatedField(queryset=Project.available_objects.all())
+    project = serializers.PrimaryKeyRelatedField(
+        queryset=Project.available_objects.all()
+    )
     location = serializers.SerializerMethodField()
 
     class Meta:
         model = Notebook
-        fields = ["notebook_id",
-                  "project",
-                  "name",
-                  "created",
-                  "updated",
-                  "location"]
+        fields = ["notebook_id", "project", "name", "created", "updated", "location"]
 
     def create(self, validated_data):
 
-        request = self.context.get('request', {})
-        location = request.data.get('location', '')
+        request = self.context.get("request", {})
+        location = request.data.get("location", "")
 
         filelink = FileLink.objects.create(resource_locator=location)
         filelink.save()
@@ -31,8 +29,8 @@ class NotebookSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
 
-        request = self.context.get('request', {})
-        location = request.data.get('location', '')
+        request = self.context.get("request", {})
+        location = request.data.get("location", "")
 
         filelink = instance.filelink
 
@@ -40,13 +38,12 @@ class NotebookSerializer(serializers.ModelSerializer):
             filelink.resource_locator = location
             filelink.save()
 
-        instance.name = validated_data.get('name', instance.name)
+        instance.name = validated_data.get("name", instance.name)
         instance.save()
         return instance
 
     def get_location(self, obj):
         return obj.filelink.resource_locator
-
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -55,55 +52,65 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["project_id",
-                  "name",
-                  "default_directory",
-                  "created",
-                  "updated",
-                  "is_removed",
-                  "models",
-                  "notebooks",
-                  "owner",
-                  ]
+        fields = [
+            "project_id",
+            "name",
+            "default_directory",
+            "created",
+            "updated",
+            "is_removed",
+            "models",
+            "notebooks",
+            "owner",
+        ]
 
 
 class DatasetSerializer(serializers.ModelSerializer):
-    project = serializers.PrimaryKeyRelatedField(queryset=Project.available_objects.all())
-    models = serializers.PrimaryKeyRelatedField(queryset=Model.available_objects.all(), required=False, many=True)
+    project = serializers.PrimaryKeyRelatedField(
+        queryset=Project.available_objects.all()
+    )
+    models = serializers.PrimaryKeyRelatedField(
+        queryset=Model.available_objects.all(), required=False, many=True
+    )
 
     class Meta:
         model = Dataset
-        fields = ["dataset_id",
-                  "project",
-                  "name",
-                  "created",
-                  "modified",
-                  "is_removed",
-                  "location",
-                  "status",
-                  "models",
-                  "source_url",
-                  "exists_on_disk",
-                  "is_perceptilabs_sourced",
-                  "type",
-                  ]
+        fields = [
+            "dataset_id",
+            "project",
+            "name",
+            "created",
+            "modified",
+            "is_removed",
+            "location",
+            "status",
+            "models",
+            "source_url",
+            "exists_on_disk",
+            "is_perceptilabs_sourced",
+            "type",
+        ]
 
 
 class ModelSerializer(serializers.ModelSerializer):
-    project = serializers.PrimaryKeyRelatedField(queryset=Project.available_objects.all())
-    datasets = serializers.PrimaryKeyRelatedField(queryset=Dataset.available_objects.all(), required=False, many=True)
+    project = serializers.PrimaryKeyRelatedField(
+        queryset=Project.available_objects.all()
+    )
+    datasets = serializers.PrimaryKeyRelatedField(
+        queryset=Dataset.available_objects.all(), required=False, many=True
+    )
 
     class Meta:
         model = Model
-        fields = ["model_id",
-                  "project",
-                  "name",
-                  "created",
-                  "updated",
-                  "is_removed",
-                  "saved_by",
-                  "location",
-                  "saved_version_location",
-                  "datasets",
-                  ]
-
+        fields = [
+            "model_id",
+            "project",
+            "name",
+            "created",
+            "updated",
+            "is_removed",
+            "saved_by",
+            "location",
+            "saved_version_location",
+            "datasets",
+        ]

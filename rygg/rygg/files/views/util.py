@@ -9,6 +9,7 @@ from rygg.files.paths import translate_path_from_user, PathNotAvailable
 from rygg.settings import IS_CONTAINERIZED
 import rygg.files.paths
 
+
 def get_required_param(request, param, converter=None):
     qp = request.query_params
     if not qp.__contains__(param):
@@ -32,11 +33,15 @@ def get_required_data_param(request, param, converter=None):
 
     return val
 
+
 def convert(as_str, converter):
     try:
         return converter(as_str)
     except ValueError:
-        raise HTTPExceptions.BAD_REQUEST.with_content(f"{as_str} must be convertable to {converter.__name__}.")
+        raise HTTPExceptions.BAD_REQUEST.with_content(
+            f"{as_str} must be convertable to {converter.__name__}."
+        )
+
 
 def get_optional_int_param(request, param, default):
     as_str = get_optional_param(request, param, default)
@@ -44,6 +49,7 @@ def get_optional_int_param(request, param, default):
         return int(as_str)
     except ValueError:
         raise HTTPExceptions.BAD_REQUEST.with_content(f"{param} must be an integer.")
+
 
 def get_optional_param(request, param, default):
     qp = request.query_params
@@ -68,34 +74,40 @@ def get_project_from_request(request):
     project = Project.get_by_id(project_id, request.user)
 
     if not project:
-        raise HTTPExceptions.NOT_FOUND.with_content(f"Project {project_id} does not exist")
+        raise HTTPExceptions.NOT_FOUND.with_content(
+            f"Project {project_id} does not exist"
+        )
 
     return project
 
 
 def get_project_from_post(request):
-    project_id = get_required_data_param(request, 'project_id', converter=int)
+    project_id = get_required_data_param(request, "project_id", converter=int)
     project = Project.get_by_id(project_id, request.user)
 
     if not project:
-        raise HTTPExceptions.NOT_FOUND.with_content(f"Project {project_id} does not exist")
+        raise HTTPExceptions.NOT_FOUND.with_content(
+            f"Project {project_id} does not exist"
+        )
 
     return project
 
 
 def get_required_choice_param(request, param, choices):
     got = get_required_param(request, param)
-    valid = [k for k,_ in choices]
+    valid = [k for k, _ in choices]
     if got not in valid:
         raise HTTPExceptions.BAD_REQUEST.with_content(f"{param} not in {valid}")
     return got
 
+
 def get_required_choice_post(request, param, choices):
     got = request.POST.get(param)
-    valid = [k for k,_ in choices]
+    valid = [k for k, _ in choices]
     if got not in valid:
         raise HTTPExceptions.BAD_REQUEST.with_content(f"{param} not in {valid}")
     return got
+
 
 def json_response(response_content):
     return Response(response_content, content_type="application/json")
@@ -114,26 +126,32 @@ def request_as_dict(request):
     except:
         raise HTTPExceptions.BAD_REQUEST.with_content("Invalid json request")
 
+
 def protect_read_only_enterprise_field(request, field_name):
     if IS_CONTAINERIZED:
         as_dict = request_as_dict(request)
         if field_name in request_as_dict(request):
             raise HTTPExceptions.BAD_REQUEST.with_content(f"{field_name} is read-only")
 
+
 def get_page(seq, page=1, per=100):
     if per < 1:
         raise ValueError(f"per must be greater than 0")
     if page < 1:
         raise ValueError(f"page must be greater than 0")
-    start = (page-1) * per
+    start = (page - 1) * per
     end = start + per
     return seq[start:end]
+
 
 def get_required_body_param(name, body_as_dict):
     ret = body_as_dict.get(name)
     if ret == None:
-        raise HTTPExceptions.BAD_REQUEST.with_content(f"Request body missing required parameter {name}")
+        raise HTTPExceptions.BAD_REQUEST.with_content(
+            f"Request body missing required parameter {name}"
+        )
     return ret
+
 
 def get_paged_iter(seq, request):
     page = get_optional_param(request, "page", 1)
@@ -142,4 +160,3 @@ def get_paged_iter(seq, request):
         raise HTTPExceptions.NO_CONTENT
 
     return (page, get_page(seq, page=page, per=per))
-

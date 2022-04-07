@@ -7,13 +7,27 @@ import http
 
 from flask_cors import CORS
 from flask_compress import Compress
-from flask import Flask, request, g, jsonify, abort, make_response, json, send_from_directory
+from flask import (
+    Flask,
+    request,
+    g,
+    jsonify,
+    abort,
+    make_response,
+    json,
+    send_from_directory,
+)
 from flask.json import JSONEncoder
 from werkzeug.exceptions import HTTPException
 import tensorflow as tf
 
 from perceptilabs.auth import jwt_middleware
-from perceptilabs.caching.utils import get_preview_cache, get_data_metadata_cache, NullCache, DictCache
+from perceptilabs.caching.utils import (
+    get_preview_cache,
+    get_data_metadata_cache,
+    NullCache,
+    DictCache,
+)
 from perceptilabs.call_context import CallContext
 from perceptilabs.messaging.base import get_message_broker
 from perceptilabs.tasks.utils import get_task_executor
@@ -48,19 +62,19 @@ class MyJSONEncoder(JSONEncoder):
 
 
 def create_app(
-        preview_cache=None,
-        task_executor=None,
-        message_broker=None,
-        event_tracker=None,
-        models_access=None,
-        model_archives_access=None,
-        epochs_access=None,
-        dataset_access=None,
-        training_results_access=None,
-        testing_results_access=None,
-        serving_results_access=None,
-        preprocessing_results_access=None
-    ):
+    preview_cache=None,
+    task_executor=None,
+    message_broker=None,
+    event_tracker=None,
+    models_access=None,
+    model_archives_access=None,
+    epochs_access=None,
+    dataset_access=None,
+    training_results_access=None,
+    testing_results_access=None,
+    serving_results_access=None,
+    preprocessing_results_access=None,
+):
     # Defer creating objects until function is actually called to ensure any mocking happens first
     rygg = RyggWrapper.with_default_settings()
 
@@ -75,24 +89,32 @@ def create_app(
     training_results_access = training_results_access or TrainingResultsAccess(rygg)
     testing_results_access = testing_results_access or TestingResultsAccess()
     serving_results_access = serving_results_access or ServingResultsAccess(rygg)
-    preprocessing_results_access = preprocessing_results_access or PreprocessingResultsAccess(get_data_metadata_cache())
-    tensorflow_support_access = TensorflowSupportAccess(rygg, enable_tf_gpu_memory_growth=settings.ENABLE_TF_GPU_MEMORY_GROWTH)
-    
+    preprocessing_results_access = (
+        preprocessing_results_access
+        or PreprocessingResultsAccess(get_data_metadata_cache())
+    )
+    tensorflow_support_access = TensorflowSupportAccess(
+        rygg, enable_tf_gpu_memory_growth=settings.ENABLE_TF_GPU_MEMORY_GROWTH
+    )
+
     app = Flask(__name__)
     app.json_encoder = MyJSONEncoder
-    PUBLIC_ROUTES = set([
-        '/version',
-        '/healthy',
-    ])
+    PUBLIC_ROUTES = set(
+        [
+            "/version",
+            "/healthy",
+        ]
+    )
     app.wsgi_app = jwt_middleware(app.wsgi_app, skipped_paths=PUBLIC_ROUTES)
 
-    CORS(app, resources={r'/*': {'origins': '*'}})
+    CORS(app, resources={r"/*": {"origins": "*"}})
 
     compress = Compress()
     compress.init_app(app)
 
     datasets_interface = DatasetsInterface(
-        task_executor, event_tracker, preprocessing_results_access, dataset_access)
+        task_executor, event_tracker, preprocessing_results_access, dataset_access
+    )
 
     models_interface = ModelsInterface(
         task_executor,
@@ -105,7 +127,7 @@ def create_app(
         training_results_access,
         preprocessing_results_access,
         preview_cache,
-        tensorflow_support_access
+        tensorflow_support_access,
     )
 
     inference_interface = InferenceInterface(
@@ -113,10 +135,10 @@ def create_app(
         message_broker,
         testing_results_access,
         serving_results_access,
-        max_serving_ttl=settings.SERVING_MAX_TTL
+        max_serving_ttl=settings.SERVING_MAX_TTL,
     )
 
-    @app.route('/user', methods=['POST'])
+    @app.route("/user", methods=["POST"])
     def set_user():
         call_context = CallContext.from_flask_request(request)
         id_str = str(call_context.user_unique_id)
@@ -129,63 +151,63 @@ def create_app(
             logger.exception("User has not been set: %s" % id_str)
             raise
 
-
-    @app.route('/version', methods=['GET'])
+    @app.route("/version", methods=["GET"])
     def get_version():
         content = {
             "python": sys.version,
             "tensorflow": tf.__version__,
-            "perceptilabs": __version__
+            "perceptilabs": __version__,
         }
         return jsonify(content)
 
-    @app.route('/datasets/preprocessing', methods=['PUT'])
+    @app.route("/datasets/preprocessing", methods=["PUT"])
     def put_preprocessing():
         json_data = request.get_json()
-        settings_dict = json_data['datasetSettings']
-        logrocket_url = request.headers.get('X-LogRocket-URL', '')
+        settings_dict = json_data["datasetSettings"]
+        logrocket_url = request.headers.get("X-LogRocket-URL", "")
         cc = CallContext.from_flask_request(request)
 
-        session_id = datasets_interface.start_preprocessing(cc, settings_dict, logrocket_url=logrocket_url)
+        session_id = datasets_interface.start_preprocessing(
+            cc, settings_dict, logrocket_url=logrocket_url
+        )
 
         return jsonify({"preprocessingSessionId": session_id})
 
-
-    @app.route('/datasets/preprocessing/<preprocessing_session_id>', methods=['GET'])
+    @app.route("/datasets/preprocessing/<preprocessing_session_id>", methods=["GET"])
     def get_preprocessing(preprocessing_session_id):
-        message, is_present, is_complete, error = datasets_interface.get_preprocessing_status(
-            preprocessing_session_id)
+        (
+            message,
+            is_present,
+            is_complete,
+            error,
+        ) = datasets_interface.get_preprocessing_status(preprocessing_session_id)
 
         if is_present:
             response = {
-                'message': f"Build status: '{message}'",
-                'is_complete': is_complete,
-                'error': error
+                "message": f"Build status: '{message}'",
+                "is_complete": is_complete,
+                "error": error,
             }
 
             return jsonify(response)
         else:
-            return make_response('', http.HTTPStatus.NO_CONTENT)
+            return make_response("", http.HTTPStatus.NO_CONTENT)
 
-
-    @app.route('/models/recommendations', methods=['POST'])
+    @app.route("/models/recommendations", methods=["POST"])
     def get_model_recommendation():
         json_data = request.get_json()
         model_id, graph_settings = models_interface.get_model_recommendation(
             CallContext.from_flask_request(request),
-            json_data['datasetId'],
-            json_data['modelName'],
-            json_data.get('skippedWorkspace'),
-            json_data['datasetSettings'],
-            model_path=json_data.get('modelPath'),
+            json_data["datasetId"],
+            json_data["modelName"],
+            json_data.get("skippedWorkspace"),
+            json_data["datasetSettings"],
+            model_path=json_data.get("modelPath"),
         )
-        output = {
-            'model_id': model_id,
-            'graph_settings': graph_settings
-        }
+        output = {"model_id": model_id, "graph_settings": graph_settings}
         return jsonify(output)
 
-    @app.route('/models/import', methods=['POST'])
+    @app.route("/models/import", methods=["POST"])
     def import_model():
         json_data = request.get_json()
         output = models_interface.import_model(
@@ -197,61 +219,59 @@ def create_app(
         )
         return jsonify(output)
 
-
-    @app.route('/models/<model_id>/layers/<layer_id>/code', methods=['POST'])
+    @app.route("/models/<model_id>/layers/<layer_id>/code", methods=["POST"])
     def get_layer_code(model_id, layer_id):
         json_data = request.get_json() or {}
         return models_interface.get_layer_code(
             CallContext.from_flask_request(request),
             model_id,
             layer_id,
-            graph_settings=json_data.get('graphSettings'),
+            graph_settings=json_data.get("graphSettings"),
         )
 
-    @app.route('/models/<model_id>/layers/previews', methods=['POST'])
+    @app.route("/models/<model_id>/layers/previews", methods=["POST"])
     def get_previews(model_id):
         json_data = request.get_json()
         content = models_interface.get_previews(
             CallContext.from_flask_request(request),
             model_id,
-            dataset_settings_dict=json_data['datasetSettings'],
-            graph_settings=json_data.get('graphSettings')
+            dataset_settings_dict=json_data["datasetSettings"],
+            graph_settings=json_data.get("graphSettings"),
         )
         return jsonify(content)
 
-    @app.route('/models/<model_id>/layers/info', methods=['POST'])
-    @app.route('/models/<model_id>/layers/<layer_id>/info', methods=['POST'])
+    @app.route("/models/<model_id>/layers/info", methods=["POST"])
+    @app.route("/models/<model_id>/layers/<layer_id>/info", methods=["POST"])
     def get_layer_info(model_id, layer_id=None):
         json_data = request.get_json()
         content = models_interface.get_layer_info(
             CallContext.from_flask_request(request),
             model_id,
-            dataset_settings_dict=json_data['datasetSettings'],
+            dataset_settings_dict=json_data["datasetSettings"],
             layer_id=layer_id,
-            graph_settings=json_data.get('graphSettings')
+            graph_settings=json_data.get("graphSettings"),
         )
         return jsonify(content)
 
-    @app.route('/datasets/type_inference', methods=['GET'])
+    @app.route("/datasets/type_inference", methods=["GET"])
     def type_inference():
         datatypes = datasets_interface.infer_datatypes(
             CallContext.from_flask_request(request),
-            request.args['dataset_id'],
+            request.args["dataset_id"],
         )
         return jsonify(datatypes)
 
-    @app.route('/healthy', methods=['GET'])
+    @app.route("/healthy", methods=["GET"])
     def healthy():
         return '{"healthy": "true"}'
 
-
-    @app.route('/models/<model_id>/training', methods=['POST'])
+    @app.route("/models/<model_id>/training", methods=["POST"])
     def start_training(model_id):
         json_data = request.get_json()
-        dataset_settings = json_data['datasetSettings']
-        training_settings = json_data['trainingSettings']
-        load_checkpoint = json_data['loadCheckpoint']
-        logrocket_url = request.headers.get('X-LogRocket-URL', '')
+        dataset_settings = json_data["datasetSettings"]
+        training_settings = json_data["trainingSettings"]
+        load_checkpoint = json_data["loadCheckpoint"]
+        logrocket_url = request.headers.get("X-LogRocket-URL", "")
 
         training_session_id = models_interface.start_training(
             CallContext.from_flask_request(request),
@@ -260,35 +280,46 @@ def create_app(
             training_settings,
             load_checkpoint,
             logrocket_url=logrocket_url,
-            graph_settings=json_data.get('graphSettings')
+            graph_settings=json_data.get("graphSettings"),
         )
-        return jsonify({"content": "core started", "training_session_id": training_session_id})
+        return jsonify(
+            {"content": "core started", "training_session_id": training_session_id}
+        )
 
-    @app.route('/models/<model_id>/training/<training_session_id>/stop', methods=['PUT'])
+    @app.route(
+        "/models/<model_id>/training/<training_session_id>/stop", methods=["PUT"]
+    )
     def stop_training(model_id, training_session_id):
         models_interface.stop_training(model_id, training_session_id)
-        return jsonify('success')
+        return jsonify("success")
 
-    @app.route('/models/<model_id>/training/<training_session_id>/pause', methods=['PUT'])
+    @app.route(
+        "/models/<model_id>/training/<training_session_id>/pause", methods=["PUT"]
+    )
     def pause_training(model_id, training_session_id):
         models_interface.pause_training(model_id, training_session_id)
-        return jsonify('success')
+        return jsonify("success")
 
-    @app.route('/models/<model_id>/training/<training_session_id>/unpause', methods=['PUT'])
+    @app.route(
+        "/models/<model_id>/training/<training_session_id>/unpause", methods=["PUT"]
+    )
     def unpause_training(model_id, training_session_id):
         models_interface.unpause_training(model_id, training_session_id)
-        return jsonify('success')
+        return jsonify("success")
 
-    @app.route('/models/<model_id>/training/<training_session_id>/has_checkpoint', methods=['GET'])
+    @app.route(
+        "/models/<model_id>/training/<training_session_id>/has_checkpoint",
+        methods=["GET"],
+    )
     def has_checkpoint(model_id, training_session_id):
         has_checkpoint = models_interface.has_checkpoint(
-            CallContext.from_flask_request(request),
-            model_id,
-            training_session_id
+            CallContext.from_flask_request(request), model_id, training_session_id
         )
         return jsonify(has_checkpoint)
 
-    @app.route('/models/<model_id>/training/<training_session_id>/status', methods=['GET'])
+    @app.route(
+        "/models/<model_id>/training/<training_session_id>/status", methods=["GET"]
+    )
     def training_status(model_id, training_session_id):
         output = models_interface.get_training_status(
             CallContext.from_flask_request(request),
@@ -297,22 +328,29 @@ def create_app(
         )
         return jsonify(output)
 
-    @app.route('/models/<model_id>/training/<training_session_id>/results', methods=['GET'])
+    @app.route(
+        "/models/<model_id>/training/<training_session_id>/results", methods=["GET"]
+    )
     def training_results(model_id, training_session_id):
         output = models_interface.get_training_results(
-            CallContext.from_flask_request(request), model_id, training_session_id, request.args.get('type'),
-            layer_id=request.args.get('layerId'), view=request.args.get('view'))
+            CallContext.from_flask_request(request),
+            model_id,
+            training_session_id,
+            request.args.get("type"),
+            layer_id=request.args.get("layerId"),
+            view=request.args.get("view"),
+        )
         return jsonify(output)
 
-    @app.route('/models/<model_id>/export', methods=['PUT'])
+    @app.route("/models/<model_id>/export", methods=["PUT"])
     def export(model_id):
         json_data = request.get_json()
-        training_session_id = request.args.get('training_session_id')
-        dataset_settings_dict = json_data['datasetSettings']
-        export_options = json_data['exportSettings']
-        training_settings = json_data.get('trainingSettings')
-        frontend_settings = json_data.get('frontendSettings')
-        graph_settings = json_data.get('graphSettings')
+        training_session_id = request.args.get("training_session_id")
+        dataset_settings_dict = json_data["datasetSettings"]
+        export_options = json_data["exportSettings"]
+        training_settings = json_data.get("trainingSettings")
+        frontend_settings = json_data.get("frontendSettings")
+        graph_settings = json_data.get("graphSettings")
 
         status = models_interface.export(
             CallContext.from_flask_request(request),
@@ -322,53 +360,52 @@ def create_app(
             training_session_id,
             training_settings,
             frontend_settings,
-            graph_settings=graph_settings
+            graph_settings=graph_settings,
         )
         return jsonify(status)
 
-    @app.route('/inference/serving/<model_id>', methods=['POST'])
+    @app.route("/inference/serving/<model_id>", methods=["POST"])
     def start_serving(model_id):
         json_data = request.get_json()
 
         session_id = inference_interface.start_serving(
             CallContext.from_flask_request(request),
-            json_data['settings'],
-            json_data['datasetSettings'],
+            json_data["settings"],
+            json_data["datasetSettings"],
             model_id,
-            request.args.get('training_session_id'),
-            json_data['modelName'],
-            json_data['ttl'],
-            logrocket_url=request.headers.get('X-LogRocket-URL', ''),
-            graph_settings=json_data.get('graphSettings')
+            request.args.get("training_session_id"),
+            json_data["modelName"],
+            json_data["ttl"],
+            logrocket_url=request.headers.get("X-LogRocket-URL", ""),
+            graph_settings=json_data.get("graphSettings"),
         )
         return jsonify(session_id)
 
-    @app.route('/inference/serving/<serving_session_id>/status', methods=['GET'])
+    @app.route("/inference/serving/<serving_session_id>/status", methods=["GET"])
     def serving_status(serving_session_id):
         output = inference_interface.get_serving_status(serving_session_id)
         if output is not None:
             return jsonify(output)
         else:
-            return make_response('', 204)
+            return make_response("", 204)
 
-    @app.route('/inference/serving/<serving_session_id>/file', methods=['GET'])
+    @app.route("/inference/serving/<serving_session_id>/file", methods=["GET"])
     def serving_file(serving_session_id):
         path = inference_interface.get_serving_file(serving_session_id)
-        directory, filename = os.path.split(path)        
-        return send_from_directory(
-            directory, filename, mimetype='application/zip')        
+        directory, filename = os.path.split(path)
+        return send_from_directory(directory, filename, mimetype="application/zip")
 
-    @app.route('/inference/serving/<serving_session_id>/stop', methods=['POST'])
+    @app.route("/inference/serving/<serving_session_id>/stop", methods=["POST"])
     def stop_serving(serving_session_id):
         inference_interface.stop_serving(serving_session_id)
-        return jsonify('success')
+        return jsonify("success")
 
-    @app.route('/inference/testing', methods=['POST'])
+    @app.route("/inference/testing", methods=["POST"])
     def start_testing():
         json_data = request.get_json()
-        models_info = json_data['modelsInfo']
-        tests = json_data['tests']
-        logrocket_url = request.headers.get('X-LogRocket-URL', '')
+        models_info = json_data["modelsInfo"]
+        tests = json_data["tests"]
+        logrocket_url = request.headers.get("X-LogRocket-URL", "")
 
         session_id = inference_interface.start_testing(
             CallContext.from_flask_request(request),
@@ -378,28 +415,27 @@ def create_app(
         )
         return jsonify(session_id)
 
-    @app.route('/inference/testing/<testing_session_id>/status', methods=['GET'])
+    @app.route("/inference/testing/<testing_session_id>/status", methods=["GET"])
     def testing_status(testing_session_id):
         output = inference_interface.get_testing_status(testing_session_id)
         return jsonify(output)
 
-    @app.route('/inference/testing/<testing_session_id>/results', methods=['GET'])
+    @app.route("/inference/testing/<testing_session_id>/results", methods=["GET"])
     def testing_results(testing_session_id):
         output = inference_interface.get_testing_results(testing_session_id)
         return jsonify(output)
 
-    '''
+    """
     # TODO: only available in debug mode?
     @app.route('/admin/tasks', methods=['GET'])
     def admin_tasks():
         num = task_executor.num_remaining_tasks
         return jsonify(num)
-    '''
+    """
 
     @app.before_request
     def before_request():
         g.request_started = time.perf_counter()
-
 
     @app.after_request
     def after_request(response):
@@ -418,17 +454,15 @@ def create_app(
 
         response = {"error": error.to_dict()}
         ctxt = CallContext.from_flask_request(request).push(
-            url = request.url,
-            request = request.json,
-            response = response,
-            logrocket_url = request.headers.get('X-LogRocket-URL', ''),
+            url=request.url,
+            request=request.json,
+            response=response,
+            logrocket_url=request.headers.get("X-LogRocket-URL", ""),
         )
 
         utils.send_ex_to_sentry(original_error, ctxt)
 
         return jsonify(response), 200
 
-    #print(app.url_map)
+    # print(app.url_map)
     return app
-
-

@@ -3,15 +3,18 @@ from pathlib import Path
 
 from rygg.settings import IS_CONTAINERIZED, file_upload_dir
 
+
 def translate_path_from_user(path, project_id):
     if IS_CONTAINERIZED:
         return translate_path_from_user_enterprise(path, project_id)
     else:
         return translate_path_from_user_local(path, project_id)
 
+
 class PathNotAvailable(Exception):
     def __init__(self, path, project_id):
         super().__init__(f"Path {path} isn't available for project {project_id}.")
+
 
 def translate_path_from_user_enterprise(raw_path, project_id):
     upload_dir = file_upload_dir(project_id)
@@ -21,7 +24,9 @@ def translate_path_from_user_enterprise(raw_path, project_id):
     if os.path.isabs(raw_path):
         # if the common path is still under the project dir, then we're ok
         common_base = os.path.commonpath([raw_path, upload_dir])
-        if not os.path.isdir(common_base) or not os.path. os.path.samefile(common_base, upload_dir):
+        if not os.path.isdir(common_base) or not os.path.os.path.samefile(
+            common_base, upload_dir
+        ):
 
             raise PathNotAvailable(raw_path, project_id)
 
@@ -45,21 +50,20 @@ def translate_path_from_user_local(raw_path, project_id):
 
 def _resolve_dir(path_to_resolve, project_id):
     def resolve_windows_path(input_path):
-        if '~/Documents' in input_path or "~\\Documents" in input_path:
+        if "~/Documents" in input_path or "~\\Documents" in input_path:
             # get My Documents regardless of localization
             import ctypes.wintypes
 
             buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
             _ = ctypes.windll.shell32.SHGetFolderPathW(0, 5, 0, 5, buf)
 
-            return input_path.replace('~/Documents', buf.value)
+            return input_path.replace("~/Documents", buf.value)
 
-        elif '~/' in input_path or "~\\" in input_path:
+        elif "~/" in input_path or "~\\" in input_path:
             return os.path.expanduser(input_path)
 
         else:
             return input_path
-
 
     try:
         import platform
@@ -71,4 +75,4 @@ def _resolve_dir(path_to_resolve, project_id):
             return os.path.expanduser(path_to_resolve)
 
     except Exception as e:
-        return ''
+        return ""

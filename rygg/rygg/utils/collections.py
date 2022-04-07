@@ -1,5 +1,5 @@
 # Provides a lazy enumerator for when we know the size up front
-class PresizedIterator():
+class PresizedIterator:
     def __init__(self, expected_count, to_enumerate):
         self._expected_count = expected_count
         self._iter = iter(to_enumerate)
@@ -20,4 +20,3 @@ class PresizedIterator():
             return 100
 
         return (self._done / self._expected_count) * 100
-

@@ -18,7 +18,7 @@ class Loader(BasePipeline):  # TODO: move out and add to included files
 
     def build(self, input_shape):
         if self.preprocessing and self.preprocessing.resize:
-            target_shape = self.metadata['target_shape']
+            target_shape = self.metadata["target_shape"]
             self.resize = lambda x: tf.image.resize(x, target_shape)
         else:
             self.resize = None
@@ -26,6 +26,7 @@ class Loader(BasePipeline):  # TODO: move out and add to included files
     @staticmethod
     def _load_image(path_tensor, has_tiff):
         if has_tiff:
+
             def load_tiff(path_tensor):
                 path = path_tensor.numpy().decode()
                 image = np.atleast_3d(skimage.io.imread(path).astype(np.uint16))
@@ -33,17 +34,21 @@ class Loader(BasePipeline):  # TODO: move out and add to included files
                 return image_tensor
 
             image_decoded = tf.py_function(load_tiff, [path_tensor], tf.uint16)
-            image_decoded.set_shape([None, None, None])  # Make sure the shape is present
+            image_decoded.set_shape(
+                [None, None, None]
+            )  # Make sure the shape is present
         else:
             image_encoded = tf.io.read_file(path_tensor)
-            image_decoded = tf.image.decode_image(image_encoded, expand_animations=False, channels=None)  # animated im
+            image_decoded = tf.image.decode_image(
+                image_encoded, expand_animations=False, channels=None
+            )  # animated im
 
         image_decoded = image_decoded[:, :, :3]  # DISCARD ALPHA CHANNEL
         return image_decoded
 
     @classmethod
     def from_data(cls, dataset, preprocessing=None):
-        """ Convenience method for testing"""
+        """Convenience method for testing"""
         metadata = cls.compute_metadata(dataset, preprocessing)
         return cls(preprocessing=preprocessing, metadata=metadata)
 
@@ -54,7 +59,9 @@ class Loader(BasePipeline):  # TODO: move out and add to included files
         n_channels = cls._get_n_channels(dataset, has_tiff)
 
         metadata = {
-            "target_shape": target_shape, "has_tiff": has_tiff, "n_channels": n_channels
+            "target_shape": target_shape,
+            "has_tiff": has_tiff,
+            "n_channels": n_channels,
         }
         return metadata
 
@@ -70,7 +77,7 @@ class Loader(BasePipeline):  # TODO: move out and add to included files
             for path_tensor in dataset:
                 path = path_tensor.numpy().decode().lower()
                 _, ext = os.path.splitext(path)
-                yield ext in ['.tif', '.tiff']
+                yield ext in [".tif", ".tiff"]
 
         return any(gen())
 
@@ -87,17 +94,14 @@ class Loader(BasePipeline):  # TODO: move out and add to included files
         if not preprocessing.resize:
             return get_first_image_shape()
 
-        if preprocessing.resize_mode == 'custom':
+        if preprocessing.resize_mode == "custom":
             height = preprocessing.resize_height
             width = preprocessing.resize_width
             return (height, width)
-        elif preprocessing.resize_mode == 'automatic':
-            all_shapes = (
-                cls._load_image(path, has_tiff).shape
-                for path in dataset
-            )
+        elif preprocessing.resize_mode == "automatic":
+            all_shapes = (cls._load_image(path, has_tiff).shape for path in dataset)
 
-            if preprocessing.resize_automatic_mode == 'min':
+            if preprocessing.resize_automatic_mode == "min":
                 min_height = 10**2
                 min_width = 10**2
 
@@ -106,7 +110,7 @@ class Loader(BasePipeline):  # TODO: move out and add to included files
                     min_width = min(min_width, width)
 
                 return (min_height, min_width)
-            elif preprocessing.resize_automatic_mode == 'max':
+            elif preprocessing.resize_automatic_mode == "max":
                 max_height = 0
                 max_width = 0
 
@@ -115,7 +119,7 @@ class Loader(BasePipeline):  # TODO: move out and add to included files
                     max_width = max(max_width, width)
 
                 return (max_height, max_width)
-            elif preprocessing.resize_automatic_mode == 'mean':
+            elif preprocessing.resize_automatic_mode == "mean":
                 running_height = 0
                 running_width = 0
                 count = 0
@@ -125,8 +129,8 @@ class Loader(BasePipeline):  # TODO: move out and add to included files
                     running_width += width
                     count += 1
 
-                return (int(running_height/count), int(running_width/count))
-            elif preprocessing.resize_automatic_mode == 'mode':
+                return (int(running_height / count), int(running_width / count))
+            elif preprocessing.resize_automatic_mode == "mode":
                 counts = collections.defaultdict(int)
 
                 for (height, width, channels) in all_shapes:

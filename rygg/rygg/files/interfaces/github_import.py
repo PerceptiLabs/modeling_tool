@@ -2,7 +2,8 @@ import requests
 from github import Github
 from rygg.files.exceptions import UserError
 
-class RepoImporterAPI():
+
+class RepoImporterAPI:
     def __init__(self, url):
         self.url = url
 
@@ -38,4 +39,3 @@ class RepoImporterAPI():
             raise UserError("We can't talk to the git command. Is it installed?")
 
         Repo.clone_from(self.url, dest_path)
-

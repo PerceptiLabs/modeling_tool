@@ -20,15 +20,12 @@ class GrayscaleOutputStats(TrainingStats):
             if output.shape[-1] == 1:
                 obj = createDataObject([output])
             else:
-                obj = createDataObject([output[:,:,0]])
-        elif len(output.shape)>3:
+                obj = createDataObject([output[:, :, 0]])
+        elif len(output.shape) > 3:
             obj = createDataObject([output[0]])
         else:
             obj = createDataObject([output])
-        return {"Output":obj}
-
+        return {"Output": obj}
 
     def __eq__(self, other):
-        return (
-            np.all(self.outputs == other.outputs)
-        )
+        return np.all(self.outputs == other.outputs)

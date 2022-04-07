@@ -23,8 +23,3 @@ class EpochSlowdownTracker:
     @property
     def num_epochs_measured(self):
         return len(self.times)
-    
-    
-
-    
-

@@ -1,4 +1,3 @@
-
 import base64
 import time
 import platform
@@ -22,7 +21,7 @@ class ModelDirectoryCorrupt(Exception):
 
 
 class TrainingResultsAccess:
-    FILE_NAME = 'latest-training-results.pkl'
+    FILE_NAME = "latest-training-results.pkl"
 
     def __init__(self, rygg):
         self._rygg = rygg
@@ -32,8 +31,8 @@ class TrainingResultsAccess:
             return None
 
         path = self._get_path(call_context, training_session_id)
-        with FileLock(path+'.lock'):
-            with open(path, 'wb') as f:
+        with FileLock(path + ".lock"):
+            with open(path, "wb") as f:
                 pickle.dump(results, f)
                 size = os.path.getsize(path)
                 logger.info(f"Size of latest training results in bytes: {size}")
@@ -48,12 +47,14 @@ class TrainingResultsAccess:
             return None
 
         results_dict = {}
-        with FileLock(path+'.lock'):
-            with open(path, 'rb') as f:
+        with FileLock(path + ".lock"):
+            with open(path, "rb") as f:
                 results_dict = pickle.load(f)
 
         if not results_dict:
-            logger.error(f"Invalid training results for training session id {training_session_id}. No content found.")
+            logger.error(
+                f"Invalid training results for training session id {training_session_id}. No content found."
+            )
             return None
 
         return results_dict
@@ -70,28 +71,29 @@ class TrainingResultsAccess:
         logger.error(error_message)
 
     def _get_path(self, call_context, training_session_id):
-        model_dir = self._rygg.get_model(call_context, training_session_id)['location']
-        model_dir = model_dir.replace('\\', '/')  # Sanitize Windows path
+        model_dir = self._rygg.get_model(call_context, training_session_id)["location"]
+        model_dir = model_dir.replace("\\", "/")  # Sanitize Windows path
 
-        ckpt_dir = os.path.join(model_dir, 'checkpoint')
+        ckpt_dir = os.path.join(model_dir, "checkpoint")
 
         if os.path.isfile(ckpt_dir):
             raise ModelDirectoryCorrupt(
-                f"Creating checkpoint directory failed because a file with the same path already exists. Path: {ckpt_dir}")
-        
+                f"Creating checkpoint directory failed because a file with the same path already exists. Path: {ckpt_dir}"
+            )
+
         os.makedirs(ckpt_dir, exist_ok=True)
         file_path = os.path.join(ckpt_dir, self.FILE_NAME)
         return file_path
 
     def remove(self, call_context, training_session_id):
-        @retry(stop_max_attempt_number=3, wait_fixed=500)  # Windows needs several attempts
+        @retry(
+            stop_max_attempt_number=3, wait_fixed=500
+        )  # Windows needs several attempts
         def do_remove(path):
             if os.path.isfile(path):
-                with FileLock(path+'.lock'):
+                with FileLock(path + ".lock"):
                     os.remove(path)
 
         if training_session_id is not None:
             path = self._get_path(call_context, training_session_id)
             do_remove(path)
-
-

@@ -9,196 +9,166 @@ from perceptilabs.data.pipelines import CategoricalPipelineBuilder
 
 
 def test_categorical_preprocessing_when_values_are_strings():
-    values = ['cat', 'dog', 'zebra', 'zebra']
-    expected = [
-        [1.0, 0.0, 0.0],
-        [0.0, 1.0, 0.0],
-        [0.0, 0.0, 1.0],
-        [0.0, 0.0, 1.0]                        
-    ]
-    
-    dataset = tf.data.Dataset.from_tensor_slices(values)  
+    values = ["cat", "dog", "zebra", "zebra"]
+    expected = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0]]
+
+    dataset = tf.data.Dataset.from_tensor_slices(values)
     _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset(
-        {}, 
-        dataset,  
-        feature_name=None, 
-        on_status_updated=None)    
+        {}, dataset, feature_name=None, on_status_updated=None
+    )
     processed_dataset = dataset.map(lambda x: pipeline(x))
     actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
-    
+
     assert actual == expected
 
-    assert set(pipeline.metadata.get('mapping').keys()) == {'cat', 'dog', 'zebra'}
-    assert pipeline.metadata.get('dtype') == str
-    
+    assert set(pipeline.metadata.get("mapping").keys()) == {"cat", "dog", "zebra"}
+    assert pipeline.metadata.get("dtype") == str
+
+
 def test_categorical_preprocessing_when_values_are_floats():
     values = [1.2, 2.3, 3.4, 3.4]
-    expected = [
-        [1.0, 0.0, 0.0],
-        [0.0, 1.0, 0.0],
-        [0.0, 0.0, 1.0],
-        [0.0, 0.0, 1.0]                        
-    ]
-    
-    dataset = tf.data.Dataset.from_tensor_slices(values)  
-    _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset(
-        {}, 
-        dataset,  
-        feature_name=None, 
-        on_status_updated=None)    
-    processed_dataset = dataset.map(lambda x: pipeline(x))
-    actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
-    assert actual == expected
+    expected = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0]]
 
-    assert set(pipeline.metadata.get('mapping').keys()) == {'1.20', '2.30', '3.40'}
-    assert pipeline.metadata.get('dtype') == float
-    
-    
-def test_categorical_preprocessing_when_values_are_string_integers():
-    values = ['2', '1', '0', '0']
-    expected = [
-        [0.0, 0.0, 1.0],
-        [0.0, 1.0, 0.0],
-        [1.0, 0.0, 0.0],
-        [1.0, 0.0, 0.0]                        
-    ]
-    
     dataset = tf.data.Dataset.from_tensor_slices(values)
     _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset(
-        {}, 
-        dataset, 
-        feature_name=None, 
-        on_status_updated=None)        
+        {}, dataset, feature_name=None, on_status_updated=None
+    )
+    processed_dataset = dataset.map(lambda x: pipeline(x))
+    actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
+    assert actual == expected
+
+    assert set(pipeline.metadata.get("mapping").keys()) == {"1.20", "2.30", "3.40"}
+    assert pipeline.metadata.get("dtype") == float
+
+
+def test_categorical_preprocessing_when_values_are_string_integers():
+    values = ["2", "1", "0", "0"]
+    expected = [[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]]
+
+    dataset = tf.data.Dataset.from_tensor_slices(values)
+    _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset(
+        {}, dataset, feature_name=None, on_status_updated=None
+    )
     processed_dataset = dataset.map(lambda x: pipeline(x))
     actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
 
     assert actual == expected
-    assert set(pipeline.metadata.get('mapping').keys()) == {'0', '1', '2'}
-    assert pipeline.metadata.get('dtype') == str
-    
-    
+    assert set(pipeline.metadata.get("mapping").keys()) == {"0", "1", "2"}
+    assert pipeline.metadata.get("dtype") == str
+
+
 def test_categorical_preprocessing_when_values_are_numerical():
     values = [0, 1, 2, 2]
-    expected = [
-        [1.0, 0.0, 0.0],
-        [0.0, 1.0, 0.0],
-        [0.0, 0.0, 1.0],
-        [0.0, 0.0, 1.0]                        
-    ]
-    
+    expected = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0]]
+
     dataset = tf.data.Dataset.from_tensor_slices(values)
     _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset(
-        {}, 
-        dataset, 
-        feature_name=None, 
-        on_status_updated=None)           
+        {}, dataset, feature_name=None, on_status_updated=None
+    )
     processed_dataset = dataset.map(lambda x: pipeline(x))
     actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
-    
+
     assert actual == expected
-    assert set(pipeline.metadata.get('mapping').keys()) == {0, 1, 2}
-    assert pipeline.metadata.get('dtype') == int
-    
+    assert set(pipeline.metadata.get("mapping").keys()) == {0, 1, 2}
+    assert pipeline.metadata.get("dtype") == int
+
 
 def test_categorical_preprocessing_when_values_are_numerical_but_unordered():
     values = [0, 2, 1, 2]
-    expected = [
-        [1.0, 0.0, 0.0],
-        [0.0, 0.0, 1.0],
-        [0.0, 1.0, 0.0],
-        [0.0, 0.0, 1.0]                        
-    ]
-    
+    expected = [[1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+
     dataset = tf.data.Dataset.from_tensor_slices(values)
     _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset(
-        {}, 
-        dataset, 
-        feature_name=None, 
-        on_status_updated=None)               
+        {}, dataset, feature_name=None, on_status_updated=None
+    )
     processed_dataset = dataset.map(lambda x: pipeline(x))
     actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
-    
+
     assert actual == expected
-    
+
 
 def test_categorical_postprocessing():
-    expected = ['cat', 'dog', 'car', 'car']
-    
+    expected = ["cat", "dog", "car", "car"]
+
     dataset = tf.data.Dataset.from_tensor_slices(expected)
-    _, _, preprocessing, postprocessing = CategoricalPipelineBuilder().build_from_dataset(
-        {}, 
-        dataset, 
-        feature_name=None, 
-        on_status_updated=None)    
+    (
+        _,
+        _,
+        preprocessing,
+        postprocessing,
+    ) = CategoricalPipelineBuilder().build_from_dataset(
+        {}, dataset, feature_name=None, on_status_updated=None
+    )
     processed_dataset = dataset.map(lambda x: preprocessing(x))
-    
-    processed_dataset = processed_dataset.map(lambda x: postprocessing(x))    
+
+    processed_dataset = processed_dataset.map(lambda x: postprocessing(x))
 
     actual = [x.numpy().decode() for x in iter(processed_dataset)]
     assert actual == expected
 
 
 def test_unseen_value_has_default_preprocessed_value():
-    dataset = tf.data.Dataset.from_tensor_slices(['cat', 'dog', 'zebra'])  
+    dataset = tf.data.Dataset.from_tensor_slices(["cat", "dog", "zebra"])
     _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset(
-        {}, 
-        dataset, 
-        feature_name=None, 
-        on_status_updated=None)                    
-    actual = pipeline(tf.constant('elephant')).numpy()
+        {}, dataset, feature_name=None, on_status_updated=None
+    )
+    actual = pipeline(tf.constant("elephant")).numpy()
     expected = [0.0, 0.0, 0.0]
     assert (actual == expected).all()
 
 
 def test_unseen_string_has_default_postprocessed_value():
-    dataset = tf.data.Dataset.from_tensor_slices(['cat', 'dog', 'zebra'])
+    dataset = tf.data.Dataset.from_tensor_slices(["cat", "dog", "zebra"])
     _, _, _, pipeline = CategoricalPipelineBuilder().build_from_dataset(
-        {}, 
-        dataset, 
-        feature_name=None, 
-        on_status_updated=None)               
+        {}, dataset, feature_name=None, on_status_updated=None
+    )
 
     value = pipeline([0.0, 0.0, 0.0, 1.0]).numpy()  # add an extra category
-    assert value == b'<unknown>'
+    assert value == b"<unknown>"
 
 
 def test_unseen_numerical_has_default_postprocessed_value():
     dataset = tf.data.Dataset.from_tensor_slices([10, 15, 20])
     _, _, _, pipeline = CategoricalPipelineBuilder().build_from_dataset(
-        {}, 
-        dataset, 
-        feature_name=None, 
-        on_status_updated=None)       
+        {}, dataset, feature_name=None, on_status_updated=None
+    )
 
     value = pipeline([0.0, 0.0, 0.0, 1.0]).numpy()  # add an extra category
     assert value == -1
-    
+
+
 def test_unseen_float_has_default_postprocessed_value():
-    dataset = tf.data.Dataset.from_tensor_slices(['1.0', '1.5', '2.3'])
+    dataset = tf.data.Dataset.from_tensor_slices(["1.0", "1.5", "2.3"])
     _, _, _, pipeline = CategoricalPipelineBuilder().build_from_dataset(
-        {}, 
-        dataset, 
-        feature_name=None, 
-        on_status_updated=None)       
+        {}, dataset, feature_name=None, on_status_updated=None
+    )
 
     value = pipeline([0.0, 0.0, 0.0, 1.0]).numpy()  # add an extra category
-    assert value == b'<unknown>'
-    
+    assert value == b"<unknown>"
+
+
 def test_build_from_metadata_gives_same_results():
-    dataset = tf.data.Dataset.from_tensor_slices(['cat', 'dog', 'zebra'])    
+    dataset = tf.data.Dataset.from_tensor_slices(["cat", "dog", "zebra"])
 
-    _, _, built_preprocessing, built_postprocessing = CategoricalPipelineBuilder().build_from_dataset(
-        {}, 
-        dataset, 
-        feature_name=None, 
-        on_status_updated=None)
+    (
+        _,
+        _,
+        built_preprocessing,
+        built_postprocessing,
+    ) = CategoricalPipelineBuilder().build_from_dataset(
+        {}, dataset, feature_name=None, on_status_updated=None
+    )
 
-    
     metadata = {
-        'preprocessing': built_preprocessing.metadata,
-        'postprocessing': built_postprocessing.metadata
+        "preprocessing": built_preprocessing.metadata,
+        "postprocessing": built_postprocessing.metadata,
     }
-    _, _, loaded_preprocessing, loaded_postprocessing = CategoricalPipelineBuilder().load_from_metadata({}, metadata)
+    (
+        _,
+        _,
+        loaded_preprocessing,
+        loaded_postprocessing,
+    ) = CategoricalPipelineBuilder().load_from_metadata({}, metadata)
 
     for x in dataset:
         y_built = built_preprocessing(x)
@@ -206,6 +176,3 @@ def test_build_from_metadata_gives_same_results():
 
         assert np.all(y_built == y_loaded)
         assert np.all(built_postprocessing(y_built) == loaded_postprocessing(y_loaded))
-    
-    
-    

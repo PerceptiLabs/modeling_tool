@@ -8,49 +8,56 @@ from django.db import migrations
 
 logger = logging.getLogger(__name__)
 # rygg.settings isn't obeyed. Make it obey
-logger.setLevel(os.getenv('PL_RYGG_LOG_LEVEL', 'WARNING'))
+logger.setLevel(os.getenv("PL_RYGG_LOG_LEVEL", "WARNING"))
 
 
 def fix_record(model):
     try:
-        json_path = os.path.join(model.location, 'model.json')
-        with open(json_path, 'r') as f:
+        json_path = os.path.join(model.location, "model.json")
+        with open(json_path, "r") as f:
             as_json = json.load(f)
 
-        if 'datasetId' not in as_json['datasetSettings']:
+        if "datasetId" not in as_json["datasetSettings"]:
             # Resolve dataset ID from csv path...
 
-            if 'filePath' in as_json['datasetSettings']:
-                csv_path = as_json['datasetSettings']['filePath']
+            if "filePath" in as_json["datasetSettings"]:
+                csv_path = as_json["datasetSettings"]["filePath"]
             else:
-                spec = next(iter(as_json['datasetSettings']['featureSpecs'].values()))
-                csv_path = spec['csv_path']                
-                
+                spec = next(iter(as_json["datasetSettings"]["featureSpecs"].values()))
+                csv_path = spec["csv_path"]
+
             dataset = Dataset.objects.get(location=csv_path)
-            as_json['datasetSettings']['datasetId'] = dataset.dataset_id
+            as_json["datasetSettings"]["datasetId"] = dataset.dataset_id
 
-            logger.debug(f"Added dataset ID {dataset.dataset_id} to model {model.model_id}")
+            logger.debug(
+                f"Added dataset ID {dataset.dataset_id} to model {model.model_id}"
+            )
 
-        with open(json_path, 'w') as f:
-            json.dump(as_json, f)            
+        with open(json_path, "w") as f:
+            json.dump(as_json, f)
     except:
-        logger.debug(f"Exception when trying to apply migration of {model.model_id}.. Skipping.")
+        logger.debug(
+            f"Exception when trying to apply migration of {model.model_id}.. Skipping."
+        )
     else:
-        logger.debug(f"Successfully applied migration of {model.model_id}")            
+        logger.debug(f"Successfully applied migration of {model.model_id}")
+
 
 def fix(app, schema_editor):
     for model in Model.objects.get_queryset():
-        fix_record(model)            
+        fix_record(model)
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0012_decouple_kernel_and_frontend_in_model_json'),
+        ("api", "0012_decouple_kernel_and_frontend_in_model_json"),
     ]
 
     operations = [
         migrations.RunPython(
             fix,
             # Unapply isn't needed since the argument was optional, and therefore could exist
-            migrations.RunPython.noop),
+            migrations.RunPython.noop,
+        ),
     ]

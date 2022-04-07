@@ -1,7 +1,8 @@
 import requests
 from github import Github
 
-class CreateIssueAPI():
+
+class CreateIssueAPI:
     def __init__(self, token, issue_type):
 
         self.issue_type = issue_type

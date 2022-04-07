@@ -24,28 +24,28 @@ class ImagePreprocessing(BasePipeline):
         normalization = None
         if self.preprocessing and self.preprocessing.normalize:
             type_ = self.preprocessing.normalize_mode
-            if type_ == 'standardization':
-                mean = self.metadata['normalization']['pixel_mean']
-                std = self.metadata['normalization']['pixel_std']
+            if type_ == "standardization":
+                mean = self.metadata["normalization"]["pixel_mean"]
+                std = self.metadata["normalization"]["pixel_std"]
 
                 # Featurewise standardization: see https://www.tensorflow.org/api_docs/python/tf/keras/preprocessing/image/ImageDataGenerator
 
                 # TODO(anton.k): clarify if this is featurewise or samplewise in frontend.
 
                 def normalization(x):
-                    y = (x - mean)/(std + 0.000001)
+                    y = (x - mean) / (std + 0.000001)
                     return y
 
-            elif type_ == 'min-max':
-                min_ = self.metadata['normalization']['min_pixel_value']
-                max_ = self.metadata['normalization']['max_pixel_value']
+            elif type_ == "min-max":
+                min_ = self.metadata["normalization"]["min_pixel_value"]
+                max_ = self.metadata["normalization"]["max_pixel_value"]
 
                 def normalization(x):
-                    y = (x - min_)/(max_ - min_)
+                    y = (x - min_) / (max_ - min_)
                     return y
-                    
+
         return normalization
-    
+
     def _get_grayscale(self):
         grayscale = None
 
@@ -55,21 +55,14 @@ class ImagePreprocessing(BasePipeline):
                 if len(x.shape) > 2:
                     y = tf.image.rgb_to_grayscale(x)
                 return y
-                
+
         return grayscale
 
     @classmethod
     def from_data(cls, preprocessing, dataset):
-        metadata = cls.compute_metadata(
-            preprocessing, 
-            dataset, 
-            on_status_updated=None
-        )
+        metadata = cls.compute_metadata(preprocessing, dataset, on_status_updated=None)
 
-        return cls(
-            preprocessing=preprocessing,
-            metadata=metadata
-        )
+        return cls(preprocessing=preprocessing, metadata=metadata)
 
     @classmethod
     def compute_metadata(cls, preprocessing, dataset, on_status_updated=None):
@@ -82,8 +75,8 @@ class ImagePreprocessing(BasePipeline):
             n_pixels = 0
             size = len(dataset)
 
-            for index,tensor in enumerate(dataset):
-                for raw_image in (tensor.numpy().astype(np.float32)):
+            for index, tensor in enumerate(dataset):
+                for raw_image in tensor.numpy().astype(np.float32):
                     max_pixel_value = max(raw_image.max(), max_pixel_value)
                     min_pixel_value = min(raw_image.min(), min_pixel_value)
                     sum_of_pixels += np.sum(raw_image)
@@ -94,8 +87,8 @@ class ImagePreprocessing(BasePipeline):
                     on_status_updated(index=index, size=size)
                 # Featurewise standardization: see https://www.tensorflow.org/api_docs/python/tf/keras/preprocessing/image/ImageDataGenerator
 
-            pixel_mean = sum_of_pixels/n_pixels
-            pixel_std = np.sqrt( sum_of_pixel_squares/n_pixels - pixel_mean**2 )
+            pixel_mean = sum_of_pixels / n_pixels
+            pixel_std = np.sqrt(sum_of_pixel_squares / n_pixels - pixel_mean**2)
 
             metadata = {
                 "image_shape": list(raw_image.shape),
@@ -103,15 +96,14 @@ class ImagePreprocessing(BasePipeline):
                     "max_pixel_value": max_pixel_value,
                     "min_pixel_value": min_pixel_value,
                     "pixel_std": pixel_std.tolist(),
-                    "pixel_mean": pixel_mean.tolist()
-                }
+                    "pixel_mean": pixel_mean.tolist(),
+                },
             }
         else:
             tensor = next(iter(dataset))
             image = tensor.numpy().astype(np.float32)
             metadata = {"image_shape": list(image.shape)}
         return metadata
-
 
 
 class MaskPreprocessing(BasePipeline):
@@ -127,23 +119,22 @@ class MaskPreprocessing(BasePipeline):
 
     def _get_one_hot_encoding_mask(self):
         ohe = None
-        num_classes = int(self.metadata['num_classes'])
-        normalize = self.metadata['normalize']
+        num_classes = int(self.metadata["num_classes"])
+        normalize = self.metadata["normalize"]
+
         def ohe(image):
             if normalize:
-                image = image/255
-            image = tf.cast(image[...,-1], tf.uint8)
+                image = image / 255
+            image = tf.cast(image[..., -1], tf.uint8)
             mask = tf.one_hot(image, num_classes)
             return mask
+
         return ohe
 
     @classmethod
     def from_data(cls, preprocessing, dataset):
         metadata = cls.compute_metadata(preprocessing, dataset)
-        return cls(
-            preprocessing=preprocessing,
-            metadata=metadata
-        )
+        return cls(preprocessing=preprocessing, metadata=metadata)
 
     @classmethod
     def compute_metadata(cls, preprocessing, dataset, on_status_updated=None):
@@ -153,7 +144,7 @@ class MaskPreprocessing(BasePipeline):
         size = len(dataset)
         for index, tensor in enumerate(dataset):
             raw_image = tensor.numpy().astype(np.float32)
-            max_pixel_value = max(np.amax(raw_image[...,-1]), max_pixel_value)
+            max_pixel_value = max(np.amax(raw_image[..., -1]), max_pixel_value)
             if on_status_updated:
                 on_status_updated(index=index, size=size)
         num_classes = max_pixel_value
@@ -162,13 +153,11 @@ class MaskPreprocessing(BasePipeline):
             num_classes = 1
             normalize = True
 
-
         tensor = next(iter(dataset))
         image = tensor.numpy().astype(np.float32)
         metadata = {
-            "image_shape": list(image.shape)[:-1]+[num_classes+1],
-            "num_classes": num_classes+1,
-            "normalize": normalize
+            "image_shape": list(image.shape)[:-1] + [num_classes + 1],
+            "num_classes": num_classes + 1,
+            "normalize": normalize,
         }
         return metadata
-

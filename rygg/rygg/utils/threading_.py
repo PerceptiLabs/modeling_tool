@@ -3,12 +3,14 @@ from threading import Event
 from queue import Queue, Empty
 from typing import TypeVar, Iterable, Callable, Any
 
-InputType = TypeVar('T')
-OutputType = TypeVar('U')
+InputType = TypeVar("T")
+OutputType = TypeVar("U")
 FnType = Callable[[InputType], OutputType]
 
 # Wrap ThreadPoolExecutor.map's eager execution with a queue to make it truly asynchronous
-def async_map(input: Iterable[InputType], fn: FnType, cancel_token=Event()) -> Iterable[OutputType]:
+def async_map(
+    input: Iterable[InputType], fn: FnType, cancel_token=Event()
+) -> Iterable[OutputType]:
 
     # Wraps f to have a side-effect of putting its result (or exception) into queue q.
     # The return value is None so the synchronous map we're relying on doesn't store too much in memory.
@@ -25,7 +27,11 @@ def async_map(input: Iterable[InputType], fn: FnType, cancel_token=Event()) -> I
 
     # Run through the input and submit a work item to the executor for each
     # return how many results we're going to at the end.
-    def submit(executor: ThreadPoolExecutor, wrapped_fn: Callable[[InputType], None], items: InputType) -> int:
+    def submit(
+        executor: ThreadPoolExecutor,
+        wrapped_fn: Callable[[InputType], None],
+        items: InputType,
+    ) -> int:
         ret = 0
         for item in input:
             executor.submit(wrapped_fn, item)
@@ -50,7 +56,7 @@ def async_map(input: Iterable[InputType], fn: FnType, cancel_token=Event()) -> I
                 num_submitted = submit_future.result()
 
             # if the submit is done and we've yielded all of the results, then bail
-            if num_submitted != None and  num_submitted == num_yielded:
+            if num_submitted != None and num_submitted == num_yielded:
                 break
 
             # otherwise, just wait for something and yield it.
@@ -67,7 +73,6 @@ def async_map(input: Iterable[InputType], fn: FnType, cancel_token=Event()) -> I
                 num_yielded += 1
             finally:
                 output_queue.task_done()
-
 
     output = Queue()
     f = wrap_fn(fn, output)

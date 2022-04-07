@@ -1,5 +1,6 @@
 import os
 
+
 def get_contents(root):
     if not os.path.exists(root):
         return None

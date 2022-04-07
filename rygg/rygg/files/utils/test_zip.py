@@ -6,10 +6,15 @@ import shutil
 import sys
 import tempfile
 
-from rygg.files.tests import SIMPLE_ARCHIVE_PATH, SIMPLE_ARCHIVE_NAME, SIMPLE_ARCHIVE_FILES
+from rygg.files.tests import (
+    SIMPLE_ARCHIVE_PATH,
+    SIMPLE_ARCHIVE_NAME,
+    SIMPLE_ARCHIVE_FILES,
+)
 from rygg.files.utils.subprocesses import CanceledError
 import rygg.files.tests as tests_module
 import rygg.files.utils.zip as target
+
 
 class ZipTest(TestCase):
     def setUp(self):
@@ -32,7 +37,9 @@ class ZipTest(TestCase):
 
     @timeout(0.1)
     def test_unzipped_files_from_zipfile(self):
-        unzipped = target._unzipped_files_from_zipfile(SIMPLE_ARCHIVE_PATH, dest=self.test_dir)
+        unzipped = target._unzipped_files_from_zipfile(
+            SIMPLE_ARCHIVE_PATH, dest=self.test_dir
+        )
         self.assertEqual(len(unzipped), 2)
         for f in unzipped:
             self.assertTrue(os.path.isfile(f))
@@ -42,7 +49,9 @@ class ZipTest(TestCase):
     @timeout(0.1)
     def test_unzipped_files_from_zipfile_cancels(self):
         token = Event()
-        unzipped = target._unzipped_files_from_zipfile(SIMPLE_ARCHIVE_PATH, dest=self.test_dir, cancel_token=token)
+        unzipped = target._unzipped_files_from_zipfile(
+            SIMPLE_ARCHIVE_PATH, dest=self.test_dir, cancel_token=token
+        )
         self.assertNotEqual(unzipped, None)
 
         # In a two-item sequence we'll only be able to get one if we cancel via the token
@@ -54,7 +63,9 @@ class ZipTest(TestCase):
     @timeout(0.1)
     def test_unzipped_files_from_unzip_cancels(self):
         token = Event()
-        unzipped = target._unzipped_files_from_unzip(SIMPLE_ARCHIVE_PATH, dest=self.test_dir, cancel_token=token)
+        unzipped = target._unzipped_files_from_unzip(
+            SIMPLE_ARCHIVE_PATH, dest=self.test_dir, cancel_token=token
+        )
         self.assertNotEqual(unzipped, None)
 
         # In a two-item sequence we'll only be able to get one if we cancel via the token
@@ -72,7 +83,9 @@ class ZipTest(TestCase):
         expected_files = [os.path.join(self.test_dir, f) for f in SIMPLE_ARCHIVE_FILES]
 
         # execute
-        unzipped = target._unzipped_files_from_unzip(SIMPLE_ARCHIVE_PATH, dest=self.test_dir)
+        unzipped = target._unzipped_files_from_unzip(
+            SIMPLE_ARCHIVE_PATH, dest=self.test_dir
+        )
 
         # validation
         self.assertEqual(len(unzipped), 2)
@@ -89,7 +102,9 @@ class ZipTest(TestCase):
 
         # expect the files to be in a directory next to the temp_zip
         expected_subdir = os.path.splitext(temp_zip)[0]
-        expected_files = [os.path.join(expected_subdir, f) for f in SIMPLE_ARCHIVE_FILES]
+        expected_files = [
+            os.path.join(expected_subdir, f) for f in SIMPLE_ARCHIVE_FILES
+        ]
 
         # execute
         unzipped = target._unzipped_files_from_unzip(temp_zip)

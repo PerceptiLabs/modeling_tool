@@ -4,6 +4,7 @@ from perceptilabs.stats.utils import create_data_object_for_list_of_1D_arrays
 from perceptilabs.createDataObject import createDataObject
 from perceptilabs.stats.base import PreviewStats, TrainingStats
 
+
 class MobileNetV2OutputStats(TrainingStats):
     def __init__(self, weights, bias, outputs, gradients):
         self.outputs = outputs
@@ -13,11 +14,11 @@ class MobileNetV2OutputStats(TrainingStats):
 
     def get_data_objects(self, view):
         data_objects = {}
-        if view=="WeightsBias":
+        if view == "WeightsBias":
             data_objects.update(self._get_weights_and_bias())
-        if view=="Output":
+        if view == "Output":
             data_objects.update(self._get_output())
-        if view=="Gradients":
+        if view == "Gradients":
             data_objects.update(self._get_gradients())
         return data_objects
 
@@ -26,15 +27,15 @@ class MobileNetV2OutputStats(TrainingStats):
         weights = np.squeeze(weights)
         w_shape = weights.shape
         if len(w_shape) == 4:
-            weights = weights[-1,-1,:,:]
+            weights = weights[-1, -1, :, :]
         elif len(w_shape) == 3:
-            weights = weights[-1,:,:]
+            weights = weights[-1, :, :]
         weights = np.mean(weights, axis=1)
-        dataObjectWeights = createDataObject([weights], type_list=['line'])
+        dataObjectWeights = createDataObject([weights], type_list=["line"])
 
         bias = self.bias
         if bias is not None:
-            dataObjectBias = createDataObject([bias], type_list=['line'])
+            dataObjectBias = createDataObject([bias], type_list=["line"])
             output = {"Bias": dataObjectBias, "Weights": dataObjectWeights}
         else:
             output = {"Weights": dataObjectWeights}
@@ -53,14 +54,14 @@ class MobileNetV2OutputStats(TrainingStats):
 
         dataObj = create_data_object_for_list_of_1D_arrays(
             values=[minD, maxD, avD],
-            name_list=['Min', 'Max', 'Average'],
-            object_name='Gradients'
+            name_list=["Min", "Max", "Average"],
+            object_name="Gradients",
         )
         return dataObj
 
     def __eq__(self, other):
         return (
-            np.all(self.outputs == other.outputs) and
-            np.all(self.weights == other.weights) and
-            np.all(self.bias == other.bias)
+            np.all(self.outputs == other.outputs)
+            and np.all(self.weights == other.weights)
+            and np.all(self.bias == other.bias)
         )

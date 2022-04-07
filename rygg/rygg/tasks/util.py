@@ -1,4 +1,6 @@
-def to_status_percent(publish_fn, total_steps, step_ix, step_name, total_increments, increment_ix):
+def to_status_percent(
+    publish_fn, total_steps, step_ix, step_name, total_increments, increment_ix
+):
     if not hasattr(to_status_percent, "total_percent"):
         to_status_percent.total_percent = 0
         # make sure we set the status on the first call
@@ -15,4 +17,3 @@ def to_status_percent(publish_fn, total_steps, step_ix, step_name, total_increme
     if new_total_percent != to_status_percent.total_percent:
         to_status_percent.total_percent = new_total_percent
         publish_fn(100, new_total_percent, step_name)
-

@@ -21,6 +21,4 @@ class SoftmaxOutputStats(TrainingStats):
         return obj
 
     def __eq__(self, other):
-        return (
-            np.all(self.outputs == other.outputs)
-        )
+        return np.all(self.outputs == other.outputs)

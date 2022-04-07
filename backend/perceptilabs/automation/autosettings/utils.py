@@ -21,11 +21,11 @@ def get_recommendation(json_network, settings_engine):
     graph_spec = GraphSpec.from_dict(json_network)
 
     new_layer_specs = settings_engine.run(graph_spec)
-    
+
     new_json_network = {}
     for layer_id, layer_spec in new_layer_specs.items():
         new_json_network[layer_id] = layer_spec.to_dict()
-        
+
     return new_json_network
 
 
@@ -34,20 +34,20 @@ if __name__ == "__main__":
     engine = setup_engine(None)
 
     import json
-    with open('net.json_', 'r') as f:
-        json_network = json.load(f)['Layers']
-        
+
+    with open("net.json_", "r") as f:
+        json_network = json.load(f)["Layers"]
+
     rec = get_recommendation(json_network, engine)
-    #rec = get_recommendation(json_network, ['1588690292610'], engine)    
+    # rec = get_recommendation(json_network, ['1588690292610'], engine)
 
     import pprint
 
-
-
     print("original")
     pprint.pprint(json_network)
-    print("recommended")    
+    print("recommended")
     pprint.pprint(rec)
-    
-    import pdb; pdb.set_trace()
-    
+
+    import pdb
+
+    pdb.set_trace()

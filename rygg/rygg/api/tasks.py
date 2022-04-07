@@ -7,9 +7,11 @@ from rygg.settings import file_upload_dir, IS_CONTAINERIZED
 from rygg.tasks.celery import work_in_celery
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 app = Celery()
+
 
 def _rm_rf(path):
 
@@ -27,6 +29,7 @@ def _rm_rf(path):
     else:
         return False
 
+
 def is_subdir(child, parent):
     if os.path.commonpath([parent, child]) != parent:
         return False
@@ -36,13 +39,15 @@ def is_subdir(child, parent):
 
     return True
 
+
 def delete_path(cancel_token, status_callback, path):
     if _rm_rf(path):
         logger.info(f"Removed dataset at {path}")
 
+
 def delete_path_async(project_id, path):
     if not os.path.exists(path):
-        return;
+        return
 
     # only allow deleting from inside the upload dir
     if IS_CONTAINERIZED:
@@ -53,6 +58,7 @@ def delete_path_async(project_id, path):
             raise Exception(f"'{path}' isn't available for deletion")
 
     run_async("delete_path", delete_path, path)
+
 
 @app.task(
     name="delete_path",

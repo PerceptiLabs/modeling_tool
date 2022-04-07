@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rygg.celery import app as celery_app
 from rygg.tasks import get_task_status, cancel_task
 
+
 class TaskViewSet(viewsets.GenericViewSet):
     def retrieve(self, request, pk=None):
         info = get_task_status(pk)

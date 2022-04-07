@@ -8,8 +8,8 @@ import uuid
 from rygg.files.tests.utils import TempFileTester
 from rygg.files.views.test_view_base import ViewTestBase
 
-class FileViewTestCase(TempFileTester, ViewTestBase):
 
+class FileViewTestCase(TempFileTester, ViewTestBase):
     def test_head_extant_file(self):
         path = self.file_in_temp_dir()
         self.call_and_expect_code("head", "/files", 200, path=path)

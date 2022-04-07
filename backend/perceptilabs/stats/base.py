@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import pickle
 import numpy as np
 
+
 class TrainingStats(ABC):
     def get_data_objects(self, view=None):
         raise NotImplementedError
@@ -10,22 +11,22 @@ class TrainingStats(ABC):
     def __eq__(self, other):
         raise NotImplementedError
 
-    
+
 class OutputStats(TrainingStats):
     @abstractmethod
     def get_summary(self):
-        """ Gets the stats summary for this layer
+        """Gets the stats summary for this layer
 
         Returns:
             A dictionary with metric names and values (floats)
         """
         raise NotImplementedError
 
-    @abstractmethod    
+    @abstractmethod
     def get_end_results(self):
         raise NotImplementedError
 
-    
+
 class PreviewStats:
     def get_preview_content(self, sample):
         sample_array = np.asarray(sample)
@@ -47,10 +48,8 @@ class PreviewStats:
             return data
         else:
             return self._reduce_to_2d(data[..., -1])
-    
-    
 
-    
+
 class TrainingStatsTracker(ABC):
     @abstractmethod
     def update(self, **kwargs):
@@ -70,4 +69,3 @@ class TrainingStatsTracker(ABC):
     @staticmethod
     def deserialize(data):
         return pickle.loads(data)
-

@@ -33,7 +33,7 @@ class TimeoutError(AssertionError):
 
 
 def _raise_exception(exception, exception_message=None):
-    """ This function checks if a exception message is given.
+    """This function checks if a exception message is given.
 
     If there is no exception message, the default behaviour is maintained.
     If there is an exception message, the message is passed to the exception with the 'value' keyword.
@@ -56,6 +56,7 @@ def timeout(seconds=None, timeout_exception=TimeoutError, exception_message=None
     It is illegal to pass anything other than a function as the first
     parameter. The function is wrapped and returned to the caller.
     """
+
     def decorate(function):
 
         if IS_WIN:
@@ -66,7 +67,7 @@ def timeout(seconds=None, timeout_exception=TimeoutError, exception_message=None
 
         @wraps(function)
         def new_function(*args, **kwargs):
-            new_seconds = kwargs.pop('timeout', seconds)
+            new_seconds = kwargs.pop("timeout", seconds)
             if new_seconds:
                 old = signal.signal(signal.SIGALRM, handler)
                 signal.setitimer(signal.ITIMER_REAL, new_seconds)
@@ -80,7 +81,7 @@ def timeout(seconds=None, timeout_exception=TimeoutError, exception_message=None
                 if new_seconds:
                     signal.setitimer(signal.ITIMER_REAL, 0)
                     signal.signal(signal.SIGALRM, old)
+
         return new_function
 
     return decorate
-

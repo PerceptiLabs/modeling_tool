@@ -1,10 +1,11 @@
-
 from abc import ABC, abstractmethod
 import numpy as np
 import tensorflow as tf
 import time
 from perceptilabs.trainer.losses import dice, dice_coefficient
 from perceptilabs.stats.iou import IouStatsTracker, IouStats
+
+
 class BaseStrategy(ABC):
     @abstractmethod
     def run(self, model_outputs, compatible_output_layers):
@@ -12,85 +13,98 @@ class BaseStrategy(ABC):
 
 
 class ConfusionMatrix(BaseStrategy):
-
     def run(self, model_outputs, compatible_output_layers, categories):
         confusion_matrices = {}
         for layer in compatible_output_layers:
-            labels = [x[layer].numpy() for x in model_outputs['targets']]
-            outputs = [x[layer] for x in model_outputs['outputs']]
+            labels = [x[layer].numpy() for x in model_outputs["targets"]]
+            outputs = [x[layer] for x in model_outputs["outputs"]]
             predictions = [np.argmax(output) for output in outputs]
             targets = [np.argmax(label) for label in labels]
             num_classes = np.asarray(labels).shape[2]  # TODO: get class names
             confusion_matrix = tf.math.confusion_matrix(
-                targets, predictions, num_classes=num_classes)
-            confusion_matrices[layer] = {'data':confusion_matrix, 'categories':categories[layer]}
+                targets, predictions, num_classes=num_classes
+            )
+            confusion_matrices[layer] = {
+                "data": confusion_matrix,
+                "categories": categories[layer],
+            }
         return confusion_matrices
 
 
 class MetricsTable(BaseStrategy):
-
     def run(self, model_outputs, compatible_output_layers):
         metrics_tables = {}
         for layer in compatible_output_layers:
-            if compatible_output_layers[layer] == 'mask':
-                metrics_tables = self._run_mask_metrics(layer, model_outputs, metrics_tables)
-            elif compatible_output_layers[layer] == 'categorical':
-                metrics_tables = self._run_categorical_metrics(layer, model_outputs, metrics_tables)
+            if compatible_output_layers[layer] == "mask":
+                metrics_tables = self._run_mask_metrics(
+                    layer, model_outputs, metrics_tables
+                )
+            elif compatible_output_layers[layer] == "categorical":
+                metrics_tables = self._run_categorical_metrics(
+                    layer, model_outputs, metrics_tables
+                )
         return metrics_tables
 
     def _run_categorical_metrics(self, layer, model_outputs, metrics_tables):
         metrics = {
-                'categorical_accuracy': tf.keras.metrics.CategoricalAccuracy(),
-                'top_5_categorical_accuracy': tf.keras.metrics.TopKCategoricalAccuracy(k=5),
-                'precision': tf.keras.metrics.Precision(),
-                'recall': tf.keras.metrics.Recall()
-            }
+            "categorical_accuracy": tf.keras.metrics.CategoricalAccuracy(),
+            "top_5_categorical_accuracy": tf.keras.metrics.TopKCategoricalAccuracy(k=5),
+            "precision": tf.keras.metrics.Precision(),
+            "recall": tf.keras.metrics.Recall(),
+        }
 
         metrics_tables[layer] = {}
-        labels = np.asarray([np.squeeze(x[layer].numpy())
-                                for x in model_outputs['targets']])
-        outputs = np.asarray([np.squeeze(x[layer])
-                                for x in model_outputs['outputs']])
+        labels = np.asarray(
+            [np.squeeze(x[layer].numpy()) for x in model_outputs["targets"]]
+        )
+        outputs = np.asarray([np.squeeze(x[layer]) for x in model_outputs["outputs"]])
         predictions = np.zeros_like(outputs)
         predictions[np.arange(len(outputs)), outputs.argmax(1)] = 1
         targets = np.zeros_like(labels)
         targets[np.arange(len(labels)), labels.argmax(1)] = 1
-        for metric in ['categorical_accuracy', 'top_5_categorical_accuracy']:
+        for metric in ["categorical_accuracy", "top_5_categorical_accuracy"]:
             metrics[metric].update_state(labels, outputs)
-            metrics_tables[layer][metric] = np.float(
-                metrics[metric].result().numpy())
+            metrics_tables[layer][metric] = np.float(metrics[metric].result().numpy())
             metrics[metric].reset_states()
-        for metric in ['precision', 'recall']:
+        for metric in ["precision", "recall"]:
             metrics[metric].update_state(targets, predictions)
-            metrics_tables[layer][metric] = np.float(
-                metrics[metric].result().numpy())
+            metrics_tables[layer][metric] = np.float(metrics[metric].result().numpy())
             metrics[metric].reset_states()
         return metrics_tables
 
-
     def _run_mask_metrics(self, layer, model_outputs, metrics_tables):
         metrics = {
-            'IoU': IouStatsTracker(),
-            'dice': dice,
-            'cross_entropy': tf.keras.losses.CategoricalCrossentropy(),
+            "IoU": IouStatsTracker(),
+            "dice": dice,
+            "cross_entropy": tf.keras.losses.CategoricalCrossentropy(),
         }
         metrics_tables[layer] = {}
-        targets = np.asarray([x[layer].numpy()
-                                for x in model_outputs['targets']])
-        outputs = np.asarray([x[layer]
-                                for x in model_outputs['outputs']])
-        metrics['IoU'].update(predictions_batch=outputs, targets_batch=targets, epochs_completed=0, is_training=False, steps_completed=0, threshold=0.5)
-        iou_stats = metrics['IoU'].save()
-        metrics_tables[layer]['IoU'] = round(float(iou_stats.get_iou_for_latest_step()),2)
+        targets = np.asarray([x[layer].numpy() for x in model_outputs["targets"]])
+        outputs = np.asarray([x[layer] for x in model_outputs["outputs"]])
+        metrics["IoU"].update(
+            predictions_batch=outputs,
+            targets_batch=targets,
+            epochs_completed=0,
+            is_training=False,
+            steps_completed=0,
+            threshold=0.5,
+        )
+        iou_stats = metrics["IoU"].save()
+        metrics_tables[layer]["IoU"] = round(
+            float(iou_stats.get_iou_for_latest_step()), 2
+        )
         if targets.shape[-1] <= 2:
-            metrics_tables[layer]['loss'] = round(float(dice(outputs, targets).numpy()),2) #pytest was failing without the conversions
+            metrics_tables[layer]["loss"] = round(
+                float(dice(outputs, targets).numpy()), 2
+            )  # pytest was failing without the conversions
         else:
-            metrics_tables[layer]['loss'] = round(float(metrics['cross_entropy'](outputs, targets).numpy()),2)
+            metrics_tables[layer]["loss"] = round(
+                float(metrics["cross_entropy"](outputs, targets).numpy()), 2
+            )
         return metrics_tables
 
 
 class OutputVisualization(BaseStrategy):
-
     def run(self, model_inputs, model_outputs, compatible_output_layers):
         """
         takes all the model outputs and calculates the loss on each sample. Best performing 5 samples and worst performing 5 samples are returned.
@@ -105,15 +119,17 @@ class OutputVisualization(BaseStrategy):
         for layer in compatible_output_layers:
             output_images[layer] = {}
             losses = []
-            predictions = [x[layer] for x in model_outputs['outputs']]
-            targets = [x[layer].numpy() for x in model_outputs['targets']]
-            inputs = [list(x.values())[0] for x in model_inputs] #TODO: need to fix this for multi input/output
-            for target, prediction  in zip(targets, predictions):
+            predictions = [x[layer] for x in model_outputs["outputs"]]
+            targets = [x[layer].numpy() for x in model_outputs["targets"]]
+            inputs = [
+                list(x.values())[0] for x in model_inputs
+            ]  # TODO: need to fix this for multi input/output
+            for target, prediction in zip(targets, predictions):
                 loss_fn = tf.keras.losses.CategoricalCrossentropy()
                 loss = loss_fn(target, prediction).numpy()
                 losses.append(loss)
             sorted_loss_indices = sorted(range(len(losses)), key=lambda i: losses[i])
-            n = min(5, int(len(inputs)/2))
+            n = min(5, int(len(inputs) / 2))
             top_n_indices = sorted_loss_indices[-n:]
             bottom_n_indices = sorted_loss_indices[:n]
             selected_indices = bottom_n_indices + top_n_indices
@@ -123,9 +139,9 @@ class OutputVisualization(BaseStrategy):
             selected_losses = [losses[i] for i in selected_indices]
 
             output_images[layer] = {
-                "inputs":selected_inputs,
-                "targets":selected_targets,
-                "predictions":selected_predictions,
-                "losses":selected_losses,
-                }
+                "inputs": selected_inputs,
+                "targets": selected_targets,
+                "predictions": selected_predictions,
+                "losses": selected_losses,
+            }
         return output_images

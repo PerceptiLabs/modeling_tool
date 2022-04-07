@@ -6,16 +6,18 @@ from rygg import settings
 from rygg import __version__
 from rygg.api.app import updates_available
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 @permission_classes([AllowAny])
 def get_version(request):
     return Response({"version": __version__})
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([AllowAny])
 def get_updates_available(request):
     return Response({"newer_versions": updates_available()})
+
 
 @api_view(["GET"])
 @permission_classes([AllowAny])

@@ -16,21 +16,20 @@ from rygg.files.views.util import (
     request_as_dict,
 )
 
+
 class ModelViewSet(viewsets.ModelViewSet):
     queryset = Model.get_queryset().order_by("-model_id")
     serializer_class = ModelSerializer
 
-
     def create(self, request):
-        protect_read_only_enterprise_field(request, 'location')
+        protect_read_only_enterprise_field(request, "location")
         return super().create(request)
 
-
     def update(self, request, **kwargs):
-        protect_read_only_enterprise_field(request, 'location')
+        protect_read_only_enterprise_field(request, "location")
         return super().update(request, **kwargs)
 
-    @action(methods=['GET'], detail=True)
+    @action(methods=["GET"], detail=True)
     def get_json(self, request, pk):
         model = Model.get_queryset().get(pk=pk)
         content = model.content
@@ -39,8 +38,7 @@ class ModelViewSet(viewsets.ModelViewSet):
         response_body = {"model_body": content}
         return json_response(response_body)
 
-
-    @action(methods=['POST', 'PATCH', 'PUT'], detail=True)
+    @action(methods=["POST", "PATCH", "PUT"], detail=True)
     def save_json(self, request, pk):
         model_dict = request_as_dict(request)
 
@@ -52,7 +50,7 @@ class ModelViewSet(viewsets.ModelViewSet):
 
         return Response(None, 201)
 
-    @action(methods=['GET', 'POST', 'PATCH', 'PUT', 'DELETE'], detail=True)
+    @action(methods=["GET", "POST", "PATCH", "PUT", "DELETE"], detail=True)
     def datasets(self, request, pk):
         instance = Model.get_queryset().get(pk=pk)
         ds_datasets = instance.datasets
@@ -77,7 +75,7 @@ class ModelViewSet(viewsets.ModelViewSet):
             if not ids_str:
                 raise HTTPExceptions.BAD_REQUEST.with_content("ids field is required")
 
-            ids = ids_str.split(',')
+            ids = ids_str.split(",")
 
             datasets_to_remove = Dataset.get_queryset().filter(dataset_id__in=ids)
             ds_datasets.remove(*datasets_to_remove)
@@ -88,10 +86,9 @@ class ModelViewSet(viewsets.ModelViewSet):
 
             raise HTTPExceptions.METHOD_NOT_ALLOWED.withContent(request.method)
 
-
-    @action(methods=['GET'], detail=False)
+    @action(methods=["GET"], detail=False)
     def next_name(self, request):
-        prefix = get_required_param(request, 'prefix')
+        prefix = get_required_param(request, "prefix")
         project_id = get_project_from_request(request).project_id
         ret = Model.next_name(project_id, prefix)
         return Response({"next_name": ret}, 200)

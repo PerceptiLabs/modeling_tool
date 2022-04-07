@@ -7,6 +7,7 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
+
 class DatasetAccess:
     def __init__(self, rygg):
         self._rygg = rygg
@@ -14,7 +15,7 @@ class DatasetAccess:
     def is_perceptilabs_sourced(self, call_context, dataset_id):
         data = self._rygg.get_dataset(call_context, dataset_id)
         try:
-            return bool(data['is_perceptilabs_sourced'])
+            return bool(data["is_perceptilabs_sourced"])
         except:
             logger.exception("Failed checking if dataset is perceptilabs sourced")
             raise
@@ -23,7 +24,7 @@ class DatasetAccess:
         data = self._rygg.get_dataset(call_context, dataset_id)
 
         try:
-            location = data['location'].replace('\\', '/')
+            location = data["location"].replace("\\", "/")
             logger.info(f"Found dataset {dataset_id} at {location}")
         except:
             logger.exception("Failed getting dataset location")
@@ -34,7 +35,7 @@ class DatasetAccess:
     def get_name(self, call_context, dataset_id):
         data = self._rygg.get_dataset(call_context, dataset_id)
         try:
-            return data['name']
+            return data["name"]
         except:
             logger.exception("Failed getting dataset name")
             raise
@@ -43,14 +44,17 @@ class DatasetAccess:
         try:
             location = self.get_location(call_context, dataset_id)
             df = pd.read_csv(location)
-            logger.info(f"Loaded dataframe for dataset {dataset_id}. Head:\n{df.head()}")
+            logger.info(
+                f"Loaded dataframe for dataset {dataset_id}. Head:\n{df.head()}"
+            )
 
             # Localize paths
             if fix_paths_for:
                 directory = os.path.dirname(location)
 
                 df[fix_paths_for] = df[fix_paths_for].applymap(
-                    lambda rel_path: os.path.join(directory, rel_path))
+                    lambda rel_path: os.path.join(directory, rel_path)
+                )
 
             return df
         except:

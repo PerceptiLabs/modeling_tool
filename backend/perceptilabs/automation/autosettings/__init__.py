@@ -6,10 +6,5 @@ DEFAULT_RULES = [
     DeepLearningFcOutputShapeFromLabels,
     ProcessReshape1DFromPrimeFactors,
     DeepLearningConvDoubleFeatureMaps,
-    DataDataShouldUseLazy
+    DataDataShouldUseLazy,
 ]
-
-
-    
-    
-    

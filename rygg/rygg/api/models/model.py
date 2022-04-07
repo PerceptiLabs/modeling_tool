@@ -11,6 +11,7 @@ from rygg.api.models import Project
 from rygg.api.tasks import delete_path_async
 from rygg.settings import IS_CONTAINERIZED, file_upload_dir
 
+
 def load_json(full_path):
     with open(full_path, "r") as f:
         try:
@@ -18,18 +19,18 @@ def load_json(full_path):
         except json.decoder.JSONDecodeError:
             return None
 
+
 def save_json(full_path, as_dict):
     with open(full_path, "w") as f:
         json.dump(as_dict, f)
     assert os.path.isfile(full_path)
 
+
 class Model(SoftDeletableModel):
     # TODO: make the json required on creation
 
     project = dj_models.ForeignKey(
-        Project,
-        related_name="models",
-        on_delete=dj_models.PROTECT
+        Project, related_name="models", on_delete=dj_models.PROTECT
     )
     model_id = dj_models.AutoField(primary_key=True)
     name = dj_models.CharField(max_length=1000, blank=False)
@@ -59,10 +60,9 @@ class Model(SoftDeletableModel):
 
         return load_json(full_path)
 
-
     def save_content(self, model_dict):
         assert not os.path.isdir(self.full_location)
-        assert not self.abs_dir.endswith('.json')
+        assert not self.abs_dir.endswith(".json")
         os.makedirs(self.abs_dir, exist_ok=True)
 
         if not os.path.isdir(self.abs_dir):
@@ -71,18 +71,23 @@ class Model(SoftDeletableModel):
         if not os.access(self.abs_dir, os.W_OK):
             raise PermissionError(f"{self.abs_dir} is not writeable")
 
-        if os.path.isfile(self.full_location) and not os.access(self.full_location, os.W_OK):
+        if os.path.isfile(self.full_location) and not os.access(
+            self.full_location, os.W_OK
+        ):
             raise PermissionError(f"{self.full_location} is not writeable")
 
         save_json(self.full_location, model_dict)
 
-
     def next_name(project_id, prefix):
-        models = Model.get_queryset().filter(project_id=project_id, name__startswith=prefix).values('name')
+        models = (
+            Model.get_queryset()
+            .filter(project_id=project_id, name__startswith=prefix)
+            .values("name")
+        )
         if not models.exists():
             return f"{prefix} 1"
 
-        names = [m['name'] for m in models]
+        names = [m["name"] for m in models]
         exp = re.compile(f"^{prefix} +(\d+)")
 
         matching_suffixes = [exp.split(d)[1] for d in names if exp.match(d)]

@@ -6,7 +6,7 @@ from perceptilabs.graph.builder import GraphSpecBuilder
 class EncoderBlueprint(ABC):
     @abstractmethod
     def build(self, builder, feature_name, feature_spec, data_loader=None):
-        """ Adds an encoder to the graph spec builder
+        """Adds an encoder to the graph spec builder
 
         Arguments:
             graph_spec_builder: the entity used to construct the final graph
@@ -16,4 +16,3 @@ class EncoderBlueprint(ABC):
             the ID of the encoders final layer
         """
         raise NotImplementedError
-

@@ -10,19 +10,22 @@ import unittest
 from rygg.api.models import Project
 from rygg.files.tests.utils import TempFileTester
 
-PROJECT_ID=None
+PROJECT_ID = None
+
+
 def setUpModule():
     global PROJECT_ID
 
     p = Project()
     p.save()
-    PROJECT_ID=p.project_id
+    PROJECT_ID = p.project_id
+
 
 def tearDownModule():
     Project.objects.filter(pk=PROJECT_ID).delete()
 
-class GetPathParamEnterprise(TempFileTester, TestCase):
 
+class GetPathParamEnterprise(TempFileTester, TestCase):
     def test_good_checks_params_and_passes_through_to_translate(self):
         mock = Mock()
         mock.query_params = {"project_id": PROJECT_ID, "path": "a"}
@@ -30,8 +33,9 @@ class GetPathParamEnterprise(TempFileTester, TestCase):
         mock_project = Mock()
         mock_project.project_id = PROJECT_ID
 
-        with patch("rygg.files.paths.translate_path_from_user") as translate, \
-             patch("rygg.api.models.Project.get_by_id") as get_by_id:
+        with patch("rygg.files.paths.translate_path_from_user") as translate, patch(
+            "rygg.api.models.Project.get_by_id"
+        ) as get_by_id:
 
             get_by_id.return_value = mock_project
 

@@ -1,11 +1,13 @@
 from contextlib import contextmanager
 import os
 import platform
+
 SYS_NAME = platform.system().lower()
 
 from rygg.settings import IS_CONTAINERIZED
 
 if IS_CONTAINERIZED:
+
     def open_file_dialog(*args, **kwargs):
         pass
 
@@ -14,11 +16,15 @@ if IS_CONTAINERIZED:
 
     def open_directory_dialog(*args, **kwargs):
         pass
+
 else:
     # Some systems allow you to install python w/o tk. Check for that and warn the user
     import pkgutil
-    if not pkgutil.find_loader('tkinter'):
-        raise Exception("Unable to import tkinter. Do you have the python tk package installed on your system?")
+
+    if not pkgutil.find_loader("tkinter"):
+        raise Exception(
+            "Unable to import tkinter. Do you have the python tk package installed on your system?"
+        )
 
     from tkinter import filedialog, Tk
 
@@ -39,7 +45,6 @@ else:
         elif start_method != "spawn":
             raise Exception("Integration error: start method must be spawn on osx")
 
-
     # Different OSes have different ways to get the window to the top of the z-order
     @contextmanager
     def _toplevel_window():
@@ -50,20 +55,25 @@ else:
         screen_height = root.winfo_screenheight()
         root.geometry(f"{screen_width}x{screen_height}")
 
-
         if SYS_NAME.startswith("darwin"):
             # OSX-dependent from https://stackoverflow.com/questions/19080499/transparent-background-in-a-tkinter-window
             # Turn off the window shadow
             root.wm_attributes("-transparent", True)
             # Set the root window background color to a transparent color
-            root.config(bg='systemTransparent')
+            root.config(bg="systemTransparent")
 
             # Cocoa-based incantation to raise the app window to the top
             import os
-            from Cocoa import NSRunningApplication, NSApplicationActivateIgnoringOtherApps
-            app = NSRunningApplication.runningApplicationWithProcessIdentifier_(os.getpid())
+            from Cocoa import (
+                NSRunningApplication,
+                NSApplicationActivateIgnoringOtherApps,
+            )
+
+            app = NSRunningApplication.runningApplicationWithProcessIdentifier_(
+                os.getpid()
+            )
             app.activateWithOptions_(NSApplicationActivateIgnoringOtherApps)
-        elif SYS_NAME.startswith('linux'):
+        elif SYS_NAME.startswith("linux"):
             root.wait_visibility(root)
 
         root.wm_attributes("-alpha", 0.01)
@@ -72,15 +82,17 @@ else:
         # otherwise dialogs will end up behind the terminal.
         root.deiconify()
         root.lift()
-        root.attributes('-topmost',True)
-        root.after_idle(root.attributes,'-topmost',False)
+        root.attributes("-topmost", True)
+        root.after_idle(root.attributes, "-topmost", False)
         root.focus_force()
 
         yield root
 
         root.destroy()
 
-    def _open_file_dialog(fn, initial_dir=os.path.expanduser('~'), title = None, file_types=None):
+    def _open_file_dialog(
+        fn, initial_dir=os.path.expanduser("~"), title=None, file_types=None
+    ):
         # If the initial dir isn't a directory, then askopenfilename will default to the cwd, which isn't helpful
         if not os.path.isdir(initial_dir):
             initial_dir = "~"
@@ -89,7 +101,9 @@ else:
         title = title or "Choose a File"
 
         with _toplevel_window() as root:
-            filename = fn(parent=root, initialdir=initial_dir, title=title, filetypes=file_types)
+            filename = fn(
+                parent=root, initialdir=initial_dir, title=title, filetypes=file_types
+            )
             return filename or None
 
     def open_file_dialog(initial_dir="~", title=None, file_types=None):
@@ -104,7 +118,7 @@ else:
             filedialog.askopenfilename,
             initial_dir=initial_dir,
             title=title,
-            file_types=file_types
+            file_types=file_types,
         )
 
     def open_saveas_dialog(initial_dir="~", title=None, file_types=None):
@@ -119,10 +133,12 @@ else:
             filedialog.asksaveasfilename,
             initial_dir=initial_dir,
             title=title,
-            file_types=file_types
+            file_types=file_types,
         )
 
-    def _open_directory_dialog(initial_dir=os.path.expanduser('~'), title = None, file_types=None):
+    def _open_directory_dialog(
+        initial_dir=os.path.expanduser("~"), title=None, file_types=None
+    ):
         # If the initial dir isn't a directory, then askopenfilename will default to the cwd, which isn't helpful
         if not os.path.isdir(initial_dir):
             initial_dir = "~"
@@ -130,7 +146,9 @@ else:
         title = title or "Choose a Directory"
 
         with _toplevel_window() as root:
-            ret = filedialog.askdirectory(parent=root, initialdir=initial_dir, title=title)
+            ret = filedialog.askdirectory(
+                parent=root, initialdir=initial_dir, title=title
+            )
             return ret or None
 
     def open_directory_dialog(initial_dir="~", title=None, file_types=None):
@@ -138,4 +156,6 @@ else:
 
         # tkinter requires that you open the dialog from the main thread
         # We're in a server, so we need to spawn a process for that.
-        return run_on_main_thread(_open_directory_dialog, initial_dir=initial_dir, title=title)
+        return run_on_main_thread(
+            _open_directory_dialog, initial_dir=initial_dir, title=title
+        )

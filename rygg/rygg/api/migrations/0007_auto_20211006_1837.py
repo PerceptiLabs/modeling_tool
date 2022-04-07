@@ -7,18 +7,24 @@ import rygg.api.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0006_auto_20210722_0310'),
+        ("api", "0006_auto_20210722_0310"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dataset',
-            name='source_url',
+            model_name="dataset",
+            name="source_url",
             field=models.TextField(blank=True),
         ),
         migrations.AlterField(
-            model_name='dataset',
-            name='location',
-            field=models.TextField(blank=True, validators=[rygg.api.models.dataset.validate_file_name, rygg.api.models.dataset.validate_file_exists]),
+            model_name="dataset",
+            name="location",
+            field=models.TextField(
+                blank=True,
+                validators=[
+                    rygg.api.models.dataset.validate_file_name,
+                    rygg.api.models.dataset.validate_file_exists,
+                ],
+            ),
         ),
     ]

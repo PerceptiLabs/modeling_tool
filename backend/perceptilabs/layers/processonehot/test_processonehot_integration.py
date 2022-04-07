@@ -9,23 +9,20 @@ from perceptilabs.layers.processonehot.spec import ProcessOneHotSpec
 from perceptilabs.layers.specbase import LayerConnection
 
 
-
 def test_tf2x_one_hot_sum_of_output_equals_number_of_samples(script_factory):
     n_classes = 3
-    
+
     layer_spec = ProcessOneHotSpec(
-        id_='layer_id',
-        name='layer_name',
+        id_="layer_id",
+        name="layer_name",
         n_classes=n_classes,
-        backward_connections=(LayerConnection(dst_var='input'),)
+        backward_connections=(LayerConnection(dst_var="input"),),
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
 
+    x = np.array([[x + 1] for x in range(n_classes)])
+    y = layer({"input": x})
 
-    x = np.array([[x+1] for x in range(n_classes)])
-    y = layer({'input': x})
-    
-    actual = np.sum(y['output'].numpy())
+    actual = np.sum(y["output"].numpy())
     expected = len(x) - 1
     assert actual == expected
-

@@ -3,7 +3,8 @@ import uuid
 
 from rygg.tasks.util import to_status_percent
 
-class LocalTasks():
+
+class LocalTasks:
     tasks = {}
 
     def add(task_id, thread, cancel_token):
@@ -23,7 +24,6 @@ class LocalTasks():
 
         if meta:
             record["info"]["meta"] = meta
-
 
     def get(task_id):
         return LocalTasks.tasks[task_id]["info"]
@@ -46,6 +46,7 @@ class LocalTasks():
         info["state"] = "FAILED"
         info["exception"] = str(exception)
 
+
 def curry(fn, arg):
     def inner(*args, **kwargs):
         return fn(arg, *args, **kwargs)
@@ -62,20 +63,19 @@ def work_in_thread(fn, *args, **kwargs):
         else:
             state = "STARTED"
 
-        meta={
-            'expected': expected,
-            'so_far': so_far,
-            'message': message,
+        meta = {
+            "expected": expected,
+            "so_far": so_far,
+            "message": message,
         }
         if exception:
-            meta['exception'] = str(exception)
+            meta["exception"] = str(exception)
 
         LocalTasks.update_state(
             task_id,
             state=state,
             meta=meta,
         )
-
 
     cancel_token = Event()
     task_id = str(uuid.uuid4())
@@ -95,6 +95,7 @@ def work_in_thread(fn, *args, **kwargs):
     t.daemon = True
     t.start()
     return task_id
+
 
 def get_threaded_task_status(task_id):
     internal = LocalTasks.get(task_id)

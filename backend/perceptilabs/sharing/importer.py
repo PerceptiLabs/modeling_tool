@@ -7,6 +7,7 @@ from perceptilabs.graph.spec import GraphSpec
 
 logger = logging.getLogger(__name__)
 
+
 class Importer:
     def __init__(self, dataset_access, model_archives_access):
         self._dataset_access = dataset_access
@@ -16,14 +17,18 @@ class Importer:
         if file_location is None:
             raise ValueError("File location cannot be None")
 
-        dataset_settings_dict, graph_spec_dict, training_settings_dict, frontend_settings_dict = \
-            self._model_archives_access.read(file_location)
+        (
+            dataset_settings_dict,
+            graph_spec_dict,
+            training_settings_dict,
+            frontend_settings_dict,
+        ) = self._model_archives_access.read(file_location)
 
         dataset_location = self._dataset_access.get_location(call_context, dataset_id)
-        original_dataset_id = dataset_settings_dict['datasetId']
+        original_dataset_id = dataset_settings_dict["datasetId"]
 
         if dataset_id != original_dataset_id:
-            dataset_settings_dict['datasetId'] = dataset_id
+            dataset_settings_dict["datasetId"] = dataset_id
 
         new_dataset = self._dataset_access.get_name(call_context, dataset_id)
         original_dataset = self._dataset_access.get_name(call_context, dataset_id)
@@ -40,36 +45,45 @@ class Importer:
 
         mapping = {
             original_column: None
-            for original_column in dataset_settings_dict['featureSpecs'].keys()
+            for original_column in dataset_settings_dict["featureSpecs"].keys()
         }
 
         expected_types = set()
         for new_column, actual_type in default_types.items():
-            for original_column, spec in dataset_settings_dict['featureSpecs'].items():
-                expected_type = spec['datatype']
+            for original_column, spec in dataset_settings_dict["featureSpecs"].items():
+                expected_type = spec["datatype"]
                 expected_types.add(expected_type)
 
                 if actual_type == expected_type:
                     mapping[original_column] = new_column
 
         for original_column, new_column in mapping.items():
-            if dataset_settings_dict['featureSpecs'][original_column]['iotype'] == 'do not use':
+            if (
+                dataset_settings_dict["featureSpecs"][original_column]["iotype"]
+                == "do not use"
+            ):
                 continue
 
             if new_column is None:
-                message  = f"Couldn't find a suitable remapping of dataset columns. The recommended types for dataset '{new_dataset}' were "
-                message += ", ".join(k + '->' + v for k, v in default_types.items())
-                message += ", but the model expects the types " + ", ".join(expected_types)
+                message = f"Couldn't find a suitable remapping of dataset columns. The recommended types for dataset '{new_dataset}' were "
+                message += ", ".join(k + "->" + v for k, v in default_types.items())
+                message += ", but the model expects the types " + ", ".join(
+                    expected_types
+                )
                 raise ValueError(message)
 
             if new_column != original_column:
-                dataset_settings_dict['featureSpecs'][new_column] = dataset_settings_dict['featureSpecs'][original_column]
-                del dataset_settings_dict['featureSpecs'][original_column]
+                dataset_settings_dict["featureSpecs"][
+                    new_column
+                ] = dataset_settings_dict["featureSpecs"][original_column]
+                del dataset_settings_dict["featureSpecs"][original_column]
                 logger.info(
-                    f"Remapped '{original_column}' (dataset: {original_dataset_id}) -> '{new_column}' (dataset: {dataset_id})")
+                    f"Remapped '{original_column}' (dataset: {original_dataset_id}) -> '{new_column}' (dataset: {dataset_id})"
+                )
             else:
                 logger.info(
-                    f"Column '{new_column}' present in both datasets. No remapping needed")
+                    f"Column '{new_column}' present in both datasets. No remapping needed"
+                )
 
         for layer_id, layer_spec_dict in graph_spec_dict.items():
             if layer_spec_dict["Type"] not in ["IoInput", "IoOutput"]:
@@ -80,11 +94,11 @@ class Importer:
             layer_spec_dict["Properties"]["FeatureName"] = new_column
 
             logger.info(
-                f"Remapped '{original_column}' -> '{new_column}' (in graph settings)")
+                f"Remapped '{original_column}' -> '{new_column}' (in graph settings)"
+            )
 
         # TODO: return frontend settings dict here so we can include positions as well.
 
-        #graph_spec.show()
+        # graph_spec.show()
 
         return dataset_settings_dict, graph_spec_dict, training_settings_dict
-

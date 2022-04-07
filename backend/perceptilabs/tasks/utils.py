@@ -9,37 +9,35 @@ from perceptilabs.tasks.threaded_executor import ThreadedTaskExecutor
 logger = logging.getLogger(__name__)
 
 
-
 def get_task_executor():
     timers = {}
 
-
     def on_task_sent(task_id, task_name):
         timers[task_id] = Timer()
-        timers[task_id].mark('sent')
+        timers[task_id].mark("sent")
 
         logger.info(f"Enqueued task '{task_name}' with ID {task_id}")
 
     def on_task_received(task_id, task_name):
         if task_id in timers:
-            timers[task_id].mark('received')
+            timers[task_id].mark("received")
 
         logger.info(f"Worker received task '{task_name}' with ID {task_id}")
 
     def on_task_started(task_id):
         if task_id in timers:
-            timers[task_id].mark('started')
+            timers[task_id].mark("started")
 
         logger.info(f"Worker started task with ID {task_id}")
 
     def format_durations(task_id):
         if task_id in timers:
-            timers[task_id].mark('finished')
+            timers[task_id].mark("finished")
 
             durations = timers[task_id].calc(
-                t_until_queued=('sent', 'received'),
-                t_in_queue=('received', 'started'),
-                t_duration=('started', 'finished')
+                t_until_queued=("sent", "received"),
+                t_in_queue=("received", "started"),
+                t_duration=("started", "finished"),
             )
 
             text = ""
@@ -52,11 +50,11 @@ def get_task_executor():
 
     def on_task_succeeded(task_id):
         logger.info(
-            f"Worker succeeded with task with ID {task_id}" + format_durations(task_id))
+            f"Worker succeeded with task with ID {task_id}" + format_durations(task_id)
+        )
 
     def on_task_failed(task_id):
-        logger.info(
-            f"Worker failed task with ID {task_id}" + format_durations(task_id))
+        logger.info(f"Worker failed task with ID {task_id}" + format_durations(task_id))
 
     if settings.CELERY:
         return CeleryTaskExecutor(
@@ -64,7 +62,7 @@ def get_task_executor():
             on_task_received=on_task_received,
             on_task_started=on_task_started,
             on_task_succeeded=on_task_succeeded,
-            on_task_failed=on_task_failed
+            on_task_failed=on_task_failed,
         )
     else:
         return ThreadedTaskExecutor(
@@ -72,5 +70,5 @@ def get_task_executor():
             on_task_received=on_task_received,
             on_task_started=on_task_started,
             on_task_succeeded=on_task_succeeded,
-            on_task_failed=on_task_failed
+            on_task_failed=on_task_failed,
         )

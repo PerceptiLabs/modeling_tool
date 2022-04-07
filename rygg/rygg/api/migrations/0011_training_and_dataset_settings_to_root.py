@@ -8,19 +8,21 @@ import os
 
 logger = logging.getLogger(__name__)
 # rygg.settings isn't obeyed. Make it obey
-logger.setLevel(os.getenv('PL_RYGG_LOG_LEVEL', 'WARNING'))
+logger.setLevel(os.getenv("PL_RYGG_LOG_LEVEL", "WARNING"))
 
 
 def path_join(*paths):
-    return os.path.join(*paths).replace('\\','/')
+    return os.path.join(*paths).replace("\\", "/")
+
 
 def fix_path(path):
-    return os.path.expanduser(path).replace('\\','/')
+    return os.path.expanduser(path).replace("\\", "/")
+
 
 def files_to_fix():
     # call objects() instead of available_objects() to migrate all models, just in case...
-    for result in Model.objects.values('location'):
-        raw_location = result.get('location')
+    for result in Model.objects.values("location"):
+        raw_location = result.get("location")
         if not raw_location:
             continue
 
@@ -32,56 +34,63 @@ def files_to_fix():
 
         yield path_join(abs_location, "model.json")
 
+
 def apply_migration(path):
     try:
-        with open(path, 'r') as f:
+        with open(path, "r") as f:
             as_dict = json.load(f)
 
-        as_dict['datasetSettings'] = as_dict['networkMeta']['datasetSettings']
-        del as_dict['networkMeta']['datasetSettings']
+        as_dict["datasetSettings"] = as_dict["networkMeta"]["datasetSettings"]
+        del as_dict["networkMeta"]["datasetSettings"]
 
-        as_dict['trainingSettings'] = as_dict['networkMeta']['trainingSettings']
-        del as_dict['networkMeta']['trainingSettings']
+        as_dict["trainingSettings"] = as_dict["networkMeta"]["trainingSettings"]
+        del as_dict["networkMeta"]["trainingSettings"]
 
-        with open(path, 'w') as f:
+        with open(path, "w") as f:
             json.dump(as_dict, f)
     except:
-        logger.exception(f"Exception when trying to undo migration of {path}.. Skipping.")
+        logger.exception(
+            f"Exception when trying to undo migration of {path}.. Skipping."
+        )
     else:
-        logger.debug(f"Successfully applied migration of {path}")    
+        logger.debug(f"Successfully applied migration of {path}")
+
 
 def undo_migration(path):
     try:
-        with open(path, 'r') as f:
+        with open(path, "r") as f:
             as_dict = json.load(f)
 
-        as_dict['networkMeta']['datasetSettings'] = as_dict['datasetSettings']
-        del as_dict['datasetSettings']
+        as_dict["networkMeta"]["datasetSettings"] = as_dict["datasetSettings"]
+        del as_dict["datasetSettings"]
 
-        as_dict['networkMeta']['trainingSettings'] = as_dict['trainingSettings']
-        del as_dict['trainingSettings']
+        as_dict["networkMeta"]["trainingSettings"] = as_dict["trainingSettings"]
+        del as_dict["trainingSettings"]
 
-        with open(path, 'w') as f:
+        with open(path, "w") as f:
             json.dump(as_dict, f)
     except:
-        logger.exception(f"Exception when trying to undo migration of {path}.. Skipping.")    
+        logger.exception(
+            f"Exception when trying to undo migration of {path}.. Skipping."
+        )
     else:
-        logger.debug(f"Successfully undid migration of {path}")    
+        logger.debug(f"Successfully undid migration of {path}")
+
 
 def fn_forwards(app, schema_editor):
     for path in files_to_fix():
         apply_migration(path)
-        
+
+
 def fn_reverse(app, schema_editor):
     for path in files_to_fix():
         undo_migration(path)
-        
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0010_auto_20211122_1409'),
+        ("api", "0010_auto_20211122_1409"),
     ]
 
-    operations = [
-        migrations.RunPython(fn_forwards, fn_reverse)
-    ]
+    operations = [migrations.RunPython(fn_forwards, fn_reverse)]

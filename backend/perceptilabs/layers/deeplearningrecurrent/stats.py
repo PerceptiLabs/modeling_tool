@@ -8,7 +8,7 @@ class RecurrentOutputStats(TrainingStats):
     def __init__(self, outputs):
         self.outputs = outputs
 
-    def get_data_objects(self, view = None):
+    def get_data_objects(self, view=None):
         data_objects = {}
         data_objects.update(self._get_output())
         return data_objects
@@ -20,7 +20,4 @@ class RecurrentOutputStats(TrainingStats):
         return obj
 
     def __eq__(self, other):
-        return (
-            np.all(self.outputs == other.outputs)
-        )
-
+        return np.all(self.outputs == other.outputs)

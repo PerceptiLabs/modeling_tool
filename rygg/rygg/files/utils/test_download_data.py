@@ -30,7 +30,9 @@ class DownloadTest(TestCase):
 
     @timeout(0.1)
     def test_get_data_chunks_rejects_bad_url(self):
-        self.assertRaises(requests.exceptions.MissingSchema, target.get_data_chunks, "badurl")
+        self.assertRaises(
+            requests.exceptions.MissingSchema, target.get_data_chunks, "badurl"
+        )
 
     @timeout(0.1)
     def test_write_chunks_makes_subdirs(self):
@@ -66,7 +68,7 @@ class DownloadTest(TestCase):
 
     @timeout(0.1)
     def test_write_chunks_writes_binary(self):
-        chunk = b'\xff\xfeG\x00e\x00e\x00k\x00'
+        chunk = b"\xff\xfeG\x00e\x00e\x00k\x00"
         chunks = iter([chunk])
         expected_filename = os.path.join(self.test_dir, "simplefile")
 

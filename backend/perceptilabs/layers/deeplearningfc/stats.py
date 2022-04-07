@@ -14,23 +14,23 @@ class FCOutputStats(TrainingStats):
 
     def get_data_objects(self, view):
         data_objects = {}
-        if view=="WeightsBias":
+        if view == "WeightsBias":
             data_objects.update(self._get_weights_and_bias())
-        if view=="Output":
+        if view == "Output":
             data_objects.update(self._get_output())
-        if view=="Gradients":
+        if view == "Gradients":
             data_objects.update(self._get_gradients())
         return data_objects
 
     def _get_weights_and_bias(self):
         weights = self.weights
-        weights = np.average(weights,axis=0)
+        weights = np.average(weights, axis=0)
 
         b = self.bias
-        dataObj = createDataObject([b], type_list=['line'])
-        dataObjWeights = createDataObject([weights], type_list=['line'])
+        dataObj = createDataObject([b], type_list=["line"])
+        dataObjWeights = createDataObject([weights], type_list=["line"])
 
-        obj = {"Weights":dataObjWeights, "Bias": dataObj}
+        obj = {"Weights": dataObjWeights, "Bias": dataObj}
         return obj
 
     def _get_output(self):
@@ -46,14 +46,14 @@ class FCOutputStats(TrainingStats):
 
         dataObj = create_data_object_for_list_of_1D_arrays(
             values=[minD, maxD, avD],
-            name_list=['Min', 'Max', 'Average'],
-            object_name='Gradients'
+            name_list=["Min", "Max", "Average"],
+            object_name="Gradients",
         )
         return dataObj
 
     def __eq__(self, other):
         return (
-            np.all(self.outputs == other.outputs) and
-            np.all(self.weights == other.weights) and
-            np.all(self.bias == other.bias)
+            np.all(self.outputs == other.outputs)
+            and np.all(self.weights == other.weights)
+            and np.all(self.bias == other.bias)
         )

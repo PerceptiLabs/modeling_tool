@@ -44,6 +44,8 @@ jobs:
         script: |
           pip install black
           black $(System.DefaultWorkingDirectory)/monitor --check
+          black $(System.DefaultWorkingDirectory)/rygg --check
+          black $(System.DefaultWorkingDirectory)/backend --check
 
 - job: testpython_linux
   displayName: Test python on linux

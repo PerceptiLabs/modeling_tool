@@ -19,7 +19,11 @@ from perceptilabs.layers.helper import LayerHelper
 from perceptilabs.layers.specbase import InnerLayerSpec, IoLayerSpec
 from perceptilabs.lwcore.utils import exception_to_error, format_exception
 from perceptilabs.caching.lightweight_cache import LightweightCache
-from perceptilabs.lwcore.strategies import DefaultStrategy, Tf2xInnerStrategy, IoLayerStrategy
+from perceptilabs.lwcore.strategies import (
+    DefaultStrategy,
+    Tf2xInnerStrategy,
+    IoLayerStrategy,
+)
 from perceptilabs.lwcore.results import LayerResults
 from perceptilabs.caching.utils import NullCache
 
@@ -28,9 +32,9 @@ logger = logging.getLogger(__name__)
 
 
 def print_result_errors(layer_spec, results):
-    text = 'Layer ' + str(layer_spec) + ' has errors.'
+    text = "Layer " + str(layer_spec) + " has errors."
     for error_type, userland_error in results.errors:
-        text += '\n' + error_type + ': ' + userland_error.format()
+        text += "\n" + error_type + ": " + userland_error.format()
     logger.debug(text)
 
 
@@ -43,7 +47,9 @@ class LightweightCore:
     def run(self, graph_spec, seed=123):
         t0 = time.perf_counter()
 
-        random_number_generator = None if seed is None else tf.random.Generator.from_seed(seed)
+        random_number_generator = (
+            None if seed is None else tf.random.Generator.from_seed(seed)
+        )
 
         subgraph_specs = graph_spec.split(GraphSplitter())
         all_results = {}
@@ -51,30 +57,50 @@ class LightweightCore:
         all_used_cache = {}
 
         data_batch = self._get_flat_data_batch()
-        dataset_hash = self._data_loader.settings.compute_hash() if self._data_loader else ''
+        dataset_hash = (
+            self._data_loader.settings.compute_hash() if self._data_loader else ""
+        )
 
         for subgraph_spec in subgraph_specs:
-            subgraph_results, subgraph_durations, subgraph_used_cache = self._run_subgraph(
-                subgraph_spec, data_batch, dataset_hash, random_number_generator)
-            
+            (
+                subgraph_results,
+                subgraph_durations,
+                subgraph_used_cache,
+            ) = self._run_subgraph(
+                subgraph_spec, data_batch, dataset_hash, random_number_generator
+            )
+
             all_results.update(subgraph_results)
             all_durations.update(subgraph_durations)
             all_used_cache.update(subgraph_used_cache)
 
         t_total = time.perf_counter() - t0
-        layers_that_used_cache = [layer_id for layer_id, used_cache in all_used_cache.items() if used_cache]
-        logger.info(f"Ran lightweight core. Duration: {t_total}s. Used cache for layers: "  + ", ".join(layers_that_used_cache))
+        layers_that_used_cache = [
+            layer_id for layer_id, used_cache in all_used_cache.items() if used_cache
+        ]
+        logger.info(
+            f"Ran lightweight core. Duration: {t_total}s. Used cache for layers: "
+            + ", ".join(layers_that_used_cache)
+        )
 
         self._maybe_print_results(graph_spec, all_results)
         return all_results
 
-    def _run_subgraph(self, subgraph_spec, data_batch, dataset_hash, random_number_generator):
+    def _run_subgraph(
+        self, subgraph_spec, data_batch, dataset_hash, random_number_generator
+    ):
         all_results = {}
         all_durations = {}
         all_used_cache = {}
         for layer_spec in subgraph_spec.get_ordered_layers():
             layer_result, durations, used_cache = self._get_layer_results(
-                layer_spec, subgraph_spec, all_results, data_batch, dataset_hash, random_number_generator)
+                layer_spec,
+                subgraph_spec,
+                all_results,
+                data_batch,
+                dataset_hash,
+                random_number_generator,
+            )
 
             if logger.isEnabledFor(logging.DEBUG) and layer_result.has_errors:
                 print_result_errors(layer_spec, layer_result)
@@ -87,51 +113,77 @@ class LightweightCore:
         return all_results, all_durations, all_used_cache
 
     def _cache_key(self, layer_spec, subgraph_spec, dataset_hash, data_batch_hash):
-        layer_hash = subgraph_spec.compute_field_hash(layer_spec, include_ancestors=True)
+        layer_hash = subgraph_spec.compute_field_hash(
+            layer_spec, include_ancestors=True
+        )
         hasher = hashlib.md5()
         hasher.update(str(layer_hash).encode())
         hasher.update(dataset_hash.encode())
         hasher.update(data_batch_hash.encode())
-        return ['previews', hasher.hexdigest()]
+        return ["previews", hasher.hexdigest()]
 
-
-    def _get_layer_results(self, layer_spec, subgraph_spec, ancestor_results, data_batch, dataset_hash, random_number_generator):
+    def _get_layer_results(
+        self,
+        layer_spec,
+        subgraph_spec,
+        ancestor_results,
+        data_batch,
+        dataset_hash,
+        random_number_generator,
+    ):
         timer = Timer()
         desc = f"layer {layer_spec.id_} [{layer_spec.type_}]."
         data_batch_hash = self._compute_batch_data_hash(data_batch)
         key = self._cache_key(layer_spec, subgraph_spec, dataset_hash, data_batch_hash)
 
         def calculate_result():
-            with timer.wrap('compute'):
+            with timer.wrap("compute"):
                 return self._compute_layer_results(
-                    layer_spec, subgraph_spec, ancestor_results, data_batch, random_number_generator)
+                    layer_spec,
+                    subgraph_spec,
+                    ancestor_results,
+                    data_batch,
+                    random_number_generator,
+                )
 
-
-        with timer.wrap('all'):
-            layer_result, used_cache = self._cache.get_or_calculate(key, calculate_result)
+        with timer.wrap("all"):
+            layer_result, used_cache = self._cache.get_or_calculate(
+                key, calculate_result
+            )
 
         durations = timer.calc(
-            t_cache_lookup=('pre_all', 'pre_compute'),
-            t_compute=('pre_compute', 'post_compute'),
-            t_cache_insert=('post_compute', 'post_all'),
+            t_cache_lookup=("pre_all", "pre_compute"),
+            t_compute=("pre_compute", "post_compute"),
+            t_cache_insert=("post_compute", "post_all"),
         )
-        durations = {**durations, 'used_cache': used_cache, 'type': layer_spec.type_}
+        durations = {**durations, "used_cache": used_cache, "type": layer_spec.type_}
         return layer_result, durations, used_cache
 
-    def _compute_layer_results(self, layer_spec, graph_spec, all_results, data_batch, random_number_generator):
-        """ Find and invoke a strategy for computing the results of a layer """
+    def _compute_layer_results(
+        self, layer_spec, graph_spec, all_results, data_batch, random_number_generator
+    ):
+        """Find and invoke a strategy for computing the results of a layer"""
         input_results = {
             from_id: all_results[from_id]
-            for (from_id, to_id) in graph_spec.edges_by_id if to_id == layer_spec.id_
+            for (from_id, to_id) in graph_spec.edges_by_id
+            if to_id == layer_spec.id_
         }
-        strategy = self._get_layer_strategy(layer_spec, data_batch, self._script_factory)
+        strategy = self._get_layer_strategy(
+            layer_spec, data_batch, self._script_factory
+        )
 
         try:
-            results = strategy.run(layer_spec, graph_spec, input_results, random_number_generator)
+            results = strategy.run(
+                layer_spec, graph_spec, input_results, random_number_generator
+            )
         except:
-            logger.exception(f"Failed running strategy '{strategy.__class__.__name__}' on layer {layer_spec.id_}")
+            logger.exception(
+                f"Failed running strategy '{strategy.__class__.__name__}' on layer {layer_spec.id_}"
+            )
             raise
-        logger.debug(f"Computed results for layer {layer_spec.id_} [{layer_spec.type_}]")
+        logger.debug(
+            f"Computed results for layer {layer_spec.id_} [{layer_spec.type_}]"
+        )
         return results
 
     def _get_layer_strategy(self, layer_spec, data_batch, script_factory):
@@ -150,27 +202,28 @@ class LightweightCore:
             array = data_batch[key].numpy()
             hasher.update(array.tostring())
         return hasher.hexdigest()
-        
+
     def _get_flat_data_batch(self):
         data_batch = {}
         inputs_batch, targets_batch = self._data_loader.get_example_batch(
-            partition='training', shuffle=False)
-        
+            partition="training", shuffle=False
+        )
+
         for feature_name, value in inputs_batch.items():
             data_batch[feature_name] = value
         for feature_name, value in targets_batch.items():
             data_batch[feature_name] = value
-                
+
         return data_batch
 
     def _maybe_print_results(self, graph_spec, all_results):
         if not logger.isEnabledFor(logging.DEBUG):
             return
 
-        text = 'Printing layer results\n'
+        text = "Printing layer results\n"
         for layer_id, results in all_results.items():
             layer_spec = graph_spec[layer_id]
-            output = results.sample.get('output')
+            output = results.sample.get("output")
 
             text += f"---- Results for: {layer_spec.id_} [{layer_spec.type_}] ----\n"
             text += f"has errors: {results.has_errors}\n"
@@ -183,10 +236,3 @@ class LightweightCore:
                 text += "sample output is None"
 
         logger.debug(text)
-
-
-
-
-
-
-

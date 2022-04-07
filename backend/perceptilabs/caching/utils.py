@@ -33,7 +33,9 @@ class DictCache(BaseCache):
     def __len__(self):
         return len(self._dict)
 
+
 REDIS_DEFAULT_PORT = 6379
+
 
 class RedisCache(BaseCache):
     def __init__(self, redis_url):
@@ -65,6 +67,7 @@ class RedisCache(BaseCache):
     def __len__(self):
         return self._conn.dbsize()
 
+
 class NullCache(BaseCache):
     def get(self, key):
         return None
@@ -85,7 +88,7 @@ _DATA_METADATA_CACHE = None
 def get_data_metadata_cache():
     global _DATA_METADATA_CACHE
 
-    if _DATA_METADATA_CACHE is None:    
+    if _DATA_METADATA_CACHE is None:
         redis_url = settings.CACHE_REDIS_URL
 
         if redis_url is not None:
@@ -100,13 +103,13 @@ def get_data_metadata_cache():
 
 _PREVIEW_CACHE = None
 
-    
+
 def get_preview_cache():
 
     global _PREVIEW_CACHE
 
-    if _PREVIEW_CACHE is None:    
-    
+    if _PREVIEW_CACHE is None:
+
         redis_url = settings.CACHE_REDIS_URL
 
         if redis_url is not None:

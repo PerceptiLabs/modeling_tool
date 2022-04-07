@@ -12,7 +12,7 @@ from perceptilabs.caching.utils import get_preview_cache
 
 logging.basicConfig(
     stream=sys.stdout,
-    format='%(asctime)s - %(levelname)s - %(name)s:%(lineno)d - %(message)s',
+    format="%(asctime)s - %(levelname)s - %(name)s:%(lineno)d - %(message)s",
     level=os.getenv("PL_RENDER_LOG_LEVEL", "INFO"),
 )
 
@@ -28,7 +28,9 @@ def main():
     utils.setup_sentry()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--debug', default=False, action='store_true', help="Run in debug mode")
+    parser.add_argument(
+        "-d", "--debug", default=False, action="store_true", help="Run in debug mode"
+    )
     args = parser.parse_args()
 
     from perceptilabs.api.base import create_app
@@ -38,20 +40,12 @@ def main():
         app = create_app(
             preview_cache=get_preview_cache(),
         )
-        app.run(
-            host='0.0.0.0',
-            port=PORT_RENDERING_KERNEL,
-            debug=True)
+        app.run(host="0.0.0.0", port=PORT_RENDERING_KERNEL, debug=True)
     else:
         app = create_app(
             preview_cache=get_preview_cache(),
         )
-        serve(
-            app,
-            host="0.0.0.0",
-            port=PORT_RENDERING_KERNEL,
-            expose_tracebacks=True
-        )
+        serve(app, host="0.0.0.0", port=PORT_RENDERING_KERNEL, expose_tracebacks=True)
 
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 DOWNLOAD_CHUNK_SIZE = 1024 * 8
 
+
 def iterate_in_context(sequence, contextmanager_fn, *args, **kwargs):
     try:
         cur = sequence.__next__()
@@ -20,9 +21,13 @@ def iterate_in_context(sequence, contextmanager_fn, *args, **kwargs):
     except StopIteration:
         pass
 
+
 class DownloadFailedError(Exception):
     def __init__(self, url, status_code, text):
-        Exception.__init__(f"Download from {url} failed: status code {status_code}\n{text}")
+        Exception.__init__(
+            f"Download from {url} failed: status code {status_code}\n{text}"
+        )
+
 
 def get_data_chunks(url):
     r = requests.get(url, stream=True)
@@ -35,13 +40,13 @@ def get_data_chunks(url):
     non_empty_chunks = (chunk for chunk in all_chunks if chunk)
     return chunk_count, non_empty_chunks
 
-def write_chunks(chunks, file_path):
 
+def write_chunks(chunks, file_path):
     @contextmanager
     def open_with_flush():
         dest_folder = os.path.dirname(file_path)
         os.makedirs(dest_folder, exist_ok=True)
-        with open(file_path, 'wb') as f:
+        with open(file_path, "wb") as f:
             yield f
             f.flush()
             os.fsync(f.fileno())
@@ -50,8 +55,9 @@ def write_chunks(chunks, file_path):
         f.write(chunk)
         yield chunk
 
+
 def download(url, dest_folder, cancel_token=None):
-    filename = url.split('/')[-1].replace(" ", "_")
+    filename = url.split("/")[-1].replace(" ", "_")
     file_path = os.path.join(dest_folder, filename)
 
     chunk_count, chunks = get_data_chunks(url)

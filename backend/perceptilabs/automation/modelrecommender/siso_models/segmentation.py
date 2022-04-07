@@ -5,9 +5,16 @@ import numpy as np
 
 
 class SegmentationModel(SISOModelBlueprint):
-    def build(self, builder: GraphSpecBuilder, input_feature_name:str, target_feature_name:str, input_feature_spec:FeatureSpec,
-                target_feature_spec:FeatureSpec, data_loader: DataLoader = None):
-        """ Adds an segmentation model to the graph spec builder
+    def build(
+        self,
+        builder: GraphSpecBuilder,
+        input_feature_name: str,
+        target_feature_name: str,
+        input_feature_spec: FeatureSpec,
+        target_feature_spec: FeatureSpec,
+        data_loader: DataLoader = None,
+    ):
+        """Adds an segmentation model to the graph spec builder
 
         Arguments:
             graph_spec_builder: the entity used to construct the final graph
@@ -17,21 +24,26 @@ class SegmentationModel(SISOModelBlueprint):
             target_feature_spec: properties of the target feature
         """
         preprocessing = data_loader.get_preprocessing_pipeline(target_feature_name)
-        num_classes = preprocessing.metadata['num_classes']
+        num_classes = preprocessing.metadata["num_classes"]
 
         id1 = builder.add_layer(
-            'IoInput',
-            settings={'name':input_feature_name, 'feature_name': input_feature_name, 'datatype': input_feature_spec.datatype}
+            "IoInput",
+            settings={
+                "name": input_feature_name,
+                "feature_name": input_feature_name,
+                "datatype": input_feature_spec.datatype,
+            },
         )
-        id2 = builder.add_layer(
-            'UNet',
-            settings={'n_labels':num_classes}
-        )
+        id2 = builder.add_layer("UNet", settings={"n_labels": num_classes})
         id3 = builder.add_layer(
-            'IoOutput',
-            settings={'name':target_feature_name, 'feature_name': target_feature_name, 'datatype': target_feature_spec.datatype}
+            "IoOutput",
+            settings={
+                "name": target_feature_name,
+                "feature_name": target_feature_name,
+                "datatype": target_feature_spec.datatype,
+            },
         )
 
-        builder.add_connection(id1, 'output', id2, 'input')
-        builder.add_connection(id2, 'output', id3, 'input')
+        builder.add_connection(id1, "output", id2, "input")
+        builder.add_connection(id2, "output", id3, "input")
         return

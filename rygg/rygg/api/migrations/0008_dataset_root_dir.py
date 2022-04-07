@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0007_auto_20211006_1837'),
+        ("api", "0007_auto_20211006_1837"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dataset',
-            name='root_dir',
+            model_name="dataset",
+            name="root_dir",
             field=models.CharField(blank=True, max_length=1000),
         ),
     ]

@@ -1,4 +1,3 @@
-
 import pytest
 from perceptilabs.automation.modelrecommender import ModelRecommender
 from perceptilabs.data.base import DataLoader, FeatureSpec
@@ -13,22 +12,19 @@ def test_image_input_and_mask_output_gives_correct_settings():
     builder = GraphSpecBuilder()
 
     preprocessing = MagicMock()
-    expected_shape = (224, 224,10)
+    expected_shape = (224, 224, 10)
     num_classes = 11
-    preprocessing.metadata = {'image_shape': expected_shape, 'num_classes': num_classes}
+    preprocessing.metadata = {"image_shape": expected_shape, "num_classes": num_classes}
 
     data_loader = MagicMock()
     data_loader.get_preprocessing_pipeline.return_value = preprocessing
 
     feature_spec = MagicMock()
-    feature_spec.datatype = 'mask'
+    feature_spec.datatype = "mask"
 
     blueprint = MaskDecoderBlueprint()
     blueprint.build(
-        builder,
-        feature_name='abc',
-        feature_spec=feature_spec,
-        data_loader=data_loader
+        builder, feature_name="abc", feature_spec=feature_spec, data_loader=data_loader
     )
 
     graph_spec = builder.build()

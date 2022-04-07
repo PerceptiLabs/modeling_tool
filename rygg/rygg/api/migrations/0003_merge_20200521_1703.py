@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0002_adds_project_model_locations'),
-        ('api', '0002_model_saved_by'),
+        ("api", "0002_adds_project_model_locations"),
+        ("api", "0002_model_saved_by"),
     ]
 
-    operations = [
-    ]
+    operations = []

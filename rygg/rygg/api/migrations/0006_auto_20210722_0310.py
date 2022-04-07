@@ -11,7 +11,8 @@ import rygg.api.models
 
 logger = logging.getLogger(__name__)
 # rygg.settings isn't obeyed. Make it obey
-logger.setLevel(os.getenv('PL_RYGG_LOG_LEVEL', 'WARNING'))
+logger.setLevel(os.getenv("PL_RYGG_LOG_LEVEL", "WARNING"))
+
 
 def all_string_values(d):
     # Likely, it would be more straightforward if we just looked for certain keys that
@@ -26,12 +27,15 @@ def all_string_values(d):
         elif isinstance(v, list):
             q.extend(v)
 
+
 def json_file_to_dict(json_file):
     try:
         with open(json_file, "r") as f:
             return json.load(f)
     except Exception as e:
-        logger.error(f"Error while attempting to load json file {json_file}. It will not be usable in PerceptiLabs modeling")
+        logger.error(
+            f"Error while attempting to load json file {json_file}. It will not be usable in PerceptiLabs modeling"
+        )
         raise e
 
 
@@ -70,12 +74,9 @@ def populate_existing_datasets(app, schema_editor):
         # upsert dataset records for the csv files in the model's project
         for dataset_file in csv_files:
             ds, created = Dataset.objects.using(db_alias).update_or_create(
-                location = dataset_file,
-                project_id = m.project_id,
-                defaults = {
-                    "name": dataset_file,
-                    "status": "uploaded"
-                }
+                location=dataset_file,
+                project_id=m.project_id,
+                defaults={"name": dataset_file, "status": "uploaded"},
             )
             action = "Created" if created else "Found"
             logger.debug(f"{action} dataset {ds.dataset_id} for {dataset_file}")
@@ -88,7 +89,9 @@ def populate_existing_datasets(app, schema_editor):
                 ds.save()
 
             if not ds.models.filter(model_id=m.model_id).exists():
-                logger.debug(f"Adding link between model {m.model_id} and dataset {ds.dataset_id}.")
+                logger.debug(
+                    f"Adding link between model {m.model_id} and dataset {ds.dataset_id}."
+                )
                 ds.models.add(m.model_id)
                 ds.save()
 
@@ -96,45 +99,102 @@ def populate_existing_datasets(app, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0005_filelink_notebook'),
+        ("api", "0005_filelink_notebook"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='model',
-            name='is_removed',
+            model_name="model",
+            name="is_removed",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='notebook',
-            name='is_removed',
+            model_name="notebook",
+            name="is_removed",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='project',
-            name='is_removed',
+            model_name="project",
+            name="is_removed",
             field=models.BooleanField(default=False),
         ),
         migrations.CreateModel(
-            name='Dataset',
+            name="Dataset",
             fields=[
-                ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
-                ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
-                ('status', model_utils.fields.StatusField(choices=[('new', 'new'), ('uploading', 'uploading'), ('uploaded', 'uploaded')], default='new', max_length=100, no_check_for_status=True, verbose_name='status')),
-                ('status_changed', model_utils.fields.MonitorField(default=django.utils.timezone.now, monitor='status', verbose_name='status changed')),
-                ('is_removed', models.BooleanField(default=False)),
-                ('dataset_id', models.AutoField(primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=1000)),
-                ('location', models.CharField(blank=True, max_length=1000, validators=[rygg.api.models.dataset.validate_file_name, rygg.api.models.dataset.validate_file_exists])),
-                ('models', models.ManyToManyField(blank=True, related_name='datasets', to='api.Model')),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='datasets', to='api.project')),
+                (
+                    "created",
+                    model_utils.fields.AutoCreatedField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="created",
+                    ),
+                ),
+                (
+                    "modified",
+                    model_utils.fields.AutoLastModifiedField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="modified",
+                    ),
+                ),
+                (
+                    "status",
+                    model_utils.fields.StatusField(
+                        choices=[
+                            ("new", "new"),
+                            ("uploading", "uploading"),
+                            ("uploaded", "uploaded"),
+                        ],
+                        default="new",
+                        max_length=100,
+                        no_check_for_status=True,
+                        verbose_name="status",
+                    ),
+                ),
+                (
+                    "status_changed",
+                    model_utils.fields.MonitorField(
+                        default=django.utils.timezone.now,
+                        monitor="status",
+                        verbose_name="status changed",
+                    ),
+                ),
+                ("is_removed", models.BooleanField(default=False)),
+                ("dataset_id", models.AutoField(primary_key=True, serialize=False)),
+                ("name", models.CharField(max_length=1000)),
+                (
+                    "location",
+                    models.CharField(
+                        blank=True,
+                        max_length=1000,
+                        validators=[
+                            rygg.api.models.dataset.validate_file_name,
+                            rygg.api.models.dataset.validate_file_exists,
+                        ],
+                    ),
+                ),
+                (
+                    "models",
+                    models.ManyToManyField(
+                        blank=True, related_name="datasets", to="api.Model"
+                    ),
+                ),
+                (
+                    "project",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="datasets",
+                        to="api.project",
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('project', 'name'), ('project', 'location')},
+                "unique_together": {("project", "name"), ("project", "location")},
             },
         ),
         migrations.RunPython(
             populate_existing_datasets,
             # Unapply isn't needed since rollback will remove any datasets
-            migrations.RunPython.noop),
+            migrations.RunPython.noop,
+        ),
     ]

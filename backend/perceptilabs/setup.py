@@ -13,7 +13,6 @@ from distutils.command import build_ext
 # build_ext.build_ext.get_export_symbols = get_export_symbols
 
 # targets = ['*.py', 'analytics/*.py', 'core_new/*.py', 'core_new/data/*.py', 'code_generator/*.py']
-targets = ['*.py']
+targets = ["*.py"]
 
-setup(name='tests',
-      ext_modules=cythonize(targets))
+setup(name="tests", ext_modules=cythonize(targets))

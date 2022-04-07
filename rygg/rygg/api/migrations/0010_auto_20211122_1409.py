@@ -7,16 +7,19 @@ import shutil
 
 logger = logging.getLogger(__name__)
 # rygg.settings isn't obeyed. Make it obey
-LOG_LEVEL = os.getenv('PL_RYGG_LOG_LEVEL', 'WARNING')
+LOG_LEVEL = os.getenv("PL_RYGG_LOG_LEVEL", "WARNING")
 logger.setLevel(LOG_LEVEL)
 
 HOME = Path.home()
 
+
 def path_join(*paths):
-    return os.path.join(*paths).replace('\\','/')
+    return os.path.join(*paths).replace("\\", "/")
+
 
 def records_with_tilde(model_cls, field_name):
     return model_cls.objects.filter(**{f"{field_name}__startswith": "~"}).all()
+
 
 def fix_record(r, model_name, id_field_name, field_name):
     try:
@@ -29,9 +32,10 @@ def fix_record(r, model_name, id_field_name, field_name):
     except Exception as e:
         logger.error(e)
 
+
 def fix_field(app, model_name, field_name):
     try:
-        model_cls = app.get_model('api', model_name)
+        model_cls = app.get_model("api", model_name)
         logger.info(f"Migrating {model_name}.{field_name}")
         records = records_with_tilde(model_cls, field_name)
         id_field_name = model_name.lower() + "_id"
@@ -40,15 +44,17 @@ def fix_field(app, model_name, field_name):
     except Exception as e:
         logger.error(e)
 
+
 def fix_paths(app):
     to_fix = [
-        ('Project', 'default_directory'),
-        ('Model', 'location'),
-        ('Dataset', 'root_dir'),
-        ('Dataset', 'location'),
+        ("Project", "default_directory"),
+        ("Model", "location"),
+        ("Dataset", "root_dir"),
+        ("Dataset", "location"),
     ]
     for cls, field in to_fix:
         fix_field(app, cls, field)
+
 
 BAD = path_join(os.getcwd(), "~")
 MODELS_SUBDIR = path_join("Documents", "Perceptilabs", "Default")
@@ -79,7 +85,9 @@ def move_one_model_dir(model_name):
         shutil.move(src, dest)
 
     if os.path.exists(dest_parent) and not os.path.isdir(dest_parent):
-        logger.error(f"Skipping moving {model_name} from {src_parent} to {dest_parent} since the destination is not a directory.")
+        logger.error(
+            f"Skipping moving {model_name} from {src_parent} to {dest_parent} since the destination is not a directory."
+        )
         return
 
     os.makedirs(dest_parent, exist_ok=True)
@@ -107,15 +115,17 @@ def fix(app, *args):
     fix_paths(app)
     move_model_dirs()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0009_auto_20211121_1229'),
+        ("api", "0009_auto_20211121_1229"),
     ]
 
     operations = [
         migrations.RunPython(
             fix,
             # Unapply isn't needed since apply just expands the ~
-            migrations.RunPython.noop),
+            migrations.RunPython.noop,
+        ),
     ]

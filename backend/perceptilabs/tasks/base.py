@@ -9,7 +9,6 @@ from perceptilabs.utils import setup_sentry, send_ex_to_sentry
 logger = logging.getLogger(__name__)
 
 
-
 def handle_exceptions(function):
     @functools.wraps(function)
     def func(call_context_dict, *args, **kwargs):
@@ -32,7 +31,17 @@ class TaskExecutor(ABC):
 
 
 @handle_exceptions
-def training_task(call_context, dataset_settings_dict, model_id, training_session_id, training_settings, load_checkpoint, is_retry=False, logrocket_url='', graph_settings=None):
+def training_task(
+    call_context,
+    dataset_settings_dict,
+    model_id,
+    training_session_id,
+    training_settings,
+    load_checkpoint,
+    is_retry=False,
+    logrocket_url="",
+    graph_settings=None,
+):
     import perceptilabs.settings as settings
     from perceptilabs.training_interface import TrainingSessionInterface
     from perceptilabs.messaging.base import get_message_broker
@@ -42,8 +51,8 @@ def training_task(call_context, dataset_settings_dict, model_id, training_sessio
     from perceptilabs.resources.models import ModelAccess
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.training_results import TrainingResultsAccess
-    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess    
-    from perceptilabs.resources.tf_support_access import TensorflowSupportAccess     
+    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess
+    from perceptilabs.resources.tf_support_access import TensorflowSupportAccess
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     from perceptilabs.resources.datasets import DatasetAccess
@@ -61,15 +70,21 @@ def training_task(call_context, dataset_settings_dict, model_id, training_sessio
 
     # TODO: all this data setup should be moved into the coreInteraface!!!
 
-    num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
+    num_repeats = utils.get_num_data_repeats(
+        dataset_settings_dict
+    )  # TODO (anton.k): remove when frontend solution exists
 
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
-    data_metadata = preprocessing_results_access.get_metadata(dataset_settings.compute_hash())
+    data_metadata = preprocessing_results_access.get_metadata(
+        dataset_settings.compute_hash()
+    )
 
     dataset_access = DatasetAccess(rygg)
 
-    tensorflow_support_access = TensorflowSupportAccess(rygg, enable_tf_gpu_memory_growth=settings.ENABLE_TF_GPU_MEMORY_GROWTH)
-    
+    tensorflow_support_access = TensorflowSupportAccess(
+        rygg, enable_tf_gpu_memory_growth=settings.ENABLE_TF_GPU_MEMORY_GROWTH
+    )
+
     df = dataset_access.get_dataframe(
         call_context,
         dataset_settings.dataset_id,
@@ -77,15 +92,18 @@ def training_task(call_context, dataset_settings_dict, model_id, training_sessio
     )
 
     data_loader = DataLoader(
-        df,
-        dataset_settings,
-        metadata=data_metadata,
-        num_repeats=num_repeats
+        df, dataset_settings, metadata=data_metadata, num_repeats=num_repeats
     )
     event_tracker = EventTracker()
 
     interface = TrainingSessionInterface(
-        message_broker, event_tracker, model_access, epochs_access, training_results_access, tensorflow_support_access)
+        message_broker,
+        event_tracker,
+        model_access,
+        epochs_access,
+        training_results_access,
+        tensorflow_support_access,
+    )
 
     interface.run(
         call_context,
@@ -97,12 +115,19 @@ def training_task(call_context, dataset_settings_dict, model_id, training_sessio
         results_interval=settings.TRAINING_RESULTS_REFRESH_INTERVAL,
         is_retry=is_retry,
         logrocket_url=logrocket_url,
-        graph_settings=graph_settings
+        graph_settings=graph_settings,
     )
 
 
 @handle_exceptions
-def testing_task(call_context, testing_session_id, models_info, tests, is_retry=False, logrocket_url=''):
+def testing_task(
+    call_context,
+    testing_session_id,
+    models_info,
+    tests,
+    is_retry=False,
+    logrocket_url="",
+):
     import perceptilabs.settings as settings
     from perceptilabs.testing_interface import TestingSessionInterface
     from perceptilabs.messaging.base import get_message_broker
@@ -111,8 +136,8 @@ def testing_task(call_context, testing_session_id, models_info, tests, is_retry=
     from perceptilabs.resources.models import ModelAccess
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.testing_results import TestingResultsAccess
-    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess   
-    from perceptilabs.resources.tf_support_access import TensorflowSupportAccess     
+    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess
+    from perceptilabs.resources.tf_support_access import TensorflowSupportAccess
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
     from perceptilabs.tracking.base import EventTracker
@@ -131,16 +156,22 @@ def testing_task(call_context, testing_session_id, models_info, tests, is_retry=
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
 
     dataset_access = DatasetAccess(rygg)
-    tensorflow_support_access = TensorflowSupportAccess(rygg, enable_tf_gpu_memory_growth=settings.ENABLE_TF_GPU_MEMORY_GROWTH)
-        
+    tensorflow_support_access = TensorflowSupportAccess(
+        rygg, enable_tf_gpu_memory_growth=settings.ENABLE_TF_GPU_MEMORY_GROWTH
+    )
+
     # TODO: all this data loader etup should be moved into the test interface!!!
     models = {}
     for model_id in models_info.keys():
-        dataset_settings_dict = models_info[model_id]['datasetSettings']
-        num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
+        dataset_settings_dict = models_info[model_id]["datasetSettings"]
+        num_repeats = utils.get_num_data_repeats(
+            dataset_settings_dict
+        )  # TODO (anton.k): remove when frontend solution exists
 
         dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
-        data_metadata = preprocessing_results_access.get_metadata(dataset_settings.compute_hash())
+        data_metadata = preprocessing_results_access.get_metadata(
+            dataset_settings.compute_hash()
+        )
 
         df = dataset_access.get_dataframe(
             call_context,
@@ -149,28 +180,31 @@ def testing_task(call_context, testing_session_id, models_info, tests, is_retry=
         )
 
         data_loader = DataLoader(
-            df,
-            dataset_settings,
-            metadata=data_metadata,
-            num_repeats=num_repeats
+            df, dataset_settings, metadata=data_metadata, num_repeats=num_repeats
         )
 
-        graph_settings = models_info[model_id].get('layers')
+        graph_settings = models_info[model_id].get("layers")
         if graph_settings:
             graph_spec = GraphSpec.from_dict(graph_settings)
         else:
             graph_spec = model_access.get_graph_spec(call_context, model_id)
 
         models[model_id] = {
-            'graph_spec': graph_spec,
-            'data_loader': data_loader,
-            'model_name': models_info[model_id]['model_name'],
-            'training_session_id': models_info[model_id]['training_session_id']
+            "graph_spec": graph_spec,
+            "data_loader": data_loader,
+            "model_name": models_info[model_id]["model_name"],
+            "training_session_id": models_info[model_id]["training_session_id"],
         }
 
     event_tracker = EventTracker()
     interface = TestingSessionInterface(
-        message_broker, event_tracker, model_access, epochs_access, testing_results_access, tensorflow_support_access)
+        message_broker,
+        event_tracker,
+        model_access,
+        epochs_access,
+        testing_results_access,
+        tensorflow_support_access,
+    )
 
     interface.run(
         call_context,
@@ -178,12 +212,25 @@ def testing_task(call_context, testing_session_id, models_info, tests, is_retry=
         models,
         tests,
         results_interval=settings.TESTING_RESULTS_REFRESH_INTERVAL,
-        logrocket_url=logrocket_url
+        logrocket_url=logrocket_url,
     )
 
-@handle_exceptions    
-def serving_task(call_context, serving_settings, dataset_settings_dict, model_id, training_session_id, model_name, serving_session_id, ttl, graph_settings=None, is_retry=False, logrocket_url=''):
-    import perceptilabs.settings as settings    
+
+@handle_exceptions
+def serving_task(
+    call_context,
+    serving_settings,
+    dataset_settings_dict,
+    model_id,
+    training_session_id,
+    model_name,
+    serving_session_id,
+    ttl,
+    graph_settings=None,
+    is_retry=False,
+    logrocket_url="",
+):
+    import perceptilabs.settings as settings
     from perceptilabs.serving_interface import ServingSessionInterface
     from perceptilabs.caching.utils import get_data_metadata_cache
     from perceptilabs.script.base import ScriptFactory
@@ -191,7 +238,7 @@ def serving_task(call_context, serving_settings, dataset_settings_dict, model_id
     from perceptilabs.resources.model_archives import ModelArchivesAccess
     from perceptilabs.resources.epochs import EpochsAccess
     from perceptilabs.resources.serving_results import ServingResultsAccess
-    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess        
+    from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess
     from perceptilabs.resources.tf_support_access import TensorflowSupportAccess
     from perceptilabs.data.base import DataLoader
     from perceptilabs.data.settings import DatasetSettings
@@ -208,21 +255,26 @@ def serving_task(call_context, serving_settings, dataset_settings_dict, model_id
 
     model_access = ModelAccess(rygg)
     epochs_access = EpochsAccess(rygg)
-    
+
     serving_results_access = ServingResultsAccess(rygg)
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
 
-    num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
+    num_repeats = utils.get_num_data_repeats(
+        dataset_settings_dict
+    )  # TODO (anton.k): remove when frontend solution exists
 
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
-    data_metadata = preprocessing_results_access.get_metadata(dataset_settings.compute_hash())
-    
+    data_metadata = preprocessing_results_access.get_metadata(
+        dataset_settings.compute_hash()
+    )
 
     rygg = RyggWrapper.with_default_settings()
 
     dataset_access = DatasetAccess(rygg)
-    tensorflow_support_access = TensorflowSupportAccess(rygg, enable_tf_gpu_memory_growth=settings.ENABLE_TF_GPU_MEMORY_GROWTH)
-    
+    tensorflow_support_access = TensorflowSupportAccess(
+        rygg, enable_tf_gpu_memory_growth=settings.ENABLE_TF_GPU_MEMORY_GROWTH
+    )
+
     df = dataset_access.get_dataframe(
         call_context,
         dataset_settings.dataset_id,
@@ -230,14 +282,11 @@ def serving_task(call_context, serving_settings, dataset_settings_dict, model_id
     )
 
     data_loader = DataLoader(
-        df,
-        dataset_settings,
-        metadata=data_metadata,
-        num_repeats=num_repeats
+        df, dataset_settings, metadata=data_metadata, num_repeats=num_repeats
     )
 
     event_tracker = EventTracker()
-    model_archives_access = ModelArchivesAccess()        
+    model_archives_access = ModelArchivesAccess()
 
     interface = ServingSessionInterface(
         serving_settings,
@@ -248,7 +297,7 @@ def serving_task(call_context, serving_settings, dataset_settings_dict, model_id
         epochs_access,
         serving_results_access,
         tensorflow_support_access,
-        ttl
+        ttl,
     )
 
     interface.run(
@@ -261,13 +310,17 @@ def serving_task(call_context, serving_settings, dataset_settings_dict, model_id
         results_interval=settings.SERVING_RESULTS_REFRESH_INTERVAL,
         is_retry=is_retry,
         logrocket_url=logrocket_url,
-        graph_settings=graph_settings
+        graph_settings=graph_settings,
     )
 
 
 @handle_exceptions
-def preprocessing_task(call_context, dataset_settings_dict, preprocessing_session_id, logrocket_url=''):
-    from perceptilabs.preprocessing_interface import PreprocessingSessionInterface  # TODO: should preprocessing_interface have a better name??
+def preprocessing_task(
+    call_context, dataset_settings_dict, preprocessing_session_id, logrocket_url=""
+):
+    from perceptilabs.preprocessing_interface import (
+        PreprocessingSessionInterface,
+    )  # TODO: should preprocessing_interface have a better name??
     from perceptilabs.messaging.base import get_message_broker
     from perceptilabs.caching.utils import get_data_metadata_cache
     from perceptilabs.resources.preprocessing_results import PreprocessingResultsAccess
@@ -277,7 +330,13 @@ def preprocessing_task(call_context, dataset_settings_dict, preprocessing_sessio
     rygg = RyggWrapper.with_default_settings()
     dataset_access = DatasetAccess(rygg)
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
-    interface = PreprocessingSessionInterface(dataset_access, preprocessing_results_access)
+    interface = PreprocessingSessionInterface(
+        dataset_access, preprocessing_results_access
+    )
 
-    interface.run(call_context, dataset_settings_dict, preprocessing_session_id, logrocket_url=logrocket_url)
-
+    interface.run(
+        call_context,
+        dataset_settings_dict,
+        preprocessing_session_id,
+        logrocket_url=logrocket_url,
+    )

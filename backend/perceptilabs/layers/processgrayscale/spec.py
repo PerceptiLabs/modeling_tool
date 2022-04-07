@@ -4,9 +4,12 @@ from perceptilabs.layers.specbase import LayerSpec, InnerLayerSpec
 
 
 class ProcessGrayscaleSpec(InnerLayerSpec):
-    type_: str = 'ProcessGrayscale'
+    type_: str = "ProcessGrayscale"
+
     @classmethod
-    def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
+    def _from_dict_internal(
+        cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]
+    ) -> LayerSpec:
         return cls(**params)
 
     def _to_dict_internal(self, dict_: Dict[str, Any]) -> Dict[str, Any]:

@@ -21,6 +21,7 @@ app = Celery()
 class DatasetOperationException(Exception):
     pass
 
+
 @contextmanager
 def dataset_operation(dataset_id):
     from rygg.api.models import Dataset
@@ -56,10 +57,12 @@ def rm_f(file):
     if os.path.exists(file):
         os.remove(file)
 
+
 ######################
 # Unzip
 def is_zip(file):
-    return open(file, "rb").read(4) == b'PK\x03\x04'
+    return open(file, "rb").read(4) == b"PK\x03\x04"
+
 
 def is_csv(file):
     content = open(file, "r").read(100)
@@ -73,7 +76,9 @@ def unzip(cancel_token, status_callback, dataset_id):
 
         # if the filepath is a zip, then unzip
         if is_zip(filepath):
-            unzipped = unzipped_files(filepath, dest=dataset.root_dir, cancel_token=cancel_token)
+            unzipped = unzipped_files(
+                filepath, dest=dataset.root_dir, cancel_token=cancel_token
+            )
             for unzipped_ix, _ in enumerate(unzipped):
                 status_callback(1, 0, "Unzipping", len(unzipped), unzipped_ix)
 
@@ -89,9 +94,10 @@ def unzip(cancel_token, status_callback, dataset_id):
             os.rename(filepath, dest)
             dataset.location = dest
 
+
 # Worker-side interface with celery
 @app.task(
-    name="unzip", # must be in list in rygg/celery.py
+    name="unzip",  # must be in list in rygg/celery.py
     bind=True,
 )
 def unzip_task(self, dataset_id):
@@ -106,7 +112,7 @@ def unzip_async(dataset_id):
 ######################
 # Download/Unzip
 @app.task(
-    name="download", # must be in list in rygg/celery.py
+    name="download",  # must be in list in rygg/celery.py
     bind=True,
 )
 def download_task(self, dataset_id):
@@ -120,7 +126,9 @@ def download_unzip(cancel_token, status_callback, dataset_id):
         dataset = Dataset.objects.get(dataset_id=dataset_id)
         dataset.status = "uploading"
         dataset.save()
-        file_path, chunk_count, chunks = download(dataset.source_url, dataset.root_dir, cancel_token)
+        file_path, chunk_count, chunks = download(
+            dataset.source_url, dataset.root_dir, cancel_token
+        )
         for chunk_ix, _ in enumerate(chunks):
             status_callback(2, 0, "Downloading", chunk_count, chunk_ix)
 
@@ -130,7 +138,9 @@ def download_unzip(cancel_token, status_callback, dataset_id):
         # re-fetch the dataset just in case it's been deleted
         dataset = Dataset.objects.get(dataset_id=dataset_id)
 
-        unzipped = unzipped_files(file_path, dest=dataset.root_dir, cancel_token=cancel_token)
+        unzipped = unzipped_files(
+            file_path, dest=dataset.root_dir, cancel_token=cancel_token
+        )
         for unzipped_ix, _ in enumerate(unzipped):
             status_callback(2, 1, "Unzipping", len(unzipped), unzipped_ix)
 
@@ -187,11 +197,11 @@ def _create_classification_csv(dataset, dataset_path):
         files_list = os.listdir(path)
         if ".DS_Store" in files_list:
             files_list.remove(".DS_Store")
-        files = [os.path.join(category,file) for file in files_list]
+        files = [os.path.join(category, file) for file in files_list]
         categories = [category for file in files]
         return files, categories
 
-    expected_count = 0 # TODO: count the files in the dataset's directories
+    expected_count = 0  # TODO: count the files in the dataset's directories
     files = []
 
     categories = []
@@ -199,16 +209,19 @@ def _create_classification_csv(dataset, dataset_path):
     for folder in os.listdir(dataset_path):
         folder_path = os.path.join(dataset_path, folder)
         if os.path.isdir(folder_path):
-            files_in_folder, categories_in_folder = get_files_in_category(folder_path, folder)
+            files_in_folder, categories_in_folder = get_files_in_category(
+                folder_path, folder
+            )
             files += files_in_folder
             categories += categories_in_folder
             expected_count = len(files)
 
     # create dataframe and save as csv
-    df = pd.DataFrame({'images':files, 'category':categories})
-    df = df.sample(frac = 1)
-    df.to_csv(csv_path, encoding='utf-8', index=False)
+    df = pd.DataFrame({"images": files, "category": categories})
+    df = df.sample(frac=1)
+    df.to_csv(csv_path, encoding="utf-8", index=False)
     return expected_count, files
+
 
 def create_classification_csv(cancel_token, status_callback, dataset, dataset_path):
     from rygg.api.models import Dataset
@@ -227,7 +240,9 @@ def create_classification_csv(cancel_token, status_callback, dataset, dataset_pa
         dataset.status = "building csv"
         dataset.save()
 
-        expected_count, scanned_files = _create_classification_csv(dataset, dataset_path)
+        expected_count, scanned_files = _create_classification_csv(
+            dataset, dataset_path
+        )
         for file_ix, _ in enumerate(scanned_files):
             status_callback(1, 0, "Building CSV", expected_count, file_ix)
 
@@ -245,8 +260,12 @@ def create_classification_csv(cancel_token, status_callback, dataset, dataset_pa
         clean_up()
         raise e
 
+
 def create_classification_csv_async(dataset, dataset_path):
-    return run_async("create_classification_csv", create_classification_csv, dataset, dataset_path)
+    return run_async(
+        "create_classification_csv", create_classification_csv, dataset, dataset_path
+    )
+
 
 ######################
 # Create segmentation CSV
@@ -256,6 +275,7 @@ def create_classification_csv_async(dataset, dataset_path):
 )
 def create_segmentation_csv_task(self, dataset_id):
     work_in_celery(self, create_segmentation_csv, dataset_id)
+
 
 def _create_segmentation_csv(dataset, image_path, mask_path):
     csv_path = dataset.location
@@ -267,7 +287,7 @@ def _create_segmentation_csv(dataset, image_path, mask_path):
         files = [os.path.join(path, file) for file in files_list]
         return files
 
-    expected_count = 0 # TODO: count the files in the dataset's directories
+    expected_count = 0  # TODO: count the files in the dataset's directories
     image_files = []
     mask_files = []
 
@@ -281,12 +301,15 @@ def _create_segmentation_csv(dataset, image_path, mask_path):
     expected_count = len(files)
 
     # create dataframe and save as csv
-    df = pd.DataFrame({'images':image_files, 'mask':mask_files})
-    df.to_csv(csv_path, encoding='utf-8', index=False)
+    df = pd.DataFrame({"images": image_files, "mask": mask_files})
+    df.to_csv(csv_path, encoding="utf-8", index=False)
 
     return expected_count, files
 
-def create_segmentation_csv(cancel_token, status_callback, dataset, image_path, mask_path):
+
+def create_segmentation_csv(
+    cancel_token, status_callback, dataset, image_path, mask_path
+):
     from rygg.api.models import Dataset
 
     if dataset.exists_on_disk:
@@ -303,7 +326,9 @@ def create_segmentation_csv(cancel_token, status_callback, dataset, image_path, 
         dataset.status = "building csv"
         dataset.save()
 
-        expected_count, scanned_files = _create_segmentation_csv(dataset, image_path, mask_path)
+        expected_count, scanned_files = _create_segmentation_csv(
+            dataset, image_path, mask_path
+        )
         for file_ix, _ in enumerate(scanned_files):
             status_callback(1, 0, "Building CSV", expected_count, file_ix)
 
@@ -321,8 +346,16 @@ def create_segmentation_csv(cancel_token, status_callback, dataset, image_path, 
         clean_up()
         raise e
 
+
 def create_segmentation_csv_async(dataset, image_path, mask_path):
-    return run_async("create_segmentation_csv", create_segmentation_csv, dataset, image_path, mask_path)
+    return run_async(
+        "create_segmentation_csv",
+        create_segmentation_csv,
+        dataset,
+        image_path,
+        mask_path,
+    )
+
 
 ######################
 # Create classification CSV from upload
@@ -333,30 +366,36 @@ def create_segmentation_csv_async(dataset, image_path, mask_path):
 def classification_from_upload_task(self, dataset_id):
     work_in_celery(self, create_classification_csv_from_upload, dataset_id)
 
+
 def create_classification_csv_from_upload(cancel_token, status_callback, dataset_id):
     from rygg.api.models import Dataset
+
     with dataset_operation(dataset_id) as dataset:
         filepath = dataset.upload_path
         dataset_dir = os.path.splitext(filepath)[0]
         # if the filepath is a zip, then unzip
         if is_zip(filepath):
-            unzipped = unzipped_files(filepath, dest=dataset.root_dir, cancel_token=cancel_token)
+            unzipped = unzipped_files(
+                filepath, dest=dataset.root_dir, cancel_token=cancel_token
+            )
             for unzipped_ix, _ in enumerate(unzipped):
                 status_callback(1, 0, "Unzipping", len(unzipped), unzipped_ix)
 
             # point the dataset at the csv
             dataset_path = os.path.splitext(filepath)[0]
-            dataset.location = os.path.join(dataset_path,'pl_data.csv')
+            dataset.location = os.path.join(dataset_path, "pl_data.csv")
             dataset.save()
-            
+
             # remove the zip
             rm_f(filepath)
-        
+
         create_classification_csv(cancel_token, status_callback, dataset, dataset_path)
 
 
 def classification_from_upload_async(dataset_id):
-    return run_async("classification_from_upload", create_classification_csv_from_upload, dataset_id)
+    return run_async(
+        "classification_from_upload", create_classification_csv_from_upload, dataset_id
+    )
 
 
 ######################
@@ -365,30 +404,52 @@ def classification_from_upload_async(dataset_id):
     name="segmentation_from_upload",
     bind=True,
 )
-def segmentation_from_upload_task(self, dataset_id, images_upload_path, masks_upload_path):
-    work_in_celery(self, create_segmentation_csv_from_upload, dataset_id, images_upload_path, masks_upload_path)
+def segmentation_from_upload_task(
+    self, dataset_id, images_upload_path, masks_upload_path
+):
+    work_in_celery(
+        self,
+        create_segmentation_csv_from_upload,
+        dataset_id,
+        images_upload_path,
+        masks_upload_path,
+    )
 
-def create_segmentation_csv_from_upload(cancel_token, status_callback, dataset_id, images_upload_path, masks_upload_path):
+
+def create_segmentation_csv_from_upload(
+    cancel_token, status_callback, dataset_id, images_upload_path, masks_upload_path
+):
     from rygg.api.models import Dataset
+
     with dataset_operation(dataset_id) as dataset:
-    # if the filepath is a zip, then unzip
+        # if the filepath is a zip, then unzip
         for filepath in [images_upload_path, masks_upload_path]:
             # filepath = os.path.join(dataset_path, file_path)
             if is_zip(filepath):
-                unzipped = unzipped_files(filepath, dest=dataset.root_dir, cancel_token=cancel_token)
-                i=0
+                unzipped = unzipped_files(
+                    filepath, dest=dataset.root_dir, cancel_token=cancel_token
+                )
+                i = 0
                 for unzipped_ix, _ in enumerate(unzipped):
                     status_callback(2, i, "Unzipping", len(unzipped), unzipped_ix)
-                i+=1
+                i += 1
                 # remove the zip
                 rm_f(filepath)
-        
+
         dataset.save()
-        
+
         image_folder = os.path.splitext(images_upload_path)[0]
         mask_folder = os.path.splitext(masks_upload_path)[0]
-        create_segmentation_csv(cancel_token, status_callback, dataset, image_folder, mask_folder)
+        create_segmentation_csv(
+            cancel_token, status_callback, dataset, image_folder, mask_folder
+        )
 
 
 def segmentation_from_upload_async(dataset_id, images_upload_path, masks_upload_path):
-    return run_async("segmentation_from_upload", create_segmentation_csv_from_upload, dataset_id, images_upload_path, masks_upload_path)
+    return run_async(
+        "segmentation_from_upload",
+        create_segmentation_csv_from_upload,
+        dataset_id,
+        images_upload_path,
+        masks_upload_path,
+    )

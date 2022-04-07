@@ -6,6 +6,7 @@ from time import sleep
 from rygg.celery import app as celery_app
 from rygg.tasks.util import to_status_percent
 
+
 def curry(fn, arg):
     def inner(*args, **kwargs):
         return fn(arg, *args, **kwargs)
@@ -17,7 +18,7 @@ def is_running(task_id):
     as_dict = celery_app.control.inspect().active() or {}
     for worker_tasks in as_dict.values():
         for task in worker_tasks:
-            if task['id'] == task_id:
+            if task["id"] == task_id:
                 return True
     return False
 
@@ -34,7 +35,7 @@ def start_canceler(task_id):
 
     def poll_for_cancellation():
         while not is_canceled() and not cancel_token.is_set() and is_running(task_id):
-            #TODO: reset to 1 second
+            # TODO: reset to 1 second
             sleep(0.1)
 
         cancel_token.set()
@@ -44,7 +45,6 @@ def start_canceler(task_id):
 
 
 def work_in_celery(task, fn, *args, **kwargs):
-
     def update_status(expected, so_far, message):
         state = "STARTED"
         if expected == so_far:
@@ -53,12 +53,11 @@ def work_in_celery(task, fn, *args, **kwargs):
         task.update_state(
             state=state,
             meta={
-                'expected': expected,
-                'so_far': so_far,
-                'message': message,
-            }
+                "expected": expected,
+                "so_far": so_far,
+                "message": message,
+            },
         )
-
 
     # wrap update_status with to_status_percent so that we emit percentages
     callback = curry(to_status_percent, update_status)
@@ -78,7 +77,9 @@ def work_in_celery(task, fn, *args, **kwargs):
 
 def enqueue_celery(task_name, *args, **kwargs):
     task = celery_app.tasks[task_name].delay(*args, **kwargs)
-    celery_app.backend.store_result(task.id, {"message": f"Queued {task_name} task for {args}"}, "PENDING")
+    celery_app.backend.store_result(
+        task.id, {"message": f"Queued {task_name} task for {args}"}, "PENDING"
+    )
     return task.id
 
 
@@ -94,9 +95,11 @@ def get_celery_task_status(task_id):
     else:
         return None
 
+
 def set_cancel_flag(task_id):
     with celery_app.backend.client as c:
         c.setex(f"task_cancel:{task_id}", 1800, "1")
+
 
 def cancel_celery_task(task_id):
     # stop any workers from picking up the task

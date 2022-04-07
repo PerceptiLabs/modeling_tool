@@ -8,27 +8,33 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Project',
+            name="Project",
             fields=[
-                ('project_id', models.AutoField(primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=1000)),
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('updated', models.DateTimeField(auto_now=True)),
+                ("project_id", models.AutoField(primary_key=True, serialize=False)),
+                ("name", models.CharField(max_length=1000)),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("updated", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Model',
+            name="Model",
             fields=[
-                ('model_id', models.AutoField(primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=1000)),
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('updated', models.DateTimeField(auto_now=True)),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='models', to='api.Project')),
+                ("model_id", models.AutoField(primary_key=True, serialize=False)),
+                ("name", models.CharField(max_length=1000)),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("updated", models.DateTimeField(auto_now=True)),
+                (
+                    "project",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="models",
+                        to="api.Project",
+                    ),
+                ),
             ],
         ),
     ]

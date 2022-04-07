@@ -3,7 +3,10 @@ import numpy as np
 from unittest.mock import MagicMock
 import tensorflow as tf
 from perceptilabs.stats.iou import IouStats, IouStatsTracker
-from perceptilabs.layers.iooutput.stats.image import ImageOutputStats, ImageOutputStatsTracker
+from perceptilabs.layers.iooutput.stats.image import (
+    ImageOutputStats,
+    ImageOutputStatsTracker,
+)
 from perceptilabs.stats.accuracy import AccuracyStats, PredictionMatrix
 
 
@@ -30,31 +33,25 @@ def accuracy():
 
 @pytest.fixture
 def y_pred():
-    yield tf.constant(
-        [
-            [0.3, 0.6, 0.9],
-            [0.2, 0.3, 0.4],
-            [0.6, 0.2, 0.3]
-        ]
-    )
+    yield tf.constant([[0.3, 0.6, 0.9], [0.2, 0.3, 0.4], [0.6, 0.2, 0.3]])
 
-    
+
 @pytest.fixture
 def y_true():
-    yield tf.constant(
-        [
-            [0.0, 1.0, 1.0],
-            [0.0, 1.0, 0.0],
-            [1.0, 1.0, 0.0]
-        ]
-    )
+    yield tf.constant([[0.0, 1.0, 1.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0]])
 
-    
+
 @pytest.fixture
 def iou(y_pred, y_true):
     tracker = IouStatsTracker()
-    tracker.update(predictions_batch=y_pred, targets_batch=y_true, epochs_completed=0,
-                   is_training=False, steps_completed=0, threshold=0.5)
+    tracker.update(
+        predictions_batch=y_pred,
+        targets_batch=y_true,
+        epochs_completed=0,
+        is_training=False,
+        steps_completed=0,
+        threshold=0.5,
+    )
     iou_stats = tracker.save()
     return iou_stats
 
@@ -62,8 +59,8 @@ def iou(y_pred, y_true):
 def test_image_output_stats_get_end_results_is_not_empty(iou, accuracy):
     image_stats = ImageOutputStats(iou=iou)
     end_results = image_stats.get_end_results()
-    assert end_results['IOU']['training'] == 0.
-    assert end_results['IOU']['validation'] == 0.6
+    assert end_results["IOU"]["training"] == 0.0
+    assert end_results["IOU"]["validation"] == 0.6
 
 
 def test_stats_objects_are_equal_when_args_are_equal():
@@ -78,51 +75,48 @@ def test_stats_objects_are_equal_when_args_are_equal():
         pred.__eq__ = fn_eq
 
         targets = MagicMock(a=arg4)
-        targets.__eq__ = fn_eq        
+        targets.__eq__ = fn_eq
 
         loss = MagicMock(a=arg5)
         loss.__eq__ = fn_eq
 
-        return ImageOutputStats(
-            iou=iou, predictions=pred,
-            targets=targets, loss=loss
-        )
-            
+        return ImageOutputStats(iou=iou, predictions=pred, targets=targets, loss=loss)
+
     obj1 = setup(arg1=123)
     obj2 = setup(arg1=123)
-    obj3 = setup(arg1=500)        
+    obj3 = setup(arg1=500)
     assert obj1 == obj2 != obj3
 
-    
+
 def test_trackers_are_equal_when_both_are_updated(y_pred, y_true):
     tracker1 = ImageOutputStatsTracker()
-    tracker2 = ImageOutputStatsTracker()    
+    tracker2 = ImageOutputStatsTracker()
     assert tracker1 == tracker2
-    assert tracker1.save() == tracker2.save()    
+    assert tracker1.save() == tracker2.save()
 
     tracker1.update(
         predictions_batch=y_pred,
         targets_batch=y_true,
-        loss=tf.constant(12),        
+        loss=tf.constant(12),
         epochs_completed=0,
         steps_completed=0,
-        is_training=True
+        is_training=True,
     )
     assert tracker1 != tracker2
-    assert tracker1.save() != tracker2.save()    
-    
+    assert tracker1.save() != tracker2.save()
+
     tracker2.update(
         predictions_batch=y_pred,
         targets_batch=y_true,
-        loss=tf.constant(12),        
+        loss=tf.constant(12),
         epochs_completed=0,
         steps_completed=0,
-        is_training=True
+        is_training=True,
     )
     assert tracker1 == tracker2
-    assert tracker1.save() == tracker2.save()   
+    assert tracker1.save() == tracker2.save()
 
-    
+
 def test_serialized_trackers_are_equal(y_pred, y_true):
     tracker1 = ImageOutputStatsTracker()
     tracker1.update(
@@ -131,11 +125,8 @@ def test_serialized_trackers_are_equal(y_pred, y_true):
         loss=tf.constant(12),
         epochs_completed=0,
         steps_completed=0,
-        is_training=True
+        is_training=True,
     )
     data = tracker1.serialize()
     tracker2 = ImageOutputStatsTracker.deserialize(data)
     assert tracker1 == tracker2
-    
-    
-    

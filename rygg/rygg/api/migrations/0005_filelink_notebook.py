@@ -7,26 +7,41 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0004_merge_20200529_1032'),
+        ("api", "0004_merge_20200529_1032"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='FileLink',
+            name="FileLink",
             fields=[
-                ('filelink_id', models.AutoField(primary_key=True, serialize=False)),
-                ('resource_locator', models.CharField(max_length=1000)),
+                ("filelink_id", models.AutoField(primary_key=True, serialize=False)),
+                ("resource_locator", models.CharField(max_length=1000)),
             ],
         ),
         migrations.CreateModel(
-            name='Notebook',
+            name="Notebook",
             fields=[
-                ('notebook_id', models.AutoField(primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=1000)),
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('updated', models.DateTimeField(auto_now=True)),
-                ('filelink', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='notebook', to='api.FileLink')),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='notebooks', to='api.Project')),
+                ("notebook_id", models.AutoField(primary_key=True, serialize=False)),
+                ("name", models.CharField(max_length=1000)),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("updated", models.DateTimeField(auto_now=True)),
+                (
+                    "filelink",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="notebook",
+                        to="api.FileLink",
+                    ),
+                ),
+                (
+                    "project",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="notebooks",
+                        to="api.Project",
+                    ),
+                ),
             ],
         ),
     ]

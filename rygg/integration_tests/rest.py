@@ -3,12 +3,10 @@ import requests
 from urllib.parse import urlencode
 
 
-STATIC_HEADERS = {
-    "content-type": "application/json",
-    "accept": "application/json"
-}
+STATIC_HEADERS = {"content-type": "application/json", "accept": "application/json"}
 
-class RyggRest():
+
+class RyggRest:
     def __init__(self, base_url, token, auth_token):
         self._base_url = base_url.strip("/")
         self._token = token
@@ -18,7 +16,6 @@ class RyggRest():
         if auth_token is not None:
             self._auth_header = {"authorization": f"Bearer {auth_token}"}
             self._headers = {**self._headers, **self._auth_header}
-
 
     def get_upload_dir(self, project_id):
         if not project_id in self._upload_dirs:
@@ -33,7 +30,6 @@ class RyggRest():
     def __exit__(self, *args):
         self._session.close()
 
-
     def check(self):
         self.get("/app/version/")["version"]
         return True
@@ -43,34 +39,62 @@ class RyggRest():
         query = self.build_query(relpath, **urlparams)
         resp = self._session.post(query, data=payload, headers=self._headers)
         if not resp.ok:
-            raise Exception(f"Error status {resp.status_code} received. Content: {resp.content}")
+            raise Exception(
+                f"Error status {resp.status_code} received. Content: {resp.content}"
+            )
         return None if not resp.content else resp.json()
 
     def post_file(self, relpath, file_path, file_name, project_id, **urlparms):
-        files = {"file_uploaded": (file_name, open(file_path, "rb"), "application/octet-stream")}
+        files = {
+            "file_uploaded": (
+                file_name,
+                open(file_path, "rb"),
+                "application/octet-stream",
+            )
+        }
         url = self.build_query(relpath, project_id=project_id)
-        resp = self._session.post(url, files=files, data={"token": self._token, "project_id": project_id, **urlparms}, headers=self._auth_header)
+        resp = self._session.post(
+            url,
+            files=files,
+            data={"token": self._token, "project_id": project_id, **urlparms},
+            headers=self._auth_header,
+        )
         if not resp.ok:
-            raise Exception(f"Error status {resp.status_code} received. Content: {resp.content}")
+            raise Exception(
+                f"Error status {resp.status_code} received. Content: {resp.content}"
+            )
         return None if not resp.content else resp.json()
 
     def post_files(self, relpath, project_id, upload_files, **urlparms):
         files = {}
-        for file_name in upload_files.keys(): 
-            files[file_name] = (upload_files[file_name][1], open(upload_files[file_name][0], "rb"), "application/octet-stream")
+        for file_name in upload_files.keys():
+            files[file_name] = (
+                upload_files[file_name][1],
+                open(upload_files[file_name][0], "rb"),
+                "application/octet-stream",
+            )
         url = self.build_query(relpath, project_id=project_id)
-        resp = self._session.post(url, files=files, data={"token": self._token, "project_id": project_id, **urlparms}, headers=self._auth_header)
+        resp = self._session.post(
+            url,
+            files=files,
+            data={"token": self._token, "project_id": project_id, **urlparms},
+            headers=self._auth_header,
+        )
         if not resp.ok:
-            raise Exception(f"Error status {resp.status_code} received. Content: {resp.content}")
+            raise Exception(
+                f"Error status {resp.status_code} received. Content: {resp.content}"
+            )
         return None if not resp.content else resp.json()
-        
+
     def build_query(self, relpath, **parms):
         encoded_parms = urlencode({"token": self._token, **parms})
         return f"{self._base_url}{relpath}?{encoded_parms}"
 
     def assert_success(self, resp):
         if not resp.ok:
-            raise Exception(f"Error status {resp.status_code} received. Text: {resp.text}")
+            raise Exception(
+                f"Error status {resp.status_code} received. Text: {resp.text}"
+            )
 
     def head(self, relpath, **parms):
         query = self.build_query(relpath, **parms)
@@ -83,7 +107,6 @@ class RyggRest():
         resp = self._session.get(query, headers=self._headers)
         self.assert_success(resp)
         return None if not resp.content else resp.json()
-
 
     def patch(self, relpath, **kwargs):
         payload = json.dumps(kwargs)

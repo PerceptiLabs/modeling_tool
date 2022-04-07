@@ -2,12 +2,11 @@ from abc import ABC, abstractmethod
 
 # REMOVE COMPOUND AND FORMAT...?
 
+
 def _format_compound_key(parameters):
-    key = ':'.join(
-        (p if p is not None else 'None')
-        for p in parameters
-    )
+    key = ":".join((p if p is not None else "None") for p in parameters)
     return key
+
 
 class BaseCache(ABC):
     @abstractmethod
@@ -41,6 +40,7 @@ class BaseCache(ABC):
     def for_compound_keys(self, make_key=_format_compound_key):
         return CompoundCache(self, make_key)
 
+
 class CompoundCache(BaseCache):
     def __init__(self, wrapped, make_key=_format_compound_key):
         self._wrapped = wrapped
@@ -54,10 +54,9 @@ class CompoundCache(BaseCache):
         k = self._make_key(key)
         self._wrapped.put(k, value)
         return k
-    
+
     def make_key(self, key):
         return self._make_key(key)
-
 
     def __contains__(self, key):
         k = self._make_key(key)
@@ -67,5 +66,4 @@ class CompoundCache(BaseCache):
         return self._wrapped.len()
 
     def make_key(self, key):
-        return self._make_key(key)        
-        
+        return self._make_key(key)

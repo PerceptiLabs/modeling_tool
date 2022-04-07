@@ -4,7 +4,10 @@ import tensorflow as tf
 from perceptilabs.data.pipelines.base import PipelineBuilder, BasePipeline
 from perceptilabs.data.pipelines.image.loader import Loader
 from perceptilabs.data.pipelines.image.augmenter import Augmenter
-from perceptilabs.data.pipelines.image.preprocessing import ImagePreprocessing, MaskPreprocessing
+from perceptilabs.data.pipelines.image.preprocessing import (
+    ImagePreprocessing,
+    MaskPreprocessing,
+)
 from perceptilabs.data.pipelines.image.postprocessing import MaskPostprocessing
 
 
@@ -20,10 +23,13 @@ class ImagePipelineBuilder(PipelineBuilder):
     def _compute_augmenter_metadata(self, preprocessing, indexed_dataset):
         return Augmenter.compute_metadata(indexed_dataset, preprocessing)
 
-    def _compute_processing_metadata(self, preprocessing, dataset, on_status_updated=None):
-        preprocessing_metadata = ImagePreprocessing.compute_metadata(preprocessing, dataset, on_status_updated=on_status_updated)
+    def _compute_processing_metadata(
+        self, preprocessing, dataset, on_status_updated=None
+    ):
+        preprocessing_metadata = ImagePreprocessing.compute_metadata(
+            preprocessing, dataset, on_status_updated=on_status_updated
+        )
         return preprocessing_metadata, {}
-
 
 
 class MaskPipelineBuilder(PipelineBuilder):
@@ -38,7 +44,10 @@ class MaskPipelineBuilder(PipelineBuilder):
     def _compute_augmenter_metadata(self, preprocessing, indexed_dataset):
         return Augmenter.compute_metadata(indexed_dataset, preprocessing)
 
-    def _compute_processing_metadata(self, preprocessing, dataset, on_status_updated=None):
-        preprocessing_metadata = MaskPreprocessing.compute_metadata(preprocessing, dataset, on_status_updated=on_status_updated)
+    def _compute_processing_metadata(
+        self, preprocessing, dataset, on_status_updated=None
+    ):
+        preprocessing_metadata = MaskPreprocessing.compute_metadata(
+            preprocessing, dataset, on_status_updated=on_status_updated
+        )
         return preprocessing_metadata, {}
-

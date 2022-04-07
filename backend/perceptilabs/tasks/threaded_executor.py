@@ -8,27 +8,27 @@ import perceptilabs.tasks.base as tasks
 
 
 DEFAULT_TASKS = {
-    'training_task': tasks.training_task,
-    'testing_task': tasks.testing_task,
-    'serving_task': tasks.serving_task,
-    'preprocessing_task': tasks.preprocessing_task,
+    "training_task": tasks.training_task,
+    "testing_task": tasks.testing_task,
+    "serving_task": tasks.serving_task,
+    "preprocessing_task": tasks.preprocessing_task,
 }
 
 
 class ThreadedTaskExecutor(TaskExecutor):
     def __init__(
-            self,
-            tasks=DEFAULT_TASKS,
-            on_task_sent=None,
-            on_task_received=None,
-            on_task_started=None,
-            on_task_succeeded=None,
-            on_task_failed=None
+        self,
+        tasks=DEFAULT_TASKS,
+        on_task_sent=None,
+        on_task_received=None,
+        on_task_started=None,
+        on_task_succeeded=None,
+        on_task_failed=None,
     ):
         self._task_functions = tasks
         self._pool = ThreadPoolExecutor()
         self._submitted_tasks = {}
-        self._lock = RLock();
+        self._lock = RLock()
 
         self._on_task_sent = on_task_sent
         self._on_task_received = on_task_received
@@ -44,22 +44,21 @@ class ThreadedTaskExecutor(TaskExecutor):
 
         task_func = self._task_functions[task_name]
         task_func_with_callbacks = self._wrap_in_callbacks(
-            task_func, task_id, task_name)
+            task_func, task_id, task_name
+        )
 
-        future = self._pool.submit(
-            task_func_with_callbacks, *args, **kwargs)
+        future = self._pool.submit(task_func_with_callbacks, *args, **kwargs)
 
         with self._lock:
             self._submitted_tasks[task_id] = {
-                'future': future,
-                'args': deepcopy(args),
-                'kwargs': deepcopy(kwargs)
+                "future": future,
+                "args": deepcopy(args),
+                "kwargs": deepcopy(kwargs),
             }
 
         return task_id
 
     def _wrap_in_callbacks(self, task_func, task_id, task_name):
-
         def task_func_with_callbacks(*args, **kwargs):
             if self._on_task_received:
                 self._on_task_received(task_id, task_name)
@@ -86,7 +85,7 @@ class ThreadedTaskExecutor(TaskExecutor):
         count = 0
         with self._lock:
             for task_info in self._submitted_tasks.values():
-                if not task_info['future'].done():
+                if not task_info["future"].done():
                     count += 1
         return count
 
@@ -95,11 +94,10 @@ class ThreadedTaskExecutor(TaskExecutor):
         with self._lock:
             results = {
                 task_id: {
-                    'args': deepcopy(task_info['args']),
-                    'kwargs': deepcopy(task_info['kwargs'])
+                    "args": deepcopy(task_info["args"]),
+                    "kwargs": deepcopy(task_info["kwargs"]),
                 }
                 for task_id, task_info in self._submitted_tasks.items()
-                if not task_info['future'].done()
+                if not task_info["future"].done()
             }
         return results
-

@@ -22,8 +22,8 @@ from perceptilabs.layers.deeplearningrecurrent.stats import RecurrentOutputStats
 from perceptilabs.layers.unet.stats import UnetOutputStats
 from perceptilabs.layers.layertfmodel.stats import LayerTfModelOutputStats
 
-class InnerLayersStatsTracker(ABC):
 
+class InnerLayersStatsTracker(ABC):
     def __init__(self, layers):
         self.layers = layers
         self.layer_outputs = {}
@@ -33,14 +33,13 @@ class InnerLayersStatsTracker(ABC):
     def update(self, **kwargs):
         self.gradients_tracker.update(**kwargs)
 
-        outputs = kwargs['outputs']
+        outputs = kwargs["outputs"]
         for layer_id in self.layers.keys():
             self.layer_outputs[layer_id] = {
-                name: tensor.numpy()
-                for name, tensor in outputs[layer_id].items()
+                name: tensor.numpy() for name, tensor in outputs[layer_id].items()
             }
 
-        trainables_by_layer = kwargs['trainables_by_layer']
+        trainables_by_layer = kwargs["trainables_by_layer"]
         for layer_id in trainables_by_layer.keys():
             self.layer_trainables[layer_id] = {
                 name: tensor.numpy()
@@ -48,7 +47,7 @@ class InnerLayersStatsTracker(ABC):
             }
 
     def save(self):
-        """ Save the tracked values into the corresponding layer stats object """
+        """Save the tracked values into the corresponding layer stats object"""
         gradient_stats = self.gradients_tracker.save()
         stats = {}
         for id_ in self.layers.keys():
@@ -57,12 +56,14 @@ class InnerLayersStatsTracker(ABC):
             weights = self.get_layer_weights(id_)
             bias = self.get_layer_bias(id_)
             gradients = self.get_layer_gradients(id_, gradient_stats)
-            stats_object = self.get_inner_layer_stats_object(type_, weights, bias, outputs, gradients)
+            stats_object = self.get_inner_layer_stats_object(
+                type_, weights, bias, outputs, gradients
+            )
             stats[id_] = stats_object
         return stats
 
-    def get_layer_output(self, layer_id, output_variable='output'):
-        """ Gets the output batch of a layer
+    def get_layer_output(self, layer_id, output_variable="output"):
+        """Gets the output batch of a layer
 
         Arguments:
             layer_id: the layer id
@@ -77,23 +78,23 @@ class InnerLayersStatsTracker(ABC):
             return None
 
     def get_layer_weights(self, layer_id):
-        """ Get the weights associated with a layer """
+        """Get the weights associated with a layer"""
         try:
-            value = self.layer_trainables[layer_id]['weights']
+            value = self.layer_trainables[layer_id]["weights"]
             return value
         except KeyError as e:
             return None
 
     def get_layer_bias(self, layer_id):
-        """ Get the bias associated with a layer """
+        """Get the bias associated with a layer"""
         try:
-            value = self.layer_trainables[layer_id]['bias']
+            value = self.layer_trainables[layer_id]["bias"]
             return value
         except KeyError as e:
             return None
 
     def get_layer_gradients(self, layer_id, gradient_stats):
-        """ Get the gradients of a layer
+        """Get the gradients of a layer
 
         Arguments:
             layer_id: the layer id
@@ -102,54 +103,52 @@ class InnerLayersStatsTracker(ABC):
         minimum = gradient_stats.get_minimum_by_layer_id(layer_id)
         average = gradient_stats.get_average_by_layer_id(layer_id)
         maximum = gradient_stats.get_maximum_by_layer_id(layer_id)
-        return {'Min': minimum,
-                'Max': maximum,
-                'Average': average }
+        return {"Min": minimum, "Max": maximum, "Average": average}
 
-
-    def get_inner_layer_stats_object(self, layer_type, weights, bias, outputs, gradients):
-        if layer_type == 'UNet':
+    def get_inner_layer_stats_object(
+        self, layer_type, weights, bias, outputs, gradients
+    ):
+        if layer_type == "UNet":
             return UnetOutputStats(weights, bias, outputs, gradients)
-        elif layer_type == 'ProcessGrayscale':
+        elif layer_type == "ProcessGrayscale":
             return GrayscaleOutputStats(outputs)
-        elif layer_type == 'ProcessOneHot':
+        elif layer_type == "ProcessOneHot":
             return OneHotOutputStats(outputs)
-        elif layer_type == 'MathSoftmax':
+        elif layer_type == "MathSoftmax":
             return SoftmaxOutputStats(outputs)
-        elif layer_type == 'MathArgmax':
+        elif layer_type == "MathArgmax":
             return ArgmaxOutputStats(outputs)
-        elif layer_type == 'ProcessReshape':
+        elif layer_type == "ProcessReshape":
             return ReshapeOutputStats(outputs)
-        elif layer_type == 'ProcessRescale':
+        elif layer_type == "ProcessRescale":
             return RescaleOutputStats(outputs)
-        elif layer_type == 'MathMerge':
+        elif layer_type == "MathMerge":
             return MergeOutputStats(outputs)
-        elif layer_type == 'LayerCustom':
+        elif layer_type == "LayerCustom":
             return LayerCustomOutputStats(outputs)
-        elif layer_type == 'PreTrainedVGG16':
+        elif layer_type == "PreTrainedVGG16":
             return VGG16OutputStats(weights, bias, outputs, gradients)
-        elif layer_type == 'PreTrainedMobileNetV2':
+        elif layer_type == "PreTrainedMobileNetV2":
             return MobileNetV2OutputStats(weights, bias, outputs, gradients)
-        elif layer_type == 'PreTrainedInceptionV3':
+        elif layer_type == "PreTrainedInceptionV3":
             return InceptionV3OutputStats(weights, bias, outputs, gradients)
-        elif layer_type == 'PreTrainedResNet50':
+        elif layer_type == "PreTrainedResNet50":
             return ResNet50OutputStats(weights, bias, outputs, gradients)
-        elif layer_type == 'DeepLearningFC':
+        elif layer_type == "DeepLearningFC":
             return FCOutputStats(weights, bias, outputs, gradients)
-        elif layer_type == 'DeepLearningConv':
+        elif layer_type == "DeepLearningConv":
             return ConvOutputStats(weights, bias, outputs, gradients)
-        elif layer_type == 'DeepLearningRecurrent':
+        elif layer_type == "DeepLearningRecurrent":
             return RecurrentOutputStats(outputs)
-        elif layer_type == 'LayerTfModel':
+        elif layer_type == "LayerTfModel":
             return LayerTfModelOutputStats(outputs)
 
     def __eq__(self, other):
-        return(
-            self.gradients_tracker == other.gradients_tracker and
-            self.layer_outputs == other.layer_outputs and
-            self.layer_trainables == other.layer_trainables
+        return (
+            self.gradients_tracker == other.gradients_tracker
+            and self.layer_outputs == other.layer_outputs
+            and self.layer_trainables == other.layer_trainables
         )
-
 
     def serialize(self):
         return pickle.dumps(self)

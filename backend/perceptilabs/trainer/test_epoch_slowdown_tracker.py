@@ -15,7 +15,7 @@ def test_gradual_slowdown():
     est = EpochSlowdownTracker()
 
     for x in range(100):
-        y = 1.1*x
+        y = 1.1 * x
         est.add_time(y)
 
     assert est.has_slowdown()
@@ -30,13 +30,9 @@ def test_noisy_constant():
             return 1.0
         else:
             return 0.0
-        
+
     for _ in range(400):
         y = 1.0 + maybe_add_shot_noise(probability=0.1)
         est.add_time(y)
 
     assert not est.has_slowdown()
-
-
-
-    

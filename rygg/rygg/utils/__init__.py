@@ -11,13 +11,16 @@ if AUTH_ISSUER:
 
 from django.contrib.auth import authenticate
 
+
 class AuthError(Exception):
     pass
 
+
 def jwt_get_username_from_payload_handler(payload):
-    username = payload.get('sub').replace('|', '.')
+    username = payload.get("sub").replace("|", ".")
     authenticate(remote_user=username)
     return username
+
 
 @cachetools.func.ttl_cache(maxsize=1, ttl=10 * 60)
 def get_certs_from_issuer():
@@ -42,13 +45,14 @@ def get_keys_from_issuer():
 
     jwks_as_json = get_certs_from_issuer()
     jwks = json.loads(jwks_as_json)
-    return {jwk['kid'] : decode_key(jwk) for jwk in jwks['keys']}
+    return {jwk["kid"]: decode_key(jwk) for jwk in jwks["keys"]}
+
 
 def get_issuer_key(id):
     keys = get_keys_from_issuer()
     key = keys.get(id)
     if key is None:
-        raise AuthError('Public key not found.')
+        raise AuthError("Public key not found.")
     return key
 
 
@@ -57,9 +61,11 @@ def jwt_decode_token(token):
         return None
 
     header = jwt.get_unverified_header(token)
-    received_key_id = header['kid']
+    received_key_id = header["kid"]
     key = get_issuer_key(received_key_id)
 
     # audience = API identifier in auth0
-    ret = jwt.decode(token, key, audience=AUTH_AUDIENCE, issuer=AUTH_ISSUER, algorithms=['RS256'])
+    ret = jwt.decode(
+        token, key, audience=AUTH_AUDIENCE, issuer=AUTH_ISSUER, algorithms=["RS256"]
+    )
     return ret

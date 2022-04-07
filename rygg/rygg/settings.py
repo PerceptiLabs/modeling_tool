@@ -19,75 +19,83 @@ from rygg import __version__
 from sentry_sdk.integrations.django import DjangoIntegration
 
 ##### Will be edited by the build script #####
-AUTH_ENV_DEFAULT = 'dev'
+AUTH_ENV_DEFAULT = "dev"
 ##############################################
-AUTH_ENV = os.getenv('AUTH_ENV', AUTH_ENV_DEFAULT)
+AUTH_ENV = os.getenv("AUTH_ENV", AUTH_ENV_DEFAULT)
 if not AUTH_ENV:
     AUTH_ISSUER = None
-elif AUTH_ENV == 'dev':
-    AUTH_REALM = 'vue-perceptilabs'
+elif AUTH_ENV == "dev":
+    AUTH_REALM = "vue-perceptilabs"
     AUTH_ISSUER = f"https://keycloak.dev.perceptilabs.com:8443/auth/realms/{AUTH_REALM}"
     AUTH_CERTS_URL = f"{AUTH_ISSUER}/protocol/openid-connect/certs"
-    AUTH_AUDIENCE = 'account'
-    AUTH_ALGORITHM = 'RS256'
-elif AUTH_ENV == 'prod':
-    AUTH_REALM = os.getenv('AUTH_REALM', 'PerceptiLabs')
-    AUTH_ISSUER = os.getenv('AUTH_ISSUER', f"https://keycloak.perceptilabs.com:8443/auth/realms/{AUTH_REALM}")
-    AUTH_CERTS_URL = os.getenv('AUTH_CERTS_URL', f"{AUTH_ISSUER}/protocol/openid-connect/certs")
-    AUTH_AUDIENCE = os.getenv('AUTH_AUDIENCE', 'account')
-    AUTH_ALGORITHM = os.getenv('AUTH_ALGORITHM', 'RS256')
-elif AUTH_ENV == 'pre_dev':
-    AUTH_ISSUER = 'https://dev-udw1gl-s.us.auth0.com/'
+    AUTH_AUDIENCE = "account"
+    AUTH_ALGORITHM = "RS256"
+elif AUTH_ENV == "prod":
+    AUTH_REALM = os.getenv("AUTH_REALM", "PerceptiLabs")
+    AUTH_ISSUER = os.getenv(
+        "AUTH_ISSUER",
+        f"https://keycloak.perceptilabs.com:8443/auth/realms/{AUTH_REALM}",
+    )
+    AUTH_CERTS_URL = os.getenv(
+        "AUTH_CERTS_URL", f"{AUTH_ISSUER}/protocol/openid-connect/certs"
+    )
+    AUTH_AUDIENCE = os.getenv("AUTH_AUDIENCE", "account")
+    AUTH_ALGORITHM = os.getenv("AUTH_ALGORITHM", "RS256")
+elif AUTH_ENV == "pre_dev":
+    AUTH_ISSUER = "https://dev-udw1gl-s.us.auth0.com/"
     AUTH_CERTS_URL = f"{AUTH_ISSUER}.well-known/jwks.json"
     AUTH_AUDIENCE = "https://ryggapi.perceptilabs.com/"
-    AUTH_ALGORITHM = 'RS256'
-elif AUTH_ENV == 'dev_a':
-    AUTH_ISSUER = 'https://dev-ymwf5efb.us.auth0.com/'
+    AUTH_ALGORITHM = "RS256"
+elif AUTH_ENV == "dev_a":
+    AUTH_ISSUER = "https://dev-ymwf5efb.us.auth0.com/"
     AUTH_CERTS_URL = f"{AUTH_ISSUER}.well-known/jwks.json"
     AUTH_AUDIENCE = "https://backends-dev.perceptilabs.com/"
-    AUTH_ALGORITHM = 'RS256'
+    AUTH_ALGORITHM = "RS256"
 else:
-    raise Exception(f"AUTH_ENV is invalid. Got '{AUTH_ENV}'. Expected 'dev', 'prod' or empty string.")
+    raise Exception(
+        f"AUTH_ENV is invalid. Got '{AUTH_ENV}'. Expected 'dev', 'prod' or empty string."
+    )
 
 
-AUTH_MIDDLEWARE=[]
-AUTH_CLASSES={}
+AUTH_MIDDLEWARE = []
+AUTH_CLASSES = {}
 
 if AUTH_ISSUER:
     AUTHENTICATION_BACKENDS = [
-        'django.contrib.auth.backends.ModelBackend',
-        'django.contrib.auth.backends.RemoteUserBackend',
+        "django.contrib.auth.backends.ModelBackend",
+        "django.contrib.auth.backends.RemoteUserBackend",
     ]
 
-    AUTH_MIDDLEWARE = ['django.contrib.auth.middleware.RemoteUserMiddleware']
+    AUTH_MIDDLEWARE = ["django.contrib.auth.middleware.RemoteUserMiddleware"]
 
-    AUTH_CLASSES={
-        'DEFAULT_PERMISSION_CLASSES': (
-            'rest_framework.permissions.IsAuthenticated',
-        ),
-        'DEFAULT_AUTHENTICATION_CLASSES': (
-            'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-            'rest_framework.authentication.SessionAuthentication',
-            'rest_framework.authentication.BasicAuthentication',
+    AUTH_CLASSES = {
+        "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+        "DEFAULT_AUTHENTICATION_CLASSES": (
+            "rest_framework_jwt.authentication.JSONWebTokenAuthentication",
+            "rest_framework.authentication.SessionAuthentication",
+            "rest_framework.authentication.BasicAuthentication",
         ),
     }
     JWT_AUTH = {
-        'JWT_PAYLOAD_GET_USERNAME_HANDLER': 'rygg.utils.jwt_get_username_from_payload_handler',
-        'JWT_DECODE_HANDLER': 'rygg.utils.jwt_decode_token',
-        'JWT_ALGORITHM': AUTH_ALGORITHM,
-        'JWT_AUDIENCE': AUTH_AUDIENCE,
-        'JWT_ISSUER': AUTH_ISSUER,
-        'JWT_AUTH_HEADER_PREFIX': 'Bearer',
+        "JWT_PAYLOAD_GET_USERNAME_HANDLER": "rygg.utils.jwt_get_username_from_payload_handler",
+        "JWT_DECODE_HANDLER": "rygg.utils.jwt_decode_token",
+        "JWT_ALGORITHM": AUTH_ALGORITHM,
+        "JWT_AUDIENCE": AUTH_AUDIENCE,
+        "JWT_ISSUER": AUTH_ISSUER,
+        "JWT_AUTH_HEADER_PREFIX": "Bearer",
     }
 
 
 def is_prod():
     return __version__ != "development"
 
+
 # According to Sentry, DSNs are safe to keep public
 # https://docs.sentry.io/product/sentry-basics/dsn-explainer/
 if is_prod():
-    SENTRY_DSN = "https://56aaa2a9837147f9bd8778a9f4c6f878@o283802.ingest.sentry.io/6061756"
+    SENTRY_DSN = (
+        "https://56aaa2a9837147f9bd8778a9f4c6f878@o283802.ingest.sentry.io/6061756"
+    )
     SENTRY_ENV = "prod" if is_prod() else "dev"
 
     sentry_sdk.init(
@@ -95,12 +103,13 @@ if is_prod():
         integrations=[DjangoIntegration()],
         send_default_pii=True,
         environment=SENTRY_ENV,
-        release=__version__
+        release=__version__,
     )
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
+
 
 def is_docker():
     try:
@@ -108,144 +117,149 @@ def is_docker():
     except:
         return False
 
+
 def is_podman():
     # see https://github.com/containers/podman/issues/3586
     # in podman, the "container" variable is set
     return os.getenv("container") is not None
 
+
 IS_CONTAINERIZED = is_docker() or is_podman()
 
 DB_LOCATION = os.environ.get("PERCEPTILABS_DB")
 if DB_LOCATION or not IS_CONTAINERIZED:
-    DB_LOCATION = os.environ.get("PERCEPTILABS_DB") or os.path.join(Path.home(), ".perceptilabs/db.sqlite3")
-    db_dir=os.path.dirname(DB_LOCATION)
+    DB_LOCATION = os.environ.get("PERCEPTILABS_DB") or os.path.join(
+        Path.home(), ".perceptilabs/db.sqlite3"
+    )
+    db_dir = os.path.dirname(DB_LOCATION)
     os.makedirs(db_dir, exist_ok=True)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+
 def bool_env_var(name, dflt=False):
-    val = os.getenv(name, '')
+    val = os.getenv(name, "")
     if not val:
         return dflt
 
-    if val.lower() == 'true':
+    if val.lower() == "true":
         return True
-    elif val.lower() in ['false', '0']:
+    elif val.lower() in ["false", "0"]:
         return False
     else:
         raise ValueError(f"Received {name}={val}. Expected boolean")
 
 
-UNZIP_TO_TMP = bool_env_var('PL_UNZIP_TO_TMP')
+UNZIP_TO_TMP = bool_env_var("PL_UNZIP_TO_TMP")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '-nj5*1agd@#(1*gcm2kd2q!*ui!kg2*yew=ata$n!sj-nnl&a7'
+SECRET_KEY = "-nj5*1agd@#(1*gcm2kd2q!*ui!kg2*yew=ata$n!sj-nnl&a7"
 
-ALLOWED_HOSTS = ['*'] if IS_CONTAINERIZED else ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["*"] if IS_CONTAINERIZED else ["localhost", "127.0.0.1"]
 
-APPEND_SLASH=False
+APPEND_SLASH = False
 
 # Application definition
 
 INSTALLED_APPS = [
-    'corsheaders',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'rygg.api',
-    'rygg.files',
-    'rygg.mixpanel_proxy',
+    "corsheaders",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "rest_framework",
+    "rygg.api",
+    "rygg.files",
+    "rygg.mixpanel_proxy",
     "django_extensions",
 ]
 
 MIDDLEWARE = [
     "request_logging.middleware.LoggingMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
     *AUTH_MIDDLEWARE,
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_http_exceptions.middleware.ExceptionHandlerMiddleware",
     "django_http_exceptions.middleware.ThreadLocalRequestMiddleware",
     "rygg.middleware.token_middleware",
 ]
 
-ROOT_URLCONF = 'rygg.urls'
+ROOT_URLCONF = "rygg.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'rygg.wsgi.application'
+WSGI_APPLICATION = "rygg.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': DB_LOCATION,
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": DB_LOCATION,
     },
-    'postgres': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASS'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
-    }
+    "postgres": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASS"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
+    },
 }
 
-default_database = os.getenv('DJANGO_DATABASE', 'default')
-DATABASES['default'] = DATABASES[default_database]
+default_database = os.getenv("DJANGO_DATABASE", "default")
+DATABASES["default"] = DATABASES[default_database]
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -257,11 +271,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 
 REST_FRAMEWORK = {
-	'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-	'PAGE_SIZE': 10,
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
     **AUTH_CLASSES,
 }
 
@@ -270,39 +284,41 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = IS_CONTAINERIZED
 
 if not IS_CONTAINERIZED:
-    CORS_ORIGIN_WHITELIST = [os.environ.get('FRONTEND_BASE_URL', 'http://localhost:8080')]
+    CORS_ORIGIN_WHITELIST = [
+        os.environ.get("FRONTEND_BASE_URL", "http://localhost:8080")
+    ]
 
 LOGGING = {
-    'version': 1,
+    "version": 1,
     "disable_existing_loggers": False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
         },
     },
-    'loggers': {
+    "loggers": {
         "django.request": {
             "handlers": ["console"],
-            'level': os.getenv('PL_RYGG_LOG_LEVEL', 'WARNING'),
+            "level": os.getenv("PL_RYGG_LOG_LEVEL", "WARNING"),
             "propagate": False,
         },
-        'django.db.backends': {
+        "django.db.backends": {
             "handlers": ["console"],
-            'level': os.getenv('PL_RYGG_LOG_LEVEL', 'WARNING'),
+            "level": os.getenv("PL_RYGG_LOG_LEVEL", "WARNING"),
         },
-        'rygg': {
-            'handlers': ['console'],
-            'level': os.getenv('PL_RYGG_LOG_LEVEL', 'WARNING'),
+        "rygg": {
+            "handlers": ["console"],
+            "level": os.getenv("PL_RYGG_LOG_LEVEL", "WARNING"),
         },
     },
 }
 
 # Github
-GITHUB_API_KEY = os.environ.get('GITHUB_API_KEY', '')
-GITHUB_API_ENDPOINT = os.environ.get('GITHUB_API_ENDPOINT', '')
+GITHUB_API_KEY = os.environ.get("GITHUB_API_KEY", "")
+GITHUB_API_ENDPOINT = os.environ.get("GITHUB_API_ENDPOINT", "")
 
 # Endpoint to fetch current machine's external IP address
-EXTERNAL_IP_RESOLVER_ENDPOINT = 'https://api.ipify.org'
+EXTERNAL_IP_RESOLVER_ENDPOINT = "https://api.ipify.org"
 
 IS_SERVING = "runserver" in sys.argv
 IS_WORKER = "celery" in " ".join(sys.argv)
@@ -314,6 +330,7 @@ API_TOKEN_REQUIRED = not DEBUG and not IS_CONTAINERIZED and IS_SERVING
 if API_TOKEN_REQUIRED and not API_TOKEN:
     raise Exception("The PL_FILE_SERVING_TOKEN environment variable hasn't been set")
 
+
 def assert_dir_writable(dir, msg):
     test_file = os.path.join(dir, "test_writable_file" + str(uuid.uuid1()))
     try:
@@ -323,8 +340,9 @@ def assert_dir_writable(dir, msg):
 
     os.remove(test_file)
 
+
 # Make sure BASE_UPLOAD_DIR is set
-BASE_UPLOAD_DIR=None
+BASE_UPLOAD_DIR = None
 if IS_CONTAINERIZED and (IS_SERVING or IS_WORKER):
     BASE_UPLOAD_DIR = os.path.abspath(os.getenv("PL_FILE_UPLOAD_DIR"))
     if not BASE_UPLOAD_DIR:
@@ -334,12 +352,19 @@ if IS_CONTAINERIZED and (IS_SERVING or IS_WORKER):
         os.makedirs(BASE_UPLOAD_DIR, exist_ok=True)
 
     if not os.path.isdir(BASE_UPLOAD_DIR):
-        raise Exception(f"PL_FILE_UPLOAD_DIR is set to '{BASE_UPLOAD_DIR}' but that directory doesn't exist")
+        raise Exception(
+            f"PL_FILE_UPLOAD_DIR is set to '{BASE_UPLOAD_DIR}' but that directory doesn't exist"
+        )
 
-    assert_dir_writable(BASE_UPLOAD_DIR, f"PL_FILE_UPLOAD_DIR is set to '{dir}' but that directory isn't writable")
+    assert_dir_writable(
+        BASE_UPLOAD_DIR,
+        f"PL_FILE_UPLOAD_DIR is set to '{dir}' but that directory isn't writable",
+    )
+
 
 def is_upload_allowed():
     return not not BASE_UPLOAD_DIR
+
 
 def file_upload_dir(project_id):
     if not BASE_UPLOAD_DIR:
@@ -349,14 +374,15 @@ def file_upload_dir(project_id):
 
     return os.path.join(BASE_UPLOAD_DIR, str(project_id))
 
+
 def tf_hub_cache_dir():
-    return os.path.join(DEFAULT_PROJECT_DIR, 'Tensorflow_Hub_Models')
+    return os.path.join(DEFAULT_PROJECT_DIR, "Tensorflow_Hub_Models")
 
 
 FILE_UPLOAD_HANDLERS = [
     # story 1588: turn off in-memory uploads
     # 'django.core.files.uploadhandler.MemoryFileUploadHandler',
-    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+    "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 ]
 
 FILE_UPLOAD_PERMISSIONS = 0o444
@@ -372,10 +398,11 @@ CELERY_TIMEZONE = "UTC"
 CELERY_ENABLED = True
 
 # Azure blob
-DATA_BLOB = os.getenv('PL_DATA_BLOB', "https://perceptilabs.blob.core.windows.net/data")
-DATA_LIST = os.getenv('PL_DATA_LIST', DATA_BLOB + "/dataset-list.csv")
-DATA_CATEGORY_LIST = os.getenv('PL_DATA_CATEGORY_LIST', DATA_BLOB + "/dataset-categories.csv")
+DATA_BLOB = os.getenv("PL_DATA_BLOB", "https://perceptilabs.blob.core.windows.net/data")
+DATA_LIST = os.getenv("PL_DATA_LIST", DATA_BLOB + "/dataset-list.csv")
+DATA_CATEGORY_LIST = os.getenv(
+    "PL_DATA_CATEGORY_LIST", DATA_BLOB + "/dataset-categories.csv"
+)
 
 DEFAULT_PROJECT_NAME = "Default"
-DEFAULT_PROJECT_DIR = os.path.join(Path.home(), 'Documents', 'Perceptilabs', 'Default')
-
+DEFAULT_PROJECT_DIR = os.path.join(Path.home(), "Documents", "Perceptilabs", "Default")

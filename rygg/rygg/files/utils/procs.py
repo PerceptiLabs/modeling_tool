@@ -1,12 +1,15 @@
 from multiprocessing import Queue, Process
 from six import reraise
 from tblib import pickling_support
+
 pickling_support.install()
 import pickle
 import sys
 
+
 def _is_main_thread():
     from threading import current_thread, main_thread
+
     return current_thread().ident == main_thread().ident
 
 
@@ -20,6 +23,7 @@ def pass_through(q, fn, args, kwargs):
 
     q.put(pickle.dumps(ret))
     exit(rc)
+
 
 def run_on_main_thread(fn, *args, **kwargs):
     if _is_main_thread():
@@ -36,6 +40,7 @@ def run_on_main_thread(fn, *args, **kwargs):
         if hasattr(ret, "__iter__"):
             reraise(*ret)
         else:
-            raise Exception(f"Internal Error: expected an exception but received {type(ret)}.")
+            raise Exception(
+                f"Internal Error: expected an exception but received {type(ret)}."
+            )
     return ret
-
