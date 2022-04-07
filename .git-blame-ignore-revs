@@ -1,7 +1,4 @@
 # Add this file to your local git config with: git config blame.ignoreRevsFile .git-blame-ignore-revs
 
-# Reformat rygg with black
-e82041a69e00e834708b38935893147a1226795c
-
-# Reformat kernel with black
-996055ac7be14d01bb54d7c024adf3917b2a3e22
+# Reformat rygg and kernel with black
+05dbfdf594dc890aafd24976c3c7ac266f03ac8b
