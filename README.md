@@ -3,6 +3,13 @@
 This is the main repo for the modeling tool, including the ML kernel,
 frontend, and rygg
 
+# Setting up your editor
+
+Make sure that you set up your editor of choice with the following
+instructions:
+https://black.readthedocs.io/en/stable/integrations/editors.html:w
+
+
 # How to build
 
 ## A Wheel
