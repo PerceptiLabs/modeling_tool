@@ -1,4 +1,3 @@
-from debug_print import _d
 import pytest
 from monitor.predictions import Predictor
 

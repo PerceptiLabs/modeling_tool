@@ -1,4 +1,3 @@
-from debug_print import _d
 import requests
 import math
 import sys
@@ -7,7 +6,6 @@ PROJECT = "perceptilabs"
 API = f"https://pypi.org/pypi/{PROJECT}/json"
 GB = 1024**3
 MB = 1024**2
-# _d(list(map(lambda x: round(x/MB, 1), release_sizes)))
 ACCT_LIMIT = 10 * GB
 SAFETY_CUSHION = 5  # save space for this many releases to be safe
 
