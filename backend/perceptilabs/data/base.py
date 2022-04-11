@@ -109,13 +109,13 @@ class DataLoader:
         if num_repeats == 1:
             logger.info(
                 f"Built and partitioned TensorFlow dataset. "
-                f"Size of training: {len(repeated_training_set)}, validation: {len(validation_set)}, test: {len(test_set)} "
+                f"Size of training: {sum(1 for _ in repeated_training_set)}, validation: {sum(1 for _ in validation_set)}, test: {sum(1 for _ in test_set)} "
             )
         else:
             logger.info(
                 f"Built and partitioned TensorFlow dataset. "
-                f"Effective size of training set: {len(repeated_training_set)}. Original size: {len(training_set)} repeated {num_repeats} times. "
-                f"Size of validation: {len(validation_set)}, test: {len(test_set)}"
+                f"Effective size of training set: {sum(1 for _ in repeated_training_set)}. Original size: {sum(1 for _ in training_set)} repeated {num_repeats} times. "
+                f"Size of validation: {sum(1 for _ in validation_set)}, test: {sum(1 for _ in test_set)}"
             )
 
         return repeated_training_set, validation_set, test_set
@@ -127,7 +127,7 @@ class DataLoader:
         if count < 1:
             raise ValueError(f"Repeat count must be >= 1, got {count}")
 
-        original_size = len(original_dataset)
+        original_size = sum(1 for _ in original_dataset)
         if index_offset is None:
             index_offset = original_size
 
@@ -255,9 +255,14 @@ class DataLoader:
             feature_values = df[
                 feature_name
             ].values.tolist()  # Create a dataset for an individual column
-            feature_datasets[feature_name] = tf.data.Dataset.from_tensor_slices(
-                feature_values
-            )
+            if dataset_settings[feature_name].datatype == "boundingbox":
+                feature_datasets[feature_name] = tf.data.Dataset.from_generator(
+                    lambda: feature_values, tf.string
+                )
+            else:
+                feature_datasets[feature_name] = tf.data.Dataset.from_tensor_slices(
+                    feature_values
+                )
 
         dataset = tf.data.Dataset.zip(feature_datasets)
 
@@ -321,6 +326,8 @@ class DataLoader:
             return pipelines.CategoricalPipelineBuilder()
         elif feature_datatype == "text":
             return pipelines.TextPipelineBuilder()
+        elif feature_datatype == "boundingbox":
+            return pipelines.BoundingBoxPipelineBuilder()
         else:
             raise NotImplementedError(
                 f"No pipeline defined for type '{feature_datatype}'"
@@ -425,7 +432,9 @@ class DataLoader:
         """Returns size of a partition TensorFlow dataset"""
         self.ensure_initialized()
         dataset = self._get_dataset_partition(partition)
-        size = len(dataset)  # TODO(anton.k): store the sizes instead for a speedup
+        size = sum(
+            1 for _ in dataset
+        )  # TODO(anton.k): store the sizes instead for a speedup
         return size
 
     def get_loader_pipeline(self, feature_name):
@@ -533,7 +542,7 @@ class DataLoader:
 
             if spec.iotype.lower() == "input":
                 inputs.add(name)
-            elif spec.iotype == "target":
+            elif spec.iotype.lower() == "target":
                 targets.add(name)
 
         if len(inputs) == 0:

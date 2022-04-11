@@ -100,11 +100,14 @@ div
             )
             div(style="margin-top: -180px")
               span.default-text.error(
-                v-if="isAllIOTypesFilled() && !hasInputAndTarget()"
+                v-if="modelType !== modelTypes.OBJECT_DETECTION && isAllIOTypesFilled() && !hasInputAndTarget()"
               ) Make sure to have at least one input and one target to proceed
               span.default-text.error(
-                v-else-if="isAllIOTypesFilled() && !hasOneTarget()"
+                v-else-if="modelType !== modelTypes.OBJECT_DETECTION && isAllIOTypesFilled() && !hasOneTarget()"
               ) Make sure to have only one target to proceed
+              span.default-text.error(
+                v-else-if="modelType === modelTypes.OBJECT_DETECTION && isAllDataTypesFilled() && !hasOneToOneMapping()"
+              ) Make sure to have one-to-one mapping for datatypes
 
               .data-partition-wrapper
                 h5.default-text Data partition:
@@ -201,7 +204,7 @@ import { renderingKernel } from "@/core/apiRenderingKernel";
 import { makeDatasetSettings } from "@/core/helpers";
 
 import LoadDataset from "./load-dataset.vue";
-import { modelTypes } from "@/core/constants";
+import { modelTypes, objectDetectionDataTypes } from "@/core/constants";
 import { whenCeleryTaskDone } from "@/core/helpers";
 const STEP = {
   LOAD_CSV: 1,
@@ -439,6 +442,14 @@ export default {
           csvData.ioTypes.length
       );
     },
+    isAllDataTypesFilled() {
+      const { csvData } = this;
+      return (
+        csvData &&
+        csvData.dataTypes.filter(v => v !== undefined).length ===
+          csvData.dataTypes.length
+      );
+    },
     hasInputAndTarget() {
       const { csvData } = this;
       return (
@@ -454,13 +465,12 @@ export default {
       );
     },
     isDisableCreateAction() {
-      let allColumnsAreSelected = true;
-      let hasInputAndTarget = true;
-      let hasOneTarget = true;
-      allColumnsAreSelected = this.isAllIOTypesFilled();
-      hasInputAndTarget = this.hasInputAndTarget();
-      hasOneTarget = this.hasOneTarget();
-      return !allColumnsAreSelected || !hasInputAndTarget || !hasOneTarget;
+      const allColumnsAreSelected = this.isAllIOTypesFilled();
+      const hasInputAndTarget = this.hasInputAndTarget();
+      const hasOneTarget = this.hasOneTarget();
+      const isObjectDetection = this.modelType === modelTypes.OBJECT_DETECTION;
+      
+      return (!isObjectDetection && (!allColumnsAreSelected || !hasInputAndTarget || !hasOneTarget)) || (isObjectDetection && (!allColumnsAreSelected || !this.isAllDataTypesFilled()));
     },
     async createModel() {
       await this.createModelTF2X();
@@ -688,25 +698,34 @@ export default {
           this.createdFromDatasetId,
         );
 
-        this.dataSetTypes = await renderingKernel
-          .getDataTypes(this.createdFromDatasetId, this.userEmail)
-          .then(res => {
-            if (res.error) {
+        if (this.modelType === modelTypes.OBJECT_DETECTION) {
+          // HARDCODED
+          // Kernel does not support /datasets/type_inference for dataset yet, so hard code on the frontend
+          this.dataSetTypes = fileContents[0].split(',').reduce((acc, columnName, index) => ({
+            ...acc,
+            [columnName]: [objectDetectionDataTypes, index]
+          }), {});
+        } else {
+          this.dataSetTypes = await renderingKernel
+            .getDataTypes(this.createdFromDatasetId, this.userEmail)
+            .then(res => {
+              if (res.error) {
+                this.showErrorPopup(
+                  res.error.message + "\n\n" + res.error.details,
+                );
+                this.showLoadingSpinner = false;
+              }
+              return res;
+            })
+            .catch(err => {
+              console.error(err);
               this.showErrorPopup(
-                res.error.message + "\n\n" + res.error.details,
+                "Error: Couldn't infer data types due to an exception: " + err,
               );
               this.showLoadingSpinner = false;
-            }
-            return res;
-          })
-          .catch(err => {
-            console.error(err);
-            this.showErrorPopup(
-              "Error: Couldn't infer data types due to an exception: " + err,
-            );
-            this.showLoadingSpinner = false;
-            return null;
-          });
+              return null;
+            });
+        }
 
         if (this.dataSetTypes && fileContents) {
           this.dataset = fileContents;

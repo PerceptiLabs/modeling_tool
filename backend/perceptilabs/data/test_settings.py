@@ -8,6 +8,8 @@ from perceptilabs.data.settings import (
     NumericalPreprocessingSpec,
     ImagePreprocessingSpec,
     FeatureSpec,
+    BoundingBoxPreprocessingSpec,
+    ObjectDetectionDatasetSettingsDict,
 )
 
 
@@ -44,6 +46,72 @@ def settings_dict():
         },
     }
     yield settings
+
+
+@pytest.fixture(scope="function")
+def object_detection_settings_dict():
+    settings = {
+        "datasetId": "123",
+        "randomizedPartitions": True,
+        "randomSeed": 789,
+        "partitions": [70, 20, 10],
+        "featureSpecs": {
+            "xmin": {
+                "iotype": "Do not use",
+                "datatype": "X1",
+                "preprocessing": {},
+            },
+            "xmax": {"iotype": "Do not use", "datatype": "X2", "preprocessing": {}},
+            "ymin": {"iotype": "Do not use", "datatype": "Y1", "preprocessing": {}},
+            "ymax": {"iotype": "Do not use", "datatype": "Y2", "preprocessing": {}},
+            "categories": {
+                "iotype": "Do not use",
+                "datatype": "category",
+                "preprocessing": {},
+            },
+            "images": {"iotype": "Input", "datatype": "image", "preprocessing": {}},
+        },
+    }
+    yield settings
+
+
+def test_object_detection_settings_from_dict(object_detection_settings_dict):
+    settings = DatasetSettings.from_dict(object_detection_settings_dict)
+    assert settings.feature_specs["images"].iotype == "input"
+    assert settings.feature_specs["bounding_box"].datatype == "boundingbox"
+
+
+@pytest.fixture(scope="function")
+def object_detection_settings_dict():
+    settings = {
+        "datasetId": "123",
+        "randomizedPartitions": True,
+        "randomSeed": 789,
+        "partitions": [70, 20, 10],
+        "featureSpecs": {
+            "xmin": {
+                "iotype": "Do not use",
+                "datatype": "X1",
+                "preprocessing": {},
+            },
+            "xmax": {"iotype": "Do not use", "datatype": "X2", "preprocessing": {}},
+            "ymin": {"iotype": "Do not use", "datatype": "Y1", "preprocessing": {}},
+            "ymax": {"iotype": "Do not use", "datatype": "Y2", "preprocessing": {}},
+            "categories": {
+                "iotype": "Do not use",
+                "datatype": "category",
+                "preprocessing": {},
+            },
+            "images": {"iotype": "Input", "datatype": "image", "preprocessing": {}},
+        },
+    }
+    yield settings
+
+
+def test_object_detection_settings_from_dict(object_detection_settings_dict):
+    settings = DatasetSettings.from_dict(object_detection_settings_dict)
+    assert settings.feature_specs["images"].iotype == "input"
+    assert settings.feature_specs["bounding_box"].datatype == "boundingbox"
 
 
 def test_settings_from_dict(settings_dict):

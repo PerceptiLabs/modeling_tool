@@ -3,7 +3,7 @@ import json
 import logging
 from perceptilabs.data.type_inference import TypeInferrer
 from perceptilabs.graph.spec import GraphSpec
-
+from perceptilabs.data.resolvers import DataFrameResolver
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,7 @@ class Importer:
 
         type_inferrer = TypeInferrer.with_default_settings()
         df = self._dataset_access.get_dataframe(call_context, dataset_id)
+        df = DataFrameResolver.resolve_dataframe(df, dataset_settings_dict)
 
         default_types = {
             name: type_inferrer.get_default_datatype(series)
@@ -98,7 +99,7 @@ class Importer:
             )
 
         # TODO: return frontend settings dict here so we can include positions as well.
-
+        # TODO break the method into smaller pieces.
         # graph_spec.show()
 
         return dataset_settings_dict, graph_spec_dict, training_settings_dict

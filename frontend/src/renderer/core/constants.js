@@ -204,3 +204,6 @@ export const modelTypes = process.env.ENABLE_OBJECT_DETECTION === 'true' ? {
   SEGMENTATION: "S",
   MULTI_MODAL: "M",
 };
+
+// HARDCODED
+export const objectDetectionDataTypes = ['image', 'category', 'X1', 'Y1', 'X2', 'Y2'];

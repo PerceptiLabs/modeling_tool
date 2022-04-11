@@ -253,6 +253,16 @@ perceptilabs/data/pipelines/image/augmenter.py
 perceptilabs/data/pipelines/image/preprocessing.py
 perceptilabs/data/pipelines/image/postprocessing.py
 
+# backend/perceptilabs/data/pipelines/boundingbox/
+perceptilabs/data/pipelines/boundingbox/base.py
+perceptilabs/data/pipelines/boundingbox/__init__.py
+perceptilabs/data/pipelines/boundingbox/preprocessing.py
+
+
+# backend/perceptilabs/data/resolvers/
+perceptilabs/data/resolvers/__init__.py
+perceptilabs/data/resolvers/base.py
+
 # backend/perceptilabs/automation/modelrecommender/
 perceptilabs/automation/modelrecommender/__init__.py
 perceptilabs/automation/modelrecommender/base.py

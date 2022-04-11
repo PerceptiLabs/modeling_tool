@@ -65,10 +65,15 @@ class PipelineBuilder(ABC):
         return (loader_step, augmenter_step, preprocessing_step, postprocessing_step)
 
     def build_from_dataset(
-        self, preprocessing, dataset, feature_name=None, on_status_updated=None
+        self,
+        preprocessing,
+        dataset,
+        feature_name=None,
+        on_status_updated=None,
+        dataset_size=None,
     ):
         """Use for testing only"""
-        dataset_size = len(dataset)
+        dataset_size = dataset_size or len(dataset)
         indices = tf.data.Dataset.from_tensor_slices(tf.range(dataset_size))
         indexed_dataset = tf.data.Dataset.zip(
             (indices, dataset)

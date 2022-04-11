@@ -15,6 +15,7 @@ from perceptilabs.sharing.importer import Importer
 import perceptilabs.lwcore.utils as lwcore_utils
 import perceptilabs.automation.utils as automation_utils
 import perceptilabs.tracking as tracking
+from perceptilabs.data.resolvers import DataFrameResolver
 
 logger = logging.getLogger(__name__)
 
@@ -330,6 +331,8 @@ class ModelsInterface:
             dataset_settings.dataset_id,
             fix_paths_for=dataset_settings.file_based_features,
         )
+
+        df = DataFrameResolver.resolve_dataframe(df, settings_dict)
 
         data_loader = DataLoader(df, dataset_settings, metadata=data_metadata)
         return data_loader

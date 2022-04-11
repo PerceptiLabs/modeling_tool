@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from perceptilabs.call_context import CallContext
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.utils import setup_sentry, send_ex_to_sentry
+from perceptilabs.data.resolvers import DataFrameResolver
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +91,8 @@ def training_task(
         dataset_settings.dataset_id,
         fix_paths_for=dataset_settings.file_based_features,
     )
+
+    df = DataFrameResolver.resolve_dataframe(df, dataset_settings_dict)
 
     data_loader = DataLoader(
         df, dataset_settings, metadata=data_metadata, num_repeats=num_repeats
@@ -178,6 +181,8 @@ def testing_task(
             dataset_settings.dataset_id,
             fix_paths_for=dataset_settings.file_based_features,
         )
+
+        df = DataFrameResolver.resolve_dataframe(df, dataset_settings_dict)
 
         data_loader = DataLoader(
             df, dataset_settings, metadata=data_metadata, num_repeats=num_repeats
@@ -280,6 +285,8 @@ def serving_task(
         dataset_settings.dataset_id,
         fix_paths_for=dataset_settings.file_based_features,
     )
+
+    df = DataFrameResolver.resolve_dataframe(df, dataset_settings_dict)
 
     data_loader = DataLoader(
         df, dataset_settings, metadata=data_metadata, num_repeats=num_repeats

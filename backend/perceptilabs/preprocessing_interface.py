@@ -9,7 +9,7 @@ from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.utils import KernelError
 import perceptilabs.data.utils as data_utils
 import perceptilabs.utils as utils
-
+from perceptilabs.data.resolvers import DataFrameResolver
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +63,8 @@ class PreprocessingSessionInterface:
             dataset_settings.dataset_id,
             fix_paths_for=dataset_settings.file_based_features,
         )
+
+        df = DataFrameResolver.resolve_dataframe(df, dataset_settings_dict)
 
         if df is None:
             raise ValueError("Invalid dataframe!")

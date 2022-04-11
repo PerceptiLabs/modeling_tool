@@ -184,7 +184,7 @@ class IoLayerStrategy(BaseStrategy):
         variables = {}
 
         try:
-            value = self._data_batch.numpy()
+            value = self.process_data_batch(layer_spec)
             output = {"output": value}
         except Exception as e:
             output = {"output": None}
@@ -229,4 +229,11 @@ class IoLayerStrategy(BaseStrategy):
                 message = f"Error in layer {layer_spec.name}. Expected shape {target_shape} but got {prediction_shape}"
                 return message
 
-        return None
+    def process_data_batch(self, layer_spec):
+        if layer_spec.datatype == "boundingbox":
+            bounding_box_arrays = self._data_batch["bounding_boxes"].numpy().ravel()
+            categories = self._data_batch["categories"].numpy()
+            output = np.concatenate((categories, bounding_box_arrays))
+            return output
+        else:
+            return self._data_batch.numpy()

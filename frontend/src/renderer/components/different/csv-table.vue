@@ -14,6 +14,7 @@
             .d-flex.justify-between
               div {{ numColumn }}
               data-column-options(
+                v-if="modelType !== modelTypes.OBJECT_DETECTION"
                 :columnSelectedType="formattedDataset.dataTypes",
                 :index="ix"
               )
@@ -36,7 +37,9 @@
 
         tr.table-row
           td.space-cell(v-for="numColumn in computedNumberOfColumns") &nbsp;
-        tr.table-row(test-id="io-selection-row")
+        tr.table-row(test-id="io-selection-row"
+          v-if="modelType !== modelTypes.OBJECT_DETECTION"
+        )
           //- td(@click="clearSelectedColumns")
           //-   .label I/O:
           td.table-column.no-padding.io-cell(
@@ -221,6 +224,10 @@ export default {
       this.emitEvent();
     },
     setTypeSelection(event, numColumn) {
+      const index = this.formattedDataset.dataTypes.findIndex((v) => v === event);
+      if (index > -1 && this.modelType === modelTypes.OBJECT_DETECTION) {
+        this.formattedDataset.dataTypes.splice(index, 1, undefined);
+      }
       this.formattedDataset.dataTypes.splice(numColumn - 1, 1, event);
       this.emitEvent();
     },
@@ -293,7 +300,7 @@ export default {
         });
 
         this.formattedDataset.columnNames = columnNames;
-        this.formattedDataset.ioTypes = new Array(newVal);
+        this.formattedDataset.ioTypes = new Array(newVal).fill(this.modelType === modelTypes.OBJECT_DETECTION ? 'Do not use' : undefined);
 
         this.formattedDataset.dataTypes = columnDefaultTypes;
         this.formattedDataset.columnOptions = columnAllowedTypes;

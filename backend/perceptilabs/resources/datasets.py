@@ -55,10 +55,7 @@ class DatasetAccess:
                 df[fix_paths_for] = df[fix_paths_for].applymap(
                     lambda rel_path: os.path.join(directory, rel_path)
                 )
-
             return df
         except:
             logger.exception("Failed getting dataframe")
             raise
-
-        return df

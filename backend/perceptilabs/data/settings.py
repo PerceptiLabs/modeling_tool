@@ -5,7 +5,7 @@ import hashlib
 from pydantic import root_validator
 
 from perceptilabs.utils import MyPydanticBaseModel
-
+from perceptilabs.utils import get_dataframe_type
 
 FILE_BASED_DATATYPES = ["image", "mask"]  # Datatypes whose value is a path to a file
 
@@ -171,6 +171,28 @@ class MaskPreprocessingSpec(BaseImagePreprocessingSpec):
         return cls(**kwargs)
 
 
+class BoundingBoxPreprocessingSpec(BaseImagePreprocessingSpec):
+    @classmethod
+    def from_dict(cls, dict_):
+        kwargs = cls()._get_base_kwargs(dict_)
+
+        if "normalize" in dict_:
+            kwargs["normalize"] = True
+            kwargs["normalize_mode"] = dict_["normalize"]["type"]
+
+
+class BoundingBoxPreprocessingSpec(BaseImagePreprocessingSpec):
+    @classmethod
+    def from_dict(cls, dict_):
+        kwargs = cls()._get_base_kwargs(dict_)
+
+        if "normalize" in dict_:
+            kwargs["normalize"] = True
+            kwargs["normalize_mode"] = dict_["normalize"]["type"]
+
+        return cls(**kwargs)
+
+
 class FeatureSpec(MyPydanticBaseModel):
     datatype: str = None
     iotype: str = None
@@ -183,8 +205,12 @@ class FeatureSpec(MyPydanticBaseModel):
         preprocessing = None
         if datatype == "numerical":
             preprocessing = NumericalPreprocessingSpec.from_dict(dict_["preprocessing"])
-        elif datatype in ["image", "mask"]:
+        elif datatype == "image":
             preprocessing = ImagePreprocessingSpec.from_dict(dict_["preprocessing"])
+        elif datatype == "mask":
+            preprocessing = MaskPreprocessingSpec.from_dict(dict_["preprocessing"])
+        elif datatype == "boundingbox":
+            preprocessing = None
         return cls(
             iotype=dict_["iotype"].lower(),
             datatype=datatype,
@@ -206,6 +232,29 @@ class FeatureSpec(MyPydanticBaseModel):
         return self.datatype in FILE_BASED_DATATYPES
 
 
+class ObjectDetectionDatasetSettingsDict:
+    @classmethod
+    def resolve_from_dict(self, dict_):
+        feature_spec_dict = dict_["featureSpecs"]
+
+        feature_spec_dict["bounding_box"] = {}
+        feature_spec_dict["bounding_box"]["datatype"] = "boundingbox"
+        feature_spec_dict["bounding_box"]["iotype"] = "target"
+        feature_spec_dict["bounding_box"]["preprocessing"] = {}
+
+        for feature_name in list(feature_spec_dict):
+            if feature_spec_dict[feature_name]["datatype"].lower() == "image":
+                feature_spec_dict[feature_name]["iotype"] = "input"
+                feature_spec_dict[feature_name]["preprocessing"] = {}
+            elif feature_spec_dict[feature_name]["datatype"].lower() == "boundingbox":
+                pass
+            else:
+                del feature_spec_dict[feature_name]
+
+        dict_["featureSpecs"] = feature_spec_dict
+        return dict_
+
+
 class DatasetSettings(MyPydanticBaseModel):
     feature_specs: Dict[str, FeatureSpec] = {}
     partitions: Partitions = Partitions()
@@ -213,13 +262,13 @@ class DatasetSettings(MyPydanticBaseModel):
 
     @classmethod
     def from_dict(cls, dict_):
+        dict_ = cls()._resolve_dataset_settings_dict(dict_)
         dataset_id = str(dict_["datasetId"])
         feature_specs = {
             feature_name: FeatureSpec.from_dict(feature_dict)
             for feature_name, feature_dict in dict_["featureSpecs"].items()
         }
         partitions = Partitions.from_dict(dict_)
-
         return cls(
             partitions=partitions, feature_specs=feature_specs, dataset_id=dataset_id
         )
@@ -247,3 +296,10 @@ class DatasetSettings(MyPydanticBaseModel):
     @property
     def file_based_features(self):
         return [name for name, spec in self.feature_specs.items() if spec.is_file_based]
+
+    def _resolve_dataset_settings_dict(self, settings_dict):
+        dataframe_type = get_dataframe_type(settings_dict)
+        if dataframe_type == "ObjectDetection":
+            return ObjectDetectionDatasetSettingsDict.resolve_from_dict(settings_dict)
+        else:
+            return settings_dict

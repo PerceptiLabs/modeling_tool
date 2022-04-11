@@ -688,3 +688,13 @@ def directory_tree(path):
             found.append(os.path.join(path, f))
 
     return found
+
+
+def get_dataframe_type(dataset_settings):
+    datatypes = []
+    for feature_name, feature_dict in dataset_settings["featureSpecs"].items():
+        datatypes.append(feature_dict["datatype"].lower())
+    if set(datatypes) == set(["image", "category", "x1", "y1", "x2", "y2"]):
+        return "ObjectDetection"
+    else:
+        return "other"
