@@ -86,15 +86,24 @@ class ServingResultsAccess:
         examples_path = "gradio_examples"
         Path(examples_path).mkdir(parents=True, exist_ok=True)
 
+        def maybe_convert_to_rgb(image):
+            if image.mode != "RGB":
+                image = image.convert("RGB")
+            return image
+
         for index, item in enumerate(samples):
             path = item[0]
             im = Image.open(path)
+            im = maybe_convert_to_rgb(im)
             file_name = "example_" + str(index) + ".jpg"
             full_path = Path(examples_path, file_name)
             try:
                 im = im.save(full_path)
                 examples.append([str(full_path)])
-            except NotImplementedError:  # If we run into write issues in docker, catch the exception and return
+            except:  # If we run into write issues, catch the exception and return
+                logger.exception(
+                    f"Unable to save image examples to {full_path}, no examples will be provided."
+                )
                 return
 
         return examples
