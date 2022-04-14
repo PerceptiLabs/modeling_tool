@@ -2,3 +2,6 @@
 
 # Reformat rygg and kernel with black
 05dbfdf594dc890aafd24976c3c7ac266f03ac8b
+
+# black-ify training_scripts/train_normal_distr_training_script.py
+fcc68b9b99777573fc1071cae434214c3738a5e9
