@@ -25,7 +25,11 @@ class HardwareStats:
         return mem
 
     def _get_gpu_usage(self):
-        gpus = GPUtil.getGPUs()
+        try:
+            gpus = GPUtil.getGPUs()
+        except:
+            return ""
+
         per_gpu_load = [
             gpu.load * 100 if not math.isnan(gpu.load) else 0 for gpu in gpus
         ]

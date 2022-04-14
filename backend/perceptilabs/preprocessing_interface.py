@@ -50,10 +50,6 @@ class PreprocessingSessionInterface:
     ):
         dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
 
-        num_repeats = utils.get_num_data_repeats(
-            dataset_settings_dict
-        )  # TODO (anton.k): remove when frontend solution exists
-
         self._results_access.set_results(
             preprocessing_session_id, "Initializing preprocessing..."
         )
@@ -84,7 +80,7 @@ class PreprocessingSessionInterface:
         metadata = DataLoader.compute_metadata(
             df,
             dataset_settings,
-            num_repeats=num_repeats,
+            num_repeats=dataset_settings.num_recommended_repeats,
             on_status_updated=on_status_updated,
         )
 

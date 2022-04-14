@@ -15,6 +15,7 @@ from perceptilabs.testcore.strategies.teststrategies import (
     ConfusionMatrix,
     MetricsTable,
     OutputVisualization,
+    ShapValues,
 )
 from perceptilabs.utils import KernelError
 import perceptilabs.utils as utils
@@ -26,32 +27,37 @@ logger = logging.getLogger(__name__)
 class TestCore:
     def __init__(
         self,
-        model_access,
-        epochs_access,
         testing_session_id,
-        model_ids,
-        models_info,
+        model_contexts,
         tests,
         on_testing_completed=None,
+        explainer_factory=None,
     ):
-        self._model_access = model_access
-        self._epochs_access = epochs_access
         self._on_testing_completed = on_testing_completed
         self._testing_session_id = testing_session_id
         self._status = None
         self.set_status("Initializing")
-        self._model_ids = model_ids
-        self._models_info = models_info
         self._tests = tests
+        self._explainer_factory = explainer_factory
 
-        self._models = {}
+        self._model_contexts = model_contexts
+        self._inference_models = {}
         self._results = {}
         self._stopped = False
-        self._data_loaders = {}
-        self._dataspecs = {}
-        self._dataset_sizes = {}
         self._model_number = 0
         self._test_number = 0
+
+    def get_data_iterator(self, model_id):
+        return self._model_contexts[model_id]["dataset"]
+
+    def _get_dataset_size(self, model_id):
+        return self._model_contexts[model_id]["dataset_size"]
+
+    def _get_output_datatypes(self, model_id):
+        return list(self._model_contexts[model_id]["target_datatypes"].values())
+
+    def _get_input_datatypes(self, model_id):
+        return list(self._model_contexts[model_id]["input_datatypes"].values())
 
     @property
     def session_id(self):
@@ -65,29 +71,45 @@ class TestCore:
         """
         loads the pretrained models and the data loaders for the testing to begin.
         """
-        for model_id in self._models_info:
-            model_info = self._models_info[model_id]
+        for model_id in self._model_contexts:
+            model_info = self._model_contexts[model_id]
             self._current_model_name = model_info["model_name"]
-            self.load_data(model_info["data_loader"], model_id)
+
             self.load_model(
                 call_context,
                 model_id,
                 training_session_id=model_info["training_session_id"],
-                graph_spec=model_info["graph_spec"],
+                training_model=self._model_contexts[model_id]["training_model"],
             )
 
-    def load_model(self, call_context, model_id, training_session_id, graph_spec):
+    def load_model(self, call_context, model_id, training_session_id, training_model):
         """
         loads model from exported model.pb file or using checkpoints.
         """
+
+        def should_return_inputs():
+            return "outputs_visualization" in self._tests
+
+        def should_return_outputs():
+            if "confusion_matrix" in self._tests:
+                return True
+
+            if "classification_metrics" in self._tests:
+                return True
+
+            if "segmentation_metrics" in self._tests:
+                return True
+
+            if "outputs_visualization" in self._tests:
+                return True
+
+            return False
+
         try:
-            self._models[model_id] = LoadInferenceModel.from_checkpoint(
-                call_context,
-                self._model_access,
-                self._epochs_access,
-                training_session_id,
-                graph_spec,
-                self._data_loaders[model_id],
+            self._inference_models[model_id] = LoadInferenceModel(
+                training_model,
+                return_inputs=should_return_inputs(),
+                return_outputs=should_return_outputs(),
             )
             logger.info("model %s loaded successfully.", model_id)
         except Exception as e:
@@ -117,17 +139,18 @@ class TestCore:
 
         self.load_models_and_data(call_context)
         self._model_number = 0
-        for model_id in self._models:
+
+        for model_id in self._inference_models:
             self._current_model_id = model_id
-            self._current_model_name = self._models_info[model_id]["model_name"]
-            self._current_dataset_size = self._dataset_sizes[model_id]
+            self._current_model_name = self._model_contexts[model_id]["model_name"]
+            self._current_dataset_size = self._get_dataset_size(model_id)
             self._model_number += 1
             compatible_layers = self.get_compatible_layers_for_tests()
             # all the results are being collected at once to not repeat the same computations for every test.
             yield from self._compute_model_outputs()
 
-            model_inputs = self._models[model_id].model_inputs
-            model_outputs = self._models[model_id].model_outputs
+            model_inputs = self._inference_models[model_id].model_inputs
+            model_outputs = self._inference_models[model_id].model_outputs
 
             self._results[model_id] = {}
             self._test_number = 0
@@ -148,7 +171,6 @@ class TestCore:
                 self._results[model_id][test] = self._run_test(
                     test, compatible_layers[test], model_outputs, model_inputs
                 )
-
                 yield
 
     def _run_test(
@@ -177,6 +199,16 @@ class TestCore:
                     results = OutputVisualization().run(
                         model_inputs, model_outputs, compatible_output_layers
                     )
+                elif test == "shap_values":
+                    model = self._model_contexts[model_id]["training_model"]
+                    data_iterator = self.get_data_iterator(model_id)
+
+                    results = ShapValues(
+                        data_iterator, model, explainer_factory=self._explainer_factory
+                    ).run()
+                else:
+                    raise ValueError(f"Undefined test '{test}'")
+
                 logger.info("test %s completed for model %s.", test, model_id)
 
                 if self._on_testing_completed and not self._stopped:
@@ -191,15 +223,14 @@ class TestCore:
 
     def _compute_model_outputs(self):
         model_id = self._current_model_id
-        data_iterator = self._get_data_generator(model_id)
+        data_iterator = self.get_data_iterator(model_id)
+
         logger.info("Generating outputs for model %s.", model_id)
         self.set_status("Inference")
 
-        return_inputs = True if "outputs_visualization" in self._tests else False
         try:
-            yield from self._models[model_id].run_inference_stepwise(
-                data_iterator, return_inputs
-            )
+            inference_model = self._inference_models[model_id]
+            yield from inference_model.run_inference_stepwise(data_iterator)
 
             # TODO(mukund): support inner layer outputs
             if not self._stopped:
@@ -228,7 +259,7 @@ class TestCore:
         if model_id is None:
             model_id = self._current_model_id
         compatible_dict = {}
-        data_specs = self._dataspecs[model_id]
+
         file = pkg_resources.resource_filename("perceptilabs", "testcore/tests.json")
         with open(file) as f:
             compatibility_table = json.load(f)
@@ -238,43 +269,32 @@ class TestCore:
             raise KernelError(f"The test {test} is not yet supported.")
 
         # TODO(mukund): add support for checking encoders and decoders properly.
-        for layer_type in required_layer_info:
-            accepted_datatypes = required_layer_info[layer_type]
-            used_datatypes = [
-                data_specs[layer].datatype
-                for layer in data_specs
-                if data_specs[layer].iotype == layer_type.lower()
-            ]
-            common_list = list(set(accepted_datatypes) & set(used_datatypes))
-            if not accepted_datatypes:
-                continue
-            elif not common_list:
-                return []
-            if layer_type == "Target":
-                compatible_dict = {
-                    layer: data_specs[layer].datatype
-                    for layer in data_specs
-                    if self._layer_has_compatible_output_datatype(
-                        layer, common_list, model_id
-                    )
-                }
-        return compatible_dict
 
-    def _layer_has_compatible_output_datatype(self, layer, common_list, model_id):
-        if self._dataspecs[model_id][layer].iotype == "target":
-            if self._dataspecs[model_id][layer].datatype in common_list:
+        if self._model_has_accepted_inputs(model_id, required_layer_info["Input"]):
+            return self._get_compatible_output_layers(
+                model_id, required_layer_info["Target"]
+            )
+        else:
+            return {}
+
+    def _model_has_accepted_inputs(self, model_id, accepted_datatypes):
+        for datatype in self._get_input_datatypes(model_id):
+            if datatype in accepted_datatypes:
                 return True
+        return False
 
-    def _get_data_generator(self, model_id):
-        dataset_test_generator = (
-            self._data_loaders[model_id].get_dataset(partition="test").batch(1)
-        )
-        # TODO(mukund): test with different batch sizes possibly dynamic based on given tests for better performance.
-        return dataset_test_generator
+    def _get_compatible_output_layers(self, model_id, accepted_datatypes):
+        used_datatypes = self._get_output_datatypes(model_id)
+        common_list = list(set(accepted_datatypes) & set(used_datatypes))
 
-    def _get_input_and_output_feature(self, data_loader):
-        specs = data_loader.feature_specs
-        return specs
+        compatible_dict = {}
+        for layer_id, datatype in self._model_contexts[model_id][
+            "target_datatypes"
+        ].items():
+            if datatype in common_list:
+                compatible_dict[layer_id] = datatype
+
+        return compatible_dict
 
     def set_status(self, status):
         if self._status != "Stopped":
@@ -284,14 +304,14 @@ class TestCore:
         "sets some class variables to True so that testing will be stopped."
         self._stopped = True
         self.set_status("Stopped")
-        for model_id in self._models:
-            self._models[model_id].stop()
+        for model_id in self._inference_models:
+            self._inference_models[model_id].stop()
         return "Testing stopped."
 
     @property
     def num_models(self):
         "Total number of models in the current test request."
-        return len(self._models)
+        return len(self._inference_models)
 
     @property
     def num_tests(self):
@@ -301,7 +321,7 @@ class TestCore:
     @property
     def num_samples_inferred(self):
         "number of samples inferred in the current model being tested."
-        return self._models[self._current_model_id].num_samples_inferred
+        return self._inference_models[self._current_model_id].num_samples_inferred
 
     def get_testcore_status(self):
         """
@@ -361,25 +381,36 @@ class TestCore:
     def get_results(self):
         "retrieves results for the current test request"
         if self._status == "Completed":
-            return self._results
+            processed_results = self._process_results(self._results)
+            return processed_results
         else:
             return {}
 
+    def _process_results(self, unprocessed_results):
+        results = {}
+
+        for test in self._tests:
+            results[test] = {}
+            for model_id in unprocessed_results:
+                processed_output = ProcessResults(
+                    unprocessed_results[model_id][test], test
+                ).run()
+                results[test][model_id] = processed_output
+
+        return results
+
     def _get_categories(self, model_id, compatible_layers):
-        categories = {}
-        data_loader = self._data_loaders[model_id]
-        graph_spec = self._models_info[model_id]["graph_spec"]
-        for layer in compatible_layers:
-            postprocessing = data_loader.get_postprocessing_pipeline(layer)
-            decoded_categories = utils.get_categories_from_postprocessing(
-                postprocessing
-            )
-            categories[layer] = decoded_categories
+        all_categories = self._model_contexts[model_id]["categories"]
+
+        categories = {
+            layer_id: all_categories.get(layer_id)
+            for layer_id in compatible_layers.keys()
+        }
         return categories
 
     @property
     def models(self):
-        return self._models.copy()
+        return self._inference_models.copy()
 
 
 class ProcessResults:
@@ -396,8 +427,38 @@ class ProcessResults:
             return self._process_metrics_table_output()
         elif self._test == "outputs_visualization":
             return self._process_outputs_visualization_output()
+        elif self._test == "shap_values":
+            return self._process_shapvalue_output()
         else:
             raise KernelError(f"{self._test} is not supported yet.")
+
+    def _process_shapvalue_output(self):
+        import os
+        import shap
+        from pathlib import Path
+
+        shap_values = self._results["shap_values"]
+        test_samples = self._results["test_samples"]
+        shap.image_plot(shap_values, test_samples)
+
+        fig = plt.gcf()
+        fig.canvas.draw()
+
+        data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+        image = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+
+        default_path = Path.home() / "shap_plot.png"
+        path = os.getenv("PL_SHAP_PATH", str(default_path))
+        try:
+            fig.savefig(path)
+        except:
+            logger.exception(f"Failed writing shap plot to {path}")
+        else:
+            logger.exception(f"Wrote shap plot to {path}")
+
+        data_object = createDataObject(data_list=[image], normalize=False)
+        self._results = {"image": data_object}
+        return self._results
 
     def _process_confusionmatrix_output(self):
         for layer_name in self._results:

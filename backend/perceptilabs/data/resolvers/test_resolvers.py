@@ -45,7 +45,6 @@ def test_ObjectDetectionDataframeResolver_adds_bounding_box_column():
             "images": {"iotype": "Input", "datatype": "image", "preprocessing": {}},
         },
     }
-
     processed_df = ObjectDetectionDataframeResolver().resolve_dataframe(
         df, dataset_settings
     )

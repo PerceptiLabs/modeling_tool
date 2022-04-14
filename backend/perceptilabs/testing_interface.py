@@ -4,10 +4,10 @@ from queue import Empty
 import os
 
 import perceptilabs.utils as utils
-from perceptilabs.testcore import TestCore, ProcessResults
+from perceptilabs.testcore import TestCore
 from perceptilabs.utils import KernelError
 import perceptilabs.tracking as tracking
-
+from perceptilabs.data.resolvers import DataFrameResolver
 
 logger = logging.getLogger(__name__)
 
@@ -19,17 +19,23 @@ class TestingSessionInterface:
         self,
         message_broker,
         event_tracker,
+        dataset_access,
         model_access,
         epochs_access,
         results_access,
         tensorflow_support_access,
+        preprocessing_results_access,
+        explainer_factory=None,
     ):
+        self._dataset_access = dataset_access
+        self._preprocessing_results_access = preprocessing_results_access
         self._event_tracker = event_tracker
         self._message_broker = message_broker
         self._model_access = model_access
         self._epochs_access = epochs_access
         self._results_access = results_access
         self._tensorflow_support_access = tensorflow_support_access
+        self._explainer_factory = explainer_factory
 
     def run(self, call_context, *args, **kwargs):
         for _ in self.run_stepwise(call_context, *args, **kwargs):
@@ -88,20 +94,88 @@ class TestingSessionInterface:
 
             yield
 
-    def _setup_test_core(self, call_context, testing_session_id, models, tests):
+    def _prepare_model_context(self, call_context, model_id, model_info):
+        dataset_settings = self._dataset_access.parse_settings(
+            model_info["datasetSettings"]
+        )
+
+        data_metadata = self._preprocessing_results_access.get_metadata(
+            dataset_settings.compute_hash()
+        )
+
+        df = self._dataset_access.get_dataframe(
+            call_context,
+            dataset_settings.dataset_id,
+            fix_paths_for=dataset_settings.file_based_features,
+        )
+
+        df = DataFrameResolver.resolve_dataframe(df, model_info["datasetSettings"])
+
+        data_loader = self._dataset_access.get_data_loader(
+            df,
+            dataset_settings,
+            data_metadata,
+            num_repeats=dataset_settings.num_recommended_repeats,
+        )
+
+        if "graphSettings" not in model_info:
+            logger.warning(
+                f"No default graph settings provided in request for model {model_id}"
+            )
+
+        graph_spec = self._model_access.get_graph_spec(
+            call_context, model_id, default_settings=model_info.get("graphSettings")
+        )
+
+        epoch_id = self._epochs_access.get_latest(
+            call_context,
+            training_session_id=model_info["training_session_id"],
+            require_checkpoint=True,
+            require_trainer_state=False,
+        )
+
+        checkpoint_path = self._epochs_access.get_checkpoint_path(
+            call_context,
+            training_session_id=model_info["training_session_id"],
+            epoch_id=epoch_id,
+        )
+
+        training_model = self._model_access.get_training_model(
+            call_context,
+            model_id,
+            default_graph_settings=graph_spec.to_dict(),
+            checkpoint_path=checkpoint_path,
+        )
+
+        model_context = {
+            "training_model": training_model,
+            "model_name": model_info["model_name"],
+            "training_session_id": model_info["training_session_id"],
+            "dataset": data_loader.get_dataset(partition="test"),
+            "dataset_size": data_loader.get_dataset_size(partition="test"),
+            "categories": data_loader.get_categories(),
+            "input_datatypes": data_loader.get_datatypes("input"),
+            "target_datatypes": data_loader.get_datatypes("target"),
+        }
+        return model_context
+
+    def _setup_test_core(self, call_context, testing_session_id, models_info, tests):
         def on_testing_completed(model_id, test):
             tracking.send_testing_completed(
                 self._event_tracker, call_context, model_id, test
             )
 
+        model_contexts = {
+            model_id: self._prepare_model_context(call_context, model_id, model_info)
+            for model_id, model_info in models_info.items()
+        }
+
         core = TestCore(
-            self._model_access,
-            self._epochs_access,
             testing_session_id,
-            list(models.keys()),
-            models,
+            model_contexts,
             tests,
             on_testing_completed=on_testing_completed,
+            explainer_factory=self._explainer_factory,
         )
         return core
 
@@ -122,16 +196,7 @@ class TestingSessionInterface:
 
     def _write_results(self, core, testing_session_id):
         status = core.get_testcore_status()
-        unprocessed_results = core.get_results()
-
-        results = {}
-        for test in core.tests:
-            results[test] = {}
-            for model_id in unprocessed_results:
-                processed_output = ProcessResults(
-                    unprocessed_results[model_id][test], test
-                ).run()
-                results[test][model_id] = processed_output
+        results = core.get_results()
 
         all_results = {"results": results, "status": status}
         self._results_access.store(testing_session_id, all_results)

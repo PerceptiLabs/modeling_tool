@@ -7,6 +7,7 @@ from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.utils import setup_sentry, send_ex_to_sentry
 from perceptilabs.data.resolvers import DataFrameResolver
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -71,10 +72,6 @@ def training_task(
 
     # TODO: all this data setup should be moved into the coreInteraface!!!
 
-    num_repeats = utils.get_num_data_repeats(
-        dataset_settings_dict
-    )  # TODO (anton.k): remove when frontend solution exists
-
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
     data_metadata = preprocessing_results_access.get_metadata(
         dataset_settings.compute_hash()
@@ -95,7 +92,10 @@ def training_task(
     df = DataFrameResolver.resolve_dataframe(df, dataset_settings_dict)
 
     data_loader = DataLoader(
-        df, dataset_settings, metadata=data_metadata, num_repeats=num_repeats
+        df,
+        dataset_settings,
+        metadata=data_metadata,
+        num_repeats=dataset_settings.num_recommended_repeats,
     )
     event_tracker = EventTracker()
 
@@ -163,58 +163,22 @@ def testing_task(
         rygg, enable_tf_gpu_memory_growth=settings.ENABLE_TF_GPU_MEMORY_GROWTH
     )
 
-    # TODO: all this data loader etup should be moved into the test interface!!!
-    models = {}
-    for model_id in models_info.keys():
-        dataset_settings_dict = models_info[model_id]["datasetSettings"]
-        num_repeats = utils.get_num_data_repeats(
-            dataset_settings_dict
-        )  # TODO (anton.k): remove when frontend solution exists
-
-        dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
-        data_metadata = preprocessing_results_access.get_metadata(
-            dataset_settings.compute_hash()
-        )
-
-        df = dataset_access.get_dataframe(
-            call_context,
-            dataset_settings.dataset_id,
-            fix_paths_for=dataset_settings.file_based_features,
-        )
-
-        df = DataFrameResolver.resolve_dataframe(df, dataset_settings_dict)
-
-        data_loader = DataLoader(
-            df, dataset_settings, metadata=data_metadata, num_repeats=num_repeats
-        )
-
-        graph_settings = models_info[model_id].get("layers")
-        if graph_settings:
-            graph_spec = GraphSpec.from_dict(graph_settings)
-        else:
-            graph_spec = model_access.get_graph_spec(call_context, model_id)
-
-        models[model_id] = {
-            "graph_spec": graph_spec,
-            "data_loader": data_loader,
-            "model_name": models_info[model_id]["model_name"],
-            "training_session_id": models_info[model_id]["training_session_id"],
-        }
-
     event_tracker = EventTracker()
     interface = TestingSessionInterface(
         message_broker,
         event_tracker,
+        dataset_access,
         model_access,
         epochs_access,
         testing_results_access,
         tensorflow_support_access,
+        preprocessing_results_access,
     )
 
     interface.run(
         call_context,
         testing_session_id,
-        models,
+        models_info,
         tests,
         results_interval=settings.TESTING_RESULTS_REFRESH_INTERVAL,
         logrocket_url=logrocket_url,
@@ -264,10 +228,6 @@ def serving_task(
     serving_results_access = ServingResultsAccess(rygg)
     preprocessing_results_access = PreprocessingResultsAccess(get_data_metadata_cache())
 
-    num_repeats = utils.get_num_data_repeats(
-        dataset_settings_dict
-    )  # TODO (anton.k): remove when frontend solution exists
-
     dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
     data_metadata = preprocessing_results_access.get_metadata(
         dataset_settings.compute_hash()
@@ -289,7 +249,10 @@ def serving_task(
     df = DataFrameResolver.resolve_dataframe(df, dataset_settings_dict)
 
     data_loader = DataLoader(
-        df, dataset_settings, metadata=data_metadata, num_repeats=num_repeats
+        df,
+        dataset_settings,
+        metadata=data_metadata,
+        num_repeats=dataset_settings.num_recommended_repeats,
     )
 
     event_tracker = EventTracker()

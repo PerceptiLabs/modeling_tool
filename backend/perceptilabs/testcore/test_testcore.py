@@ -7,9 +7,6 @@ import numpy as np
 import pandas as pd
 from unittest.mock import MagicMock
 
-from perceptilabs.rygg import RyggAdapter
-from perceptilabs.resources.epochs import EpochsAccess
-from perceptilabs.resources.models import ModelAccess
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings, FeatureSpec
@@ -18,6 +15,7 @@ from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.sharing.exporter import Exporter
 from perceptilabs.testcore.base import TestCore, ProcessResults
+import perceptilabs.utils as utils
 
 
 @pytest.fixture()
@@ -74,28 +72,6 @@ def graph_spec_few_epochs():
     return graph_spec
 
 
-class Rygg(RyggAdapter):
-    def __init__(self, tmp_path):
-        self.tmp_path = tmp_path
-
-    def get_dataset(self, call_context, dataset_id):
-        raise NotImplementedError
-
-    def create_model(
-        self, call_context, project_id, dataset_id, model_name, location=None
-    ):
-        raise NotImplementedError
-
-    def load_model_json(self, call_context, model_id):
-        raise NotImplementedError
-
-    def save_model_json(self, call_context, model_id, model):
-        raise NotImplementedError
-
-    def get_model(self, call_context, model_id):
-        return {"location": "/tmp"}
-
-
 @pytest.fixture()
 def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
     training_session_id = "123"
@@ -107,35 +83,40 @@ def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
     exporter.export_checkpoint(checkpoint_path)
     models_info = {
         1: {
-            "graph_spec": graph_spec_few_epochs,
+            "training_model": training_model,
             "training_session_id": training_session_id,
-            "data_loader": data_loader,
+            "dataset": data_loader.get_dataset(partition="test"),
+            "dataset_size": data_loader.get_dataset_size(partition="test"),
+            "categories": data_loader.get_categories(),
+            "input_datatypes": data_loader.get_datatypes("input"),
+            "target_datatypes": data_loader.get_datatypes("target"),
             "model_name": "unit test",
         },
         2: {
-            "graph_spec": graph_spec_few_epochs,
+            "training_model": training_model,
             "training_session_id": training_session_id,
-            "data_loader": data_loader,
+            "dataset": data_loader.get_dataset(partition="test"),
+            "dataset_size": data_loader.get_dataset_size(partition="test"),
+            "categories": data_loader.get_categories(),
+            "input_datatypes": data_loader.get_datatypes("input"),
+            "target_datatypes": data_loader.get_datatypes("target"),
             "model_name": "unit test",
         },
         3: {
-            "graph_spec": graph_spec_few_epochs,
+            "training_model": training_model,
             "training_session_id": training_session_id,
-            "data_loader": data_loader,
+            "dataset": data_loader.get_dataset(partition="test"),
+            "dataset_size": data_loader.get_dataset_size(partition="test"),
+            "categories": data_loader.get_categories(),
+            "input_datatypes": data_loader.get_datatypes("input"),
+            "target_datatypes": data_loader.get_datatypes("target"),
             "model_name": "unit test",
         },
     }
-    tests = []
+    tests = ["confusion_matrix"]
     model_ids = [1]
 
-    rygg = Rygg(temp_path)
-    epochs_access = EpochsAccess(rygg)
-    model_access = ModelAccess(rygg)
-
-    testcore = TestCore(
-        model_access, epochs_access, testing_session_id, model_ids, models_info, tests
-    )
-
+    testcore = TestCore(testing_session_id, models_info, tests)
     testcore.load_models_and_data({})
     yield testcore
 
@@ -145,17 +126,17 @@ def test_testcore_is_loading_data(testcore, data_loader):
     dataset_generator = data_loader.get_dataset(partition="test").batch(1)
     for input_1, _ in dataset_generator:
         data1 = input_1
-    for input_2, _ in testcore._get_data_generator(1):
+    for input_2, _ in testcore.get_data_iterator(1):
         data2 = input_2
     assert data1 == data2
 
 
 def test_model_is_loaded_from_checkpoint(testcore):
-    assert testcore._models[1]._model is not None
+    assert testcore.models[1].model is not None
 
 
 def test_model_outputs_structure_is_accurate(testcore):
-    data_iterator = testcore._get_data_generator(1)
+    data_iterator = testcore.get_data_iterator(1)
     model_inputs, model_outputs = testcore.models[1].run_inference(data_iterator)
     assert list(model_outputs.keys()) == ["outputs", "targets"]
     assert list(model_outputs["outputs"][0].keys()) == ["y1"]
@@ -177,6 +158,7 @@ def test_status_messages(testcore, data_loader):
         status = testcore.get_testcore_status()
         status_messages.append(status)
 
+    num_tests = len(testcore.tests)
     assert (
-        len(status_messages) == num_models * num_samples + 1
+        len(status_messages) == num_models * (num_samples + num_tests) + 1
     )  # one message per sample and +1 for the initial "loading models" message...

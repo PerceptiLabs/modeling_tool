@@ -6,6 +6,10 @@ from perceptilabs.trainer.losses import dice, dice_coefficient
 from perceptilabs.stats.iou import IouStatsTracker, IouStats
 
 
+class DatasetError(ValueError):
+    pass
+
+
 class BaseStrategy(ABC):
     @abstractmethod
     def run(self, model_outputs, compatible_output_layers):
@@ -145,3 +149,102 @@ class OutputVisualization(BaseStrategy):
                 "losses": selected_losses,
             }
         return output_images
+
+
+class ShapValues:
+    class ExplainerFactory:  # Factory necessary because "import shap" modifies tensorflow, causing unrelated tests to fail
+        def make(self, model, background):
+            import shap
+
+            return shap.DeepExplainer(model, background)
+            raise NotImplementedError
+
+    def __init__(
+        self,
+        data_iterator,
+        training_model,
+        n_background_samples_min=20,
+        n_background_samples_max=100,
+        n_visualized_samples=3,
+        explainer_factory=None,
+    ):
+        self._data_iterator = data_iterator
+        self._training_model = training_model
+        self._n_background_samples_min = n_background_samples_min
+        self._n_background_samples_max = n_background_samples_max
+        self._n_visualized_samples = n_visualized_samples
+        self._explainer_factory = explainer_factory or self.ExplainerFactory()
+
+    def _get_input_feature(self):
+        input_specs, _ = self._data_iterator.element_spec
+
+        if len(input_specs) != 1:
+            raise DatasetError("Shap Values test need exactly one input feature!")
+
+        return list(input_specs.keys())[0]
+
+    def _get_target_feature(self):
+        _, target_specs = self._data_iterator.element_spec
+
+        if len(target_specs) != 1:
+            raise DatasetError("Shap Values test need exactly one target feature!")
+
+        return list(target_specs.keys())[0]
+
+    def run(self):
+        input_feature = self._get_input_feature()
+        target_feature = self._get_target_feature()
+
+        background_samples, test_samples = self._create_data_partitions(input_feature)
+
+        explainer = self._create_explainer(
+            input_feature, target_feature, background_samples
+        )
+        shap_values = explainer.shap_values(test_samples)
+
+        results = {
+            "shap_values": shap_values,
+            "test_samples": test_samples,
+        }
+        return results
+
+    def _create_data_partitions(self, input_feature):
+        input_iterator = self._data_iterator.map(lambda inputs, _: inputs)
+
+        n_samples_min = self._n_background_samples_min + self._n_visualized_samples
+        dataset_size = len(self._data_iterator)
+        if dataset_size < n_samples_min:
+            raise DatasetError(
+                f"The dataset is too small. The shap test requires atleast {n_samples_min} samples, but the provided dataset only contains {dataset_size}"
+            )
+
+        n_background_samples = min(
+            dataset_size - self._n_visualized_samples, self._n_background_samples_max
+        )
+
+        data_subset = next(
+            iter(
+                input_iterator.batch(n_background_samples + self._n_visualized_samples)
+            )
+        )
+        input_dataset = data_subset[input_feature].numpy()
+
+        background_samples = input_dataset[:n_background_samples]
+        test_samples = input_dataset[n_background_samples:]
+
+        return background_samples, test_samples
+
+    def _create_explainer(self, input_feature, target_feature, background):
+        input_shape = background[0].shape
+        model = self._create_shap_compatible_model(
+            input_feature, target_feature, input_shape
+        )
+        explainer = self._explainer_factory.make(model, background)
+        return explainer
+
+    def _create_shap_compatible_model(self, input_feature, target_feature, input_shape):
+        inputs = tf.keras.layers.Input(shape=input_shape)
+        outputs, outputs_by_layer = self._training_model({input_feature: inputs})
+        res = tf.keras.layers.Lambda(lambda x: x)(outputs[target_feature])
+        model = tf.keras.models.Model(inputs=inputs, outputs=res)
+        return model

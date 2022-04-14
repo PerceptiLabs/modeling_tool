@@ -130,7 +130,7 @@ def test_image_data_is_loaded_correctly(temp_path):
 
     expected_image = np.random.randint(0, 255, (32, 32, 3), dtype=np.uint8)
 
-    n_samples = 3
+    n_samples = 30
     with builder:
         for i in range(n_samples):
             with builder.create_row() as row:
@@ -1106,3 +1106,56 @@ def test_compute_metadata_calls_on_status_updated(temp_path):
     ]
 
     assert status_updates == expected
+
+
+def test_get_categories():
+    data = {
+        "inputs": [1, 2, 3, 4, 5, 6],
+        "labels": ["Covid", "Normal", "Covid", "Viral Pneumonia", "Normal", "Covid"],
+    }
+    df = pd.DataFrame(data)
+
+    feature_specs = {
+        "inputs": FeatureSpec(datatype="numerical", iotype="input"),
+        "labels": FeatureSpec(datatype="categorical", iotype="target"),
+    }
+    dataset_settings = DatasetSettings(feature_specs=feature_specs)
+
+    dl = DataLoader(df, dataset_settings)
+    categories = dl.get_categories()
+
+    assert categories["inputs"] == []
+    assert categories["labels"] == [
+        "Covid",
+        "Normal",
+        "Viral Pneumonia",
+    ]  # Order matters
+
+
+def test_get_datatypes():
+    df = MagicMock()
+
+    feature_specs = {
+        "x1": FeatureSpec(datatype="numerical", iotype="input"),
+        "x2": FeatureSpec(datatype="binary", iotype="input"),
+        "x3": FeatureSpec(datatype="image", iotype="input"),
+        "y1": FeatureSpec(datatype="image", iotype="target"),
+        "y2": FeatureSpec(datatype="mask", iotype="target"),
+    }
+    dataset_settings = DatasetSettings(feature_specs=feature_specs)
+
+    dl = DataLoader(df, dataset_settings)
+
+    assert dl.get_datatypes(iotype="all") == {
+        "x1": "numerical",
+        "x2": "binary",
+        "x3": "image",
+        "y1": "image",
+        "y2": "mask",
+    }
+    assert dl.get_datatypes(iotype="input") == {
+        "x1": "numerical",
+        "x2": "binary",
+        "x3": "image",
+    }
+    assert dl.get_datatypes(iotype="target") == {"y1": "image", "y2": "mask"}

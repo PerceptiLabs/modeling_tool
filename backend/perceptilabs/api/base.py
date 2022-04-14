@@ -425,14 +425,6 @@ def create_app(
         output = inference_interface.get_testing_results(testing_session_id)
         return jsonify(output)
 
-    """
-    # TODO: only available in debug mode?
-    @app.route('/admin/tasks', methods=['GET'])
-    def admin_tasks():
-        num = task_executor.num_remaining_tasks
-        return jsonify(num)
-    """
-
     @app.before_request
     def before_request():
         g.request_started = time.perf_counter()

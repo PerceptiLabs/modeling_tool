@@ -324,7 +324,7 @@ const actions = {
       const network = rootGetters["mod_workspace/GET_networkByNetworkId"](id);
 
       models[id] = {};
-      models[id].layers = getters.GET_coreNetworkById(id);
+      models[id].graphSettings = getters.GET_coreNetworkById(id);
       models[id].model_name = network.networkName;
       models[id].training_session_id = id;
       models[id].datasetSettings = network.networkMeta.datasetSettings;

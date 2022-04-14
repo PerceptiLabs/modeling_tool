@@ -577,3 +577,27 @@ class DataLoader:
             dataset = self._get_dataset_partition(partition=partition)
             indices = [original_row for original_row, data in dataset]
             return self._data_frame.iloc[indices]
+
+    def get_categories(self):
+        def invert_dict(dict_):
+            return {v: k for k, v in dict_.items()}
+
+        categories = {}
+        for feature_name, spec in self.feature_specs.items():
+            categories[feature_name] = []
+            if spec.datatype == "categorical":
+                pipeline = self.get_preprocessing_pipeline(feature_name)
+                index_to_category = invert_dict(pipeline.metadata["mapping"])
+
+                for index in range(len(index_to_category)):
+                    categories[feature_name].append(index_to_category[index])
+
+        return categories
+
+    def get_datatypes(self, iotype="all"):
+        types = {
+            name: spec.datatype
+            for name, spec in self.feature_specs.items()
+            if iotype == "all" or iotype == spec.iotype
+        }
+        return types

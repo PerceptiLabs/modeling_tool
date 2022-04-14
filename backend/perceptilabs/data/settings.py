@@ -49,6 +49,10 @@ class Partitions(MyPydanticBaseModel):
 
 
 class PreprocessingSpec(MyPydanticBaseModel):
+    @property
+    def num_augmentations(self):
+        return 0
+
     @classmethod
     @abstractmethod
     def from_dict(cls, dict_):
@@ -108,6 +112,17 @@ class BaseImagePreprocessingSpec(PreprocessingSpec):
     random_crop_width: int = None
 
     grayscale: bool = False
+
+    @property
+    def num_augmentations(self):
+        count = 0
+
+        if self.random_crop:
+            count += 1
+        if self.random_flip:
+            count += 1
+        if self.random_rotation:
+            count += 1
 
     def _get_base_kwargs(self, dict_):
         kwargs = {}
@@ -296,6 +311,28 @@ class DatasetSettings(MyPydanticBaseModel):
     @property
     def file_based_features(self):
         return [name for name, spec in self.feature_specs.items() if spec.is_file_based]
+
+    @property
+    def num_augmentations(self):
+        count = 0
+        for spec in self.feature_specs.values():
+            preprocessing = spec.preprocessing
+
+            if (
+                preprocessing is not None
+                and preprocessing.num_augmentations is not None
+            ):
+                count += preprocessing.num_augmentations
+
+        return count
+
+    @property
+    def num_recommended_repeats(self):
+        """Repeat data once per enabled augmentation setting.
+
+        Temporary until we have a frontend solution
+        """
+        return self.num_augmentations + 1
 
     def _resolve_dataset_settings_dict(self, settings_dict):
         dataframe_type = get_dataframe_type(settings_dict)

@@ -9,7 +9,7 @@ import pandas as pd
 import skimage.io as sk
 
 from perceptilabs.data.base import DataLoader, FeatureSpec
-from perceptilabs.data.settings import DatasetSettings
+from perceptilabs.data.settings import DatasetSettings, Partitions
 
 
 class Row:
@@ -82,19 +82,24 @@ class DatasetBuilder:
         self.directories = []
 
     @classmethod
-    def from_features(cls, feature_specs, metadata=None, num_repeats=1):
+    def from_features(
+        cls, feature_specs, metadata=None, num_repeats=1, partitions=None
+    ):
+        partitions = partitions or Partitions()
         for name, spec in feature_specs.items():
             if isinstance(spec, dict):
                 feature_specs[name] = FeatureSpec(
                     datatype=spec["datatype"], iotype=spec["iotype"]
                 )
-
-        settings = DatasetSettings(feature_specs=feature_specs)
+        settings = DatasetSettings(feature_specs=feature_specs, partitions=partitions)
         return cls(settings, metadata=metadata, num_repeats=num_repeats)
 
     @classmethod
-    def from_features(cls, feature_specs, metadata=None, num_repeats=1):
-        settings = DatasetSettings(feature_specs=feature_specs)
+    def from_features(
+        cls, feature_specs, metadata=None, num_repeats=1, partitions=None
+    ):
+        partitions = partitions or Partitions()
+        settings = DatasetSettings(feature_specs=feature_specs, partitions=partitions)
         return cls(settings, metadata=metadata, num_repeats=num_repeats)
 
     @contextmanager

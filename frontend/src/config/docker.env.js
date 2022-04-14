@@ -13,6 +13,7 @@ module.exports = {
   ENABLE_LOGROCKET: '"true"',
   LOGROCKET_APP_ID: '"l2mogl/modeling-tool"',
   ENABLE_DATAWIZARD: '"true"',
+  ENABLE_SHAP_VALUES: '"false"',    
   INTERCOM_ID: '"ujvkp2qi"',
   USERFLOW_KEY: '"ct_ertrpr7nzfc5himsrvqpz4kota"',
   ENABLE_FOLDER_LOADING: '"true"',

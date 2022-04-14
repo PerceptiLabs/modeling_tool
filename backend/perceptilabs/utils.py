@@ -500,22 +500,6 @@ def random_exception(
         raise RuntimeError(message)
 
 
-def get_num_data_repeats(settings_dict):
-    """Repeat data once per enabled augmentation setting.
-
-    Temporary until we have a frontend solution
-    """
-    augmentations = set(["random_flip", "random_crop", "random_rotation"])
-
-    count = 0
-    for spec_dict in settings_dict["featureSpecs"].values():
-        for preprocessing in spec_dict["preprocessing"].keys():
-            if preprocessing in augmentations:
-                count += 1
-
-    return count + 1
-
-
 class Timer:
     def __init__(self):
         self._times = {}
@@ -573,18 +557,22 @@ def b64decode_and_sanitize(input_):
 
 
 def get_categories_from_postprocessing(postprocessing):
+    if not hasattr(postprocessing, "n_categories"):
+        return []
+
     num_categories = postprocessing.n_categories
-    indices = postprocessing(np.eye(num_categories)).numpy()
+    categories = postprocessing(np.eye(num_categories)).numpy()
     decoded_categories = list()
 
     def _categories_need_decoding():
-        if isinstance(indices[-1], bytes):
+        if isinstance(categories[-1], bytes):
             return True
         return False
 
     if _categories_need_decoding():
-        for index in indices:
-            decoded_categories.append(index.decode("utf-8"))
+        for category in categories:
+            decoded_categories.append(category.decode("utf-8"))
+
     if decoded_categories == []:
         decoded_categories = list(range(num_categories))
     return decoded_categories

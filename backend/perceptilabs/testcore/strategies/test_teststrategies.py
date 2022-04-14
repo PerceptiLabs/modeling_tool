@@ -1,6 +1,7 @@
 import os
 import pytest
 import tempfile
+from unittest.mock import MagicMock
 
 import tensorflow as tf
 import numpy as np
@@ -13,9 +14,11 @@ from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.sharing.exporter import Exporter
 from perceptilabs.testcore.strategies.teststrategies import (
+    DatasetError,
     ConfusionMatrix,
     MetricsTable,
     OutputVisualization,
+    ShapValues,
 )
 
 
@@ -222,3 +225,95 @@ def test_outputs_visualization_computation():
         == 10
     )
     assert type(results["y1"]["inputs"][0]) is np.ndarray
+
+
+def test_shap_disallows_multi_input():
+    inputs = tf.data.Dataset.zip(
+        {
+            "x1": tf.data.Dataset.from_tensor_slices([1, 2, 3]),
+            "x2": tf.data.Dataset.from_tensor_slices([1, 2, 3]),
+        }
+    )
+    targets = tf.data.Dataset.zip(
+        {
+            "y1": tf.data.Dataset.from_tensor_slices([1, 2, 3]),
+        }
+    )
+    dataset = tf.data.Dataset.zip((inputs, targets))
+
+    training_model = MagicMock()
+    shap_values = ShapValues(dataset, training_model)
+
+    with pytest.raises(DatasetError):
+        shap_values.run()
+
+
+def test_shap_disallows_multi_target():
+    inputs = tf.data.Dataset.zip(
+        {
+            "x1": tf.data.Dataset.from_tensor_slices([1, 2, 3]),
+        }
+    )
+    targets = tf.data.Dataset.zip(
+        {
+            "y1": tf.data.Dataset.from_tensor_slices([1, 2, 3]),
+            "y2": tf.data.Dataset.from_tensor_slices([1, 2, 3]),
+        }
+    )
+    dataset = tf.data.Dataset.zip((inputs, targets))
+
+    training_model = MagicMock()
+    shap_values = ShapValues(dataset, training_model)
+
+    with pytest.raises(DatasetError):
+        shap_values.run()
+
+
+def test_shap_dataset_must_be_large_enough():
+    inputs = tf.data.Dataset.zip({"x1": tf.data.Dataset.from_tensor_slices([1, 2, 3])})
+    targets = tf.data.Dataset.zip({"y1": tf.data.Dataset.from_tensor_slices([1, 2, 3])})
+
+    dataset = tf.data.Dataset.zip((inputs, targets))
+
+    training_model = MagicMock()
+    shap_values = ShapValues(
+        dataset, training_model, n_background_samples_min=2, n_visualized_samples=2
+    )
+
+    with pytest.raises(DatasetError):
+        shap_values.run()
+
+
+def test_shap_uses_the_correct_amount_of_samples():
+    explainer_factory = MagicMock()
+
+    data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    inputs = tf.data.Dataset.zip({"x1": tf.data.Dataset.from_tensor_slices(data)})
+    targets = tf.data.Dataset.zip({"y1": tf.data.Dataset.from_tensor_slices(data)})
+
+    dataset = tf.data.Dataset.zip((inputs, targets))
+
+    class TrainingModel(tf.keras.Model):
+        def call(self, inputs, training=False):
+            y = inputs["x1"]
+            outputs = {"y1": y}
+            return (outputs, {})
+
+    training_model = TrainingModel()
+
+    n_background_samples_min = 2
+    n_background_samples_max = 6
+    shap_values = ShapValues(
+        dataset,
+        training_model,
+        n_background_samples_min=n_background_samples_min,
+        n_background_samples_max=n_background_samples_max,
+        n_visualized_samples=2,
+        explainer_factory=explainer_factory,
+    )
+    shap_values.run()
+
+    _, background = explainer_factory.make.call_args.args
+    n_samples = len(background)
+    assert n_samples >= n_background_samples_min
+    assert n_samples == n_background_samples_max

@@ -187,6 +187,11 @@ export const TestTypes = {
     disable: false,
     text: "Output Visualization",
   },
+  shap_values: {
+    default: false,
+    disable: !(process.env.ENABLE_SHAP_VALUES === 'true'),
+    text: "Shap Values",
+  },
   // forward_prop: {
   //   default: false,
   //   disabled: true,

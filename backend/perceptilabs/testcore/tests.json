@@ -55,6 +55,19 @@
         "Target": [
              "mask"
         ]
-    }
+    },
+    "shap_values": {
+        "Encoder": [
 
+        ],
+        "Decoder": [
+
+        ],
+        "Input": [
+            "image"
+        ],
+        "Target": [
+             "categorical"
+        ]
+    }
 }

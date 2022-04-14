@@ -59,3 +59,22 @@ class DatasetAccess:
         except:
             logger.exception("Failed getting dataframe")
             raise
+
+        return df
+
+    def get_data_loader(self, df, settings, metadata, num_repeats=None):
+        # TODO. should this be here..? or a factory?
+        from perceptilabs.data.base import DataLoader
+
+        data_loader = DataLoader(
+            df, settings, metadata=metadata, num_repeats=num_repeats
+        )
+        return data_loader
+
+    @staticmethod
+    def parse_settings(settings_dict):
+        # TODO: shouldnt be here...? factory?
+        from perceptilabs.data.settings import DatasetSettings
+
+        dataset_settings = DatasetSettings.from_dict(settings_dict)
+        return dataset_settings

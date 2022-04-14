@@ -64,6 +64,10 @@ const testsValidationRules = {
     inputs: ["image"],
     outputs: ["mask"],
   },
+  shap_values: {
+    inputs: ["image"],
+    outputs: ["categorical"],
+  },
 };
 
 export const isModelValidForTest = (model, testType) => {
