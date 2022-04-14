@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
             field=models.CharField(
                 blank=True,
                 max_length=1000,
-                validators=[rygg.api.models.dataset.validate_root_dir],
+                validators=[rygg.api.models.dataset.validate_path],
             ),
         ),
     ]

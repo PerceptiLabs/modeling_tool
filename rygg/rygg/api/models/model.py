@@ -40,8 +40,13 @@ class Model(SoftDeletableModel):
     saved_by = dj_models.CharField(max_length=100, blank=True)
     saved_version_location = dj_models.CharField(max_length=100, blank=True)
 
-    def get_queryset():
-        return Model.available_objects.filter(project__is_removed=False)
+    def get_queryset(user):
+        user_filters = {}
+        if IS_CONTAINERIZED:
+            allowed_users = [Project.GRANDFATHERED_OWNER, user.username]
+            user_filters = dict(project__owner__in=allowed_users)
+
+        return Model.available_objects.filter(project__is_removed=False, **user_filters)
 
     @property
     def abs_dir(self):
@@ -78,9 +83,9 @@ class Model(SoftDeletableModel):
 
         save_json(self.full_location, model_dict)
 
-    def next_name(project_id, prefix):
+    def next_name(project_id, prefix, user):
         models = (
-            Model.get_queryset()
+            Model.get_queryset(user)
             .filter(project_id=project_id, name__startswith=prefix)
             .values("name")
         )

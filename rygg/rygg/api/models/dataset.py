@@ -1,41 +1,33 @@
-from django.core.exceptions import ValidationError
-from django.db import models as dj_models
-from django.db.models.signals import pre_save, post_save
-from django.dispatch import receiver
-from django_http_exceptions import HTTPExceptions
-from django.utils.translation import gettext_lazy as _
-from model_utils import Choices
-from model_utils.models import SoftDeletableModel, StatusModel, TimeStampedModel
 import os
+import re
 import shutil
+import urllib.parse
 import uuid
 
+from django.core.exceptions import ValidationError
+from django.db import models as dj_models
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
+from django.utils.translation import gettext_lazy as _
+from django_http_exceptions import HTTPExceptions
+from model_utils import Choices
+from model_utils.models import SoftDeletableModel, StatusModel, TimeStampedModel
+
+from rygg.api.models import Model, Project
 from rygg.api.tasks import delete_path_async
 from rygg.files.tasks import (
-    download_async,
-    unzip_async,
+    classification_from_upload_async,
     create_classification_csv_async,
     create_segmentation_csv_async,
-    classification_from_upload_async,
+    download_async,
     segmentation_from_upload_async,
+    unzip_async,
 )
-from rygg.settings import IS_CONTAINERIZED, file_upload_dir, IS_SERVING, DATA_BLOB
-from rygg.api.models import Project, Model
 from rygg.files.utils.file import get_text_lines
-
+from rygg.settings import DATA_BLOB, IS_CONTAINERIZED, IS_SERVING, file_upload_dir
+from pathvalidate import validate_filepath
 
 UPLOAD_PREFIX = "upload: "
-
-
-def validate_file_name(location):
-    # in local mode, we need to save the file's exact location
-    if not IS_CONTAINERIZED:
-        return
-
-    if os.sep in location:
-        raise ValidationError(
-            f"File {location} contains an invalid character.", code=400
-        )
 
 
 def validate_file_exists(location):
@@ -47,15 +39,17 @@ def validate_file_exists(location):
         raise ValidationError(f"File {location} isn't a file.", code=400)
 
 
-def validate_root_dir(location):
+def validate_path(location):
     # on local we don't need the root dir. Skip validation
     if not IS_CONTAINERIZED:
         return
 
-    if os.sep in location:
-        raise ValidationError(
-            f"Directory {location} contains an invalid character.", code=400
-        )
+    validate_filepath(location, platform="Linux")
+
+
+def validate_remote_name(candidate_value):
+    if not candidate_value == urllib.parse.quote(candidate_value):
+        raise ValidationError(f"remote name {candidate_value} is invalid")
 
 
 def take_temp_file(tempfile_path, dest_dir, filename):
@@ -90,20 +84,27 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
     dataset_id = dj_models.AutoField(primary_key=True)
     name = dj_models.CharField(max_length=1000, blank=False)
     location = dj_models.TextField(
-        blank=True, validators=[validate_file_name, validate_file_exists]
+        blank=True, validators=[validate_path, validate_file_exists]
     )
     source_url = dj_models.TextField(blank=True)
     models = dj_models.ManyToManyField(Model, blank=True, related_name="datasets")
     root_dir = dj_models.CharField(
-        max_length=1000, blank=True, validators=[validate_root_dir]
+        max_length=1000, blank=True, validators=[validate_path]
     )
     type = dj_models.CharField(max_length=1, choices=Type.choices)
 
     def get_by_id(id):
         return Dataset.available_objects.get(pk=id, project__is_removed=False)
 
-    def get_queryset():
-        return Dataset.available_objects.filter(project__is_removed=False)
+    def get_queryset(user):
+        user_filters = {}
+        if IS_CONTAINERIZED:
+            allowed_users = [Project.GRANDFATHERED_OWNER, user.username]
+            user_filters = dict(project__owner__in=allowed_users)
+
+        return Dataset.available_objects.filter(
+            project__is_removed=False, **user_filters
+        )
 
     def unregister(dataset_id):
         Dataset.get_by_id(dataset_id).delete()
@@ -146,7 +147,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         unique_together = (("project", "name"), ("project", "location"))
 
     @classmethod
-    def create_from_remote(cls, project_id, name, remote_name, destination, type):
+    def create_from_remote(cls, user, project_id, name, remote_name, destination, type):
         if IS_CONTAINERIZED:
             upload_dir = file_upload_dir(project_id)
             unique_suffix = f"dataset-{uuid.uuid4()}"
@@ -154,13 +155,18 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         else:
             root_dir = destination
 
+        validate_remote_name(remote_name)
+
+        src = f"{DATA_BLOB}/{remote_name}"
+
         dataset = Dataset(
             project_id=project_id,
             name=name,
-            source_url=f"{DATA_BLOB}/{remote_name}",
+            source_url=src,
             root_dir=root_dir,
             type=type,
         )
+        dataset.full_clean()
 
         dataset.save()
         task_id = download_async(dataset.dataset_id)
@@ -168,7 +174,9 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         return task_id, dataset
 
     @classmethod
-    def create_from_upload(cls, project_id, dataset_name, type, uploaded_temp_file):
+    def create_from_upload(
+        cls, user, project_id, dataset_name, type, uploaded_temp_file
+    ):
         if not IS_CONTAINERIZED:
             raise Exception("Not supported!")
 
@@ -185,6 +193,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
             root_dir=dest_dir,  # a way to keep track of the fact that this was an upload
             source_url=f"{UPLOAD_PREFIX}{upload_path}",
         )
+        dataset.full_clean()
         dataset.save()
         task_id = unzip_async(dataset.dataset_id)
 
@@ -193,6 +202,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
     @classmethod
     def create_segmentation_dataset_from_upload(
         cls,
+        user,
         project_id,
         image_data_path,
         image_dataset_name,
@@ -219,6 +229,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
             source_url=f"{UPLOAD_PREFIX}{dest_dir}",  # there are two zip files. hence using the root directory
             type=cls.Type.SEGMENTATION,
         )
+        dataset.full_clean()
         dataset.save()
         task_id = segmentation_from_upload_async(
             dataset.dataset_id, images_upload_path, masks_upload_path
@@ -228,7 +239,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
 
     @classmethod
     def create_classification_dataset_from_upload(
-        cls, project_id, dataset_name, uploaded_temp_file
+        cls, user, project_id, dataset_name, uploaded_temp_file
     ):
         if not IS_CONTAINERIZED:
             raise Exception("Not supported!")
@@ -244,13 +255,14 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
             source_url=f"{UPLOAD_PREFIX}{upload_path}",
             type=cls.Type.CLASSIFICATION,
         )
+        dataset.full_clean()
         dataset.save()
         task_id = classification_from_upload_async(dataset.dataset_id)
 
         return task_id, dataset
 
     @classmethod
-    def create_classification_dataset(cls, project_id, dataset_path):
+    def create_classification_dataset(cls, user, project_id, dataset_path):
         if IS_CONTAINERIZED:
             raise HTTPExceptions.NOT_FOUND
 
@@ -258,13 +270,13 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         name = os.path.split(dataset_path)[1]
 
         datasetExist = (
-            Dataset.get_queryset()
+            cls.get_queryset(user)
             .filter(project_id=project_id, name=name, location=location)  # csv location
             .exists()
         )
 
         if datasetExist:
-            return None, Dataset.get_queryset().get(
+            return None, cls.get_queryset(user).get(
                 project_id=project_id, name=name, location=location
             )
 
@@ -274,12 +286,13 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
             location=location,
             type=cls.Type.CLASSIFICATION,
         )
+        dataset.full_clean()
         dataset.save()
         task_id = create_classification_csv_async(dataset, dataset_path)
         return task_id, dataset
 
     @classmethod
-    def create_segmentation_dataset(cls, project_id, image_path, mask_path):
+    def create_segmentation_dataset(cls, user, project_id, image_path, mask_path):
         if IS_CONTAINERIZED:
             raise HTTPExceptions.NOT_FOUND
 
@@ -289,12 +302,12 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         name = os.path.split(image_root_dir)[1]
 
         datasetExist = (
-            Dataset.get_queryset()
+            cls.get_queryset(user)
             .filter(project_id=project_id, name=name, location=location)
             .exists()
         )
         if datasetExist:
-            return None, Dataset.get_queryset().get(
+            return None, cls.get_queryset(user).get(
                 project_id=project_id, name=name, location=location
             )
 
@@ -304,6 +317,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
             location=location,
             type=cls.Type.SEGMENTATION,
         )
+        dataset.full_clean()
         dataset.save()
         task_id = create_segmentation_csv_async(dataset, image_path, mask_path)
         return task_id, dataset

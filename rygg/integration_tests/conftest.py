@@ -2,6 +2,7 @@ from assertions import assert_eventually
 from clients import ProjectClient, DatasetClient, ModelClient
 from pathlib import Path
 from rest import RyggRest
+from contextlib import contextmanager
 
 import http.client
 import json
@@ -10,6 +11,12 @@ import pytest
 import time
 import urllib
 import uuid
+
+
+@pytest.fixture(scope="session")
+def file_token():
+    return "12312"
+
 
 # allow for specifying the host on the pytest command line
 def pytest_addoption(parser):
@@ -94,6 +101,19 @@ def token_from_auth0(issuer, client_id, client_secret, api_audience):
     return ret
 
 
+@pytest.fixture(scope="session")
+def second_users_connection(host, port, path, file_token):
+    second_auth_token = token_from_keycloak(
+        "keycloak.dev.perceptilabs.com:8443",
+        "/auth/realms/vue-perceptilabs/protocol/openid-connect/token",
+        "integration-test-2",
+        "e42a588e-dc44-4081-92fb-bbf45d20d639",
+    )
+
+    with make_rest(host, port, path, second_auth_token, file_token) as r:
+        yield r
+
+
 # It's imperative that this be session-scoped to avoid high costs with Auth0
 @pytest.fixture(scope="session")
 def auth_token(request):
@@ -128,9 +148,15 @@ def auth_token(request):
 
 
 @pytest.fixture(scope="session")
-def rest(host, port, path, auth_token):
+def rest(host, port, path, auth_token, file_token):
+    with make_rest(host, port, path, auth_token, file_token) as r:
+        yield r
+
+
+@contextmanager
+def make_rest(host, port, path, auth_token, file_token):
     url = f"http://{host}:{port}{path}"
-    with RyggRest(url, "12312", auth_token) as ret:
+    with RyggRest(url, file_token, auth_token) as ret:
         assert_eventually(ret.check, stop_max_delay=60000, wait_fixed=1000)
         yield ret
 

@@ -24,7 +24,7 @@ def iterate_in_context(sequence, contextmanager_fn, *args, **kwargs):
 
 class DownloadFailedError(Exception):
     def __init__(self, url, status_code, text):
-        Exception.__init__(
+        super().__init__(
             f"Download from {url} failed: status code {status_code}\n{text}"
         )
 

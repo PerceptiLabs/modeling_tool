@@ -168,7 +168,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         max_length=1000,
                         validators=[
-                            rygg.api.models.dataset.validate_file_name,
+                            rygg.api.models.dataset.validate_path,
                             rygg.api.models.dataset.validate_file_exists,
                         ],
                     ),

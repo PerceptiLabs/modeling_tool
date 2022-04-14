@@ -1,9 +1,10 @@
+from contextlib import contextmanager
 import glob
 import os
 import pytest
 import shutil
 
-from clients import DatasetClient, ModelClient
+from clients import DatasetClient, ModelClient, ProjectClient
 from assertions import (
     assert_dict_lists_equal,
     has_expected_files,
@@ -86,14 +87,16 @@ def test_deleting_model_removes_it_from_dataset_models_list(
 
 
 @pytest.mark.timeout(10)
-def test_delete_dataset_in_downloading(rest, tmpdir, tmp_project):
+def test_delete_dataset_in_downloading(
+    rest, tmpdir, tmp_project, medium_remote_dataset
+):
     if rest.is_enterprise:
         dest = rest.get_upload_dir(tmp_project.id)
     else:
         dest = tmpdir
 
     # make a remote dataset from a medium dataset
-    medium_dataset_name = get_medium_remote_record(rest)["UniqueName"]
+    medium_dataset_name = medium_remote_dataset["UniqueName"]
     glob_pattern = os.path.join(dest, medium_dataset_name)
 
     def is_zip_removed():
@@ -120,15 +123,43 @@ def test_delete_dataset_in_downloading(rest, tmpdir, tmp_project):
         assert_eventually(is_zip_removed, stop_max_delay=10000, wait_fixed=100)
 
 
+@contextmanager
+def dataset_from_remote(rest, project, remote_ds, tmpdir):
+
+    remote_name = remote_ds["UniqueName"]
+
+    # create the dataset outside the try..finally so that we can avoid waiting for task completion when the test fails
+    task, dataset = DatasetClient.create_from_remote(
+        rest, project, "M", remote_name, tmpdir
+    )
+
+    try:
+        with task, dataset:
+            yield task, dataset
+    finally:
+
+        def task_done():
+            return not task.exists or task.is_completed
+
+        # wait for the task to go away so we don't starve subsequent tests
+        assert_eventually(
+            task_done,
+            stop_max_delay=2000,
+            wait_fixed=100,
+        )
+
+
 @pytest.mark.timeout(15)
-def test_cancel_download_task(rest, tmpdir, tmp_project):
+def test_cancel_download_task(
+    rest, tmpdir, tmp_project, medium_remote_dataset, large_remote_dataset
+):
     if rest.is_enterprise:
         dest = rest.get_upload_dir(tmp_project.id)
     else:
         dest = tmpdir
 
     # make a remote dataset from a large dataset
-    medium_dataset_name = get_medium_remote_record(rest)["UniqueName"]
+    medium_dataset_name = medium_remote_dataset["UniqueName"]
     glob_pattern = os.path.join(dest, medium_dataset_name)
 
     def is_zip_removed():
@@ -136,49 +167,27 @@ def test_cancel_download_task(rest, tmpdir, tmp_project):
         return not found_files
 
     # find a large dataset
-    big_dataaset_name = get_large_remote_record(rest)["UniqueName"]
+    big_dataset_name = large_remote_dataset["UniqueName"]
 
     # create a large dataset from remote
-    task, dataset = DatasetClient.create_from_remote(
-        rest, tmp_project, "M", big_dataaset_name, tmpdir
-    )
-    try:
-        with task:
-            # Cancel it while it's downloading
-            assert_task_starts(rest, task)
-            assert_task_progresses(rest, task)
-    finally:
-        # wait for the task to go away so we don't starve subsequent tests
-        assert_eventually(
-            lambda: not task.exists or task.is_completed,
-            stop_max_delay=2000,
-            wait_fixed=100,
-        )
+
+    with dataset_from_remote(rest, tmp_project, large_remote_dataset, tmpdir) as (
+        task,
+        ds,
+    ):
+        # Cancel it while it's downloading
+        assert_task_starts(rest, task)
+        assert_task_progresses(rest, task)
 
     # watch to see the dataset deleted
-    assert_eventually(lambda: not dataset.exists, stop_max_delay=2000, wait_fixed=100)
+    assert_eventually(lambda: not ds.exists, stop_max_delay=2000, wait_fixed=100)
 
     # Make sure the zip is deleted
     assert_eventually(is_zip_removed, stop_max_delay=10000, wait_fixed=100)
 
     # try to create a new dataset from the same remote. It should succeed
-    task, dataset = DatasetClient.create_from_remote(
-        rest, tmp_project, "M", big_dataaset_name, tmpdir
-    )
-
-    try:
-        with task, dataset:
-            pass
-    finally:
-        # wait for the task to go away so we don't starve subsequent tests
-        assert_eventually(
-            lambda: not task.exists or task.is_completed,
-            stop_max_delay=2000,
-            wait_fixed=100,
-        )
-
-
-from contextlib import contextmanager
+    with dataset_from_remote(rest, tmp_project, large_remote_dataset, tmpdir):
+        pass
 
 
 @contextmanager
@@ -228,28 +237,25 @@ def test_dataset_model_association_after_create(rest, tmp_project, tmp_model):
 
 @pytest.mark.timeout(1)
 def test_model_dataset_association_after_create(rest, tmp_project, tmp_dataset):
-    with ModelClient.make(
-        rest, project=tmp_project.id, name="model1"
-    ) as model1, ModelClient.make(
-        rest, project=tmp_project.id, name="model2"
-    ) as model2:
+    with ModelClient.make(rest, project=tmp_project.id, name="model1") as model1:
+        with ModelClient.make(rest, project=tmp_project.id, name="model2") as model2:
 
-        tmp_dataset.update(models=[model1.id])
-        assert tmp_dataset.models == [model1.as_dict]
+            tmp_dataset.update(models=[model1.id])
+            assert tmp_dataset.models == [model1.as_dict]
 
-        # update models replaces the whole list
-        tmp_dataset.update(models=[model2.id])
-        assert_dict_lists_equal(tmp_dataset.models, [model2.as_dict], "model_id")
+            # update models replaces the whole list
+            tmp_dataset.update(models=[model2.id])
+            assert_dict_lists_equal(tmp_dataset.models, [model2.as_dict], "model_id")
 
-        # add_models adds to them
-        tmp_dataset.add_models([model1.id])
-        assert_dict_lists_equal(
-            tmp_dataset.models, [model1.as_dict, model2.as_dict], "model_id"
-        )
+            # add_models adds to them
+            tmp_dataset.add_models([model1.id])
+            assert_dict_lists_equal(
+                tmp_dataset.models, [model1.as_dict, model2.as_dict], "model_id"
+            )
 
-        # show that we can delete the association
-        tmp_dataset.remove_models([model1.id, model2.id])
-        assert len(tmp_dataset.models) == 0
+            # show that we can delete the association
+            tmp_dataset.remove_models([model1.id, model2.id])
+            assert len(tmp_dataset.models) == 0
 
 
 @pytest.mark.timeout(1)
@@ -382,37 +388,43 @@ def test_remote_list(rest):
     assert "UniqueName" in key_set
 
 
-def get_small_remote_record(rest):
-    for dataset, sz in get_available_remote_datasets(rest):
+@pytest.fixture(scope="session")
+def small_remote_dataset(rest, available_remote_datasets):
+    for dataset, sz in available_remote_datasets:
         if sz <= SMALL_DATASET_SIZE:
             return dataset
     return None
 
 
-def get_medium_remote_record(rest):
+@pytest.fixture(scope="session")
+def medium_remote_dataset(rest, available_remote_datasets):
     # find a dataset between SMALL_DATASET_SIZE and LARGE_DATASET_SIZE
-    for dataset, sz in get_available_remote_datasets(rest):
+    for dataset, sz in available_remote_datasets:
         if sz <= LARGE_DATASET_SIZE and sz >= SMALL_DATASET_SIZE:
             return dataset
     return None
 
 
-def get_large_remote_record(rest):
+@pytest.fixture(scope="session")
+def large_remote_dataset(rest, available_remote_datasets):
     # find a dataset between SMALL_DATASET_SIZE and LARGE_DATASET_SIZE
-    for dataset, sz in get_available_remote_datasets(rest):
+    for dataset, sz in available_remote_datasets:
         if sz >= LARGE_DATASET_SIZE:
             return dataset
     return None
 
 
-def get_available_remote_datasets(rest):
-    resp = rest.get("/datasets/remote_with_categories/")
+@pytest.fixture(scope="session")
+def available_remote_datasets(rest):
+    def gen():
+        resp = rest.get("/datasets/remote_with_categories/")
+        for dataset in resp["datasets"]:
+            if not "SizeBytes" in dataset:
+                continue
+            sz = int(dataset["SizeBytes"])
+            yield (dataset, sz)
 
-    for dataset in resp["datasets"]:
-        if not "SizeBytes" in dataset:
-            continue
-        sz = int(dataset["SizeBytes"])
-        yield (dataset, sz)
+    return list(gen())
 
 
 @pytest.mark.timeout(1)
@@ -446,88 +458,84 @@ def test_deleting_allows_same_name(rest, tmpdir, tmp_project):
     DatasetClient.make(rest, **common_params)
 
 
-@pytest.mark.timeout(1)
-def test_validates_type(rest, tmpdir, tmp_project, to_local_translator):
-    # don't try this if the remote dataset is already linked to the dataset, which means that we're working on a non-test system
-    test_record = get_small_remote_record(rest)
-    with pytest.raises(Exception, match="400"):
-        DatasetClient.create_from_remote(
-            rest, tmp_project, "invalid_type", test_record["UniqueName"], tmpdir
-        )
-
-
 @pytest.mark.timeout(10)
-def test_create_dataset_from_remote(rest, tmpdir, tmp_project, to_local_translator):
-    # don't try this if the remote dataset is already linked to the dataset, which means that we're working on a non-test system
-    test_record = get_small_remote_record(rest)
-    assert test_record
-
+def test_create_dataset_from_remote(
+    rest,
+    tmpdir,
+    tmp_project,
+    small_remote_dataset,
+    available_remote_datasets,
+    to_local_translator,
+):
     count_before = rest.get(f"/datasets/")["count"]
-    task, dataset = DatasetClient.create_from_remote(
-        rest, tmp_project, "M", test_record["UniqueName"], tmpdir
-    )
+    with dataset_from_remote(rest, tmp_project, small_remote_dataset, tmpdir) as (
+        task,
+        dataset,
+    ):
 
-    # make sure the task acts as expected
-    assert_task_starts(rest, task)
-    assert_task_completes(rest, task)
+        # make sure the task acts as expected
+        assert_task_starts(rest, task)
+        assert_task_completes(rest, task)
 
-    # re-fetch the dataset by id
-    dataset.refresh()
-    assert dataset.status == "uploaded"
-    assert dataset.is_perceptilabs_sourced == True
-
-    # Check the download. Since we currently only support csv, make sure it's the right file type
-    content = dataset.get_content(num_rows=10)["file_contents"]
-    assert len(content) == 10
-    assert "," in content[0]  # very rudimentary check that it's csv
-
-    # check that the zip has been deleted
-    if rest.is_enterprise:
-        parent_dir = dataset.location
-        full_parent_dir = os.path.join(rest.get_upload_dir(tmp_project.id), parent_dir)
-    else:
-        full_parent_dir = dataset.location
-    assert not glob.glob(os.path.join(full_parent_dir, "**/*.zip"))
-
-    # also try fetching the list
-    datasets = rest.get(f"/datasets/")
-    assert datasets["count"] == count_before + 1
-    filtered = filter(lambda d: d["dataset_id"] == dataset.id, datasets["results"])
-    as_list = list(filtered)
-    assert len(as_list) == 1
-    assert as_list[0]["exists_on_disk"] == True
-
-    # Check that the new dataset points to the remote dataset
-    source_url = dataset.source_url
-    remote_url_ending = test_record["UniqueName"]
-    assert source_url.endswith(remote_url_ending)
-
-    # re-fetch the remotes list so we can check the localDatasetId
-    remotes = [
-        d
-        for d in rest.get("/datasets/remote/")
-        if d["UniqueName"] == test_record["UniqueName"]
-    ]
-    assert remotes
-    test_record = remotes[0]
-
-    # check that remote datasets response now points to the new dataset
-    for remote, _ in get_available_remote_datasets(rest):
-        if remote["UniqueName"] == test_record["UniqueName"]:
-            assert test_record["localDatasetID"] == dataset.id
-            break
-
-    # check that deleting the local copy makes exists_on_disk change to false
-    assert dataset.exists_on_disk == True
-    dataset_local_location = to_local_translator(dataset.location)
-    parent_dir = os.path.dirname(dataset_local_location)
-    shutil.rmtree(parent_dir)
-
-    def is_file_gone_on_server():
+        # re-fetch the dataset by id
         dataset.refresh()
-        return not dataset.exists_on_disk
+        assert dataset.status == "uploaded"
+        assert dataset.is_perceptilabs_sourced == True
 
-    assert_eventually(is_file_gone_on_server, stop_max_delay=5000, wait_fixed=50)
+        # Check the download. Since we currently only support csv, make sure it's the right file type
+        content = dataset.get_content(num_rows=10)["file_contents"]
+        assert len(content) == 10
+        assert "," in content[0]  # very rudimentary check that it's csv
+
+        # check that the zip has been deleted
+        if rest.is_enterprise:
+            parent_dir = dataset.location
+            full_parent_dir = os.path.join(
+                rest.get_upload_dir(tmp_project.id), parent_dir
+            )
+        else:
+            full_parent_dir = dataset.location
+        assert not glob.glob(os.path.join(full_parent_dir, "**/*.zip"))
+
+        # also try fetching the list
+        datasets = rest.get(f"/datasets/")
+        assert datasets["count"] == count_before + 1
+        filtered = filter(lambda d: d["dataset_id"] == dataset.id, datasets["results"])
+        as_list = list(filtered)
+        assert len(as_list) == 1
+        assert as_list[0]["exists_on_disk"] == True
+
+        # Check that the new dataset points to the remote dataset
+        source_url = dataset.source_url
+        remote_url_ending = small_remote_dataset["UniqueName"]
+        assert source_url.endswith(remote_url_ending)
+
+        # re-fetch the remotes list so we can check the localDatasetId
+        remotes = [
+            d
+            for d in rest.get("/datasets/remote/")
+            if d["UniqueName"] == small_remote_dataset["UniqueName"]
+        ]
+        assert remotes
+        test_record = remotes[0]
+
+        # check that remote datasets response now points to the new dataset
+        for remote, _ in available_remote_datasets:
+            if remote["UniqueName"] == test_record["UniqueName"]:
+                assert test_record["localDatasetID"] == dataset.id
+                break
+
+        # check that deleting the local copy makes exists_on_disk change to false
+        assert dataset.exists_on_disk == True
+        dataset_local_location = to_local_translator(dataset.location)
+        parent_dir = os.path.dirname(dataset_local_location)
+        shutil.rmtree(parent_dir)
+
+        def is_file_gone_on_server():
+            dataset.refresh()
+            return not dataset.exists_on_disk
+
+        assert_eventually(is_file_gone_on_server, stop_max_delay=5000, wait_fixed=50)
 
     # make sure we didn't delete too high in the directory tree
     assert_workingdir(rest, tmp_project.id, to_local_translator)
@@ -603,38 +611,42 @@ def test_dataset_location_read_only(rest, tmpdir, tmp_project):
 
 @pytest.mark.timeout(10)
 @pytest.mark.usefixtures("pip_only")
+@pytest.mark.skip(reason="the dataset doesn't exist in test_data")
 def test_create_classification_dataset(rest, tmp_project, to_local_translator):
     task, dataset = DatasetClient.create_classification_dataset(
         rest, dataset_path=CLASSIFICATION_DATASET_DIR, project=tmp_project
     )
-    # make sure the task acts as expected
-    assert_task_completes(rest, task)
+    with dataset:
+        with task:
+            # make sure the task acts as expected
+            assert_task_completes(rest, task)
 
-    # re-fetch the dataset by id
-    dataset.refresh()
-    assert dataset.status == "uploaded"
+        # re-fetch the dataset by id
+        dataset.refresh()
+        assert dataset.status == "uploaded"
 
-    # assert csv file is created
-    csv_path = dataset.location
-    assert os.path.split(csv_path)[1] == "pl_data.csv"
+        # assert csv file is created
+        csv_path = dataset.location
+        assert os.path.split(csv_path)[1] == "pl_data.csv"
 
-    # Check the download. Since we currently only support csv, make sure it's the right file type
-    content = dataset.get_content(num_rows=3)["file_contents"]
-    assert len(content) == 3
-    assert "," in content[0]  # very rudimentary check that it's csv
+        # Check the download. Since we currently only support csv, make sure it's the right file type
+        content = dataset.get_content(num_rows=3)["file_contents"]
+        assert len(content) == 3
+        assert "," in content[0]  # very rudimentary check that it's csv
 
-    # check that deleting the csv file makes exists_on_disk change to false
-    assert dataset.exists_on_disk == True
-    os.remove(dataset.location)
-    dataset.refresh()
-    assert dataset.exists_on_disk == False
+        # check that deleting the csv file makes exists_on_disk change to false
+        assert dataset.exists_on_disk == True
+        os.remove(dataset.location)
+        dataset.refresh()
+        assert dataset.exists_on_disk == False
 
-    # make sure we didn't delete too high in the directory tree
-    assert_workingdir(rest, tmp_project.id, to_local_translator)
+        # make sure we didn't delete too high in the directory tree
+        assert_workingdir(rest, tmp_project.id, to_local_translator)
 
 
 @pytest.mark.timeout(10)
 @pytest.mark.usefixtures("pip_only")
+@pytest.mark.skip(reason="the dataset doesn't exist in test_data")
 def test_create_segmentation_dataset(rest, tmp_project, to_local_translator):
     task, dataset = DatasetClient.create_segmentation_dataset(
         rest,
@@ -716,3 +728,53 @@ def test_create_segmentation_dataset_enterprise(rest, tmp_project):
     content = dataset.get_content(num_rows=3)["file_contents"]
     assert len(content) == 3
     assert "," in content[0]
+
+
+# On the off chance that someone logs in with different users on the pip version, we don't want to lock them out of their local data
+@pytest.mark.usefixtures("pip_only")
+def test_can_see_other_users_datasets(rest, tmp_dataset, second_users_connection):
+    def dataset_ids(response_from_get):
+        ret = [result["dataset_id"] for result in response_from_get["results"]]
+        ret.sort()
+        return ret
+
+    # For grins, check that the main user can see tmp_dataset
+    resp1 = rest.get("/datasets/")
+    assert dataset_ids(resp1) == [tmp_dataset.id]
+
+    # check that the second user can see tmp_dataset too
+    resp2 = second_users_connection.get("/datasets/")
+    assert resp2 == resp1
+
+
+@pytest.mark.usefixtures("enterprise_only")
+def test_cant_see_other_users_datasets(
+    rest, tmp_dataset, second_users_connection, small_remote_dataset, tmpdir
+):
+    # For grins, check that the main user can see tmp_dataset
+    resp = rest.get("/datasets/")
+    assert resp["count"] == 1
+    assert resp["results"][0]["dataset_id"] == tmp_dataset.id
+
+    # check that the second user can't see tmp_dataset
+    resp = second_users_connection.get("/datasets/")
+    assert resp["count"] == 0
+    assert not resp["results"]
+
+    # make a dataset for the new user
+    sec_us_cnxn = second_users_connection
+    with ProjectClient.make(sec_us_cnxn, name="2") as proj2:
+        with dataset_from_remote(sec_us_cnxn, proj2, small_remote_dataset, tmpdir) as (
+            task,
+            ds2,
+        ):
+
+            # check that the second user can only see the new dataset
+            resp = second_users_connection.get("/datasets/")
+            assert resp["count"] == 1
+            assert resp["results"][0]["dataset_id"] == ds2.id
+
+            # check that the main user can only see the first dataset
+            resp = rest.get("/datasets/")
+            assert resp["count"] == 1
+            assert resp["results"][0]["dataset_id"] == tmp_dataset.id

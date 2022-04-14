@@ -123,6 +123,7 @@ def download_unzip(cancel_token, status_callback, dataset_id):
     from rygg.api.models import Dataset
 
     try:
+        file_path = ""
         dataset = Dataset.objects.get(dataset_id=dataset_id)
         dataset.status = "uploading"
         dataset.save()

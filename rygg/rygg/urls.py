@@ -29,8 +29,8 @@ from rygg.files.views.tf_hub_cache_view import get_tf_hub_cache_dir
 
 router = routers.DefaultRouter()
 router.register(r"projects", ProjectViewSet)
-router.register(r"models", ModelViewSet)
-router.register(r"datasets", DatasetViewSet)
+router.register(r"models", ModelViewSet, basename="Models")
+router.register(r"datasets", DatasetViewSet, basename="Datasets")
 router.register(r"notebooks", NotebookViewSet)
 router.register(r"issues", IssuesViewSet, basename="Issues")
 router.register(r"tasks", TaskViewSet, basename="task")

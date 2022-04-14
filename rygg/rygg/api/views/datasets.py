@@ -1,29 +1,32 @@
-from django.conf import settings
-from django_http_exceptions import HTTPExceptions
-from rest_framework import viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
 import csv
 import itertools
 import urllib
 import urllib.request
+from contextlib import contextmanager
 
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django_http_exceptions import HTTPExceptions
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+import rygg.files.views.util
 from rygg.api.models import Dataset, Model
 from rygg.api.serializers import DatasetSerializer, ModelSerializer
 from rygg.files.views.util import (
-    get_required_param,
-    get_optional_param,
     get_optional_int_param,
-    get_project_from_request,
+    get_optional_param,
     get_project_from_post,
+    get_project_from_request,
     get_required_choice_param,
-    request_as_dict,
-    protect_read_only_enterprise_field,
-    json_response,
     get_required_choice_post,
+    get_required_param,
+    json_response,
+    protect_read_only_enterprise_field,
+    request_as_dict,
 )
 from rygg.settings import IS_CONTAINERIZED, is_upload_allowed
-import rygg.files.views.util
 
 
 def request_path(request):
@@ -46,9 +49,20 @@ def csv_lines_to_dict(lines):
             yield dict(zip(first, row))
 
 
+@contextmanager
+def validation_conversion():
+    try:
+        yield
+    except ValidationError as e:
+        raise HTTPExceptions.BAD_REQUEST.with_content("\n".join(e.messages))
+
+
 class DatasetViewSet(viewsets.ModelViewSet):
-    queryset = Dataset.get_queryset().order_by("-dataset_id")
     serializer_class = DatasetSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Dataset.get_queryset(user).order_by("-dataset_id")
 
     def alias_project_id(self, request):
         # copy over project_id to project for backward compatibility
@@ -101,7 +115,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
         ds_models = ds.models
 
         if request.method == "GET":
-            models = Model.get_queryset().filter(datasets=pk)
+            models = Model.get_queryset(request.user).filter(datasets=pk)
 
         elif request.method in ["PATCH", "POST", "PUT"]:
             ids = request.data.get("ids")
@@ -109,7 +123,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
             if not ids:
                 raise HTTPExceptions.BAD_REQUEST.with_content("ids field is required")
 
-            new_models = Model.get_queryset().filter(model_id__in=ids)
+            new_models = Model.get_queryset(request.user).filter(model_id__in=ids)
             ds_models.add(*new_models)
             models = ds.models
         elif request.method == "DELETE":
@@ -119,7 +133,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
 
             ids = ids_str.split(",")
 
-            models_to_remove = Model.get_queryset().filter(model_id__in=ids)
+            models_to_remove = Model.get_queryset(request.user).filter(model_id__in=ids)
             ds_models.remove(*models_to_remove)
             models = ds.models
 
@@ -145,7 +159,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
         # Make a table of datasets that have been downloaded from our remote
         # Sort the query by dataset_id so that the newest ones end up being the representatives in the lists
         datasets_from_remote_query = (
-            Dataset.get_queryset()
+            Dataset.get_queryset(self.request.user)
             .filter(source_url__startswith=settings.DATA_BLOB)
             .order_by("dataset_id")
         )
@@ -183,13 +197,15 @@ class DatasetViewSet(viewsets.ModelViewSet):
         datatype = get_required_choice_param(request, "type", Dataset.Type.choices)
         destination = None if IS_CONTAINERIZED else request_path(request)
 
-        task_id, dataset = Dataset.create_from_remote(
-            project_id,
-            name,
-            remote_id,
-            destination,
-            datatype,
-        )
+        with validation_conversion():
+            task_id, dataset = Dataset.create_from_remote(
+                request.user,
+                project_id,
+                name,
+                remote_id,
+                destination,
+                datatype,
+            )
 
         response = {
             "task_id": task_id,
@@ -225,9 +241,14 @@ class DatasetViewSet(viewsets.ModelViewSet):
         if not datatype:
             raise HTTPExceptions.BAD_REQUEST.with_content("type parameter is required")
 
-        task_id, dataset = Dataset.create_from_upload(
-            project_id, dataset_name, datatype, file_uploaded.temporary_file_path()
-        )
+        with validation_conversion():
+            task_id, dataset = Dataset.create_from_upload(
+                request.user,
+                project_id,
+                dataset_name,
+                datatype,
+                file_uploaded.temporary_file_path(),
+            )
 
         response = {
             "task_id": task_id,
@@ -255,7 +276,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
         project_id = get_project_from_request(request).project_id
 
         task_id, dataset = Dataset.create_classification_dataset(
-            project_id, dataset_path
+            request.user, project_id, dataset_path
         )
 
         response = {
@@ -271,7 +292,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
         mask_path = get_required_param(request, "mask_path")
         project_id = get_project_from_request(request).project_id
         task_id, dataset = Dataset.create_segmentation_dataset(
-            project_id, image_path, mask_path
+            request.user, project_id, image_path, mask_path
         )
 
         response = {
@@ -306,7 +327,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
             raise HTTPExceptions.BAD_REQUEST.with_content("name parameter is required")
 
         task_id, dataset = Dataset.create_classification_dataset_from_upload(
-            project_id, dataset_name, file_uploaded.temporary_file_path()
+            request.user, project_id, dataset_name, file_uploaded.temporary_file_path()
         )
         response = {
             "task_id": task_id,
@@ -348,6 +369,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
             )
 
         task_id, dataset = Dataset.create_segmentation_dataset_from_upload(
+            request.user,
             project_id,
             image_data.temporary_file_path(),
             image_data.name,
