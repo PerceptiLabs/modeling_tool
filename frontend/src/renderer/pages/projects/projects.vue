@@ -414,7 +414,7 @@ export default {
             )
             .filter((x) => x).length !== 0;
         if (datasetHasModels) {
-          this.showErrorPopup("Dataset has models remove them first");
+          this.showErrorPopup("Dataset has models. Remove them first.");
           return;
         }
       }
