@@ -16,16 +16,11 @@ import TrainGan from "@/components/network-elements/elements/train-gan/train-gan
 
 import MathMerge from "@/components/network-elements/elements/math-merge/math-merge.vue";
 
-import ClassicMLDbscans from "@/components/network-elements/elements/classic-ml-dbscans/classic-ml-dbscans.vue";
-import ClassicMLKMeans from "@/components/network-elements/elements/classic-ml-k-means/classic-ml-k-means.vue";
-import ClassicMLKNN from "@/components/network-elements/elements/classic-ml-k-nearest/classic-ml-k-nearest.vue";
-import ClassicMLRandomForest from "@/components/network-elements/elements/classic-ml-random-forest/classic-ml-random-forest.vue";
-import ClassicMLSVM from "@/components/network-elements/elements/classic-ml-vector-machine/classic-ml-vector-machine.vue";
-
 import LayerContainer from "@/components/network-elements/elements/layer-container/layer-container.vue";
 import LayerCustom from "@/components/network-elements/elements/layer-custom/layer-custom.vue";
 
 import LayerTfModel from "@/components/network-elements/elements/tensorflow-model/tensorflow-model.vue";
+import LayerObjectDetectionModel from "@/components/network-elements/elements/object-detection-model/object-detection-model.vue";
 import PreTrainedVGG16 from "@/components/network-elements/elements/pretrained-vgg16/pretrained-vgg16.vue";
 import PreTrainedMobileNetV2 from "@/components/network-elements/elements/pretrained-mobilenetv2/pretrained-mobilenetv2.vue";
 import PreTrainedInceptionV3 from "@/components/network-elements/elements/pretrained-inceptionv3/pretrained-inceptionv3.vue";
@@ -71,6 +66,7 @@ export default {
     LayerContainer,
     LayerCustom,
     LayerTfModel,
+    LayerObjectDetectionModel,
     PreTrainedVGG16,
     PreTrainedInceptionV3,
     PreTrainedResNet50,

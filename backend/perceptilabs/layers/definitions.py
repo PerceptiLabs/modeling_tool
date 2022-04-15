@@ -18,6 +18,9 @@ from perceptilabs.layers.iooutput.spec import OutputLayerSpec
 from perceptilabs.layers.ioinput.spec import InputLayerSpec
 from perceptilabs.layers.unet.spec import UNetSpec
 from perceptilabs.layers.layertfmodel.spec import LayerTfModelSpec
+from perceptilabs.layers.layerobjectdetectionmodel.spec import (
+    LayerObjectDetectionModelSpec,
+)
 
 LayerMeta = namedtuple(
     "LayerMeta",
@@ -125,5 +128,11 @@ DEFINITION_TABLE_TF2X = {
         "layers/layertfmodel/tf2x_imports.json",
         "layers/layertfmodel/tf2x_template.j2",
         "layer_tfmodel",
+    ),
+    "LayerObjectDetectionModel": LayerMeta(
+        LayerObjectDetectionModelSpec,
+        "layers/layerobjectdetectionmodel/tf2x_imports.json",
+        "layers/layerobjectdetectionmodel/tf2x_template.j2",
+        "layer_objectdetectionmodel",
     ),
 }

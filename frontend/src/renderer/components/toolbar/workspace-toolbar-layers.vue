@@ -8,9 +8,7 @@
     :data-tutorial-target="'tutorial-workspace-layer-menu'",
     tabindex="0"
   )
-    .layer-list-header(
-      :class="[{ active: showElementsInLayer(layer) }]",
-    )
+    .layer-list-header(:class="[{ active: showElementsInLayer(layer) }]")
       .layer-list-header-label.bold {{ layer.tooltip }}
       svg(
         width="9",
@@ -70,6 +68,7 @@ import IoOutput from "@/components/network-elements/elements/io-output/view-io-o
 import LayerCustom from "@/components/network-elements/elements/layer-custom/view-layer-custom.vue";
 
 import LayerTfModel from "@/components/network-elements/elements/tensorflow-model/view-tensorflow-model.vue";
+import LayerObjectDetectionModel from "@/components/network-elements/elements/object-detection-model/view-object-detection-model.vue";
 import PreTrainedVGG16 from "@/components/network-elements/elements/pretrained-vgg16/view-pretrained-vgg16.vue";
 import PreTrainedMobileNetV2 from "@/components/network-elements/elements/pretrained-mobilenetv2/view-pretrained-mobilenetv2.vue";
 import PreTrainedInceptionV3 from "@/components/network-elements/elements/pretrained-inceptionv3/view-pretrained-inceptionv3.vue";
@@ -98,6 +97,7 @@ export default {
     MathMerge,
     LayerCustom,
     LayerTfModel,
+    LayerObjectDetectionModel,
     PreTrainedVGG16,
     PreTrainedInceptionV3,
     PreTrainedResNet50,
@@ -151,7 +151,15 @@ export default {
         {
           tooltip: "Public",
           showEl: false,
-          networkElements: [
+          networkElements: process.env.ENABLE_OBJECT_DETECTION === 'true' ? [
+            "LayerTfModel",
+            "LayerObjectDetectionModel",
+            "PreTrainedVGG16",
+            "PreTrainedResNet50",
+            "PreTrainedInceptionV3",
+            "PreTrainedMobileNetV2",
+            "UNet",
+          ] : [
             "LayerTfModel",
             "PreTrainedVGG16",
             "PreTrainedResNet50",
@@ -190,10 +198,9 @@ export default {
         this.layersbarList[idx].showEl = true;
         document.addEventListener(
           "click",
-          this.handleClickWithoutElementSelected
+          this.handleClickWithoutElementSelected,
         );
       }
-
     },
     handleFocusOut() {
       this.layersbarList.forEach((item) => {
@@ -295,7 +302,7 @@ export default {
 
             connectComponentsWithArrow(
               this.previousAddedElementId,
-              fakeEvent.id
+              fakeEvent.id,
             );
 
             this.previousAddedElementId = fakeEvent.id;
@@ -310,7 +317,7 @@ export default {
             this.previousAddedElementId = fakeEvent.id;
             this.$store.dispatch(
               "mod_addComponent/setFirstComponentDragged",
-              false
+              false,
             );
           }
         } else {
@@ -368,11 +375,11 @@ export default {
       document.getElementById("app").appendChild(this.clonedElement);
       document.addEventListener(
         "mousemove",
-        this.startComponentPositionUpdates
+        this.startComponentPositionUpdates,
       );
       this.clonedElement.addEventListener(
         "mouseup",
-        this.stopComponentPositionUpdates
+        this.stopComponentPositionUpdates,
       );
       document.addEventListener("contextmenu", this.handleCancelEvents);
       document.addEventListener("keyup", this.handleEscKeypress);
@@ -381,11 +388,11 @@ export default {
     cleanupClickDropFunctionality() {
       document.removeEventListener(
         "mousemove",
-        this.startComponentPositionUpdates
+        this.startComponentPositionUpdates,
       );
       this.clonedElement.removeEventListener(
         "mouseup",
-        this.stopComponentPositionUpdates
+        this.stopComponentPositionUpdates,
       );
       document.removeEventListener("contextmenu", this.handleCancelEvents);
       document.removeEventListener("keyup", this.handleEscKeypress);
@@ -411,7 +418,7 @@ export default {
         this.handleFocusOut();
         document.removeEventListener(
           "click",
-          this.handleClickWithoutElementSelected
+          this.handleClickWithoutElementSelected,
         );
       }
     },

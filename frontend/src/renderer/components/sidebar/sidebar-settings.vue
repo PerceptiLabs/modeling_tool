@@ -1,17 +1,15 @@
 <template lang="pug">
 .sidebar-setting-wrapper
-  .sidebar-setting-head(
-    v-if="selectedEl !== null",
-  )
-    .component-name {{componentTypeToName[selectedEl.componentName]}}
+  .sidebar-setting-head(v-if="selectedEl !== null")
+    .component-name {{ componentTypeToName[selectedEl.componentName] }}
     sidebar-auto-setting-info(
       :key="selectedEl.layerId",
       :selectedEl="selectedEl"
     )
   perfect-scrollbar.sidebar-setting-content(
     :data-tutorial-target="'tutorial-workspace-settings'",
-    ref="sidebarSettingWrapper",
-  )    
+    ref="sidebarSettingWrapper"
+  ) 
     sidebar-locked-settings-wrapper(:selectedEl="selectedEl")
       component.setting-values-wrapper(
         v-if="selectedEl !== null",
@@ -34,13 +32,8 @@
       img(src="/static/img/code.svg")
       | Open Code &nbsp;
 
-    div(
-      v-tooltip:bottom="'Coming Soon'"
-    )
-      button.btn.btn--primary(
-        v-if="shouldShowOpenCodeBtn",
-        disabled
-      ) 
+    div(v-tooltip:bottom="'Coming Soon'")
+      button.btn.btn--primary(v-if="shouldShowOpenCodeBtn", disabled) 
         img(src="/static/img/save.svg")
         | Save &nbsp;
 
@@ -71,6 +64,7 @@ import TrainDetector from "@/components/network-elements/elements/train-detector
 import LayerCustom from "@/components/network-elements/elements/layer-custom/set-layer-custom.vue";
 
 import LayerTfModel from "@/components/network-elements/elements/tensorflow-model/set-tensorflow-model.vue";
+import LayerObjectDetectionModel from "@/components/network-elements/elements/object-detection-model/set-object-detection-model.vue";
 import PreTrainedVGG16 from "@/components/network-elements/elements/pretrained-vgg16/set-pretrained-vgg16.vue";
 import PreTrainedMobileNetV2 from "@/components/network-elements/elements/pretrained-mobilenetv2/set-pretrained-mobilenetv2.vue";
 import PreTrainedResNet50 from "@/components/network-elements/elements/pretrained-resnet50/set-pretrained-resnet50.vue";
@@ -85,7 +79,7 @@ import SidebarLockedSettingsWrapper from "@/components/sidebar/sidebar-locked-se
 import SidebarAutoSettingInfo from "@/components/sidebar/sidebar-auto-setting-info.vue";
 
 import { mapGetters, mapActions } from "vuex";
-import { componentTypeToName } from '@/core/constants.js';
+import { componentTypeToName } from "@/core/constants.js";
 
 export default {
   name: "SidebarSettings",
@@ -109,21 +103,22 @@ export default {
     IoOutput,
     LayerCustom,
     LayerTfModel,
+    LayerObjectDetectionModel,
     PreTrainedVGG16,
     PreTrainedInceptionV3,
     PreTrainedMobileNetV2,
     PreTrainedResNet50,
     UNet,
     SidebarLockedSettingsWrapper,
-    SidebarAutoSettingInfo
+    SidebarAutoSettingInfo,
   },
   data() {
     return {
-      componentTypeToName: componentTypeToName
+      componentTypeToName: componentTypeToName,
     };
   },
   created() {
-    console.log('this.selectedEl', this.selectedEl);
+    console.log("this.selectedEl", this.selectedEl);
   },
   computed: {
     ...mapGetters({
@@ -161,14 +156,14 @@ export default {
         this.selectedEl.layerType !== "IoOutput" &&
         this.selectedEl.layerType !== "IoInput"
       );
-    }
+    },
   },
   watch: {
     "selectedEl.layerId"(el) {
       if (el) {
         this.$refs.sidebarSettingWrapper.$el.scrollTop = 0;
       }
-    }
+    },
   },
   methods: {
     ...mapActions({
@@ -177,11 +172,10 @@ export default {
     onOpenCodeButtonClick() {
       if (this.codeWindowState && this.hasUnsavedChanges) {
         this.popupConfirm({
-          text:
-            "You have unsaved changes. Are you sure you want to load the selected component's code?",
+          text: "You have unsaved changes. Are you sure you want to load the selected component's code?",
           ok: () => {
             this.openComponentCode();
-          }
+          },
         });
       } else {
         this.openComponentCode();
@@ -194,15 +188,15 @@ export default {
 
       this.$store.dispatch("mod_workspace-code-editor/openEditor", {
         networkId: this.currentNetworkId,
-        element: this.selectedEl
+        element: this.selectedEl,
       });
     },
     resetComponentSettings() {
       this.$store.dispatch("mod_workspace/resetNetworkElementSettings", {
-        layerId: this.selectedEl.layerId
+        layerId: this.selectedEl.layerId,
       });
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>

@@ -245,7 +245,7 @@ const parseJWT = jwt => {
   }
 };
 
-const debounce = function(callback, waitInMs) {
+const debounce = function (callback, waitInMs) {
   let timerHandle;
 
   return function () {
@@ -274,6 +274,7 @@ const layerBgColor = function (componentName) {
       className = "net-color-data";
       break;
     case "LayerTfModel":
+    case "LayerObjectDetectionModel":
     case "DeepLearningFC":
     case "DeepLearningConv":
     case "DeepLearningRecurrent":
@@ -334,6 +335,7 @@ const layerBgColorTransparent = function (componentName) {
       className = "net-element-data";
       break;
     case "LayerTfModel":
+    case "LayerObjectDetectionModel":
     case "DeepLearningFC":
     case "DeepLearningConv":
     case "DeepLearningRecurrent":

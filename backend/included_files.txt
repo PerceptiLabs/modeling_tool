@@ -215,6 +215,13 @@ perceptilabs/layers/ioinput/__init__.py
 perceptilabs/layers/ioinput/spec.py
 perceptilabs/layers/ioinput/stats.py
 
+# perceptilabs/layers/layerobjectdetectionmodel
+perceptilabs/layers/layerobjectdetectionmodel/__init__.py
+perceptilabs/layers/layerobjectdetectionmodel/spec.py
+perceptilabs/layers/layerobjectdetectionmodel/imports.json
+perceptilabs/layers/layerobjectdetectionmodel/tf2x_imports.json
+perceptilabs/layers/layerobjectdetectionmodel/tf2x_template.j2
+
 # perceptilabs/lwcore
 perceptilabs/lwcore/__init__.py
 perceptilabs/lwcore/base.py
