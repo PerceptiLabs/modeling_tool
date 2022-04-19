@@ -10,6 +10,7 @@ div
       @click="handleContextUnregisterModel(contextModelId)"
     ) Unregister
   .modelContext(v-if="isDatasetContextOpened", :style="modelContextStyles") 
+    button(@click="handleContextCopyPathDataset(contextDatasetId)") Copy Path
     button(@click="handleContextRemoveDataset(contextDatasetId)") Delete
     button(
       v-if="!isEnterpriseMode",
@@ -102,9 +103,14 @@ div
                   fill="white"
                 )
               .editable-field.model-name-wrapper
-                strong(v-html="highlight(datasetFormat(dataset.name))")
-                | &nbsp;
-                strong(v-if="dataset.exists_on_disk === false") (Missing Data)
+                div(
+                  :title="dataset.location",
+                )
+                  strong(
+                    v-html="highlight(datasetFormat(dataset.name))"
+                  )
+                  | &nbsp;
+                  strong(v-if="dataset.exists_on_disk === false") (Missing Data)
             .column-7.d-flex(v-if="dataset.exists_on_disk")
               .load-model-btn(
                 v-tooltip:networkElement="'Experimental'",
@@ -609,6 +615,12 @@ export default {
       document.removeEventListener("click", this.closeDatasetContext);
       this.contextDatasetId = null;
       this.isDatasetContextOpened = false;
+    },
+    async handleContextCopyPathDataset(datasetId) {
+      const dataset = this.allDatasets.find(
+        (dataset) => dataset.dataset_id === datasetId,
+      );
+      navigator.clipboard.writeText(dataset.location);
     },
     async handleContextRemoveDataset(datasetId) {
       const models = this.getModelsByDataSetId(this.contextDatasetId);
