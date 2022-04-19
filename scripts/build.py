@@ -16,6 +16,7 @@ import sys
 import tempfile
 import time
 
+
 class Os(Enum):
     LINUX = auto()
     OSX = auto()
@@ -54,7 +55,9 @@ BUILD_OUT = os.path.join(BUILD_DIR, "out")
 BUILD_DOCKER = os.path.join(BUILD_DIR, "docker")
 BUILD_DOCKER_COMPOSE = os.path.join(BUILD_DOCKER, "compose")
 BUILD_DOCKER_FRONTEND = os.path.join(BUILD_DOCKER, "frontend")
-BUILD_DOCKER_FRONTEND_STATIC_FILESERVER = os.path.join(BUILD_DOCKER_FRONTEND, "static_file_server")
+BUILD_DOCKER_FRONTEND_STATIC_FILESERVER = os.path.join(
+    BUILD_DOCKER_FRONTEND, "static_file_server"
+)
 BUILD_DOCKER_RYGG = os.path.join(BUILD_DOCKER, "rygg")
 BUILD_DOCKER_KERNEL = os.path.join(BUILD_DOCKER, "kernel")
 
@@ -64,8 +67,7 @@ build_num = os.environ.get("BUILD_NUM")
 # The python stuff uses PEP440 as the version string, while
 # the npm-based stuff uses semver. They're not compatible when
 # we're tacking on the build number for nightly builds
-class Versions():
-
+class Versions:
     def __init__(self, version_str, extension=None):
         from semver import VersionInfo as SemVersion
         from packaging.version import Version as PepVersion
@@ -89,6 +91,7 @@ class Versions():
     @property
     def as_pep440(self):
         return str(self._as_pep440)
+
 
 @contextmanager
 def pushd(new_dir):
@@ -156,13 +159,9 @@ def copy_files(src_root, dest_root, list_path=None):
     elif os.path.isdir(src_root):
         copytree(src_root, dest_root)
 
+
 def run_checked_arr(arr, **popen_kwargs):
-    kwargs = {
-        "stdout": PIPE,
-        "bufsize": 1,
-        "universal_newlines": True,
-        **popen_kwargs
-    }
+    kwargs = {"stdout": PIPE, "bufsize": 1, "universal_newlines": True, **popen_kwargs}
     with Popen(arr, **kwargs) as p:
         for line in p.stdout:
             print(line, end="")  # process line here
@@ -217,14 +216,16 @@ def generate_included_files_common():
 
             yield f"{p}/{stripped}"
 
+
 @contextmanager
 def included_files_common():
-    lines = [l+'\n' for l in generate_included_files_common()]
+    lines = [l + "\n" for l in generate_included_files_common()]
     with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
         tmp.writelines(lines)
         tmp.flush()
         tmp.close()
         yield tmp.name
+
 
 def assert_python_version():
 
@@ -255,6 +256,7 @@ def install_prereqs():
     run_checked(f"pip install -r {RYGG_DIR}/requirements.txt")
     run_unchecked("pip install -r requirements_build.txt")
 
+
 def install_docker_host_prereqs():
     run_unchecked("pip install --upgrade pip")
     run_unchecked("pip install semver>=2.10 packaging>=20.4")
@@ -265,14 +267,14 @@ def calc_version():
     # it sometimes happens that Win scripts append an extra quote. Strip it.
     def get_clean_env_var(name):
         ret = os.environ.get(name)
-        return ret.replace('"', '') if ret else None
+        return ret.replace('"', "") if ret else None
 
     override = get_clean_env_var("VERSION_OVERRIDE")
     if override:
         return Versions(override)
 
     with open(os.path.join(PROJECT_ROOT, "VERSION"), "r") as f:
-        version_str = f.read().strip().replace('"', '')
+        version_str = f.read().strip().replace('"', "")
 
     extension = get_clean_env_var("VERSION_EXTENSION")
     return Versions(version_str, extension=extension)
@@ -292,19 +294,23 @@ def set_rygg_inner_version(rootDir, versions: Versions):
     init_py = os.path.join(rootDir, "rygg", "__init__.py")
     sed_i(init_py, "^__version__ *=.*", f"__version__='{versions.as_pep440}'")
 
+
 def set_monitor_inner_version(rootDir, versions: Versions):
     init_py = os.path.join(rootDir, "monitor", "__init__.py")
     sed_i(init_py, "^__version__ *=.*", f"__version__='{versions.as_pep440}'")
 
+
 def write_version_file(rootDir, versions: Versions):
     with open(f"{rootDir}/VERSION", "w") as f:
         f.write(versions.as_pep440)
+
 
 def set_wheel_version(versions: Versions):
     print(f"setting wheel version to {versions.as_pep440}")
     write_version_file(BUILD_TMP, versions)
     set_perceptilabs_inner_version(BUILD_TMP, versions)
     set_rygg_inner_version(BUILD_TMP, versions)
+
 
 # update the version field in the package.json file
 def set_frontend_version(package_json_file, versions: Versions):
@@ -322,7 +328,7 @@ def set_frontend_version(package_json_file, versions: Versions):
 def get_wheel_name():
     ret = os.environ.get("PACKAGE_NAME_OVERRIDE") or "perceptilabs"
     # windows tools don't auto-substitute
-    return ret.replace("-", "_").replace('"', '')
+    return ret.replace("-", "_").replace('"', "")
 
 
 def set_wheel_name(package_name):
@@ -331,10 +337,20 @@ def set_wheel_name(package_name):
     # ... so we hack the config directly
     sed_i(f"{BUILD_TMP}/setup.cfg", "^name *=.*$", f"name={package_name}")
 
+
 def set_auth_env():
     print("Setting AUTH_ENV to 'prod'")
-    sed_i(f"{BUILD_TMP}/rygg/settings.py", "^AUTH_ENV_DEFAULT.*$", "AUTH_ENV_DEFAULT='prod'")
-    sed_i(f"{BUILD_TMP}/perceptilabs/settings.py", "^AUTH_ENV_DEFAULT.*$", "AUTH_ENV_DEFAULT='prod'")
+    sed_i(
+        f"{BUILD_TMP}/rygg/settings.py",
+        "^AUTH_ENV_DEFAULT.*$",
+        "AUTH_ENV_DEFAULT='prod'",
+    )
+    sed_i(
+        f"{BUILD_TMP}/perceptilabs/settings.py",
+        "^AUTH_ENV_DEFAULT.*$",
+        "AUTH_ENV_DEFAULT='prod'",
+    )
+
 
 # PATH isn't obeyed correctly on windows
 def npm_cmd():
@@ -361,8 +377,16 @@ def assemble_build_dirs_frontend(versions: Versions):
     print("=======================================================")
     print(f"Copying frontend files into {BUILD_TMP}/static_file_server ... ")
 
-    copy_tree(f"{FRONTEND_SRC_ROOT}/static_file_server/static_file_server" , f"{BUILD_TMP}/static_file_server", update=True)
-    copy_tree(f"{FRONTEND_SRC_ROOT}/src/dist", f"{BUILD_TMP}/static_file_server/dist", update=True)
+    copy_tree(
+        f"{FRONTEND_SRC_ROOT}/static_file_server/static_file_server",
+        f"{BUILD_TMP}/static_file_server",
+        update=True,
+    )
+    copy_tree(
+        f"{FRONTEND_SRC_ROOT}/src/dist",
+        f"{BUILD_TMP}/static_file_server/dist",
+        update=True,
+    )
 
 
 def build_wheel():
@@ -404,11 +428,17 @@ def run_pytest_tests():
     with pushd(BACKEND_SRC):
         run_checked("python -m pytest -rfe -vv --log-cli-level=10 --capture=no")
 
+
 def run_django_tests():
     print("Running django tests")
-    env={"AUTH_ENV": '', **os.environ}
+    env = {"AUTH_ENV": "", **os.environ}
     with pushd(RYGG_DIR):
-        run_checked_arr([PYTHON, "-m", "django", "test", "--settings", "rygg.settings"], env=env, stderr=subprocess.STDOUT)
+        run_checked_arr(
+            [PYTHON, "-m", "django", "test", "--settings", "rygg.settings"],
+            env=env,
+            stderr=subprocess.STDOUT,
+        )
+
 
 def run_integration_tests():
     # Integration tests only work on linux since OSX and Win build agents can't run docker
@@ -448,30 +478,45 @@ def run_integration_tests():
     if not is_port_live(redis_host, redis_port):
         raise Exception("Redis needs to be running")
 
-
     upload_dir = tempfile.gettempdir()
-    env={
+    env = {
         "PL_FILE_SERVING_TOKEN": "thetoken",
         "PL_TUTORIALS_DATA": os.path.join(BACKEND_SRC, "perceptilabs", "tutorial_data"),
         "PL_FILE_UPLOAD_DIR": upload_dir,
         "PERCEPTILABS_DB": os.path.join(os.getcwd(), "db.sqlite3"),
         "container": "any ol' string",
-        **os.environ
+        **os.environ,
     }
-    integration_tests_path = os.path.join(RYGG_DIR, 'integration_tests')
+    integration_tests_path = os.path.join(RYGG_DIR, "integration_tests")
 
-    print("---------------------------------------------------------------------------------------------------")
+    print(
+        "---------------------------------------------------------------------------------------------------"
+    )
     print("Running rygg integration tests")
-    with Popen([PYTHON, "manage.py", "migrate"], cwd=RYGG_DIR, env=env) as migrator_proc:
+    with Popen(
+        [PYTHON, "manage.py", "migrate"], cwd=RYGG_DIR, env=env
+    ) as migrator_proc:
         migrator_proc.wait(timeout=30)
 
-    with popen_with_terminate([PYTHON, "manage.py", "runserver", "0.0.0.0:8000"], cwd=RYGG_DIR, env=env) as server_proc:
-        wait_for_port('127.0.0.1', 8000, interval_secs=1)
-        with popen_with_terminate(["celery", "-A", "rygg", "worker", "-l", "DEBUG", "--queues=rygg"], cwd=RYGG_DIR, env=env) as server_proc_c:
-            run_checked_arr([PYTHON, "-m", "pytest", "--host", "localhost", "-vv"], cwd=integration_tests_path, env={**env, **os.environ})
+    with popen_with_terminate(
+        [PYTHON, "manage.py", "runserver", "0.0.0.0:8000"], cwd=RYGG_DIR, env=env
+    ) as server_proc:
+        wait_for_port("127.0.0.1", 8000, interval_secs=1)
+        with popen_with_terminate(
+            ["celery", "-A", "rygg", "worker", "-l", "DEBUG", "--queues=rygg"],
+            cwd=RYGG_DIR,
+            env=env,
+        ) as server_proc_c:
+            run_checked_arr(
+                [PYTHON, "-m", "pytest", "--host", "localhost", "-vv"],
+                cwd=integration_tests_path,
+                env={**env, **os.environ},
+            )
 
     print("rygg integration tests passed")
-    print("---------------------------------------------------------------------------------------------------")
+    print(
+        "---------------------------------------------------------------------------------------------------"
+    )
 
 
 def which_cmd():
@@ -491,8 +536,10 @@ def print_environment():
     print("Pip list:")
     run_checked("pip list")
 
+
 def assemble_package_datas(sources, dest):
     import json
+
     def load_json(filename):
         print(filename)
         with open(filename, "r") as f:
@@ -506,7 +553,7 @@ def assemble_package_datas(sources, dest):
         ret = {}
         for d in dicts:
             ret = {**ret, **d}
-        return ret;
+        return ret
 
     source_files = [f"{PROJECT_ROOT}/{s}/package_data.json" for s in sources]
     dicts = [load_json(f) for f in source_files]
@@ -515,17 +562,20 @@ def assemble_package_datas(sources, dest):
     dump_json(joined, dest)
     pass
 
+
 def combine_files(sources, dest):
     with open(dest, "w") as dest_f:
         for source in sources:
             with open(source, "r") as source_f:
-                lines = [line.strip('\n') + '\n' for line in source_f.readlines()]
+                lines = [line.strip("\n") + "\n" for line in source_f.readlines()]
                 print(lines)
                 dest_f.writelines(lines)
+
 
 def combine_requirements_files(roots, dest):
     requirements_files = [f"{PROJECT_ROOT}/{d}/requirements.txt" for d in roots]
     combine_files(requirements_files, dest)
+
 
 def wheel():
     assert_python_version()
@@ -537,16 +587,35 @@ def wheel():
     assemble_build_dirs_frontend(version)
 
     copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_TMP}/licenses/", update=True)
-    copy_files(f"{PROJECT_ROOT}/backend", BUILD_TMP, list_path= f"{PROJECT_ROOT}/backend/included_files.txt")
-    copy_files(f"{PROJECT_ROOT}/rygg", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/rygg/included_files.txt")
-    copy_files(f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/",  list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt")
+    copy_files(
+        f"{PROJECT_ROOT}/backend",
+        BUILD_TMP,
+        list_path=f"{PROJECT_ROOT}/backend/included_files.txt",
+    )
+    copy_files(
+        f"{PROJECT_ROOT}/rygg",
+        BUILD_TMP,
+        list_path=f"{PROJECT_ROOT}/rygg/included_files.txt",
+    )
+    copy_files(
+        f"{PROJECT_ROOT}/perceptilabs_runner",
+        f"{BUILD_TMP}/perceptilabs_runner/",
+        list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt",
+    )
     copy_file(f"{WHEELFILES_DIR}/setup.cfg", f"{BUILD_TMP}/setup.cfg", update=True)
-    combine_requirements_files("backend rygg frontend/static_file_server".split(), f"{BUILD_TMP}/requirements.txt")
+    combine_requirements_files(
+        "backend rygg frontend/static_file_server".split(),
+        f"{BUILD_TMP}/requirements.txt",
+    )
     copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_TMP}/setup.py", update=True)
     assemble_package_datas(
-            ["backend", "rygg", "frontend", "perceptilabs_runner"],
-           f"{BUILD_TMP}/package_data.json")
-    write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "static_file_server\n"])
+        ["backend", "rygg", "frontend", "perceptilabs_runner"],
+        f"{BUILD_TMP}/package_data.json",
+    )
+    write_all_lines(
+        f"{BUILD_TMP}/cython_roots.txt",
+        ["perceptilabs\n", "rygg\n", "static_file_server\n"],
+    )
     with included_files_common() as inc:
         copy_file(inc, f"{BUILD_TMP}/included_files.txt", update=True)
 
@@ -564,12 +633,27 @@ def test():
     print_environment()
 
     mkdir_p(BUILD_TMP)
-    copy_files(f"{PROJECT_ROOT}/backend", BUILD_TMP, list_path= f"{PROJECT_ROOT}/backend/included_files.txt")
-    copy_files(f"{PROJECT_ROOT}/rygg", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/rygg/included_files.txt")
-    copy_files(f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/",  list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt")
+    copy_files(
+        f"{PROJECT_ROOT}/backend",
+        BUILD_TMP,
+        list_path=f"{PROJECT_ROOT}/backend/included_files.txt",
+    )
+    copy_files(
+        f"{PROJECT_ROOT}/rygg",
+        BUILD_TMP,
+        list_path=f"{PROJECT_ROOT}/rygg/included_files.txt",
+    )
+    copy_files(
+        f"{PROJECT_ROOT}/perceptilabs_runner",
+        f"{BUILD_TMP}/perceptilabs_runner/",
+        list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt",
+    )
     combine_requirements_files("backend rygg".split(), f"{BUILD_TMP}/requirements.txt")
     copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_TMP}/setup.py", update=True)
-    write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "static_file_server\n"])
+    write_all_lines(
+        f"{BUILD_TMP}/cython_roots.txt",
+        ["perceptilabs\n", "rygg\n", "static_file_server\n"],
+    )
     run_pytest_tests()
     run_django_tests()
     run_integration_tests()
@@ -577,8 +661,7 @@ def test():
     run_cython_test()
 
 
-
-class DockerBuilder():
+class DockerBuilder:
     @staticmethod
     def all(do_clean=False):
         DockerBuilder.assembleCompose(do_clean=do_clean)
@@ -589,7 +672,6 @@ class DockerBuilder():
         DockerBuilder.build_frontend()
         DockerBuilder.build_rygg()
         DockerBuilder.build_monitor()
-
 
     @staticmethod
     def assembleCompose(do_clean=False):
@@ -629,68 +711,117 @@ class DockerBuilder():
     @staticmethod
     def _set_dockerfile_version_label(rootDir, versions: Versions):
         dockerfile = f"{rootDir}/Dockerfile"
-        sed_i(dockerfile, "version *=\".*\"", f"version=\"{versions.as_pep440}\"")
+        sed_i(dockerfile, 'version *=".*"', f'version="{versions.as_pep440}"')
 
     @staticmethod
     def _append_to(src_file, dest_file):
-        with open(src_file, "r") as src,\
-             open(dest_file, "a") as dest:
-                 dest.write(src.read())
+        with open(src_file, "r") as src, open(dest_file, "a") as dest:
+            dest.write(src.read())
 
     @staticmethod
     def _assemble_docker_compose():
-        copy_tree(f"{PROJECT_ROOT}/docker/compose/system_migrations/", f"{BUILD_DOCKER_COMPOSE}/system_migrations/", update=True)
-        copy_file(f"{PROJECT_ROOT}/docker/compose/install_perceptilabs_enterprise", f"{BUILD_DOCKER_COMPOSE}", update=True)
-
+        copy_tree(
+            f"{PROJECT_ROOT}/docker/compose/system_migrations/",
+            f"{BUILD_DOCKER_COMPOSE}/system_migrations/",
+            update=True,
+        )
+        copy_file(
+            f"{PROJECT_ROOT}/docker/compose/install_perceptilabs_enterprise",
+            f"{BUILD_DOCKER_COMPOSE}",
+            update=True,
+        )
 
     @staticmethod
     def _assemble_kernel_docker(versions: Versions):
         rm_rf(f"{BACKEND_SRC}/upstream")
         rm_rf(f"{BACKEND_SRC}/downstream")
         copy_tree(f"{BACKEND_SRC}/", f"{BUILD_DOCKER_KERNEL}", update=True)
-        copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_KERNEL}/licenses/", update=True)
-        copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_DOCKER_KERNEL}/setup.py", update=True)
-        copy_file(f"{SCRIPTS_DIR}/requirements_build.txt", f"{BUILD_DOCKER_KERNEL}/requirements_build.txt", update=True)
+        copy_tree(
+            f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_KERNEL}/licenses/", update=True
+        )
+        copy_file(
+            f"{SCRIPTS_DIR}/setup.py", f"{BUILD_DOCKER_KERNEL}/setup.py", update=True
+        )
+        copy_file(
+            f"{SCRIPTS_DIR}/requirements_build.txt",
+            f"{BUILD_DOCKER_KERNEL}/requirements_build.txt",
+            update=True,
+        )
 
         FILES_FROM_DOCKER_DIR = "setup.cfg entrypoint.sh Dockerfile".split()
         for from_docker in FILES_FROM_DOCKER_DIR:
-            copy_file( f"{PROJECT_ROOT}/docker/kernel/{from_docker}", f"{BUILD_DOCKER_KERNEL}/{from_docker}", update=True)
+            copy_file(
+                f"{PROJECT_ROOT}/docker/kernel/{from_docker}",
+                f"{BUILD_DOCKER_KERNEL}/{from_docker}",
+                update=True,
+            )
         set_perceptilabs_inner_version(BUILD_DOCKER_KERNEL, versions)
-        sed_i(f"{BUILD_DOCKER_KERNEL}/requirements.txt", "^opencv-python.*$", "opencv-python-headless")
-
+        sed_i(
+            f"{BUILD_DOCKER_KERNEL}/requirements.txt",
+            "^opencv-python.*$",
+            "opencv-python-headless",
+        )
 
         write_all_lines(f"{BUILD_DOCKER_KERNEL}/cython_roots.txt", ["perceptilabs\n"])
 
         DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_KERNEL, versions)
         write_version_file(BUILD_DOCKER_KERNEL, versions)
 
-
     @staticmethod
     def _assemble_frontend_docker(versions: Versions):
-        copy_files(f"{FRONTEND_SRC_ROOT}/", BUILD_DOCKER_FRONTEND, list_path=f"{FRONTEND_SRC_ROOT}/included_files.txt")
-        copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_FRONTEND}/licenses/", update=True)
+        copy_files(
+            f"{FRONTEND_SRC_ROOT}/",
+            BUILD_DOCKER_FRONTEND,
+            list_path=f"{FRONTEND_SRC_ROOT}/included_files.txt",
+        )
+        copy_tree(
+            f"{PROJECT_ROOT}/licenses/",
+            f"{BUILD_DOCKER_FRONTEND}/licenses/",
+            update=True,
+        )
 
-        FILES_FROM_DOCKER_DIR = "Dockerfile http.conf run-httpd.sh .dockerignore".split()
+        FILES_FROM_DOCKER_DIR = (
+            "Dockerfile http.conf run-httpd.sh .dockerignore".split()
+        )
         for from_docker in FILES_FROM_DOCKER_DIR:
-            copy_file(f"{PROJECT_ROOT}/docker/Frontend/{from_docker}", f"{BUILD_DOCKER_FRONTEND}/{from_docker}", update=True)
+            copy_file(
+                f"{PROJECT_ROOT}/docker/Frontend/{from_docker}",
+                f"{BUILD_DOCKER_FRONTEND}/{from_docker}",
+                update=True,
+            )
 
-        set_staticfileserver_inner_version(BUILD_DOCKER_FRONTEND_STATIC_FILESERVER, versions)
+        set_staticfileserver_inner_version(
+            BUILD_DOCKER_FRONTEND_STATIC_FILESERVER, versions
+        )
         DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_FRONTEND, versions)
         set_frontend_version(f"{BUILD_DOCKER_FRONTEND}/package.json", versions)
 
-
-
     @staticmethod
     def _assemble_rygg_docker(versions: Versions):
-        copy_files(f"{RYGG_DIR}/", f"{BUILD_DOCKER_RYGG}", list_path=f"{RYGG_DIR}/included_files.txt")
-        copy_file(f"{RYGG_DIR}/requirements.txt", f"{BUILD_DOCKER_RYGG}/requirements.txt", update=True)
+        copy_files(
+            f"{RYGG_DIR}/",
+            f"{BUILD_DOCKER_RYGG}",
+            list_path=f"{RYGG_DIR}/included_files.txt",
+        )
+        copy_file(
+            f"{RYGG_DIR}/requirements.txt",
+            f"{BUILD_DOCKER_RYGG}/requirements.txt",
+            update=True,
+        )
         copy_file(f"{RYGG_DIR}/start.sh", f"{BUILD_DOCKER_RYGG}/start.sh", update=True)
-        copy_file(f"{RYGG_DIR}/wait-for-db.py", f"{BUILD_DOCKER_RYGG}/wait-for-db.py", update=True)
-        copy_file(f"{RYGG_DIR}/Dockerfile", f"{BUILD_DOCKER_RYGG}/Dockerfile", update=True)
-        copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_RYGG}/licenses/", update=True)
+        copy_file(
+            f"{RYGG_DIR}/wait-for-db.py",
+            f"{BUILD_DOCKER_RYGG}/wait-for-db.py",
+            update=True,
+        )
+        copy_file(
+            f"{RYGG_DIR}/Dockerfile", f"{BUILD_DOCKER_RYGG}/Dockerfile", update=True
+        )
+        copy_tree(
+            f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_RYGG}/licenses/", update=True
+        )
         set_rygg_inner_version(BUILD_DOCKER_RYGG, versions)
         DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_RYGG, versions)
-
 
     @staticmethod
     def build_kernel():
@@ -714,14 +845,31 @@ class DockerBuilder():
     def build_monitor():
         with pushd(MONITOR_DIR):
             versionString = calc_version().as_pep440
-            run_checked(f"docker build . --tag=dev/monitor:latest --build-arg VERSION={versionString}")
+            run_checked(
+                f"docker build . --tag=dev/monitor:latest --build-arg VERSION={versionString}"
+            )
 
             # Sanity-check the image
-            py_script = f"import monitor; assert monitor.__version__ == \"{versionString}\";"
-            run_checked_arr(["docker", "run", "-it", "--rm", "dev/monitor:latest", "python", "-c", py_script])
+            py_script = (
+                f'import monitor; assert monitor.__version__ == "{versionString}";'
+            )
+            run_checked_arr(
+                [
+                    "docker",
+                    "run",
+                    "-it",
+                    "--rm",
+                    "dev/monitor:latest",
+                    "python",
+                    "-c",
+                    py_script,
+                ]
+            )
+
 
 def clean():
     rm_rf(BUILD_DIR)
+
 
 if __name__ == "__main__":
     USAGE = f"USAGE: {__file__} (clean|wheel|test|docker (kernel|frontend|rygg|all|compose))"
@@ -743,7 +891,7 @@ if __name__ == "__main__":
             print(USAGE)
             sys.exit(1)
 
-        do_clean = ('--clean' in sys.argv)
+        do_clean = "--clean" in sys.argv
 
         dockertype = sys.argv[2]
         if dockertype == "compose":
@@ -764,7 +912,9 @@ if __name__ == "__main__":
             sys.exit(1)
 
         if not dockertype in ["all", "compose", "monitor"]:
-            print(f"\nTo run the docker build. cd into build/docker/{dockertype} and run `docker build .`")
+            print(
+                f"\nTo run the docker build. cd into build/docker/{dockertype} and run `docker build .`"
+            )
     else:
         print(f"Invalid build type: {build_type}")
         print(USAGE)
