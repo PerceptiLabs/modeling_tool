@@ -280,7 +280,7 @@ def calc_version():
     return Versions(version_str, extension=extension)
 
 
-def set_perceptilabs_inner_version(rootDir, versions: Versions):
+def set_kernel_inner_version(rootDir, versions: Versions):
     init_py = os.path.join(rootDir, "perceptilabs", "__init__.py")
     sed_i(init_py, "^__version__ *=.*", f"__version__='{versions.as_pep440}'")
 
@@ -308,7 +308,7 @@ def write_version_file(rootDir, versions: Versions):
 def set_wheel_version(versions: Versions):
     print(f"setting wheel version to {versions.as_pep440}")
     write_version_file(BUILD_TMP, versions)
-    set_perceptilabs_inner_version(BUILD_TMP, versions)
+    set_kernel_inner_version(BUILD_TMP, versions)
     set_rygg_inner_version(BUILD_TMP, versions)
 
 
@@ -755,7 +755,7 @@ class DockerBuilder:
                 f"{BUILD_DOCKER_KERNEL}/{from_docker}",
                 update=True,
             )
-        set_perceptilabs_inner_version(BUILD_DOCKER_KERNEL, versions)
+        set_kernel_inner_version(BUILD_DOCKER_KERNEL, versions)
         sed_i(
             f"{BUILD_DOCKER_KERNEL}/requirements.txt",
             "^opencv-python.*$",

@@ -28,23 +28,15 @@ db:
 frontend:
   docker_repo: perceptilabs.azurecr.io/frontend
 flower:
-  # docker_repo: perceptilabs.azurecr.io/kernel
-  docker_image_override: quay.io/perceptilabs/kernel-dev:latest
-  pull_policy: Always
+  docker_repo: perceptilabs.azurecr.io/kernel
 render:
-  # docker_repo: perceptilabs.azurecr.io/kernel
-  docker_image_override: quay.io/perceptilabs/kernel-dev:latest
-  pull_policy: Always
+  docker_repo: perceptilabs.azurecr.io/kernel
 training:
-  # docker_repo: perceptilabs.azurecr.io/kernel
-  docker_image_override: quay.io/perceptilabs/kernel-dev:latest
-  pull_policy: Always
+  docker_repo: perceptilabs.azurecr.io/kernel
 rygg:
   docker_repo: perceptilabs.azurecr.io/rygg
 monitor:
-  # docker_repo: perceptilabs.azurecr.io/monitor
-  docker_image_override: quay.io/perceptilabs/monitor-dev:latest
-  pull_policy: Always
+  docker_repo: perceptilabs.azurecr.io/monitor
 
   # Example of how to debug
   # docker_image_override: quay.io/perceptilabs/rygg-dev:latest
