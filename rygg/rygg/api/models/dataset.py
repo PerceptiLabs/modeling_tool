@@ -28,11 +28,16 @@ from rygg.settings import DATA_BLOB, IS_CONTAINERIZED, IS_SERVING, file_upload_d
 from pathvalidate import validate_filepath
 
 UPLOAD_PREFIX = "upload: "
+UNZIP_PENDING_STRING = "pending unzip"
 
 
 def validate_file_exists(location):
     # on enterprise, the client is expected to upload the file afterward. On local, the file is expected to already exist.
     if IS_CONTAINERIZED:
+        return
+
+    # we're ok with the location being incorrect if it's in progress
+    if location.startswith(UNZIP_PENDING_STRING):
         return
 
     if not os.path.isfile(location):
@@ -165,6 +170,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
             source_url=src,
             root_dir=root_dir,
             type=type,
+            location=f"{UNZIP_PENDING_STRING} into {root_dir}",
         )
         dataset.full_clean()
 

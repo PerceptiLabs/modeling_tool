@@ -740,7 +740,7 @@ def test_can_see_other_users_datasets(rest, tmp_dataset, second_users_connection
 
     # For grins, check that the main user can see tmp_dataset
     resp1 = rest.get("/datasets/")
-    assert dataset_ids(resp1) == [tmp_dataset.id]
+    assert tmp_dataset.id in dataset_ids(resp1)
 
     # check that the second user can see tmp_dataset too
     resp2 = second_users_connection.get("/datasets/")
