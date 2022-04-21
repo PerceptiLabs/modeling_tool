@@ -113,6 +113,7 @@ class BaseImagePreprocessingSpec(PreprocessingSpec):
     random_crop_width: int = None
 
     grayscale: bool = False
+    rgb: bool = False
 
     @property
     def num_augmentations(self):
@@ -159,6 +160,9 @@ class BaseImagePreprocessingSpec(PreprocessingSpec):
 
         if "grayscale" in dict_:
             kwargs["grayscale"] = dict_["grayscale"]
+
+        if "rgb" in dict_:
+            kwargs["rgb"] = dict_["rgb"]
 
         return kwargs
 

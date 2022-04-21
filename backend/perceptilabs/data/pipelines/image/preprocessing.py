@@ -12,6 +12,8 @@ class ImagePreprocessing(BasePipeline):
             x = self.normalization(x)
         if self.grayscale:
             x = self.grayscale(x)
+        if self.rgb:
+            x = self.rgb(x)
 
         return x
 
@@ -19,6 +21,7 @@ class ImagePreprocessing(BasePipeline):
         self.image_shape = input_shape
         self.normalization = self._get_normalization()
         self.grayscale = self._get_grayscale()
+        self.rgb = self._get_rgb()
 
     def _get_normalization(self):
         normalization = None
@@ -48,15 +51,25 @@ class ImagePreprocessing(BasePipeline):
 
     def _get_grayscale(self):
         grayscale = None
-
         if self.preprocessing and self.preprocessing.grayscale:
 
             def grayscale(x):
-                if len(x.shape) > 2:
+                if x.shape[-1] == 3:
                     y = tf.image.rgb_to_grayscale(x)
                 return y
 
         return grayscale
+
+    def _get_rgb(self):
+        rgb = None
+        if self.preprocessing and self.preprocessing.rgb:
+
+            def rgb(x):
+                if x.shape[-1] == 1:
+                    y = tf.image.grayscale_to_rgb(x)
+                return y
+
+        return rgb
 
     @classmethod
     def from_data(cls, preprocessing, dataset):

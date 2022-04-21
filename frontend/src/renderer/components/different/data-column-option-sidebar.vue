@@ -209,7 +209,11 @@ header(:class="{ 'is-open': isOpen }")
           base-checkbox.bold.size-16(
             v-if="helper_showIfTypeIs(['image'])",
             v-model="options.grayscale"
-          ) Gray Scale
+          ) Grayscale
+          base-checkbox.bold.size-16(
+            v-if="helper_showIfTypeIs(['image'])",
+            v-model="options.rgb"
+          ) RGB
     footer.d-flex.justify-content-between
       button.btn.btn--secondary(@click="onCancel") Cancel
       button.btn.btn--primary(@click="onSave") Save
@@ -226,7 +230,7 @@ export default {
     },
     columnNames: {
       type: Array,
-      default: function() {
+      default: function () {
         return [];
       },
     },
@@ -250,6 +254,7 @@ export default {
         normalize: { value: false, type: "standardization" },
         random_flip: { value: false, mode: "both", seed: 123 },
         random_crop: { value: false, seed: 123, width: 32, height: 32 },
+        rgb: false,
         grayscale: false,
         random_rotation: {
           value: false,
@@ -290,7 +295,7 @@ export default {
       this.onSave();
     } else {
       Object.keys(this.preprocessingTypes[this.elementIndex]).forEach(
-        optionKey => {
+        (optionKey) => {
           this.options[optionKey] = {
             ...this.options[optionKey],
             ...this.preprocessingTypes[this.elementIndex][optionKey],
@@ -377,11 +382,15 @@ export default {
       if (this.helper_showIfTypeIs(["mask"])) {
         saveResponse["mask"] = true;
       }
-      
+
       if (this.helper_showIfTypeIs(["image"])) {
         saveResponse["grayscale"] = this.options.grayscale;
       }
-      
+
+      if (this.helper_showIfTypeIs(["image"])) {
+        saveResponse["rgb"] = this.options.rgb;
+      }
+
       this.$emit("handleChange", this.elementIndex, saveResponse);
       this.onCancel();
     },
@@ -392,7 +401,7 @@ export default {
       );
     },
     helper_showIfTypeIs(arrOfAllowedTypes = []) {
-      return arrOfAllowedTypes.some(el => el === this.dataTypeSelected);
+      return arrOfAllowedTypes.some((el) => el === this.dataTypeSelected);
     },
     handleImageSegmentationDefaultColumnPreprocessing() {
       const isSegmentationModelFirstColumn =

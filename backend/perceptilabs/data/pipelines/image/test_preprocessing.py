@@ -106,6 +106,32 @@ def test_grayscale_for_single_rgb_sample():
         assert np.all(expected.numpy() == actual.numpy())
 
 
+def test_rgb_for_single_grayscale_sample():
+    max_value = 200
+    min_value = 100
+
+    images = [
+        np.random.randint(min_value, max_value + 1, size=(16, 16, 1)).astype(np.uint8)
+        for i in range(10)
+    ]
+
+    def rgb(x):
+        x = tf.cast(x, dtype=tf.float32)
+        if original.shape[-1] == 1:
+            y = tf.image.grayscale_to_rgb(x)
+        return y
+
+    dataset = tf.data.Dataset.from_tensor_slices(images)
+    preprocessing = ImagePreprocessingSpec(rgb=True)
+    pipeline = ImagePreprocessing.from_data(preprocessing, dataset)
+
+    for original in dataset:
+        expected = rgb(original)
+        actual = pipeline(original)
+        assert expected.shape == actual.shape
+        assert np.all(expected.numpy() == actual.numpy())
+
+
 def test_mask_data_preprocessing():
     mask = np.random.randint(0, 11, size=(16, 16, 3)).astype(np.uint8)
 
