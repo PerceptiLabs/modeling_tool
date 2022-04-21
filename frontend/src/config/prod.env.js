@@ -19,4 +19,5 @@ module.exports = {
   USERFLOW_KEY: '"ct_ertrpr7nzfc5himsrvqpz4kota"',
   ENABLE_PUBLIC_DATASET: '"true"',
   ENABLE_SERVING: '"true"',
+  ENABLE_SHAP_VALUES: '"false"',
 };
