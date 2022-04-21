@@ -199,8 +199,14 @@ class LightweightCore:
     def _compute_batch_data_hash(self, data_batch):
         hasher = hashlib.sha256()
         for key in data_batch.keys():
-            array = data_batch[key].numpy()
+            if isinstance(data_batch[key], Dict):
+                array = np.asarray(
+                    [value.numpy() for value in data_batch[key].values()]
+                )
+            else:
+                array = data_batch[key].numpy()
             hasher.update(array.tostring())
+
         return hasher.hexdigest()
 
     def _get_flat_data_batch(self):

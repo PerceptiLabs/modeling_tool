@@ -161,6 +161,7 @@ export default {
             "UNet",
           ] : [
             "LayerTfModel",
+            "LayerObjectDetectionModel",
             "PreTrainedVGG16",
             "PreTrainedResNet50",
             "PreTrainedInceptionV3",

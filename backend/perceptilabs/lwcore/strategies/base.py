@@ -218,16 +218,19 @@ class IoLayerStrategy(BaseStrategy):
         return results
 
     def _validate_shapes(self, layer_spec, input_results, shape):
-        for conn in layer_spec.backward_connections:
-            if not conn.src_id in input_results:
-                continue
+        if layer_spec.datatype == "boundingbox":
+            pass
+        else:
+            for conn in layer_spec.backward_connections:
+                if not conn.src_id in input_results:
+                    continue
 
-            prediction_shape = input_results[conn.src_id].out_shape.get("output")
-            target_shape = shape.get("output")
+                prediction_shape = input_results[conn.src_id].out_shape.get("output")
+                target_shape = shape.get("output")
 
-            if prediction_shape != target_shape:
-                message = f"Error in layer {layer_spec.name}. Expected shape {target_shape} but got {prediction_shape}"
-                return message
+                if prediction_shape != target_shape:
+                    message = f"Error in layer {layer_spec.name}. Expected shape {target_shape} but got {prediction_shape}"
+                    return message
 
     def process_data_batch(self, layer_spec):
         if layer_spec.datatype == "boundingbox":

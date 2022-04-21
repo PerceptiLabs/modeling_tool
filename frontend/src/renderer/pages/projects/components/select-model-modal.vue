@@ -105,9 +105,6 @@ div
               span.default-text.error(
                 v-else-if="modelType !== modelTypes.OBJECT_DETECTION && isAllIOTypesFilled() && !hasOneTarget()"
               ) Make sure to have only one target to proceed
-              span.default-text.error(
-                v-else-if="modelType === modelTypes.OBJECT_DETECTION && isAllDataTypesFilled() && !hasOneToOneMapping()"
-              ) Make sure to have one-to-one mapping for datatypes
 
               .data-partition-wrapper
                 h5.default-text Data partition:

@@ -296,7 +296,7 @@ perceptilabs/automation/modelrecommender/decoders/mask.py
 perceptilabs/automation/modelrecommender/siso_models/__init__.py
 perceptilabs/automation/modelrecommender/siso_models/base.py
 perceptilabs/automation/modelrecommender/siso_models/segmentation.py
-
+perceptilabs/automation/modelrecommender/siso_models/objectdetection.py
 
 # backend/perceptilabs/trainer/
 perceptilabs/trainer/__init__.py

@@ -18,7 +18,10 @@ from perceptilabs.automation.modelrecommender.decoders import (
     MaskDecoderBlueprint,
 )
 
-from perceptilabs.automation.modelrecommender.siso_models import SegmentationModel
+from perceptilabs.automation.modelrecommender.siso_models import (
+    SegmentationModel,
+    ObjectDetectionModel,
+)
 
 
 class ModelRecommender:
@@ -54,7 +57,11 @@ class ModelRecommender:
             if feature_spec.iotype == "target"
         ]
 
-        if num_inputs == 1 and num_outputs == 1 and target_datatypes == ["mask"]:
+        if (
+            num_inputs == 1
+            and num_outputs == 1
+            and target_datatypes in [["mask"], ["boundingbox"]]
+        ):
             return self.get_single_input_single_output_network(feature_specs, builder)
         else:
             return self.get_encoder_decoder_network(feature_specs, builder)
@@ -71,6 +78,15 @@ class ModelRecommender:
                 target_feature_spec = feature_spec
         if input_datatype == "image" and target_datatype == "mask":
             SegmentationModel().build(
+                builder,
+                input_feature_name,
+                target_feature_name,
+                input_feature_spec,
+                target_feature_spec,
+                data_loader=self._data_loader,
+            )
+        if input_datatype == "image" and target_datatype == "boundingbox":
+            ObjectDetectionModel().build(
                 builder,
                 input_feature_name,
                 target_feature_name,

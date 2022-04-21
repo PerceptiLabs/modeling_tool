@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import copy
 
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.stats.base import OutputStats
@@ -321,7 +322,6 @@ class ModelsInterface:
 
     def _get_data_loader(self, call_context, settings_dict):
         dataset_settings = DatasetSettings.from_dict(settings_dict)
-
         data_metadata = self._preprocessing_results_access.get_metadata(
             dataset_settings.compute_hash()
         )
@@ -331,9 +331,7 @@ class ModelsInterface:
             dataset_settings.dataset_id,
             fix_paths_for=dataset_settings.file_based_features,
         )
-
         df = DataFrameResolver.resolve_dataframe(df, settings_dict)
-
         data_loader = DataLoader(df, dataset_settings, metadata=data_metadata)
         return data_loader
 
@@ -354,7 +352,6 @@ class ModelsInterface:
             data_loader = self._get_data_loader(call_context, dataset_settings_dict)
             lw_core = self._initialize_lw_core(call_context, data_loader)
             lw_results = lw_core.run(graph_spec)
-
             content = lwcore_utils.get_network_data(
                 graph_spec, lw_results, skip_previews=True
             )
@@ -389,7 +386,6 @@ class ModelsInterface:
                 "previews": preview_content,  # TODO(anton.k): the best way to do this is probably to send file URLs w/ the images. That's a lot easier to debug. See: https://stackoverflow.com/questions/33279153/rest-api-file-ie-images-processing-best-practices  The problem is that the frontend expects ECharts
                 "outputDims": dim_content,
             }
-
             return output
 
         except Exception as e:
@@ -438,15 +434,17 @@ class ModelsInterface:
                 e,
                 message="Couldn't get model recommendations because the Kernel responded with an error",
             )
-
         else:
+            resolved_settings_dict = DatasetSettings.resolve_dataset_settings_dict(
+                settings_dict
+            )
             self._track_model_recommended(
                 call_context,
                 model_id,
                 skipped_workspace,
                 data_loader,
                 graph_spec,
-                settings_dict,
+                resolved_settings_dict,
             )
 
             return model_id, graph_spec.to_dict()

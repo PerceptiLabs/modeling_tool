@@ -37,10 +37,10 @@ def test_image_input_and_numerical_output_gives_basic_network():
     assert last.is_target_layer and last.feature_name == "y1"
 
 
-def test_image_input_and_mask_output_gives_basic_network():
+def test_image_input_and_boundingbox_output_gives_basic_network():
     feature_specs = {
         "x1": FeatureSpec(datatype="image", iotype="input"),
-        "y1": FeatureSpec(datatype="mask", iotype="target"),
+        "y1": FeatureSpec(datatype="boundingbox", iotype="target"),
     }
     data_loader = MagicMock()
     recommender = ModelRecommender(data_loader)

@@ -3,6 +3,7 @@ from abc import abstractmethod
 import numpy as np
 import hashlib
 from pydantic import root_validator
+import copy
 
 from perceptilabs.utils import MyPydanticBaseModel
 from perceptilabs.utils import get_dataframe_type
@@ -277,13 +278,14 @@ class DatasetSettings(MyPydanticBaseModel):
 
     @classmethod
     def from_dict(cls, dict_):
-        dict_ = cls()._resolve_dataset_settings_dict(dict_)
         dataset_id = str(dict_["datasetId"])
+        partitions = Partitions.from_dict(dict_)
+        dict_copy = copy.deepcopy(dict_)
+        new_settings_dict = cls.resolve_dataset_settings_dict(dict_copy)
         feature_specs = {
             feature_name: FeatureSpec.from_dict(feature_dict)
-            for feature_name, feature_dict in dict_["featureSpecs"].items()
+            for feature_name, feature_dict in new_settings_dict["featureSpecs"].items()
         }
-        partitions = Partitions.from_dict(dict_)
         return cls(
             partitions=partitions, feature_specs=feature_specs, dataset_id=dataset_id
         )
@@ -334,7 +336,8 @@ class DatasetSettings(MyPydanticBaseModel):
         """
         return self.num_augmentations + 1
 
-    def _resolve_dataset_settings_dict(self, settings_dict):
+    @classmethod
+    def resolve_dataset_settings_dict(cls, settings_dict):
         dataframe_type = get_dataframe_type(settings_dict)
         if dataframe_type == "ObjectDetection":
             return ObjectDetectionDatasetSettingsDict.resolve_from_dict(settings_dict)
