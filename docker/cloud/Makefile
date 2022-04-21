@@ -1,8 +1,10 @@
-DEPLOYMENT_NAME         ?= perceptilabs
 NAMESPACE_PREFIX        ?= a
 
 # Shortcut for setting the namespace in an env var. Deduces the namespace from the namespace prefix
 NAMESPACE               ?= $(shell oc get namespaces --no-headers --output='custom-columns=NAME:.metadata.name' | grep "^${NAMESPACE_PREFIX}" | head -n 1 | grep ".*" || echo "${NAMESPACE_PREFIX}1")
+
+# The string helm uses to keep track of what resources belong to what deployments
+DEPLOYMENT_NAME         ?= perceptilabs-${NAMESPACE}
 
 # For finding source directories when building docker images
 ROOT_DIR                = $(shell git rev-parse --show-toplevel)
@@ -30,10 +32,10 @@ login:
 os8_cluster_setup: ## set up cluster-wide stuff for os8 (e.g. machine scalers, clusterautoscaler)
 	helm upgrade --install cluster --debug ./os8
 
-undeploy: login ## remove the helm chart
+undeploy: require-NAMESPACE require-DEPLOYMENT_NAME login ## remove the helm chart
 	helm uninstall --namespace=${NAMESPACE} ${DEPLOYMENT_NAME}
 
-deploy: login require-BUILD_NUMBER require-NAMESPACE require-PERCEPTILABS_DOCKER_PULL_SECRET #secret ## deploy the helm chart
+deploy: login require-BUILD_NUMBER require-NAMESPACE require-PERCEPTILABS_DOCKER_PULL_SECRET require-DEPLOYMENT_NAME #secret ## deploy the helm chart
 	@echo "Installing tag ${BUILD_NUMBER}"
 	helm upgrade --install --namespace=${NAMESPACE} --create-namespace ${DEPLOYMENT_NAME} --set imageCredentials.password=${PERCEPTILABS_DOCKER_PULL_SECRET} --set pl_docker_tag=${BUILD_NUMBER} --debug ./pl-saas
 
@@ -42,7 +44,7 @@ remove_namespace: login  ## delete the namespace completely
 
 redeploy: remove_namespace deploy  ## delete the namespace and redeploy everything
 
-deploy_next: login remove_namespace require-PERCEPTILABS_DOCKER_PULL_SECRET ## delete the current ns and redeploys to the next ns in the sequence
+deploy_next: login remove_namespace require-PERCEPTILABS_DOCKER_PULL_SECRET require-DEPLOYMENT_NAME ## delete the current ns and redeploys to the next ns in the sequence
 	echo Installing tag ${BUILD_NUMBER} to namespace ${NEXT_NAMESPACE}
 	helm install --namespace=${NEXT_NAMESPACE} --create-namespace ${DEPLOYMENT_NAME} --set imageCredentials.password=${PERCEPTILABS_DOCKER_PULL_SECRET} --set pl_docker_tag=${BUILD_NUMBER} ./pl-saas --debug
 	echo "Deployed to namespace ${NEXT_NAMESPACE}"

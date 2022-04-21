@@ -16,8 +16,6 @@ REPO_NAME=pl-saas
 ROOT_DIR=$(git rev-parse --show-toplevel)
 CHART_DIR="${ROOT_DIR}/docker/cloud/pl-saas"
 
-RELEASE_NAME=cd
-
 SED=$([[ ${OSTYPE} =~ darwin ]] && echo gsed || echo sed)
 
 if [ "${ACTION}" = "build" ]; then
@@ -128,7 +126,7 @@ elif [ "${ACTION}" = "deploy" ]; then
   ROOT_HOST="apps.os8.perceptilabsapps.com"
 
   helm upgrade \
-    ${RELEASE_NAME} \
+    perceptilabs-cd \
     ${REPO_NAME} \
     --install \
     --repo ${REPO_URL} \
