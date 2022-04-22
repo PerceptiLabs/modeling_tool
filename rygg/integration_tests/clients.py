@@ -146,6 +146,10 @@ class ModelClient(ClientBase):
         return self.as_dict["location"]
 
     @property
+    def location_path(self):
+        return Path(self.location)
+
+    @property
     def datasets(self):
         return self.get_nested_detail("datasets")
 
@@ -279,6 +283,10 @@ class DatasetClient(ClientBase):
         return self.as_dict["location"]
 
     @property
+    def location_path(self):
+        return Path(self.location)
+
+    @property
     def exists_on_disk(self):
         return self.as_dict["exists_on_disk"]
 
@@ -321,9 +329,13 @@ class TaskClient(ClientBase):
         return self.as_dict["state"]
 
     @property
-    def is_completed(self):
+    def is_success(self):
         return self.state == "SUCCESS"
 
     @property
     def is_started(self):
         return self.state == "STARTED"
+
+    @property
+    def is_failed(self):
+        return self.state == "FAILED"

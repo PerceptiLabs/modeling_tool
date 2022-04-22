@@ -1,45 +1,39 @@
-from contextlib import contextmanager
-import glob
-import os
-import pytest
 import shutil
+from contextlib import contextmanager
+from pathlib import Path
 
+import pytest
+
+from assertions import assert_dict_lists_equal, assert_eventually, has_expected_files
 from clients import DatasetClient, ModelClient, ProjectClient
-from assertions import (
-    assert_dict_lists_equal,
-    has_expected_files,
-    assert_eventually,
-)
 
 MB = 1024**2
 SMALL_DATASET_SIZE = 10 * MB
 LARGE_DATASET_SIZE = 50 * MB
 
-SPAM_CSV = os.path.join(os.path.dirname(__file__), "spam.zip")
+MY_DIR = Path(__file__).parent
 
-CLASSIFICATION_DATASET_DIR = os.path.join(os.path.dirname(__file__), "test_data")
-SEGMENTATION_IMAGE_PATH = os.path.join(os.path.dirname(__file__), "test_data", "setA")
-SEGMENTATION_MASK_PATH = os.path.join(os.path.dirname(__file__), "test_data", "setB")
-SEGMENTATION_IMAGE_ZIP_PATH = os.path.join(
-    os.path.dirname(__file__), "test_data", "segmentation images.zip"
-)
-SEGMENTATION_MASK_ZIP_PATH = os.path.join(
-    os.path.dirname(__file__), "test_data", "segmentation masks.zip"
-)
-CLASSIFICATION_IMAGE_ZIP_PATH = os.path.join(
-    os.path.dirname(__file__), "test_data", "classification.zip"
-)
+TEST_DATA_DIR = MY_DIR.joinpath("test_data")
+SPAM_ZIP = TEST_DATA_DIR.joinpath("spam.zip")
+SPAM_CSV = TEST_DATA_DIR.joinpath("spam.csv")
+INVALID_ZIP = TEST_DATA_DIR.joinpath("invalid_dataset.zip")
+CLASSIFICATION_DATASET_DIR = TEST_DATA_DIR
+SEGMENTATION_IMAGE_PATH = TEST_DATA_DIR.joinpath("segmentation images")
+SEGMENTATION_MASK_PATH = TEST_DATA_DIR.joinpath("segmentation masks")
+SEGMENTATION_IMAGE_ZIP_PATH = TEST_DATA_DIR.joinpath("segmentation images.zip")
+SEGMENTATION_MASK_ZIP_PATH = TEST_DATA_DIR.joinpath("segmentation masks.zip")
+CLASSIFICATION_IMAGE_ZIP_PATH = TEST_DATA_DIR.joinpath("classification.zip")
 
 
 def assert_workingdir(rest, project_id, to_local_translator):
     if rest.is_enterprise:
         as_remote = rest.get_upload_dir(project_id)
         as_local = to_local_translator(as_remote)
-        assert os.path.isdir(as_local)
+        assert Path(as_local).is_dir
 
 
 def assert_task_starts(rest, task):
-    def progress_is_midway():
+    def progress_is_started():
         try:
             task.refresh()
             return task.is_started
@@ -47,7 +41,7 @@ def assert_task_starts(rest, task):
             raise e
 
     # poll frequently to try to catch it in the midway state
-    assert_eventually(progress_is_midway, stop_max_delay=5000, wait_fixed=50)
+    assert_eventually(progress_is_started, stop_max_delay=5000, wait_fixed=50)
 
 
 def assert_task_progresses(rest, task):
@@ -62,13 +56,47 @@ def assert_task_progresses(rest, task):
     assert_eventually(progress_is_midway, stop_max_delay=60000, wait_fixed=1000)
 
 
-def assert_task_completes(rest, task):
-    def state_is_completed():
-        task.refresh()
-        ret = task.is_completed
-        return ret
+class BombError(Exception):
+    pass
 
-    assert_eventually(state_is_completed, stop_max_delay=10000, wait_fixed=1000)
+
+def assert_task_succeeds(rest, task):
+    def not_bomb(exception):
+        return not isinstance(exception, BombError)
+
+    def state_is_success():
+        task.refresh()
+
+        if task.is_failed:
+            raise BombError()
+        return task.is_success
+
+    assert_eventually(
+        state_is_success,
+        stop_max_delay=10000,
+        wait_fixed=1000,
+        retry_on_exception=not_bomb,
+    )
+
+
+def assert_task_fails(rest, task):
+    def not_bomb(exception):
+        return not isinstance(exception, BombError)
+
+    def state_is_failed():
+        task.refresh()
+
+        if task.is_success:
+            raise BombError()
+
+        return task.is_failed
+
+    assert_eventually(
+        state_is_failed,
+        stop_max_delay=10000,
+        wait_fixed=1000,
+        retry_on_exception=not_bomb,
+    )
 
 
 @pytest.mark.timeout(1)
@@ -97,11 +125,10 @@ def test_delete_dataset_in_downloading(
 
     # make a remote dataset from a medium dataset
     medium_dataset_name = medium_remote_dataset["UniqueName"]
-    glob_pattern = os.path.join(dest, medium_dataset_name)
+    location = Path(dest, medium_dataset_name)
 
     def is_zip_removed():
-        found_files = glob.glob(glob_pattern, recursive=True)
-        return not found_files
+        return not location.exists()
 
     task, dataset = DatasetClient.create_from_remote(
         rest, tmp_project, "M", medium_dataset_name, tmpdir
@@ -138,12 +165,12 @@ def dataset_from_remote(rest, project, remote_ds, tmpdir):
             yield task, dataset
     finally:
 
-        def task_done():
-            return not task.exists or task.is_completed
+        def task_succeeded():
+            return not task.exists or task.is_success or task.is_failed
 
         # wait for the task to go away so we don't starve subsequent tests
         assert_eventually(
-            task_done,
+            task_succeeded,
             stop_max_delay=2000,
             wait_fixed=100,
         )
@@ -160,11 +187,10 @@ def test_cancel_download_task(
 
     # make a remote dataset from a large dataset
     medium_dataset_name = medium_remote_dataset["UniqueName"]
-    glob_pattern = os.path.join(dest, medium_dataset_name)
+    location = Path(dest, medium_dataset_name)
 
     def is_zip_removed():
-        found_files = glob.glob(glob_pattern, recursive=True)
-        return not found_files
+        return not location.exists()
 
     # find a large dataset
     big_dataset_name = large_remote_dataset["UniqueName"]
@@ -192,7 +218,7 @@ def test_cancel_download_task(
 
 @contextmanager
 def spam_dataset(rest, project, name, type):
-    _, dataset = DatasetClient.create_from_upload(rest, project, name, type, SPAM_CSV)
+    _, dataset = DatasetClient.create_from_upload(rest, project, name, type, SPAM_ZIP)
     with dataset:
         yield dataset
 
@@ -272,7 +298,7 @@ def test_dataset_rejects_slash_local(tmp_project, rest):
 
 @pytest.mark.timeout(1)
 @pytest.mark.usefixtures("pip_only")
-def test_local_dataset_is_already_uploaded(rest, tmp_text_file, tmp_dataset):
+def test_local_dataset_is_already_uploaded(rest, tmp_dataset):
     # For local, the dataset is already uploaded
     assert tmp_dataset.status == "uploaded"
 
@@ -316,11 +342,13 @@ def test_new_dataset_round_trips_fields_local(
 
 @pytest.mark.timeout(1)
 @pytest.mark.usefixtures("enterprise_only")
-def test_new_dataset_round_trips_fields(rest, tmp_project, tmp_model, tmp_text_file):
-    filename = os.path.basename(tmp_text_file)
+def test_new_dataset_round_trips_fields(
+    rest, tmp_project, tmp_model, tmp_text_file_path
+):
+    filename = tmp_text_file_path.name
     name = f"data with {filename}"
     _, dataset = DatasetClient.create_from_upload(
-        rest, tmp_project, name, "M", SPAM_CSV
+        rest, tmp_project, name, "M", SPAM_ZIP
     )
     with dataset:
 
@@ -430,16 +458,17 @@ def available_remote_datasets(rest):
 @pytest.mark.timeout(1)
 @pytest.mark.usefixtures("pip_only")
 def test_deleting_allows_same_name(rest, tmpdir, tmp_project):
-    assert os.path.isdir(tmpdir)
+    tmpdir_path = Path(tmpdir)
+    assert tmpdir_path.is_dir()
 
     # make a fake file
-    filename = os.path.join(tmpdir, "f")
-    open(filename, "w").write("text")
-    assert os.path.isfile(filename)
+    filename = tmpdir_path.joinpath("f")
+    filename.write_text("text")
+    assert filename.is_file()
 
     common_params = {
         "project": tmp_project.id,
-        "location": filename,
+        "location": str(filename),
         "name": "dataset",
         "type": "M",
     }
@@ -475,7 +504,7 @@ def test_create_dataset_from_remote(
 
         # make sure the task acts as expected
         assert_task_starts(rest, task)
-        assert_task_completes(rest, task)
+        assert_task_succeeds(rest, task)
 
         # re-fetch the dataset by id
         dataset.refresh()
@@ -490,12 +519,13 @@ def test_create_dataset_from_remote(
         # check that the zip has been deleted
         if rest.is_enterprise:
             parent_dir = dataset.location
-            full_parent_dir = os.path.join(
-                rest.get_upload_dir(tmp_project.id), parent_dir
-            )
+            upload_dir = rest.get_upload_dir(tmp_project.id)
+            full_parent_dir = Path(upload_dir, parent_dir)
         else:
-            full_parent_dir = dataset.location
-        assert not glob.glob(os.path.join(full_parent_dir, "**/*.zip"))
+            full_parent_dir = Path(dataset.location)
+
+        for zip in full_parent_dir.glob("**/*.zip"):
+            assert False
 
         # also try fetching the list
         datasets = rest.get(f"/datasets/")
@@ -528,7 +558,7 @@ def test_create_dataset_from_remote(
         # check that deleting the local copy makes exists_on_disk change to false
         assert dataset.exists_on_disk == True
         dataset_local_location = to_local_translator(dataset.location)
-        parent_dir = os.path.dirname(dataset_local_location)
+        parent_dir = Path(dataset_local_location).parent
         shutil.rmtree(parent_dir)
 
         def is_file_gone_on_server():
@@ -552,15 +582,14 @@ def test_new_dataset_from_upload(rest, tmp_project):
 @pytest.mark.timeout(10)
 @pytest.mark.usefixtures("enterprise_only")
 def test_new_dataset_from_upload(rest, tmp_project):
-    DATASET_ZIP = os.path.join(os.path.dirname(__file__), "spam.zip")
 
     # upload a dataset zip with dataset endpoint
     task, dataset = DatasetClient.create_from_upload(
-        rest, tmp_project, "new dataset", "M", DATASET_ZIP
+        rest, tmp_project, "new dataset", "M", SPAM_ZIP
     )
 
     # wait for dataset to be ready
-    assert_task_completes(rest, task)
+    assert_task_succeeds(rest, task)
 
     # re-fetch the dataset by id
     assert dataset.status == "uploaded"
@@ -578,15 +607,14 @@ def test_new_dataset_from_upload(rest, tmp_project):
 @pytest.mark.timeout(10)
 @pytest.mark.usefixtures("enterprise_only")
 def test_new_dataset_from_csv_upload(rest, tmp_project):
-    DATASET_CSV = os.path.join(os.path.dirname(__file__), "spam.csv")
 
     # upload a dataset csv with dataset endpoint
     task, dataset = DatasetClient.create_from_upload(
-        rest, tmp_project, "new dataset", "M", DATASET_CSV
+        rest, tmp_project, "new dataset", "M", SPAM_CSV
     )
 
     # wait for dataset to be ready
-    assert_task_completes(rest, task)
+    assert_task_succeeds(rest, task)
 
     # re-fetch the dataset by id
     assert dataset.status == "uploaded"
@@ -619,15 +647,14 @@ def test_create_classification_dataset(rest, tmp_project, to_local_translator):
     with dataset:
         with task:
             # make sure the task acts as expected
-            assert_task_completes(rest, task)
+            assert_task_succeeds(rest, task)
 
         # re-fetch the dataset by id
         dataset.refresh()
         assert dataset.status == "uploaded"
 
         # assert csv file is created
-        csv_path = dataset.location
-        assert os.path.split(csv_path)[1] == "pl_data.csv"
+        assert dataset.location_path.name == "pl_data.csv"
 
         # Check the download. Since we currently only support csv, make sure it's the right file type
         content = dataset.get_content(num_rows=3)["file_contents"]
@@ -636,7 +663,7 @@ def test_create_classification_dataset(rest, tmp_project, to_local_translator):
 
         # check that deleting the csv file makes exists_on_disk change to false
         assert dataset.exists_on_disk == True
-        os.remove(dataset.location)
+        dataset.location_path.unlink()
         dataset.refresh()
         assert dataset.exists_on_disk == False
 
@@ -655,15 +682,14 @@ def test_create_segmentation_dataset(rest, tmp_project, to_local_translator):
         mask_path=SEGMENTATION_MASK_PATH,
     )
     # make sure the task acts as expected
-    assert_task_completes(rest, task)
+    assert_task_succeeds(rest, task)
 
     # re-fetch the dataset by id
     dataset.refresh()
     assert dataset.status == "uploaded"
 
     # assert csv file is created
-    csv_path = dataset.location
-    assert os.path.split(csv_path)[1] == "pl_data.csv"
+    assert dataset.location_path.name == "pl_data.csv"
 
     # Check the download. Since we currently only support csv, make sure it's the right file type
     content = dataset.get_content(num_rows=3)["file_contents"]
@@ -672,7 +698,7 @@ def test_create_segmentation_dataset(rest, tmp_project, to_local_translator):
 
     # check that deleting the csv file makes exists_on_disk change to false
     assert dataset.exists_on_disk == True
-    os.remove(dataset.location)
+    dataset.location_path.unlink()
     dataset.refresh()
     assert dataset.exists_on_disk == False
 
@@ -690,7 +716,7 @@ def test_create_classification_dataset_enterprise(rest, tmp_project):
     )
 
     # wait for dataset to be ready
-    assert_task_completes(rest, task)
+    assert_task_succeeds(rest, task)
 
     # re-fetch the dataset by id
     assert dataset.status == "uploaded"
@@ -717,7 +743,7 @@ def test_create_segmentation_dataset_enterprise(rest, tmp_project):
     )
 
     # wait for dataset to be ready
-    assert_task_completes(rest, task)
+    assert_task_succeeds(rest, task)
 
     # re-fetch the dataset by id
     assert dataset.status == "uploaded"
@@ -778,3 +804,16 @@ def test_cant_see_other_users_datasets(
             resp = rest.get("/datasets/")
             assert resp["count"] == 1
             assert resp["results"][0]["dataset_id"] == tmp_dataset.id
+
+
+@pytest.mark.usefixtures("enterprise_only")
+def test_cant_get_content_from_invalid_dataset(rest, tmp_project):
+    task, dataset = DatasetClient.create_from_upload(
+        rest, tmp_project, "invalid dataset", "M", INVALID_ZIP
+    )
+
+    assert_task_fails(rest, task)
+    dataset.refresh()
+    assert dataset.status.startswith("failed: no data found")
+    with pytest.raises(Exception, match="422"):
+        dataset.get_content()

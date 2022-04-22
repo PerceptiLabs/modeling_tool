@@ -6,7 +6,6 @@ from contextlib import contextmanager
 
 import http.client
 import json
-import os
 import pytest
 import time
 import urllib
@@ -192,20 +191,31 @@ def tmp_model(rest, tmp_project):
 
 
 @pytest.fixture
-def tmp_file(tmpdir):
+def tmp_file_path(tmpdir):
     assert tmpdir
-    assert os.path.isdir(tmpdir)
+    tmpdir_path = Path(tmpdir)
+    assert tmpdir_path.is_dir()
     filename = "filename-" + uuid.uuid4().hex
-    local_path = os.path.join(tmpdir, filename)
-    Path(local_path).touch()
+    local_path = tmpdir_path.joinpath(filename)
+    local_path.touch()
     yield local_path
-    os.remove(local_path)
+    local_path.unlink()
 
 
 @pytest.fixture
-def tmp_text_file(tmp_file):
-    open(tmp_file, "w").write("This is text")
-    return tmp_file
+def tmp_file(tmp_file_path):
+    yield str(tmp_file_path)
+
+
+@pytest.fixture
+def tmp_text_file_path(tmp_file_path):
+    tmp_file_path.write_text("This is text")
+    return tmp_file_path
+
+
+@pytest.fixture
+def tmp_text_file(tmp_file_path):
+    return str(tmp_file_path)
 
 
 @pytest.fixture
@@ -223,12 +233,16 @@ def tmp_utf8_file(tmp_file):
     return tmp_file
 
 
+MY_DIR = Path(__file__).parent
+
+SPAM_CSV = MY_DIR.joinpath("test_data", "spam.csv")
+
+
 @pytest.fixture
 def tmp_dataset(tmp_text_file, rest, tmp_project):
     if rest.is_enterprise:
-        filename = os.path.join(os.path.dirname(__file__), "spam.csv")
         _, dataset = DatasetClient.create_from_upload(
-            rest, tmp_project, "new dataset", "M", filename
+            rest, tmp_project, "new dataset", "M", SPAM_CSV
         )
         with dataset:
             yield dataset

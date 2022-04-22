@@ -260,6 +260,10 @@ class DatasetViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["GET"])
     def content(self, request, pk):
         ds = Dataset.get_by_id(pk)
+        if not ds.status == "uploaded":
+            msg = "Requesting dataset contents before it's uploaded"
+            raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content(msg)
+
         num_rows = get_optional_int_param(request, "num_rows", 4)  # 5 rows, 0 indexed
 
         if num_rows <= 0:
