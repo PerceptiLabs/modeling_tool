@@ -1,0 +1,34 @@
+#!/bin/bash
+set -Eeuo pipefail
+
+# tell azure acr to clean up any dangling manifests (which would be left by untagging)
+# defaults to dry-run. Pass -f or --force to make it do something
+
+source .env
+
+# from https://docs.microsoft.com/en-us/azure/container-registry/container-registry-delete#delete-all-untagged-images
+
+# Change to 'true' to enable image delete
+ENABLE_DELETE=false
+if echo "$@" | grep -- "\b\(-f\|--force\)\b" &>/dev/null; then
+  ENABLE_DELETE=true
+fi
+
+if [ "$ENABLE_DELETE" != true ]; then
+  echo "No data will be deleted."
+  echo "Pass -f or --force to enable image deletion of these images:"
+fi
+
+QUERY="[?tags[0]==null].digest"
+for repository in "${ACR_REPOSITORIES[@]}"; do
+  ARGS="--subscription ${SUBSCRIPTION} --username ${ACR_USERNAME} --password ${ACR_PWD} --name $repository"
+  CMD="az acr manifest metadata list ${ARGS} --registry ${ACR_REPO_NAME} --query ${QUERY}  -o tsv"
+
+  # Delete all untagged (orphaned) images
+  if [ "$ENABLE_DELETE" = true ]
+  then
+    $CMD | xargs -I% az acr repository delete ${ARGS} --image $repository@% --yes
+  else
+    $CMD
+  fi
+done

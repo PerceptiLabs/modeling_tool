@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+source .env
+mydir=$(dirname $0)
+
+# Gets all tags matching docker_xxxx, except the most recent one and calls rmbuild on the corresponding build numbers
+
+XARGS_BATCH_SIZE=10
+
+REPO_PATTERN="git@ssh.dev.azure.com:.*/${AZ_ACCOUNT}/${AZ_PROJECT}/${AZ_GIT_REPO}"
+REMOTE=$(git remote -v | grep "${REPO_PATTERN} (fetch)$" | cut -d$'\t' -f 1)
+echo "Using remote \"$REMOTE\""
+git fetch $REMOTE --tags
+
+# Get all predecessors of the head of main branch tagged with docker_\d+
+# Scrape the build ids
+# Then drop the first one (the newest)
+# Then run rmbuild on them concatenated together in batches of XARGS_BATCH_SIZE
+git --no-pager log $REMOTE/${MAIN_BRANCH} --tags --format="%d" \
+  | grep "tag: ${TAG_PREFIX}" \
+  | gsed "s/.*tag: ${TAG_PREFIX}\([[:digit:]]\+\).*/\1/g" \
+  | tail -n +2 \
+  | xargs -n ${XARGS_BATCH_SIZE} $mydir/rmbuild

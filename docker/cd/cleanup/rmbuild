@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# For each build number given, delete the corresponding
+#   git tag
+#   docker images
+#   enterprise installer
+# Then call cleanrepo
+
+source .env
+mydir=$(dirname $0)
+
+red(){
+  echo -n $'\e[1;31m'
+  echo -n "$1"
+  echo $'\e[0m'
+}
+
+green(){
+  echo -n $'\e[1;32m'
+  echo -n "$1"
+  echo $'\e[0m'
+}
+
+delete_chart_version(){
+  buildnum=$1
+
+  # remove the chart blob from the blob storage
+  az storage blob delete-batch --account-name ${STORAGE_BLOB_ACCOUNT} --source ${SAAS_BLOB_CONTAINER} --pattern "*-${buildnum}.*" --sas-token "${SAAS_SAS_TOKEN}"
+
+  # remove the version from the index
+  wget https://${STORAGE_BLOB_ACCOUNT}.blob.core.windows.net/${SAAS_BLOB_CONTAINER}/index.yaml -O index.yaml
+
+  # yq is a pain to install. Just run it with docker
+  docker run --rm -v "${PWD}":/workdir mikefarah/yq --inplace "del(.entries.pl-saas.[] | select(.version == \"*$buildnum\"))" index.yaml
+
+  az storage blob upload --account-name ${STORAGE_BLOB_ACCOUNT} --container-name ${SAAS_BLOB_CONTAINER} --file=index.yaml --overwrite true --name=index.yaml --sas-token "${SAAS_SAS_TOKEN}"
+  rm index.yaml
+}
+
+untag_git(){
+  buildnum=$1
+
+  git_untag docker_${buildnum} bia \
+    && green "Untagged ${buildnum}" \
+    || red "Couldn't untag the build"
+}
+
+delete_installer(){
+  buildnum=$1
+
+  az storage blob delete-batch --account-name ${STORAGE_BLOB_ACCOUNT} --source ${STORAGE_BLOB_CONAINER} --pattern ${buildnum}/* --sas-token "${BLOB_DELETE_SAS}" \
+    && green "Deleted blobs for build ${buildnum}" \
+    || red "blobs for build ${buildnum} don't exist"
+}
+
+untag_docker_images(){
+   buildnum=$1
+
+  # untag the images
+  for repo in ${ACR_REPOSITORIES[@]}; do
+    URL=${ACR_REPO_NAME}.azurecr.io/${repo}:${buildnum}
+    az acr repository delete --name ${ACR_REPO_NAME} --username ${ACR_USERNAME} --password ${ACR_PWD} --image ${repo}:${buildnum} --subscription ${SUBSCRIPTION} --yes \
+      && green "Untagged $URL" \
+      || red "$URL doesn't exist"
+  done
+}
+
+if [ $# -lt 1 ] || [ "$1" == "-h" ]; then
+  green "For removing a dev buld from the PerceptiLabs Azure account"
+  red "USAGE: $0 <build number> [<build number> ...]"
+  exit 1
+fi
+
+for buildnum in $@; do
+  delete_installer $buildnum
+  delete_chart_version $buildnum
+  untag_docker_images $buildnum
+  untag_git $buildnum
+done
+
+# clean dangling images from the repos
+$mydir/cleanrepo --force
+
