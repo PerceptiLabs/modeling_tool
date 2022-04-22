@@ -334,6 +334,8 @@ perceptilabs/testcore/tests.json
 # backend/perceptilabs/testcore/strategies/
 perceptilabs/testcore/strategies/teststrategies.py
 perceptilabs/testcore/strategies/modelstrategies.py
+perceptilabs/testcore/strategies/resultsstrategies.py
+perceptilabs/testcore/strategies/factory.py
 perceptilabs/testcore/strategies/__init__.py
 
 # backend/perceptilabs/tracking/

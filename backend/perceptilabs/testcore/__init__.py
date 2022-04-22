@@ -1,1 +1,1 @@
-from perceptilabs.testcore.base import TestCore, ProcessResults
+from perceptilabs.testcore.base import TestCore

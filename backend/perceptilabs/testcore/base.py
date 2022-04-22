@@ -10,13 +10,7 @@ import matplotlib.pyplot as plt
 import pkg_resources
 
 from perceptilabs.createDataObject import createDataObject, subsample
-from perceptilabs.testcore.strategies.modelstrategies import LoadInferenceModel
-from perceptilabs.testcore.strategies.teststrategies import (
-    ConfusionMatrix,
-    MetricsTable,
-    OutputVisualization,
-    ShapValues,
-)
+from perceptilabs.testcore.strategies.factory import TestStrategyFactory
 from perceptilabs.utils import KernelError
 import perceptilabs.utils as utils
 
@@ -46,6 +40,8 @@ class TestCore:
         self._stopped = False
         self._model_number = 0
         self._test_number = 0
+
+        self._test_strategy_factory = TestStrategyFactory()
 
     def get_data_iterator(self, model_id):
         return self._model_contexts[model_id]["dataset"]
@@ -87,29 +83,11 @@ class TestCore:
         loads model from exported model.pb file or using checkpoints.
         """
 
-        def should_return_inputs():
-            return "outputs_visualization" in self._tests
-
-        def should_return_outputs():
-            if "confusion_matrix" in self._tests:
-                return True
-
-            if "classification_metrics" in self._tests:
-                return True
-
-            if "segmentation_metrics" in self._tests:
-                return True
-
-            if "outputs_visualization" in self._tests:
-                return True
-
-            return False
-
         try:
-            self._inference_models[model_id] = LoadInferenceModel(
-                training_model,
-                return_inputs=should_return_inputs(),
-                return_outputs=should_return_outputs(),
+            self._inference_models[
+                model_id
+            ] = self._test_strategy_factory.make_model_strategy(
+                self._tests, training_model
             )
             logger.info("model %s loaded successfully.", model_id)
         except Exception as e:
@@ -145,6 +123,11 @@ class TestCore:
             self._current_model_name = self._model_contexts[model_id]["model_name"]
             self._current_dataset_size = self._get_dataset_size(model_id)
             self._model_number += 1
+
+            logger.info(
+                f"Preparing model {model_id} with dataset size {self._current_dataset_size}"
+            )
+
             compatible_layers = self.get_compatible_layers_for_tests()
             # all the results are being collected at once to not repeat the same computations for every test.
             yield from self._compute_model_outputs()
@@ -180,34 +163,22 @@ class TestCore:
         model_id = self._current_model_id
         if not self._stopped:
             if len(compatible_output_layers):
-                if test == "confusion_matrix":
-                    categories = self._get_categories(
-                        model_id, compatible_output_layers
-                    )
-                    results = ConfusionMatrix().run(
-                        model_outputs, compatible_output_layers, categories
-                    )
-                elif test == "segmentation_metrics":
-                    results = MetricsTable().run(
-                        model_outputs, compatible_output_layers
-                    )
-                elif test == "classification_metrics":
-                    results = MetricsTable().run(
-                        model_outputs, compatible_output_layers
-                    )
-                elif test == "outputs_visualization":
-                    results = OutputVisualization().run(
-                        model_inputs, model_outputs, compatible_output_layers
-                    )
-                elif test == "shap_values":
-                    model = self._model_contexts[model_id]["training_model"]
-                    data_iterator = self.get_data_iterator(model_id)
+                training_model = self._model_contexts[model_id]["training_model"]
+                data_iterator = self.get_data_iterator(model_id)
+                model_categories = self._model_contexts[model_id]["categories"]
 
-                    results = ShapValues(
-                        data_iterator, model, explainer_factory=self._explainer_factory
-                    ).run()
-                else:
-                    raise ValueError(f"Undefined test '{test}'")
+                strategy = self._test_strategy_factory.make_test_strategy(
+                    test,
+                    model_id,
+                    training_model,
+                    model_inputs,
+                    model_outputs,
+                    data_iterator,
+                    model_categories,
+                    compatible_output_layers,
+                    self._explainer_factory,
+                )
+                results = strategy.run()
 
                 logger.info("test %s completed for model %s.", test, model_id)
 
@@ -392,9 +363,11 @@ class TestCore:
         for test in self._tests:
             results[test] = {}
             for model_id in unprocessed_results:
-                processed_output = ProcessResults(
-                    unprocessed_results[model_id][test], test
-                ).run()
+
+                strategy = self._test_strategy_factory.make_results_strategy(
+                    test, unprocessed_results[model_id][test]
+                )
+                processed_output = strategy.run()
                 results[test][model_id] = processed_output
 
         return results
@@ -411,169 +384,3 @@ class TestCore:
     @property
     def models(self):
         return self._inference_models.copy()
-
-
-class ProcessResults:
-    """process results here."""
-
-    def __init__(self, results, test):
-        self._results = results
-        self._test = test
-
-    def run(self):
-        if self._test == "confusion_matrix":
-            return self._process_confusionmatrix_output()
-        elif self._test in ["segmentation_metrics", "classification_metrics"]:
-            return self._process_metrics_table_output()
-        elif self._test == "outputs_visualization":
-            return self._process_outputs_visualization_output()
-        elif self._test == "shap_values":
-            return self._process_shapvalue_output()
-        else:
-            raise KernelError(f"{self._test} is not supported yet.")
-
-    def _process_shapvalue_output(self):
-        import os
-        import shap
-        from pathlib import Path
-
-        shap_values = self._results["shap_values"]
-        test_samples = self._results["test_samples"]
-        shap.image_plot(shap_values, test_samples)
-
-        fig = plt.gcf()
-        fig.canvas.draw()
-
-        data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-        image = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-
-        default_path = Path.home() / "shap_plot.png"
-        path = os.getenv("PL_SHAP_PATH", str(default_path))
-        try:
-            fig.savefig(path)
-        except:
-            logger.exception(f"Failed writing shap plot to {path}")
-        else:
-            logger.exception(f"Wrote shap plot to {path}")
-
-        data_object = createDataObject(data_list=[image], normalize=False)
-        self._results = {"image": data_object}
-        return self._results
-
-    def _process_confusionmatrix_output(self):
-        for layer_name in self._results:
-            result = self._results[layer_name]["data"].numpy()
-            categories = self._results[layer_name]["categories"]
-
-            # normalize the matrix and purge nans
-            result = np.nan_to_num(result)
-            result = np.around(result, 3)
-
-            show_data = True if len(categories) < 14 else False
-            data_object = createDataObject(
-                data_list=[result],
-                type_list=["heatmap"],
-                name_list=categories,
-                show_data=show_data,
-            )
-            self._results[layer_name] = data_object
-        return self._results
-
-    def _process_metrics_table_output(self):
-        return self._results
-
-    def _process_outputs_visualization_output(self):
-        """
-        input, target, prediction, heatmap will be concatenated into a single image for each sample.
-        Returns:
-            conv layer like output from workspace
-        """
-        for layer_name in self._results:
-            result = self._results[layer_name]
-            inputs = result["inputs"]
-            targets = result["targets"]
-            predictions = result["predictions"]
-            losses = result["losses"]
-            # getting segmentations and generating concatenated images
-            images = []
-
-            # subsampling
-            MAX_SIZE = 200
-            image_largest_axis = np.max(inputs[0].shape)
-            subsample_ratio = max(image_largest_axis / MAX_SIZE, 1)
-            # inspired from https://github.com/yingkaisha/keras-unet-collection/blob/main/examples/human-seg_atten-unet-backbone_coco.ipynb
-            for i in range(len(inputs)):
-                predicted_segmentation = np.argmax(predictions[i], axis=3)
-                target_segmentation = np.argmax(targets[i], axis=3)
-
-                fig, axs = plt.subplots(2, 2, tight_layout=True, figsize=(3, 3))
-                fig.suptitle("Loss: " + str(losses[i]), fontsize=8, color="white")
-
-                axs[0, 0].pcolormesh(
-                    subsample(np.squeeze(np.mean(inputs[i], axis=-1)), subsample_ratio)[
-                        1
-                    ],
-                    cmap=plt.get_cmap("gray"),
-                )
-                axs[0, 0].axis("off")
-                axs[0, 0].set_title(
-                    "Input", {"fontname": "Roboto"}, fontsize=7, color="white"
-                )
-                axs[0, 0].invert_yaxis()
-
-                axs[1, 1].pcolormesh(
-                    subsample(
-                        np.squeeze(predicted_segmentation, axis=0), subsample_ratio
-                    )[1],
-                    cmap=plt.get_cmap("jet"),
-                )
-                axs[1, 1].axis("off")
-                axs[1, 1].set_title(
-                    "Prediction", {"fontname": "Roboto"}, fontsize=7, color="white"
-                )
-                axs[1, 1].invert_yaxis()
-
-                axs[0, 1].pcolormesh(
-                    subsample(np.squeeze(target_segmentation), subsample_ratio)[1],
-                    cmap=plt.get_cmap("jet"),
-                )
-                axs[0, 1].axis("off")
-                axs[0, 1].set_title(
-                    "Target", {"fontname": "Roboto"}, fontsize=7, color="white"
-                )
-                axs[0, 1].invert_yaxis()
-
-                axs[1, 0].pcolormesh(
-                    subsample(np.squeeze(np.mean(inputs[i], axis=-1)), subsample_ratio)[
-                        1
-                    ],
-                    cmap=plt.get_cmap("gray"),
-                )
-                axs[1, 0].pcolormesh(
-                    subsample(np.mean(predicted_segmentation, axis=0), subsample_ratio)[
-                        1
-                    ],
-                    cmap=plt.get_cmap("jet"),
-                    alpha=0.2,
-                )
-                axs[1, 0].axis("off")
-                axs[1, 0].set_title(
-                    "Prediction on Input",
-                    {"fontname": "Roboto"},
-                    fontsize=7,
-                    color="white",
-                )
-                axs[1, 0].invert_yaxis()
-
-                rect = fig.patch
-                rect.set_facecolor("#23252A")
-                fig.canvas.draw()
-
-                data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-                image = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-                images.append(image)
-
-            # create data object
-            data_object = createDataObject(data_list=images, normalize=True)
-            self._results[layer_name] = data_object
-        return self._results

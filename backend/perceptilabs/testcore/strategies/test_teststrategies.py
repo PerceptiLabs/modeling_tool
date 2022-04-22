@@ -74,9 +74,10 @@ def test_confusion_matrix_computation(data_loader):
     }
     compatible_output_layers = ["y1"]
     categories = {"y1": [0, 1]}
-    confusion_matrix = ConfusionMatrix().run(
+    confusion_matrix = ConfusionMatrix(
         model_outputs, compatible_output_layers, categories
-    )
+    ).run()
+
     assert (
         confusion_matrix["y1"]["data"].numpy()
         == np.array([[0, 0], [1, 0]], dtype=np.int32)
@@ -100,7 +101,7 @@ def test_categorical_metrics_table_computation(data_loader):
         ],
     }
     compatible_output_layers = {"y1": "categorical"}
-    metrics_table = MetricsTable().run(model_outputs, compatible_output_layers)
+    metrics_table = MetricsTable(model_outputs, compatible_output_layers).run()
     assert metrics_table == {
         "y1": {
             "categorical_accuracy": 0.75,
@@ -168,7 +169,7 @@ def test_mask_metrics_table_computation():
         ],
     }
     compatible_output_layers = {"y1": "mask"}
-    metrics_table = MetricsTable().run(model_outputs, compatible_output_layers)
+    metrics_table = MetricsTable(model_outputs, compatible_output_layers).run()
     assert metrics_table == {"y1": {"IoU": 0.35, "loss": 0.49}}
 
 
@@ -214,9 +215,10 @@ def test_outputs_visualization_computation():
 
     compatible_output_layers = {"y1": "image"}
 
-    results = OutputVisualization().run(
+    results = OutputVisualization(
         model_inputs, model_outputs, compatible_output_layers
-    )
+    ).run()
+
     assert set(results["y1"].keys()) == {"inputs", "targets", "predictions", "losses"}
     assert (
         len(results["y1"]["inputs"])

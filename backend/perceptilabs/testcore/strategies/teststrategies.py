@@ -12,16 +12,21 @@ class DatasetError(ValueError):
 
 class BaseStrategy(ABC):
     @abstractmethod
-    def run(self, model_outputs, compatible_output_layers):
+    def run(self):
         raise NotImplementedError
 
 
 class ConfusionMatrix(BaseStrategy):
-    def run(self, model_outputs, compatible_output_layers, categories):
+    def __init__(self, model_outputs, compatible_output_layers, categories):
+        self._model_outputs = model_outputs
+        self._compatible_output_layers = compatible_output_layers
+        self._categories = categories
+
+    def run(self):
         confusion_matrices = {}
-        for layer in compatible_output_layers:
-            labels = [x[layer].numpy() for x in model_outputs["targets"]]
-            outputs = [x[layer] for x in model_outputs["outputs"]]
+        for layer in self._compatible_output_layers:
+            labels = [x[layer].numpy() for x in self._model_outputs["targets"]]
+            outputs = [x[layer] for x in self._model_outputs["outputs"]]
             predictions = [np.argmax(output) for output in outputs]
             targets = [np.argmax(label) for label in labels]
             num_classes = np.asarray(labels).shape[2]  # TODO: get class names
@@ -30,22 +35,26 @@ class ConfusionMatrix(BaseStrategy):
             )
             confusion_matrices[layer] = {
                 "data": confusion_matrix,
-                "categories": categories[layer],
+                "categories": self._categories[layer],
             }
         return confusion_matrices
 
 
 class MetricsTable(BaseStrategy):
-    def run(self, model_outputs, compatible_output_layers):
+    def __init__(self, model_outputs, compatible_output_layers):
+        self._model_outputs = model_outputs
+        self._compatible_output_layers = compatible_output_layers
+
+    def run(self):
         metrics_tables = {}
-        for layer in compatible_output_layers:
-            if compatible_output_layers[layer] == "mask":
+        for layer in self._compatible_output_layers:
+            if self._compatible_output_layers[layer] == "mask":
                 metrics_tables = self._run_mask_metrics(
-                    layer, model_outputs, metrics_tables
+                    layer, self._model_outputs, metrics_tables
                 )
-            elif compatible_output_layers[layer] == "categorical":
+            elif self._compatible_output_layers[layer] == "categorical":
                 metrics_tables = self._run_categorical_metrics(
-                    layer, model_outputs, metrics_tables
+                    layer, self._model_outputs, metrics_tables
                 )
         return metrics_tables
 
@@ -109,7 +118,12 @@ class MetricsTable(BaseStrategy):
 
 
 class OutputVisualization(BaseStrategy):
-    def run(self, model_inputs, model_outputs, compatible_output_layers):
+    def __init__(self, model_inputs, model_outputs, compatible_output_layers):
+        self._model_inputs = model_inputs
+        self._model_outputs = model_outputs
+        self._compatible_output_layers = compatible_output_layers
+
+    def run(self):
         """
         takes all the model outputs and calculates the loss on each sample. Best performing 5 samples and worst performing 5 samples are returned.
         Args:
@@ -120,13 +134,13 @@ class OutputVisualization(BaseStrategy):
             best 5 segmented images and their inputs and original segmentations and the worst 5.
         """
         output_images = {}
-        for layer in compatible_output_layers:
+        for layer in self._compatible_output_layers:
             output_images[layer] = {}
             losses = []
-            predictions = [x[layer] for x in model_outputs["outputs"]]
-            targets = [x[layer].numpy() for x in model_outputs["targets"]]
+            predictions = [x[layer] for x in self._model_outputs["outputs"]]
+            targets = [x[layer].numpy() for x in self._model_outputs["targets"]]
             inputs = [
-                list(x.values())[0] for x in model_inputs
+                list(x.values())[0] for x in self._model_inputs
             ]  # TODO: need to fix this for multi input/output
             for target, prediction in zip(targets, predictions):
                 loss_fn = tf.keras.losses.CategoricalCrossentropy()
@@ -165,7 +179,7 @@ class ShapValues:
         training_model,
         n_background_samples_min=20,
         n_background_samples_max=100,
-        n_visualized_samples=3,
+        n_visualized_samples=10,
         explainer_factory=None,
     ):
         self._data_iterator = data_iterator
@@ -200,13 +214,21 @@ class ShapValues:
         explainer = self._create_explainer(
             input_feature, target_feature, background_samples
         )
-        shap_values = explainer.shap_values(test_samples)
+
+        shap_values = np.zeros(test_samples.shape)
+        for i in range(len(test_samples)):
+            shap_values[i] = self._explain_sample(explainer, test_samples[i])
 
         results = {
             "shap_values": shap_values,
             "test_samples": test_samples,
         }
         return results
+
+    def _explain_sample(self, explainer, sample):
+        input_as_array = np.asarray([sample])
+        output_as_array = explainer.shap_values(input_as_array)
+        return output_as_array[0]
 
     def _create_data_partitions(self, input_feature):
         input_iterator = self._data_iterator.map(lambda inputs, _: inputs)
