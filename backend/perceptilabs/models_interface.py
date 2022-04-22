@@ -469,7 +469,9 @@ class ModelsInterface:
         is_plabs_sourced = self._dataset_access.is_perceptilabs_sourced(
             call_context, data_loader.settings.dataset_id
         )
-
+        targets = data_loader.get_datatypes("target")
+        assert len(targets) == 1
+        target_datatype = list(targets.values())[0]
         tracking.send_model_recommended(
             self._event_tracker,
             call_context,
@@ -480,6 +482,7 @@ class ModelsInterface:
             graph_spec,
             is_perceptilabs_sourced=is_plabs_sourced,
             dataset_id=data_loader.settings.dataset_id,
+            target_type=target_datatype,
         )
 
     def import_model(

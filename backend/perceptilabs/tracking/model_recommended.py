@@ -15,6 +15,7 @@ def send_model_recommended(
     graph_spec,
     is_perceptilabs_sourced,
     dataset_id,
+    target_type,
 ):
     """Sends a MixPanel event describing the model recommendation"""
     payload = {
@@ -24,6 +25,7 @@ def send_model_recommended(
         "dataset_id": dataset_id,
         "skipped_workspace": skipped_workspace,
         "version": get_tool_version(),
+        "target_type": target_type,
     }
     layer_counts = get_layer_counts(graph_spec)
     payload.update(layer_counts)
