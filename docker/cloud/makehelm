@@ -133,6 +133,7 @@ elif [ "${ACTION}" = "deploy" ]; then
     --version ${CHART_VERSION} \
     --namespace cd \
     --create-namespace \
+    --timeout 60m
     --set "root_host=${ROOT_HOST}" \
     --set "imageCredentials.username=${PERCEPTILABS_DOCKER_PULL_USER}" \
     --set "imageCredentials.password=${PERCEPTILABS_DOCKER_PULL_SECRET}" \
