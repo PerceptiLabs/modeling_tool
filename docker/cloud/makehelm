@@ -66,9 +66,6 @@ if [ "${ACTION}" = "build" ]; then
   helm repo index "${OUTPUT_DIR}" --url ${REPO_URL} --merge index.yaml
   rm index.yaml
 
-  # az storage blob upload --account-name=${BLOB_ACCOUNT} --container-name=${BLOB_CONTAINER} --file=${ARTIFACT_CHART} --name=${ARTIFACT_NAME}
-  # az storage blob upload --account-name=${BLOB_ACCOUNT} --container-name=${BLOB_CONTAINER} --file=${ARTIFACT_INDEX} --name=index.yaml
-
 
 elif [ "${ACTION}" = "deploy" ]; then
 
@@ -133,7 +130,7 @@ elif [ "${ACTION}" = "deploy" ]; then
     --version ${CHART_VERSION} \
     --namespace cd \
     --create-namespace \
-    --timeout 60m
+    --timeout 60m \
     --set "root_host=${ROOT_HOST}" \
     --set "imageCredentials.username=${PERCEPTILABS_DOCKER_PULL_USER}" \
     --set "imageCredentials.password=${PERCEPTILABS_DOCKER_PULL_SECRET}" \
