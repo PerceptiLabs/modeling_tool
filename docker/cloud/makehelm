@@ -30,10 +30,17 @@ if [ "${ACTION}" = "build" ]; then
   if [ -n "${VERSION_OVERRIDE:-}" ]; then
     echo "VERSION_OVERRIDE is set"
     VERSION=${VERSION_OVERRIDE}
+
+    # VERSION must be one word
+    echo "${VERSION}" | wc -w | grep --silent "\b1\b"
   else
     VERSION_FILE="${ROOT_DIR}/VERSION"
     echo "VERSION_FILE=${VERSION_FILE}"
-    VERSION=$(cat ${VERSION_FILE})
+    VERSION=$(cat "${VERSION_FILE}")
+
+    # VERSION must be one word
+    echo "${VERSION}" | wc -w | grep --silent "\b1\b"
+
     if [ -n "${VERSION_EXTENSION:-}" ]; then
       echo "Appending VERSION_EXTENSION"
       VERSION="${VERSION}-${VERSION_EXTENSION}"
@@ -58,8 +65,8 @@ if [ "${ACTION}" = "build" ]; then
 	helm package \
 		"${CHART_DIR}" \
     --version "${VERSION}-${BUILD_ID}" \
-    --app-version ${VERSION} \
-    --destination ${OUTPUT_DIR}
+    --app-version "${VERSION}" \
+    --destination "${OUTPUT_DIR}"
 
   # Build this index with the new item and merge in old stuff as well
   wget --no-clobber ${REPO_URL}/index.yaml
@@ -105,13 +112,13 @@ elif [ "${ACTION}" = "deploy" ]; then
     SED_PATTERN="s/^.*[[:space:]](${VERSION_PATTERN})[[:space:]].*$/\1/p"
 
     # list the charts, scrape out the versions, sort them and take the max
-    CHART_VERSION=$(helm search repo pl --versions --devel | $SED --silent --regexp-extended ${SED_PATTERN} | grep . | sort -t'-' -k2 | tail -n 1)
+    CHART_VERSION=$(helm search repo pl --versions --devel | $SED --silent --regexp-extended "${SED_PATTERN}" | grep . | sort -t'-' -k2 | tail -n 1)
   else
     # Helm is limited in its ability to search for semver and uses the poorly documented semver library from go
     # ...so just use sed to scrape it out of the output
     VERSION_PATTERN="${RELEASE_VERSION_PATTERN}-${BUILD_ID}"
     SED_PATTERN="s/^.*[[:space:]](${VERSION_PATTERN})[[:space:]].*$/\1/p"
-    CHART_VERSION=$(helm search repo pl --versions --devel | $SED --silent --regexp-extended ${SED_PATTERN})
+    CHART_VERSION=$(helm search repo pl --versions --devel | $SED --silent --regexp-extended "${SED_PATTERN}")
   fi
 
   if [ -z "$CHART_VERSION" ]; then
@@ -126,8 +133,8 @@ elif [ "${ACTION}" = "deploy" ]; then
     perceptilabs-cd \
     ${REPO_NAME} \
     --install \
-    --repo ${REPO_URL} \
-    --version ${CHART_VERSION} \
+    --repo "${REPO_URL}" \
+    --version "${CHART_VERSION}" \
     --namespace cd \
     --create-namespace \
     --timeout 60m \
