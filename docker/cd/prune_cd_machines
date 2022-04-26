@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# only instances tagged enterprise
+GROUP_FILTER="Name=tag:group,Values=enterprise"
+
+# skip non-running instances
+STATE_FILTER="Name=instance-state-name,Values=stopping,stopped"
+
+# sort by launch time so we can pull out the oldest
+QUERY="sort_by(Reservations[].Instances[], &LaunchTime)[].{InstanceId: InstanceId}"
+
+aws ec2 describe-instances --filters "${GROUP_FILTER}" "${STATE_FILTER}" --output text --query "${QUERY}" | \
+  tr "-" "_" | \
+  xargs -L 1 -I '{}' ansible-playbook -i inventory -l instance_id_'{}' deprovision.yaml
+
