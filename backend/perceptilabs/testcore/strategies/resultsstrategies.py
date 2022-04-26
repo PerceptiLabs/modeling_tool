@@ -62,24 +62,25 @@ class ProcessShapValues(ResultsStrategy):
             yield (index, shap_values[index], test_samples[index])
 
     def _create_plot(self, shap_value, test_sample, default_path):
-        import os
         import shap
 
         shap.image_plot(shap_value, test_sample)
-
         fig = plt.gcf()
+        fig.set_facecolor("#2B2C31")
+        fig.set_alpha(0.0)
+
+        ax = plt.gca()
+        im = ax.images
+
+        cb = im[-1].colorbar
+
+        cb.ax.xaxis.label.set_color("white")
+        cb.ax.tick_params(axis="x", colors="white")
+
         fig.canvas.draw()
 
         data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
         image = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-
-        path = os.getenv("PL_SHAP_PATH", default_path)
-        try:
-            fig.savefig(path)
-        except:
-            logger.exception(f"Failed writing shap plot to {path}")
-        else:
-            logger.exception(f"Wrote shap plot to {path}")
 
         return image
 

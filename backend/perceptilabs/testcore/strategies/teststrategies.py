@@ -171,7 +171,6 @@ class ShapValues:
             import shap
 
             return shap.DeepExplainer(model, background)
-            raise NotImplementedError
 
     def __init__(
         self,

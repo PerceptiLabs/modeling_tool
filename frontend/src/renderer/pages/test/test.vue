@@ -40,10 +40,23 @@
                 div.chart-container.w-50(v-for="(feature, featureName) in testFeature")
                   chart-switch(
                     :disableHeader="false"
-                    :key="key"
+                    :key="featureName"
                     :chart-label="`${modelName(chartId) } - ${featureName} ${TestTypes[key].text}`"
                     :chart-data="feature"
                     :styles="chartStyles"
+                    :chartIdx="getImageIndex(key, chartId)"
+                    @chartIdxChange="handleChartIdxChange($event, key, chartId)"
+                  )
+            template(v-if="key === 'shap_values'")
+              template(v-for="(testFeature, chartId) in testTypes" v-if="!!testTypes")
+                div.chart-container.w-50(v-for="(feature, featureName) in testFeature")
+                 chart-switch(
+                    :disableHeader="false"
+                    :key="featureName"
+                    :chart-label="`${modelName(chartId) } - ${featureName} ${TestTypes[key].text}`"
+                    :chart-data="feature"
+                    :styles="chartStyles"
+                    :showInitiallyRequestSpinner="true"
                     :chartIdx="getImageIndex(key, chartId)"
                     @chartIdxChange="handleChartIdxChange($event, key, chartId)"
                   )
@@ -141,10 +154,11 @@ export default {
           text: TestTypes[key].text,
           value: key
         })),
-        TestTypes,
-        imageChartImages: {
-          outputs_visualization: { }
-        }
+      TestTypes,
+      imageChartImages: {
+        outputs_visualization: { },
+        shap_values: {}
+      }
     };
   },
   mounted() {
