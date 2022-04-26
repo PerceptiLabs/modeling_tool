@@ -5,7 +5,8 @@
     "third_party": [
         "import tensorflow as tf",
         "import numpy as np",
-        "import tensorflow_hub as hub"         
+        "import tensorflow_hub as hub",         
+        "import functools"
     ],
     "perceptilabs": [
         "from perceptilabs.core_new.utils import Picklable",

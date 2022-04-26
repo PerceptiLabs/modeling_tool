@@ -19,6 +19,15 @@ def script_factory():
 
 @pytest.mark.parametrize("trainable", [True, False])
 def test_objectdetectionmodel_instantiation(script_factory, trainable):
+    a = MagicMock()
+
+    def tf_test(x, training):
+        x1 = tf.random.normal((1, 1, 40, 40, 64))
+        x2 = tf.random.normal((1, 1, 40, 40, 64))
+        return (x1, x2)
+
+    a.KerasLayer.return_value = tf_test
+
     with patch.dict(
         "sys.modules",
         **{
@@ -29,7 +38,7 @@ def test_objectdetectionmodel_instantiation(script_factory, trainable):
             id_="layer_id",
             name="layer_name",
             trainable=trainable,
-            url="https://tfhub.dev/tensorflow/efficientdet/d2/1",
+            url="https://tfhub.dev/tensorflow/efficientdet/lite3x/feature-vector/1",
         )
         layer = LayerHelper(script_factory, layer_spec).get_instance()
         assert layer is not None
@@ -37,31 +46,14 @@ def test_objectdetectionmodel_instantiation(script_factory, trainable):
 
 @pytest.mark.parametrize("trainable", [True, False])
 def test_objectdetectionmodel_can_run(script_factory, trainable):
-    a = MagicMock()
-
-    def tf_test(x, training):
-        dict_ = {
-            "detection_boxes": np.random.randint(0, 100, (1, 100, 4)),
-            "detection_classes": np.random.randint(0, 100, (1, 100)),
-        }
-        return dict_
-
-    a.KerasLayer.return_value = tf_test
-
-    with patch.dict(
-        "sys.modules",
-        **{
-            "tensorflow_hub": a,
-        }
-    ):
-        layer_spec = LayerObjectDetectionModelSpec(
-            id_="layer_id",
-            name="layer_name",
-            trainable=trainable,
-            url="https://tfhub.dev/tensorflow/efficientdet/d2/1",
-            backward_connections=(LayerConnection(dst_var="input"),),
-        )
-        x = tf.cast(np.asarray([10]), tf.int8)
-        layer = LayerHelper(script_factory, layer_spec).get_instance()
-        y = layer({"input": x})
-        assert list(y["output"][0].keys()) == ["detection_boxes", "detection_classes"]
+    layer_spec = LayerObjectDetectionModelSpec(
+        id_="layer_id",
+        name="layer_name",
+        trainable=trainable,
+        url="https://tfhub.dev/tensorflow/efficientdet/lite0/feature-vector/1",
+        backward_connections=(LayerConnection(dst_var="input"),),
+    )
+    x = tf.random.normal((1, 320, 320, 3))
+    layer = LayerHelper(script_factory, layer_spec).get_instance()
+    y = layer({"input": x})
+    assert list(y["output"].keys()) == ["cls_outputs", "box_outputs"]
