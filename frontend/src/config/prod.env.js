@@ -13,11 +13,9 @@ module.exports = {
   SENTRY_ENV: '"prod"',
   GITHUB_CLIENT_ID: '"094271b0edb47c75dc24"',
   ENABLE_LOGROCKET: '"true"',
-  ENABLE_SHAP_VALUES: '"false"',    
   LOGROCKET_APP_ID: '"l2mogl/modeling-tool"',
   INTERCOM_ID: '"ujvkp2qi"',
   USERFLOW_KEY: '"ct_ertrpr7nzfc5himsrvqpz4kota"',
   ENABLE_PUBLIC_DATASET: '"true"',
   ENABLE_SERVING: '"true"',
-  ENABLE_SHAP_VALUES: '"false"',
 };

@@ -20,7 +20,8 @@ class ResultsStrategy(ABC):
 
 
 class ProcessShapValues(ResultsStrategy):
-    def __init__(self, results):
+    def __init__(self, results, n_samples_max=10):
+        self._n_samples_max = n_samples_max
         self._results = results
 
     def run(self):
@@ -48,14 +49,11 @@ class ProcessShapValues(ResultsStrategy):
         return {"image": data_object}
 
     def _generate_samples(self, shap_values, test_samples):
-        import os
-
-        n_samples_max = int(os.getenv("PL_SHAP_MAX_IMAGES", 1))
         n_samples_available = len(test_samples)
+        n_samples_used = min(self._n_samples_max, n_samples_available)
 
-        n_samples_used = min(n_samples_max, n_samples_available)
         logger.info(
-            f"Samples used: {n_samples_used}. Limit: {n_samples_max}, available: {n_samples_available}"
+            f"Samples used: {n_samples_used}. Limit: {self._n_samples_max}, available: {n_samples_available}"
         )
 
         for index in range(n_samples_used):
