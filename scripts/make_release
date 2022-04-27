@@ -12,35 +12,32 @@ REMOTE=$3
 TAG=pip_$VERSION
 
 prep_git(){
-  if ! git remote | grep --quiet $REMOTE ; then
+  if ! git remote 2>/dev/null | grep --quiet $REMOTE ; then
     echo "Remote $REMOTE isn't set up. Check your parameters."
     exit 1
   fi
 
-  echo "Fetching from $REMOTE"
-  git fetch $REMOTE
-  git fetch $REMOTE --tags
-  echo "done fetching"
+  echo -n "Fetching from $REMOTE ... "
+  git fetch $REMOTE &>/dev/null
+  git fetch $REMOTE --tags &>/dev/null
+  echo "done"
 
-  if git show $TAG >/dev/null ; then
-    echo "Tag $TAG has already been set. You'll have to release manually."
+  echo -n "Checking the tag ... "
+  if git show $TAG &>/dev/null ; then
+    echo "Error: Tag $TAG has already been set. You'll have to release manually."
     exit 1
   fi
 
-  if ! git show $REMOTE/$BRANCH >/dev/null ; then
+  if ! git show $REMOTE/$BRANCH &>/dev/null ; then
     echo "There's no branch '$BRANCH' in remote '$REMOTE'."
     exit 1
   fi
-}
-
-make_tag(){
-  git tag $1
-  git push $REMOTE $1
+  echo "done"
 }
 
 git_work(){
-  git checkout $BRANCH
-  git reset --hard $REMOTE/$BRANCH
+  git checkout --quiet $BRANCH
+  git reset --quiet --hard $REMOTE/$BRANCH
   root_dir=$(git rev-parse --show-toplevel)
 
   existing=$(cat "${root_dir}/VERSION")
@@ -51,13 +48,19 @@ git_work(){
 
 
   echo "${VERSION}" > "${root_dir}/VERSION"
-  echo "Set the VERSION file to ${VERSION}"
+  echo "VERSION file is set to ${VERSION}"
   git add "${root_dir}/VERSION"
-  git commit -m "Bumped version to ${VERSION}"
-  git push $REMOTE HEAD
-  make_tag $TAG
-  make_tag $VERSION
-  make_tag enterprise_$VERSION
+  git commit -m "Bumped version to ${VERSION}" > /dev/null
+  git tag $TAG
+  git tag $VERSION
+  git tag enterprise_$VERSION
+
+  echo -n "pushing changes ... "
+  git push --quiet $REMOTE HEAD
+  git push --quiet $REMOTE $TAG
+  git push --quiet $REMOTE $VERSION
+  git push --quiet $REMOTE enterprise_$VERSION
+  echo "done"
 }
 
 
