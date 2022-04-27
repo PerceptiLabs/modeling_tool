@@ -266,6 +266,6 @@ class ShapValues:
     def _create_shap_compatible_model(self, input_feature, target_feature, input_shape):
         inputs = tf.keras.layers.Input(shape=input_shape)
         outputs, outputs_by_layer = self._training_model({input_feature: inputs})
-        res = tf.keras.layers.Lambda(lambda x: x)(outputs[target_feature])
+        res = tf.keras.layers.Layer()(outputs[target_feature])
         model = tf.keras.models.Model(inputs=inputs, outputs=res)
         return model
