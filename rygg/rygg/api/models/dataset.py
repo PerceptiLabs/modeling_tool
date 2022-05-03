@@ -235,7 +235,6 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
             source_url=f"{UPLOAD_PREFIX}{dest_dir}",  # there are two zip files. hence using the root directory
             type=cls.Type.SEGMENTATION,
         )
-        dataset.full_clean()
         dataset.save()
         task_id = segmentation_from_upload_async(
             dataset.dataset_id, images_upload_path, masks_upload_path
@@ -292,7 +291,6 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
             location=location,
             type=cls.Type.CLASSIFICATION,
         )
-        dataset.full_clean()
         dataset.save()
         task_id = create_classification_csv_async(dataset, dataset_path)
         return task_id, dataset
@@ -323,7 +321,6 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
             location=location,
             type=cls.Type.SEGMENTATION,
         )
-        dataset.full_clean()
         dataset.save()
         task_id = create_segmentation_csv_async(dataset, image_path, mask_path)
         return task_id, dataset
