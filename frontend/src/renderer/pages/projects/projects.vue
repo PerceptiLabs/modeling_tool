@@ -435,17 +435,42 @@ export default {
         .map((ds) => ds.name)
         .join(`, `);
 
-      let removeMessageStr = `Are you sure you want to unregister ${
-        datasetsToDeleteNames ? `${datasetsToDeleteNames} ` : ""
-      }
-      ${datasetsToDeleteNames && modelsToDeleteNames ? " and delete " : ""}
-      ${modelsToDeleteNames ? `${modelsToDeleteNames} ` : ""}`;
-
-      this.popupConfirm({
-        type: "DANGER",
-        text: removeMessageStr,
-        ok: async () => {
-          const remove = async () => {
+      // If SAAS, delete dataset and models, otherwise just remove
+      if (this.isEnterpriseMode) {
+        let removeMessageStr = `Are you sure you want to delete ${
+          datasetsToDeleteNames ? `${datasetsToDeleteNames} ` : ""
+        }
+        ${datasetsToDeleteNames && modelsToDeleteNames ? " and " : ""}
+        ${modelsToDeleteNames ? `${modelsToDeleteNames} ` : ""}`;
+  
+        this.popupConfirm({
+          type: "DANGER",
+          text: removeMessageStr,
+          ok: async () => {
+            for (const networkId of this.selectedListIds) {
+              await this.delete_networkById(networkId);
+            }
+            for (let datasetId of this.selectedDatasetIds) {
+              await this.$store.dispatch(
+                "mod_datasets/deleteDataset",
+                datasetId,
+              );
+            }
+            this.selectedListIds = [];
+            this.selectedDatasetIds = [];
+          },
+        });
+      } else {
+        let removeMessageStr = `Are you sure you want to unregister ${
+          datasetsToDeleteNames ? `${datasetsToDeleteNames} ` : ""
+        }
+        ${datasetsToDeleteNames && modelsToDeleteNames ? " and delete " : ""}
+        ${modelsToDeleteNames ? `${modelsToDeleteNames} ` : ""}`;
+  
+        this.popupConfirm({
+          type: "DANGER",
+          text: removeMessageStr,
+          ok: async () => {
             for (const networkId of this.selectedListIds) {
               await this.delete_networkById(networkId);
             }
@@ -457,11 +482,10 @@ export default {
             }
             this.selectedListIds = [];
             this.selectedDatasetIds = [];
-          };
+          },
+        });
+      }
 
-          remove();
-        },
-      });
     },
     isAllItemsSelected() {
       return (
