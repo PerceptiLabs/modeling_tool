@@ -37,10 +37,10 @@
             button.action-button(
               v-else-if="isDatasetDownloading(dataset)",
               type="button",
-              @click="cancelDownload(dataset.Name)"
+              @click="cancelDownload(dataset.UniqueName)"
             ) Cancel
             button.action-button(
-              v-else,
+              v-else
               type="button",
               @click="useDataset(dataset)"
             ) Create
@@ -68,7 +68,7 @@ export default {
     modelType: {
       type: String,
       default: "",
-    },
+    }
   },
   watch: {
     filter: function(value) {
@@ -96,10 +96,13 @@ export default {
             return item.Category.toLowerCase().includes("image classification");
           case this.modelTypes.SEGMENTATION:
             return item.Category.toLowerCase().includes("image segmentation");
+          case this.modelTypes.OBJECT_DETECTION:
+            return item.Category.toLowerCase().includes("object detection");
           case this.modelTypes.MULTI_MODAL:
             return (
               !item.Category.toLowerCase().includes("image classification") &&
-              !item.Category.toLowerCase().includes("image segmentation")
+              !item.Category.toLowerCase().includes("image segmentation") &&
+              !item.Category.toLowerCase().includes("object detection")
             );
         }
       });
@@ -158,8 +161,8 @@ export default {
       }
       return 0;
     },
-    cancelDownload(datasetName) {
-      this.deleteDownload(datasetName);
+    cancelDownload(datasetId) {
+      this.deleteDownload(datasetId);
     },
     isDatasetDownloading(dataset) {
       return (

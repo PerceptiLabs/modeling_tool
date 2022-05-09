@@ -13,7 +13,8 @@ div
             .select-type-item(
               v-for="type in trainingModes",
               :key="type.id",
-              @click="type.onClick"
+              @click="handleChoosingModelType(type.modelType)"
+              :class="{'selected': type.modelType === modelType}"
             )
               img(:src="type.imgPath")
               .title.bold {{ type.title }}
@@ -26,23 +27,14 @@ div
         div(v-show="onStep === STEP.LOAD_CSV")
           load-dataset(
             v-if="isPublicDatasetEnabled",
-            @openFilePicker="openFilePicker('setDataPath')",
-            :isFilePickerOpened="isFilePickerOpened",
-            @openPLVideoTutorialPage="openPLVideoTutorialPage()",
+
             @handleDataPathUpdates="handleDataPathUpdates",
-            :isImageClassificationNextButtonDisabled="isImageClassificationNextButtonDisabled",
-            @handleImageClassificationFolderPicker="handleImageClassificationFolderPicker",
+
             @handleImageClassificationNext="handleImageClassificationNext",
-            :isImageSegmentationNextButtonDisabled="isImageSegmentationNextButtonDisabled",
-            @handleImageSegmentationImageFolderPicker="handleImageSegmentationImageFolderPicker",
-            @handleImageSegmentationMaskFolderPicker="handleImageSegmentationMaskFolderPicker",
             @handleImageSegmentationNext="handleImageSegmentationNext",
-            :isMultiModalNextButtonDisabled="isMultiModalNextButtonDisabled",
-            @handleMultiModalCsvPicker="handleMultiModalCsvPicker",
             @handleMultiModalNext="handleMultiModalNext",
-            :isObjectDetectionNextButtonDisabled="isObjectDetectionNextButtonDisabled",
-            @handleObjectDetectionCsvPicker="handleObjectDetectionCsvPicker",
             @handleObjectDetectionNext="handleObjectDetectionNext",
+
             :modelType="modelType",
             @back="gotoTypeStep",
             :uploadStatus="uploadStatus"
@@ -136,6 +128,7 @@ div
         //-   template(v-if="isCreateModelLoading")
         //-     chart-spinner(text="Building preprocessing pipelines...")
         //-     error-cta.cta-container(v-if="isShowCTA") 
+
     template(
       slot="action",
       v-if="onStep === STEP.PARTITION && !showLoadingSpinner && !isCreateModelLoading"
@@ -191,10 +184,10 @@ import {
   uploadDatasetToFileserver as rygg_uploadDatasetToFileserver,
   pickFile as rygg_pickFile,
   pickDirectory as rygg_pickDirectory,
-  rygg_createClassificationDataset,
-  createEnterpriseSegmentationDataset as rygg_createEnterpriseSegmentationDataset,
+  createClassificationDataset as rygg_createClassificationDataset,
   createEnterpriseClassificationDataset as rygg_createEnterpriseClassificationDataset,
-  rygg_createSegmentationDataset,
+  createSegmentationDataset as rygg_createSegmentationDataset,
+  createEnterpriseSegmentationDataset as rygg_createEnterpriseSegmentationDataset,
   isTaskComplete as rygg_isTaskComplete,
 } from "@/core/apiRygg";
 import { renderingKernel } from "@/core/apiRenderingKernel";
@@ -233,6 +226,7 @@ export default {
       }
     });
     const showNewModelPopup = this.showNewModelPopup;
+
     if (
       typeof showNewModelPopup === "object" &&
       showNewModelPopup !== null &&
@@ -254,20 +248,14 @@ export default {
           title: "Image Classification",
           description: "Train your model to classify images",
           imgPath: "./static/img/project-page/upload-class.jpg",
-          onClick: this.handleChoosingModelType.bind(
-            null,
-            modelTypes.CLASSIFICATION,
-          ),
+          modelType: modelTypes.CLASSIFICATION
         },
         {
           id: 2,
           title: "Segment Images",
           description: "Train your model to segment things in images",
           imgPath: "./static/img/project-page/upload-segment.jpg",
-          onClick: this.handleChoosingModelType.bind(
-            null,
-            modelTypes.SEGMENTATION,
-          ),
+          modelType: modelTypes.SEGMENTATION
         },
         {
           id: 3,
@@ -275,23 +263,18 @@ export default {
           description:
             "Combined data types, inputs and targets for more complex problems",
           imgPath: "./static/img/project-page/upload-multi.jpg",
-          onClick: this.handleChoosingModelType.bind(
-            null,
-            modelTypes.MULTI_MODAL,
-          ),
+          modelType: modelTypes.MULTI_MODAL
         },
         process.env.ENABLE_OBJECT_DETECTION === 'true' && {
           id: 4,
           title: "Object Detection",
           description: "Train your model to find objects in images",
           imgPath: "./static/img/project-page/upload-object-detection.jpg",
-          onClick: this.handleChoosingModelType.bind(
-            null,
-            modelTypes.OBJECT_DETECTION,
-          ),
+          modelType: modelTypes.OBJECT_DETECTION
         },
       ].filter(v => !!v),
       chosenTemplate: null,
+      
       modelName: "",
       description: "",
       modelPath: "",
@@ -314,11 +297,6 @@ export default {
       isShowCTA: false,
       buildingPreProcessingStatus: "Building preprocessing pipelines...",
       modelType: "",
-      imageClassificationFolderPath: null,
-      imageSegmentationImageFolderPath: null,
-      imageSegmentationMaskFolderPath: null,
-      multiModalCsvPath: null,
-      objectDetectionCsvPath: null,
       isFilePickerOpened: false,
       uploadStatus: "",
     };
@@ -370,21 +348,7 @@ export default {
           return "What do you want to do?";
       }
     },
-    isImageClassificationNextButtonDisabled() {
-      return this.imageClassificationFolderPath === null;
-    },
-    isImageSegmentationNextButtonDisabled() {
-      return (
-        this.imageSegmentationImageFolderPath === null ||
-        this.imageSegmentationMaskFolderPath === null
-      );
-    },
-    isMultiModalNextButtonDisabled() {
-      return this.multiModalCsvPath === null;
-    },
-    isObjectDetectionNextButtonDisabled() {
-      return this.objectDetectionCsvPath === null;
-    },
+    
   },
   mounted() {
     document.addEventListener("keydown", this.keysNavigationHandler);
@@ -658,7 +622,7 @@ export default {
         this.hasChangedModelName = true;
       }
     },
-    async handleDataPathUpdates(dataPath) {
+    async handleDataPathUpdates(dataPath, datasetName="") {
       if (!dataPath || !dataPath.length || !dataPath[0]) {
         return;
       }
@@ -682,7 +646,7 @@ export default {
           this.createdFromDatasetId = allDatasets[datasetIndex].dataset_id;
         } else {
           const createDataset = await rygg_createDataset({
-            name: dataPath[0],
+            name: datasetName,
             location: dataPath[0],
             type: this.modelType,
           });
@@ -762,8 +726,14 @@ export default {
       return !dirAlreadyExist;
     },
     toNextStep() {
-      if (this.onStep === 4 || this.onStep === 5) {
-        this.onStep = 2;
+      if (this.onStep === STEP.TYPE) {
+        if (this.showNewModelPopup && this.showNewModelPopup.datasetId) {
+          this.onStep = STEP.PARTITION;
+        } else {
+          this.onStep = STEP.LOAD_CSV;
+        }
+      } else if (this.onStep === STEP.PUBLIC_LIST) {
+        this.onStep = STEP.PARTITION;
       } else {
         this.onStep += 1;
       }
@@ -814,7 +784,7 @@ export default {
     },
     handleChoosingModelType(modelType) {
       this.setModelType(modelType);
-      this.onStep = STEP.LOAD_CSV;
+      this.toNextStep();
     },
     setModelType(modelType) {
       if (!Object.values(this.modelTypes).includes(modelType)) {
@@ -822,28 +792,27 @@ export default {
       }
       this.modelType = modelType;
     },
-    async handleImageClassificationFolderPicker(folderPath) {
-      this.imageClassificationFolderPath = folderPath;
-    },
-    async handleImageClassificationNext() {
+    async handleImageClassificationNext(datasetName, imageClassificationFolderPath) {
       if (this.isEnterpriseMode) {
-        return this.handleEnterpriseImageClassificationNext();
+        return this.handleEnterpriseImageClassificationNext(datasetName, imageClassificationFolderPath);
       }
       const {
         dataset_location,
         task_id,
       } = await rygg_createClassificationDataset(
-        this.imageClassificationFolderPath,
+        imageClassificationFolderPath,
+        datasetName
       );
       await whenCeleryTaskDone(task_id);
-      await this.handleDataPathUpdates([dataset_location]);
+      await this.handleDataPathUpdates([dataset_location], datasetName);
     },
-    async handleEnterpriseImageClassificationNext() {
+    async handleEnterpriseImageClassificationNext(datasetName, imageClassificationFolderPath) {
       this.uploadStatus = "Processing...";
 
       try {
         const { task_id, dataset_id } = await rygg_createEnterpriseClassificationDataset(
-          this.imageClassificationFolderPath,
+          imageClassificationFolderPath,
+          datasetName
         );
 
         await whenCeleryTaskDone(task_id, cb => this.handleUploadProgress(cb));
@@ -851,7 +820,7 @@ export default {
         const response = await rygg_getDataset(dataset_id);
         const { data: { location: path } = {} } = response;
 
-        if (path) await this.handleDataPathUpdates([path]);
+        if (path) await this.handleDataPathUpdates([path], datasetName);
       } catch (err) {
         if (err.message) {
           this.$store.dispatch("globalView/GP_errorPopup", err.message);
@@ -860,27 +829,29 @@ export default {
         this.uploadStatus = "";
       }
     },
-    async handleImageSegmentationNext() {
+    async handleImageSegmentationNext(datasetName, imageSegmentationImageFolderPath, imageSegmentationMaskFolderPath) {
       if (this.isEnterpriseMode) {
-        return this.handleEnterpriseImageSegmentationNext();
+        return this.handleEnterpriseImageSegmentationNext(datasetName, imageSegmentationImageFolderPath, imageSegmentationMaskFolderPath);
       }
       const {
         dataset_location,
         task_id,
       } = await rygg_createSegmentationDataset(
-        this.imageSegmentationImageFolderPath,
-        this.imageSegmentationMaskFolderPath,
+        imageSegmentationImageFolderPath,
+        imageSegmentationMaskFolderPath,
+        datasetName
       );
       await whenCeleryTaskDone(task_id);
-      await this.handleDataPathUpdates([dataset_location]);
+      await this.handleDataPathUpdates([dataset_location], datasetName);
     },
-    async handleEnterpriseImageSegmentationNext() {
+    async handleEnterpriseImageSegmentationNext(datasetName, imageSegmentationImageFolderPath, imageSegmentationMaskFolderPath) {
       this.uploadStatus = "Processing...";
 
       try {
         const { task_id, dataset_id } = await rygg_createEnterpriseSegmentationDataset(
-          this.imageSegmentationImageFolderPath,
-          this.imageSegmentationMaskFolderPath,
+          imageSegmentationImageFolderPath,
+          imageSegmentationMaskFolderPath,
+          datasetName
         );
 
         await whenCeleryTaskDone(task_id, cb => this.handleUploadProgress(cb));
@@ -897,32 +868,24 @@ export default {
         this.uploadStatus = "";
       }
     },
-    handleImageSegmentationImageFolderPicker(path) {
-      this.imageSegmentationImageFolderPath = path;
-    },
-    handleImageSegmentationMaskFolderPicker(path) {
-      this.imageSegmentationMaskFolderPath = path;
-    },
-    handleMultiModalCsvPicker(path) {
-      this.multiModalCsvPath = path;
-    },
-    handleMultiModalNext() {
+    
+    handleMultiModalNext(datasetName, multiModalCsvPath) {
       if (this.isEnterpriseMode) {
-        return this.handleEnterpriseMultiModalNext();
+        return this.handleEnterpriseMultiModalNext(datasetName, multiModalCsvPath);
       }
-      this.handleDataPathUpdates([this.multiModalCsvPath]);
+      this.handleDataPathUpdates([multiModalCsvPath], datasetName);
     },
-    async handleEnterpriseMultiModalNext() {
+    async handleEnterpriseMultiModalNext(datasetName, multiModalCsvPath) {
       const file = this.multiModalCsvPath;
       this.uploadStatus = "Processing...";
       try {
         const {
           data: { task_id, dataset_id },
-        } = await rygg_uploadDatasetToFileserver(file, false, this.modelType);
+        } = await rygg_uploadDatasetToFileserver(file, false, this.modelType, datasetName);
         await whenCeleryTaskDone(task_id, cb => this.handleUploadProgress(cb));
         const response = await rygg_getDataset(dataset_id);
         const { data: { location: path } = {} } = response;
-        if (path) await this.handleDataPathUpdates([path]);
+        if (path) await this.handleDataPathUpdates([path], datasetName);
       } catch (err) {
         if (err.message) {
           this.showErrorPopup(err.message);
@@ -931,26 +894,23 @@ export default {
         this.uploadStatus = "";
       }
     },
-    handleObjectDetectionCsvPicker(path) {
-      this.objectDetectionCsvPath = path;
-    },
-    handleObjectDetectionNext() {
+    handleObjectDetectionNext(datasetName, objectDetectionCsvPath) {
       if (this.isEnterpriseMode) {
-        return this.handleEnterpriseObjectDetectionNext();
+        return this.handleEnterpriseObjectDetectionNext(datasetName, objectDetectionCsvPath);
       }
-      this.handleDataPathUpdates([this.objectDetectionCsvPath]);
+      this.handleDataPathUpdates([objectDetectionCsvPath], datasetName);
     },
-    async handleEnterpriseObjectDetectionNext() {
+    async handleEnterpriseObjectDetectionNext(datasetName, objectDetectionCsvPath) {
       const file = this.objectDetectionCsvPath;
       this.uploadStatus = "Processing...";
       try {
         const {
           data: { task_id, dataset_id },
-        } = await rygg_uploadDatasetToFileserver(file, false, this.modelType);
+        } = await rygg_uploadDatasetToFileserver(file, false, this.modelType, datasetName);
         await whenCeleryTaskDone(task_id, cb => this.handleUploadProgress(cb));
         const response = await rygg_getDataset(dataset_id);
         const { data: { location: path } = {} } = response;
-        if (path) await this.handleDataPathUpdates([path]);
+        if (path) await this.handleDataPathUpdates([path], datasetName);
       } catch (err) {
         if (err.message) {
           this.showErrorPopup(err.message);
@@ -1002,7 +962,7 @@ span.error {
     &:not(:first-child) {
       margin-left: 15px;
     }
-    &:hover {
+    &.selected,&:hover {
       background: theme-var($neutral-6);
       border: 1px solid $color-6;
     }

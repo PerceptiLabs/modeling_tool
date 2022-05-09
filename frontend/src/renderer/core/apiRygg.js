@@ -347,20 +347,22 @@ export const downloadDataset = ({ id, name, projectId, path, type }) => {
 };
 
 /**
- * @typedef { Object } createClassificationSegmentationResponse
+ * @typedef { Object } createDatasetResponse
  * @property {string} task_id
  * @property {number} dataset_id
  * @property {string} dataset_location
  */
+
 /**
  * @param {string} dataset_path
- * @returns {createClassificationSegmentationResponse}
+ * @param {string} datasetName
+ * @returns {createDatasetResponse}
  */
-export const rygg_createClassificationDataset = async dataset_path => {
+export const createClassificationDataset = async (dataset_path, datasetName) => {
   try {
     const fs = await whenHaveFileservingToken();
     const res = await fs.post(
-      `/datasets/create_classification_dataset/?project_id=${currentProject()}&dataset_path=${dataset_path}`,
+      `/datasets/create_classification_dataset/?project_id=${currentProject()}&dataset_path=${dataset_path}&dataset_name=${datasetName}`,
       {},
     );
     return res.data;
@@ -370,11 +372,11 @@ export const rygg_createClassificationDataset = async dataset_path => {
   }
 };
 
-export const createEnterpriseClassificationDataset = async source => {
+export const createEnterpriseClassificationDataset = async (source, datasetName) => {
   try {
     const payload = new FormData();
     payload.append("file_uploaded", source);
-    payload.append("name", source.name);
+    payload.append("name", datasetName);
     console.log("createEnterpriseClassificationDataset - payload", payload);
     const fs = await whenHaveFileservingToken();
     const res = await fs.post(
@@ -390,13 +392,14 @@ export const createEnterpriseClassificationDataset = async source => {
 /**
  * @param {string} image_path - Path to images
  * @param {string} mask_path - Path to masks
- * @returns {createClassificationSegmentationResponse}
+ * @param {string} datasetName
+ * @returns {createDatasetResponse}
  */
-export const rygg_createSegmentationDataset = async (image_path, mask_path) => {
+export const createSegmentationDataset = async (image_path, mask_path, datasetName) => {
   try {
     const fs = await whenHaveFileservingToken();
     const res = await fs.post(
-      `/datasets/create_segmentation_dataset/?project_id=${currentProject()}&image_path=${image_path}&mask_path=${mask_path}`,
+      `/datasets/create_segmentation_dataset/?project_id=${currentProject()}&image_path=${image_path}&mask_path=${mask_path}&dataset_name=${datasetName}`,
       {},
     );
     return res.data;
@@ -409,6 +412,7 @@ export const rygg_createSegmentationDataset = async (image_path, mask_path) => {
 export const createEnterpriseSegmentationDataset = async (
   imageSource,
   maskSource,
+  datasetName
 ) => {
   try {
     const payload = new FormData();
@@ -416,10 +420,11 @@ export const createEnterpriseSegmentationDataset = async (
     payload.append("image_name", imageSource.name);
     payload.append("mask_file", maskSource);
     payload.append("mask_name", maskSource.name);
+    payload.append("name", datasetName);
     console.log("createEnterpriseSegmentationDataset - payload", payload);
     const fs = await whenHaveFileservingToken();
     const res = await fs.post(
-      `/datasets/create_segmentation_dataset_from_upload/?project_id=${currentProject()}`,
+      `/datasets/create_segmentation_dataset_from_upload/?project_id=${currentProject()}}`,
       payload,
     );
     return res.data;

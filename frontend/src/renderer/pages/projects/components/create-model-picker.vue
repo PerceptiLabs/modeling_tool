@@ -103,7 +103,6 @@ export default {
 <style lang="scss">
 .create-model-folder-picker {
   position: relative;
-  width: 270px;
   height: 40px;
   border-radius: 4px;
   background: var(--neutral-7);

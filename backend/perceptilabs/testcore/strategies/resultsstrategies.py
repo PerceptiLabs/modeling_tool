@@ -79,7 +79,6 @@ class ProcessShapValues(ResultsStrategy):
 
         data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
         image = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-
         return image
 
 

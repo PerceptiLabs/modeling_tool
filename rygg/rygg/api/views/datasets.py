@@ -278,9 +278,10 @@ class DatasetViewSet(viewsets.ModelViewSet):
     def create_classification_dataset(self, request):
         dataset_path = get_required_param(request, "dataset_path")
         project_id = get_project_from_request(request).project_id
+        dataset_name = get_required_param(request, "dataset_name")
 
         task_id, dataset = Dataset.create_classification_dataset(
-            request.user, project_id, dataset_path
+            request.user, project_id, dataset_path, dataset_name
         )
 
         response = {
@@ -295,8 +296,10 @@ class DatasetViewSet(viewsets.ModelViewSet):
         image_path = get_required_param(request, "image_path")
         mask_path = get_required_param(request, "mask_path")
         project_id = get_project_from_request(request).project_id
+        dataset_name = get_required_param(request, "dataset_name")
+
         task_id, dataset = Dataset.create_segmentation_dataset(
-            request.user, project_id, image_path, mask_path
+            request.user, project_id, image_path, mask_path, dataset_name
         )
 
         response = {
@@ -372,6 +375,8 @@ class DatasetViewSet(viewsets.ModelViewSet):
                 "A file name wasn't provided."
             )
 
+        dataset_name = request.POST.get("name")
+
         task_id, dataset = Dataset.create_segmentation_dataset_from_upload(
             request.user,
             project_id,
@@ -379,6 +384,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
             image_data.name,
             mask_data.temporary_file_path(),
             mask_data.name,
+            dataset_name,
         )
 
         response = {

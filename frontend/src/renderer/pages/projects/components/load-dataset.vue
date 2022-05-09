@@ -17,7 +17,25 @@ div
         img(src="/static/img/back-arrow.svg")
         | Back
     template(v-else)
+      .form_row.align-items-baseline.mt-20.mb-20
+        label.form_label Project Name:
+        .form_input
+          input.normalize-inputs(
+            type="text",
+            v-model="datasetName",
+          )
+          .warning(
+            v-if="isDuplicatedDatasetName"
+          )
+            | Duplicated name
       template(v-if="modelType === modelTypes.CLASSIFICATION")
+        .form_row.align-items-baseline.mt-20.mb-20
+          label.form_label Save to:
+          .form_input
+            create-model-picker(
+              label="Select Upload Folder",
+              @onPick="handleImageClassificationFolderPicker($event)"
+            )
         .model-local-wrapper
           .d-flex
             .w-50
@@ -32,21 +50,30 @@ div
             .w-50.d-flex.flex-row-reverse
               .classification-image-wrapper
                 img(src="static/img/classification-model-structure.png")
-        .d-flex.justify-content-center.mb-20
-          create-model-picker(
-            label="Select Upload Folder",
-            @onPick="$emit('handleImageClassificationFolderPicker', $event)"
-          )
         .d-flex.justify-content-between
           button.link.back-to-previous-step(@click="backToPreviousStep")
             img(src="/static/img/back-arrow.svg")
             | Back
           button.btn.btn--primary(
             :disabled="isImageClassificationNextButtonDisabled",
-            @click="$emit('handleImageClassificationNext')"
+            @click="$emit('handleImageClassificationNext', datasetName, imageClassificationFolderPath)"
           ) Next
 
       template(v-if="modelType === modelTypes.SEGMENTATION")
+        .form_row.align-items-baseline.mt-20.mb-20
+          label.form_label Save to:
+          .form_input
+            // LOADING FILE BUTTONS
+            .mb-10
+              create-model-picker(
+                label="Select Image Folder",
+                @onPick="handleImageSegmentationImageFolderPicker($event)"
+              )
+            .mb-10
+              create-model-picker(
+                label="Select Mask Folder",
+                @onPick="handleImageSegmentationMaskFolderPicker($event)"
+              )
         .model-local-wrapper
           .d-flex
             .w-50
@@ -75,27 +102,24 @@ div
                 img(src="static/img/segmentation-guide-mask.png")
                 h2.segmentation-image-name Masks/Four_1.png
 
-        // LOADING FILE BUTTONS
-        .d-flex.justify-content-center.mb-20
-          create-model-picker(
-            label="Select Image Folder",
-            @onPick="$emit('handleImageSegmentationImageFolderPicker', $event)"
-          )
-        .d-flex.justify-content-center.mb-20
-          create-model-picker(
-            label="Select Mask Folder",
-            @onPick="$emit('handleImageSegmentationMaskFolderPicker', $event)"
-          )
         .d-flex.justify-content-between
           button.link.back-to-previous-step(@click="$emit('back')")
             img(src="/static/img/back-arrow.svg")
             | Back
           button.btn.btn--primary(
             :disabled="isImageSegmentationNextButtonDisabled",
-            @click="$emit('handleImageSegmentationNext')"
+            @click="$emit('handleImageSegmentationNext', datasetName, imageSegmentationImageFolderPath, imageSegmentationMaskFolderPath)"
           ) Next
 
       template(v-if="modelType === modelTypes.MULTI_MODAL")
+        .form_row.align-items-baseline.mt-20.mb-20
+          label.form_label Save to:
+          .form_input
+            create-model-picker(
+              label="Select .csv",
+              @onPick="handleMultiModalCsvPicker($event)",
+              :pickCsv="true"
+            )
         .model-local-wrapper
           .d-flex
             .w-50
@@ -110,21 +134,24 @@ div
             .w-50.d-flex.flex-row-reverse
               .multi-modal-image-wrapper
                 img(src="static/img/multi-modal-guide-csv.png")
-        .d-flex.justify-content-center.mb-20
-          create-model-picker(
-            label="Select .csv",
-            @onPick="$emit('handleMultiModalCsvPicker', $event)",
-            :pickCsv="true"
-          )
         .d-flex.justify-content-between
           button.link.back-to-previous-step(@click="$emit('back')")
             img(src="/static/img/back-arrow.svg")
             | Back
           button.btn.btn--primary(
             :disabled="isMultiModalNextButtonDisabled",
-            @click="$emit('handleMultiModalNext')"
+            @click="$emit('handleMultiModalNext', datasetName, multiModalCsvPath)"
           ) Next
       template(v-if="modelType === modelTypes.OBJECT_DETECTION")
+        .form_row.align-items-baseline.mt-20.mb-20
+          label.form_label Save to:
+          .form_input
+            // LOADING FILE BUTTONS
+            create-model-picker(
+              label="Select .csv",
+              @onPick="handleObjectDetectionCsvPicker($event)",
+              :pickCsv="true"
+            )
         .model-local-wrapper
           .d-flex
             .w-50
@@ -143,13 +170,6 @@ div
               .object-detection-image-wrapper
                 img(src="static/img/object-detection-guide-csv.png")
 
-        // LOADING FILE BUTTONS
-        .d-flex.justify-content-center.mb-20
-          create-model-picker(
-            label="Select .csv",
-            @onPick="$emit('handleObjectDetectionCsvPicker', $event)",
-            :pickCsv="true"
-          )
         .d-flex.justify-content-between
           button.link.back-to-previous-step(@click="$emit('back')")
             img(src="/static/img/back-arrow.svg")
@@ -185,24 +205,18 @@ export default {
     LoadDatasetOptions: LoadDatasetOptions,
     selectedLoadOption: LoadDatasetOptions.public,
     modelTypes: modelTypes,
+    datasetName: "",
+
+    imageClassificationFolderPath: null,
+    imageSegmentationImageFolderPath: null,
+    imageSegmentationMaskFolderPath: null,
+    multiModalCsvPath: null,
+    objectDetectionCsvPath: null,
   }),
   props: {
     modelType: {
       type: String,
       default: "",
-    },
-    isImageClassificationNextButtonDisabled: {
-      type: Boolean,
-    },
-    isImageSegmentationNextButtonDisabled: {
-      type: Boolean,
-    },
-    isMultiModalNextButtonDisabled: {
-      type: Boolean,
-    },
-    isFilePickerOpened: {
-      type: Boolean,
-      default: false,
     },
     uploadStatus: {
       type: String,
@@ -213,26 +227,54 @@ export default {
     isUploadingFile() {
       return this.uploadStatus.length;
     },
+    isDuplicatedDatasetName() {
+      const allDatasets = this.$store.getters["mod_datasets/GET_datasets"];
+      return allDatasets.map((dataset) => dataset.name.toLowerCase()).includes(this.datasetName.toLowerCase());
+    },
+
+    isImageClassificationNextButtonDisabled() {
+      return this.datasetName === '' || this.isDuplicatedDatasetName || this.imageClassificationFolderPath === null;
+    },
+    isImageSegmentationNextButtonDisabled() {
+      return (
+        this.datasetName === '' || this.isDuplicatedDatasetName ||
+        this.imageSegmentationImageFolderPath === null ||
+        this.imageSegmentationMaskFolderPath === null
+      );
+    },
+    isMultiModalNextButtonDisabled() {
+      return this.datasetName === '' || this.isDuplicatedDatasetName || this.multiModalCsvPath === null;
+    },
+    isObjectDetectionNextButtonDisabled() {
+      return this.datasetName === '' || this.isDuplicatedDatasetName || this.objectDetectionCsvPath === null;
+    }
   },
   methods: {
     onSelectLoadOption(ev) {
       this.selectedLoadOption = ev;
     },
-    openFilePicker() {
-      this.$emit("openFilePicker");
-    },
-    openPLVideoTutorialPage() {
-      this.$emit("openPLVideoTutorialPage");
-    },
     handleDataPathUpdates(value) {
       this.$emit("handleDataPathUpdates", value);
     },
     backToPreviousStep() {
-      this.$emit("handleImageSegmentationImageFolderPicker", null);
-      this.$emit("handleImageSegmentationMaskFolderPicker", null);
-      this.$emit("handleImageClassificationFolderPicker", null);
-      this.$emit("handleMultiModalCsvPicker", null);
       this.$emit("back");
+    },
+
+    
+    handleImageClassificationFolderPicker(folderPath) {
+      this.imageClassificationFolderPath = folderPath;
+    },
+    handleImageSegmentationImageFolderPicker(path) {
+      this.imageSegmentationImageFolderPath = path;
+    },
+    handleImageSegmentationMaskFolderPicker(path) {
+      this.imageSegmentationMaskFolderPath = path;
+    },
+    handleMultiModalCsvPicker(path) {
+      this.multiModalCsvPath = path;
+    },
+    handleObjectDetectionCsvPicker(path) {
+      this.objectDetectionCsvPath = path;
     },
   },
 };
@@ -310,6 +352,9 @@ export default {
 .mb-20 {
   margin-bottom: 20px;
 }
+.mb-10 {
+  margin-bottom: 10px;
+}
 .segmentation-image-wrapper {
   height: 150px;
   width: 150px;
@@ -340,5 +385,11 @@ export default {
   img {
     margin-right: 20px;
   }
+}
+.align-items-baseline {
+  align-items: baseline;
+}
+.warning {
+  position: absolute;
 }
 </style>

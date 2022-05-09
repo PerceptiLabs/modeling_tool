@@ -22,9 +22,9 @@ const state = {
 };
 
 const getters = {
-  getDatasetByName(state) {
-    return name => {
-      return state.datasetList.find(d => d.Name === name);
+  getDatasetById(state) {
+    return id => {
+      return state.datasetList.find(d => d.UniqueName === id);
     };
   },
 };
@@ -46,8 +46,8 @@ const mutations = {
       state.isDatasetLoaded = false;
     }
   },
-  setDatasetDownloadStatus(state, { name, status }) {
-    const dataset = state.datasetList.find(d => d.Name === name);
+  setDatasetDownloadStatus(state, { id, status }) {
+    const dataset = state.datasetList.find(d => d.UniqueName === id);
 
     if (dataset) {
       Vue.set(dataset, "downloadStatus", status);
@@ -111,11 +111,11 @@ const actions = {
     commit("changeDownloadingCount", true);
 
     const timerId = setInterval(() => {
-      dispatch("getDownloadStatus", name);
+      dispatch("getDownloadStatus", id);
     }, 1000);
 
     commit("setDatasetDownloadStatus", {
-      name,
+      id,
       status: {
         timerId,
         path,
@@ -126,8 +126,8 @@ const actions = {
     });
   },
 
-  async getDownloadStatus({ commit, getters, dispatch }, name) {
-    const dataset = getters.getDatasetByName(name);
+  async getDownloadStatus({ commit, getters, dispatch }, id) {
+    const dataset = getters.getDatasetById(id);
 
     if (dataset) {
       const res = await getTaskStatus(dataset.downloadStatus.downloadTaskId);
@@ -141,21 +141,21 @@ const actions = {
         commit("changeDownloadingCount", false);
       }
       commit("setDatasetDownloadStatus", {
-        name,
+        id,
         status: newStatus,
       });
     }
   },
 
-  async deleteDownload({ commit, getters }, name) {
-    const dataset = getters.getDatasetByName(name);
+  async deleteDownload({ commit, getters }, id) {
+    const dataset = getters.getDatasetById(id);
     if (dataset) {
       const res = await cancelTask(dataset.downloadStatus.downloadTaskId);
 
       clearInterval(dataset.downloadStatus.timerId);
       commit("changeDownloadingCount", false);
       commit("setDatasetDownloadStatus", {
-        name,
+        id,
         status: null,
       });
     }

@@ -214,6 +214,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         image_dataset_name,
         mask_data_path,
         mask_dataset_name,
+        dataset_name=None,
     ):
         if not IS_CONTAINERIZED:
             raise Exception("Not supported!")
@@ -221,7 +222,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         upload_dir = file_upload_dir(project_id)
         dest_dir = os.path.join(upload_dir, f"dataset-{uuid.uuid4()}")
 
-        dataset_name = image_dataset_name
+        name = dataset_name if dataset_name is not None else image_dataset_name
         images_upload_path = take_temp_file(
             image_data_path, dest_dir, image_dataset_name
         )
@@ -229,7 +230,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         location = dest_dir + "/" + "pl_data.csv"
         dataset = Dataset(
             project_id=project_id,
-            name=dataset_name,
+            name=name,
             location=location,  # csv location
             root_dir=dest_dir,  # a way to keep track of the fact that this was an upload
             source_url=f"{UPLOAD_PREFIX}{dest_dir}",  # there are two zip files. hence using the root directory
@@ -267,12 +268,16 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         return task_id, dataset
 
     @classmethod
-    def create_classification_dataset(cls, user, project_id, dataset_path):
+    def create_classification_dataset(
+        cls, user, project_id, dataset_path, dataset_name=None
+    ):
         if IS_CONTAINERIZED:
             raise HTTPExceptions.NOT_FOUND
 
         location = dataset_path + "/" + "pl_data.csv"
-        name = os.path.split(dataset_path)[1]
+        name = (
+            dataset_name if dataset_name is not None else os.path.split(dataset_path)[1]
+        )
 
         datasetExist = (
             cls.get_queryset(user)
@@ -296,14 +301,20 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
         return task_id, dataset
 
     @classmethod
-    def create_segmentation_dataset(cls, user, project_id, image_path, mask_path):
+    def create_segmentation_dataset(
+        cls, user, project_id, image_path, mask_path, dataset_name=None
+    ):
         if IS_CONTAINERIZED:
             raise HTTPExceptions.NOT_FOUND
 
         image_root_dir = os.path.split(image_path)[0]
 
         location = image_path + "/" + "pl_data.csv"
-        name = os.path.split(image_root_dir)[1]
+        name = (
+            dataset_name
+            if dataset_name is not None
+            else os.path.split(image_root_dir)[1]
+        )
 
         datasetExist = (
             cls.get_queryset(user)
