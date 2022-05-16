@@ -10,11 +10,12 @@ div
       @click="handleContextUnregisterModel(contextModelId)"
     ) Unregister
   .modelContext(v-if="isDatasetContextOpened", :style="modelContextStyles") 
-    button(@click="handleContextCopyPathDataset(contextDatasetId)") Copy Path
-    button(@click="handleContextRemoveDataset(contextDatasetId)") Delete
+    button(@click="handleContextCopyPathDataset()") Copy Path
+    button(@click="handleContextRenameDataset()") Rename
+    button(@click="handleContextRemoveDataset()") Delete
     button(
       v-if="!isEnterpriseMode",
-      @click="handleContextUnregisterDataset(contextDatasetId)"
+      @click="handleContextUnregisterDataset()"
     ) Unregister
   .project-wrapper(v-show="!showNewModelPopup")
     .header-controls
@@ -107,7 +108,16 @@ div
                   :title="dataset.location",
                 )
                   strong(
+                    :title="dataset.name",
+                    v-if="!isRenamingDataset(dataset.dataset_id)",
                     v-html="highlight(datasetFormat(dataset.name))"
+                  )
+                  input.rename-control(
+                    v-else,
+                    v-model="renameDatasetValue",
+                    @blur="renameDataset",
+                    @keyup.enter="renameDataset",
+                    ref="datasetInput"
                   )
                   | &nbsp;
                   strong(v-if="dataset.exists_on_disk === false") (Missing Data)
@@ -272,6 +282,10 @@ export default {
       // for renaming models
       renameId: null,
       renameValue: null,
+      // for renaming datasets
+      renameDatasetId: null,
+      renameDatasetValue: null,
+
       showUser: !isNoKeyCloakEnabled(),
       dataSetIsOpenedStateArray: [],
       filter: "",
@@ -350,6 +364,7 @@ export default {
       SET_openStatistics: "mod_workspace/SET_openStatistics",
       SET_openTest: "mod_workspace/SET_openTest",
       setNetworkNameAction: "mod_workspace/SET_networkName",
+      renameDatasetAction: "mod_datasets/renameDataset",
       addNetwork: "mod_workspace/ADD_network",
     }),
     goToNetworkView(networkID) {
@@ -611,6 +626,9 @@ export default {
     isRenamingItem(modelId) {
       return this.renameId === modelId;
     },
+    isRenamingDataset(datasetId) {
+      return this.renameDatasetId === datasetId
+    },
 
     renameModel() {
       // this.setNetworkNameAction(text);
@@ -621,6 +639,13 @@ export default {
       }
       this.renameId = null;
       this.renameValue = null;
+    },
+    renameDataset() {
+      if (this.renameDatasetId !== null) {
+        this.renameDatasetAction({datasetId: this.renameDatasetId, newName: this.renameDatasetValue});
+      }
+      this.renameDatasetId = null;
+      this.renameDatasetValue = null;
     },
 
     openDatasetContext(e, datasetId) {
@@ -640,13 +665,13 @@ export default {
       this.contextDatasetId = null;
       this.isDatasetContextOpened = false;
     },
-    async handleContextCopyPathDataset(datasetId) {
+    async handleContextCopyPathDataset() {
       const dataset = this.allDatasets.find(
-        (dataset) => dataset.dataset_id === datasetId,
+        (dataset) => dataset.dataset_id === this.contextDatasetId,
       );
       navigator.clipboard.writeText(dataset.location);
     },
-    async handleContextRemoveDataset(datasetId) {
+    async handleContextRemoveDataset() {
       const models = this.getModelsByDataSetId(this.contextDatasetId);
 
       if (models.length > 0) {
@@ -658,7 +683,7 @@ export default {
       }
 
       const datasetName = this.allDatasets.find(
-        (dataset) => dataset.dataset_id === datasetId,
+        (dataset) => dataset.dataset_id === this.contextDatasetId,
       ).name;
       this.popupConfirm({
         type: "DANGER",
@@ -669,7 +694,7 @@ export default {
               type: "DANGER",
               text: `You are about to remove one or more of your own datasets <br/> from your hard drive, are you SURE you want to do this?`,
               ok: async () => {
-                await this.deleteDataset(datasetId);
+                await this.deleteDataset(this.contextDatasetId);
               },
             });
           }, 0);
@@ -678,7 +703,7 @@ export default {
 
       this.closeDatasetContext();
     },
-    async handleContextUnregisterDataset(datasetId) {
+    async handleContextUnregisterDataset() {
       if (this.isCoreOffline) {
         this.closeDatasetContext();
         return this.showInfoPopup(
@@ -686,7 +711,7 @@ export default {
         );
       }
 
-      const models = this.getModelsByDataSetId(datasetId);
+      const models = this.getModelsByDataSetId(this.contextDatasetId);
 
       if (models.length > 0) {
         this.showInfoPopup(
@@ -696,7 +721,7 @@ export default {
         return;
       }
       const datasetName = this.allDatasets.find(
-        (dataset) => dataset.dataset_id === datasetId,
+        (dataset) => dataset.dataset_id === this.contextDatasetId,
       ).name;
       this.popupConfirm({
         type: "DANGER",
@@ -704,10 +729,20 @@ export default {
         ok: async () => {
           await this.$store.dispatch(
             "mod_datasets/unregisterDataset",
-            datasetId,
+            this.contextDatasetId,
           );
         },
       });
+    },
+    // Rename Module
+    handleContextRenameDataset() {
+      this.renameDatasetId = this.contextDatasetId;
+      this.renameDatasetValue = this.allDatasets.find(
+        (dataset) => dataset.dataset_id === this.contextDatasetId,
+      ).name;
+      setTimeout(() => {
+        this.$refs.datasetInput[0].focus();
+      }, 300);
     },
     formatDate(dateString) {
       if (!dateString) {

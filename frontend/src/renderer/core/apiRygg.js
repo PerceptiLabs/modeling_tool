@@ -518,6 +518,22 @@ export const deleteDataset = async datasetId => {
 /**
  *
  * @param {number} datasetId
+ * @param {string} newName
+ * @returns {Promise<AxiosResponse<any>>}
+ */
+ export const updateDataset = async (payload) => {
+  try {
+    const fs = await whenHaveFileservingToken();
+    const {dataset_id} = payload
+    return await fs.put(`/datasets/${dataset_id}/`, payload)
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+/**
+ *
+ * @param {number} datasetId
  * @param {number} modelId
  * @returns {Promise<AxiosResponse<any>>}
  */

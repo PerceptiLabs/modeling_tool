@@ -3,6 +3,7 @@ import {
   deleteDataset as rygg_deleteDataset,
   unregisterDataset as rygg_unregisterDataset,
   unregisterModel as rygg_unregisterModel,
+  updateDataset as rygg_updateDataset
 } from "@/core/apiRygg.js";
 const namespaced = true;
 
@@ -34,6 +35,13 @@ const mutations = {
       };
     });
   },
+
+  RENAME_dataset(state, {datasetId, newName}) {
+    const index = state.datasets.finidIndex((dataset) => dataset.dataset_id === datasetId);
+    if (index >= 0) {
+      state.datasets[index].name = newName;
+    }
+  }
 };
 
 const actions = {
@@ -53,10 +61,17 @@ const actions = {
     return data;
   },
 
+  async renameDataset({state}, {datasetId, newName}) {
+    const dataset = state.datasets.find((dataset) => dataset.dataset_id === datasetId);
+    if (dataset) {
+      await rygg_updateDataset({...dataset, name: newName});
+      dataset.name = newName;
+    }
+  },
+
   async deleteDataset({ commit, dispatch }, datasetId) {
     await rygg_deleteDataset(datasetId);
     commit("DELETE_dataset", datasetId);
-    dispatch("mod_public-datasets/getPublicDatasetList", null, { root: true });
   },
 
   async unregisterDataset(ctx, datasetId) {
