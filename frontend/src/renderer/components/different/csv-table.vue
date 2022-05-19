@@ -183,25 +183,7 @@ export default {
       const rows = [];
 
       for (const ds of this.dataSet) {
-        const subString = [];
-        let fast = 0;
-        let slow = 0;
-
-        while (fast < ds.length) {
-          if (this.delimiters.includes(ds[fast])) {
-            subString.push(ds.slice(slow, fast));
-            fast++;
-            slow = fast;
-          } else {
-            fast++;
-          }
-        }
-
-        if (fast != slow) {
-          subString.push(ds.slice(slow, fast));
-        }
-
-        rows.push(subString);
+        rows.push(ds.match(new RegExp(String.raw`(".*?"|[^"${this.delimiters}\s]+)(?=\s*${this.delimiters}|\s*$)`, 'g')));
       }
 
       return rows;

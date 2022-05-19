@@ -582,7 +582,7 @@ export const isBrowserChromeOrFirefox = () => {
  */
 export function strShortener(string, length = 20) {
   const preLength = Math.floor(length / 2);
-  return string.length > length
+  return typeof string === 'string' && string.length > length
     ? string.substr(0, preLength) + "[...]" + string.substr(preLength - length)
     : string;
 }
