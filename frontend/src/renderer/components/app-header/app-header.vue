@@ -96,7 +96,7 @@ import TheMenu from "@/components/the-menu.vue";
 import HeaderProfile from "@/components/app-header/header-profile.vue";
 import AppHeaderLink from "@/components/app-header/app-header-link.vue";
 import BaseSwitchTheme from "@/components/base/switch-theme.vue";
-import userflow from "userflow.js";
+// import userflow from "userflow.js";
 import { mapGetters, mapActions, mapState, mapMutations } from "vuex";
 import {
   PERCEPTILABS_DOCUMENTATION_URL,
@@ -225,7 +225,8 @@ export default {
       window.open(PERCEPTILABS_BLOGS_URL, "_blank");
     },
     startUserFlow() {
-      userflow.start(USER_FLOW_CONTENT_ID);
+      console.error('Userflow is deprecated');
+      // userflow.start(USER_FLOW_CONTENT_ID);
     },
     toggleTheme() {
       this.set_theme(this.theme === THEME_LIGHT ? THEME_DARK : THEME_LIGHT);

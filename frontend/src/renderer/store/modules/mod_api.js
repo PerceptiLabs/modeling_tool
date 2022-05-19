@@ -778,7 +778,7 @@ const actions = {
             ? deepCopy(disassembledModel.frontendSettings)
             : null;
 
-        const url = renderingKernel.waitForServedModelReady(
+        const url = await renderingKernel.waitForServedModelReady(
           disassembledModel.datasetSettings,
           userEmail,
           modelId,
@@ -798,7 +798,7 @@ const actions = {
         );	  
         return url;
       } else {
-        const url = renderingKernel.waitForServedModelReady(
+        const url = await renderingKernel.waitForServedModelReady(
           disassembledModel.datasetSettings,
           userEmail,
           modelId,

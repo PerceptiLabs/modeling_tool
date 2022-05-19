@@ -72,7 +72,7 @@ import "./core/filters";
 //- Use component
 import "@/core/plugins/eCharts.js";
 import "@/core/plugins/intercom.js";
-import userflow from "userflow.js";
+// import userflow from "userflow.js";
 
 Vue.component("base-checkbox", BaseCheckbox);
 Vue.component("base-radio", BaseRadiobutton);
@@ -104,11 +104,11 @@ async function runApp(appState) {
     });
   }
 
-  userflow.init(process.env.USERFLOW_KEY);
-  userflow.identify(user.sub, {
-    name: user.name,
-    email: user.email,
-  });
+  // userflow.init(process.env.USERFLOW_KEY);
+  // userflow.identify(user.sub, {
+  //   name: user.name,
+  //   email: user.email,
+  // });
 
   new Vue({
     components: { App },
