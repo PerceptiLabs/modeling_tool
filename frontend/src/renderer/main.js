@@ -6,16 +6,14 @@ import * as Sentry from "@sentry/browser";
 import * as Integrations from "@sentry/integrations";
 import VeeValidate from "vee-validate";
 import VueHotkey from "v-hotkey";
-import Keycloak from "keycloak-js";
 import LogRocket from "logrocket";
 
 import App from "./App";
 import NoInternetConnection from "@/pages/NoInternetConnection.vue";
 import router from "./router";
 import store from "./store";
-import { setCookie, getCookie } from "@/core/helpers";
 import { isDevelopMode } from "@/core/constants.js";
-import { LOCAL_STORAGE_CURRENT_USER } from "@/core/constants";
+import AuthService from "@/core/auth";
 
 //- Global components
 import BaseCheckbox from "@/components/base/checkbox.vue";
@@ -31,9 +29,7 @@ import PerfectScrollBar from "vue2-perfect-scrollbar";
 import "vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css";
 
 //- Global directives
-import { parseJWT } from "@/core/helpers";
 import Analytics from "@/core/analytics";
-import { keyCloak } from "@/core/apiKeyCloak.js";
 
 //Vue.http = Vue.prototype.$http = axios;
 Vue.config.devtools = isDevelopMode;
@@ -77,8 +73,6 @@ import "./core/filters";
 import "@/core/plugins/eCharts.js";
 import "@/core/plugins/intercom.js";
 import userflow from "userflow.js";
-import { renderingKernel } from "@/core/apiRenderingKernel";
-import { isNoKeyCloakEnabled } from "@/core/helpers";
 
 Vue.component("base-checkbox", BaseCheckbox);
 Vue.component("base-radio", BaseRadiobutton);
@@ -93,31 +87,17 @@ Vue.component("base-button", BaseButton);
 Analytics.googleAnalytics.setup();
 Analytics.googleAnalytics.trackUserId(store.getters["mod_user/GET_userID"]);
 
-function runApp(token, refreshToken) {
-  new Vue({
-    components: { App },
-    router,
-    store,
-    template: "<App/>",
-  }).$mount("#app");
-
-  setCookie("loggedInUser", token, 365 * 10);
-
-  let userProfile = parseJWT(token);
-  userProfile.firstName = userProfile.given_name;
-  userProfile.lastName = userProfile.family_name;
+async function runApp(appState) {
+  const user = await AuthService.getProfile();
 
   Sentry.setUser({
-    email: userProfile.email,
+    email: user.email,
   });
 
-  store.dispatch("mod_user/SET_userProfile", userProfile, { root: true });
-  setTokens(store, token, refreshToken);
-
   if (process.env.ENABLE_LOGROCKET) {
-    LogRocket.identify(userProfile.sub, {
-      name: `${userProfile.firstName} ${userProfile.lastName}`,
-      email: userProfile.email,
+    LogRocket.identify(user.sub, {
+      name: user.name,
+      email: user.email,
     });
     LogRocket.getSessionURL(sessionURL => {
       Sentry.setExtra("logrocket-url", sessionURL);
@@ -125,87 +105,24 @@ function runApp(token, refreshToken) {
   }
 
   userflow.init(process.env.USERFLOW_KEY);
-  userflow.identify(userProfile.sub, {
-    name: `${userProfile.firstName} ${userProfile.lastName}`,
-    email: userProfile.email,
+  userflow.identify(user.sub, {
+    name: user.name,
+    email: user.email,
   });
-}
 
-function setTokens(store, token, refreshToken) {
-  store.dispatch(
-    "mod_user/SET_userToken",
-    {
-      accessToken: token,
-      refreshToken: refreshToken,
-    },
-    { root: true },
+  new Vue({
+    components: { App },
+    router,
+    store,
+    template: "<App/>",
+  }).$mount("#app");
+
+  router.push(
+    appState && appState.targetUrl
+      ? appState.targetUrl
+      : window.location.pathname,
   );
-
-  localStorage.setItem(LOCAL_STORAGE_CURRENT_USER, token);
-  localStorage.setItem("vue-token", token);
-  localStorage.setItem("vue-refresh-token", refreshToken);
-}
-
-export let keycloak;
-async function login() {
-  let url = await keyCloak.url();
-  let realm = await keyCloak.realm();
-  let clientid = await keyCloak.clientid();
-  let initOptions = {
-    url: `${url}`,
-    realm: `${realm}`,
-    clientId: `${clientid}`,
-    onLoad: "login-required",
-    checkLoginIframe: false, // only true when onLoad is set to 'check-sso', causes errors when offline
-  };
-  keycloak = Keycloak(initOptions);
-  keycloak
-    .init({
-      onLoad: initOptions.onLoad,
-      checkLoginIframe: initOptions.checkLoginIframe,
-    })
-    .then(auth => {
-      if (!auth) {
-        window.location.reload();
-      }
-
-      runApp(keycloak.token, keycloak.refreshToken);
-
-      // Set user email
-      const { email } = parseJWT(keycloak.token);
-      renderingKernel.set_user(email);
-
-      setInterval(() => {
-        keycloak
-          .updateToken(1)
-          .success(refreshed => {
-            if (refreshed) {
-              setTokens(store, keycloak.token, keycloak.refreshToken);
-            }
-          })
-          .error(() => {
-            console.error("Failed to refresh token");
-          });
-      }, 6000);
-    })
-    .catch(e => {
-      console.error("Authenticated Failed");
-      console.error(e);
-    });
-}
-
-// Allow running w/o login for a hard-coded user when the frontend is built with NO_KC set to 'true'
-function demo() {
-  const user = {
-    given_name: "Demo",
-    family_name: "User",
-    email: "modeler@perceptilabs.test",
-    userId: 1,
-  };
-
-  const token = "placeholder." + window.btoa(JSON.stringify(user));
-  const refreshToken = "placeholder_refreshToken";
-  runApp(token, refreshToken);
+  store.dispatch("mod_user/SET_userProfile", user, { root: true });
 }
 
 function renderNoInternetConnectionPage() {
@@ -218,21 +135,12 @@ function renderNoInternetConnectionPage() {
 }
 
 (async function main() {
-  try {
-    const loggedInUser = getCookie("loggedInUser");
-    const isKeycloakReachable = await keyCloak.isReachable();
+  await AuthService.init();
 
-    if (isNoKeyCloakEnabled()) {
-      demo();
-    } else if (isKeycloakReachable) {
-      login();
-    } else if (loggedInUser && !isKeycloakReachable) {
-      runApp(loggedInUser, "placeholder");
-    } else {
-      renderNoInternetConnectionPage();
-    }
-  } catch (err) {
-    demo();
-    console.error(err);
+  if (await AuthService.isReachable()) {
+    const appState = await AuthService.login();
+    await runApp(appState);
+  } else {
+    renderNoInternetConnectionPage();
   }
 })();

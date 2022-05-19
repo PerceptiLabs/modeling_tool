@@ -46,7 +46,6 @@ import {
   MODAL_PAGE_QUESTIONNAIRE,
 } from "@/core/constants.js";
 import { isEnterpriseApp } from "@/core/apiRygg.js";
-import { keyCloak } from "@/core/apiKeyCloak.js";
 
 export default {
   name: "TheApp",
@@ -86,7 +85,6 @@ export default {
     window.addEventListener("online", this.updateOnlineStatus);
     window.addEventListener("offline", this.updateOnlineStatus);
     this.trackerInit();
-    this.readUserInfo();
     this.checkRyggAvailability();
 
     this.$store.commit("mod_project/setIsDefaultProjectMode");
@@ -194,9 +192,6 @@ export default {
     userProfile() {
       return this.$store.getters["mod_user/GET_userProfile"];
     },
-    isUserFirstLogin() {
-      return this.$store.getters["mod_user/GET_isUserFirstLogin"];
-    },
     /*show popup*/
     infoPopup() {
       return this.$store.state.globalView.globalPopup.showInfoPopup;
@@ -275,9 +270,6 @@ export default {
       trackerCreateUser: "mod_tracker/TRACK_createUser",
       trackerUpdateUser: "mod_tracker/TRACK_updateUser",
       trackerAppStart: "mod_tracker/EVENT_appStart",
-
-      setUserToken: "mod_user/SET_userToken",
-      readUserInfo: "mod_user/GET_LOCAL_userInfo",
 
       setActivePageAction: "modal_pages/setActivePageAction",
 

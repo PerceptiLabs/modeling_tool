@@ -24,7 +24,6 @@ const workspaceSaveNet = {
   computed: {
     ...mapGetters({
       currentNetwork: 'mod_workspace/GET_currentNetwork',
-      getLocalUserInfo:   'mod_user/GET_LOCAL_userInfo',
     })
   },
   watch: {
@@ -46,14 +45,12 @@ const workspaceSaveNet = {
       checkTrainedNetwork:  'mod_api/API_checkTrainedNetwork',
       saveTrainedNetwork:   'mod_api/API_saveTrainedNetwork',
       trackerModelSave:     'mod_tracker/EVENT_modelSave',
-      saveLocalUserInfo:    'mod_user/UPDATE_LOCAL_userInfo',
       updateUnsavedChanges: 'mod_workspace-changes/updateUnsavedChanges',
     }),
     refreshSavePopup() {
       this.saveNetworkPopup = {...this.saveNetworkPopupDefault}
     },
     eventSaveNetwork() {
-      // const projectsList = this.getLocalUserInfo.projectsList;
       const network = this.currentNetwork;
 
       const settings = {
@@ -145,7 +142,6 @@ const workspaceSaveNet = {
             networkId: netId, 
             value: false
           });
-          saveProjectToLocalStore(prepareNet.toLocal, this);
         })
         .catch((error) => {
           console.log(error)
@@ -184,26 +180,6 @@ const workspaceSaveNet = {
           
 
         })
-      }
-
-      function saveProjectToLocalStore(project, ctx) {
-        if (!ctx.getLocalUserInfo) { return; }
-        let projectsLocalList = cloneDeep(ctx.getLocalUserInfo.projectsList);
-
-        if(projectsLocalList.length) {
-          const idIndex = projectsLocalList.findIndex((proj)=> proj.id === project.id);
-          //const pathIndex = projectsLocalList.findIndex((proj)=> proj.pathModel === project.pathModel);
-          const idExist = idIndex >= 0;
-          //const pathExist = pathIndex >= 0;
-          //console.log(idIndex, pathIndex);
-          //if(idExist && pathExist && idIndex === pathIndex) projectsLocalList[idIndex] = project; //to him self
-          if(idExist) projectsLocalList[idIndex] = project; //to him self
-          else projectsLocalList.push(project) //create new
-        }
-        else {
-          projectsLocalList.push(project)
-        }
-        ctx.saveLocalUserInfo({key: 'projectsList', data: projectsLocalList });
       }
 
       function cloneNet(net, idProject, newNetInfo) {

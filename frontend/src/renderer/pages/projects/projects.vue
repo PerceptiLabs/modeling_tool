@@ -199,7 +199,6 @@ div
                     )
               .column-6
                 collaborator-avatar(
-                  v-if="showUser",
                   :list="[{ id: 1, name: (user && user.email) || '', img: null }]"
                 )
                 span {{ model && model.apiMeta && model.apiMeta.updated ? formatDate(model.apiMeta.updated) : '' }}&nbsp;
@@ -250,7 +249,7 @@ import {
   getModel as rygg_getModel,
 } from "@/core/apiRygg";
 import { renderingKernel } from "@/core/apiRenderingKernel.js";
-import { arrayIncludeOrOmit, isNoKeyCloakEnabled } from "@/core/helpers";
+import { arrayIncludeOrOmit } from "@/core/helpers";
 import {
   convertModelRecommendationToVisNodeEdgeList,
   createVisNetwork,
@@ -286,7 +285,7 @@ export default {
       renameDatasetId: null,
       renameDatasetValue: null,
 
-      showUser: !isNoKeyCloakEnabled(),
+      showUser: true,
       dataSetIsOpenedStateArray: [],
       filter: "",
     };

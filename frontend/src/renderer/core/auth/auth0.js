@@ -6,9 +6,11 @@ export default function Auth0Service() {
 
   this.init = () => {
     this._instance = new Auth0Client({
-      domain: process.env.AUTH0_DOMAIN,
+      domain: process.env.AUTH0_CUSTOM_DOMAIN,
       client_id: process.env.AUTH0_CLIENT_ID,
       redirect_uri: window.location.origin,
+      audience: process.env.AUTH0_AUDIENCE,
+      useRefreshTokens: true,
     });
   };
 
@@ -18,24 +20,29 @@ export default function Auth0Service() {
 
   this.login = async () => {
     try {
-      await this._instance.handleRedirectCallback();
+      const { appState } = await this._instance.handleRedirectCallback();
       this._token = await this._instance.getTokenSilently();
-      return this.userSerializer(await this._instance.getUser());
+      return appState;
     } catch (err) {
-      await this._instance.loginWithRedirect();
+      if (err && err.error) {
+        await this._instance.logout();
+      } else {
+        await this._instance.loginWithRedirect();
+      }
     }
   };
 
-  this.userSerializer = userInfo => {
-    return {
-      email: userInfo.email,
-      name: userInfo.name,
-      nickname: userInfo.nickname,
-      picture: userInfo.picture,
-      sub: userInfo.sub,
-      updated_at: userInfo.updated_at,
-    };
-  };
+  (this.getProfile = () => this._instance.getUser()),
+    (this.userSerializer = userInfo => {
+      return {
+        email: userInfo.email,
+        name: userInfo.name,
+        nickname: userInfo.nickname,
+        picture: userInfo.picture,
+        sub: userInfo.sub,
+        updated_at: userInfo.updated_at,
+      };
+    });
 
   this.logout = () =>
     this._instance.logout({

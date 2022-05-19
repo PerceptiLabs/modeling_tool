@@ -54,24 +54,4 @@ function httpRequest(method, path, data, params) {
     });
 }
 
-function CloudAPI_updateToken() {
-  const body = {
-    "refreshToken": store.state.mod_user.userTokenRefresh
-  };
-  // console.log('CloudAPI_updateToken', body);
-  // console.log('user tokens', store.state.mod_user.userToken);
-  // console.log('token refresh', store.state.mod_user.userTokenRefresh);
-  return httpRequest('post', 'Customer/UpdateToken', body)
-    .then((response)=> {
-      //console.log('CloudAPI_updateToken answer', response);
-      const tokens = response.data.data;
-      store.dispatch('mod_user/SET_userToken', tokens, {root: true});
-      store.dispatch('mod_user/SET_userTokenLocal', tokens, {root: true});
-      return tokens
-    })
-    .catch((error)=> {
-      console.log(error);
-    })
-}
-
 export { requestCloudApi };

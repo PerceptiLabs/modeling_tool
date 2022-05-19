@@ -76,7 +76,6 @@
     computed: {
       ...mapGetters({
         currentNetwork:   'mod_workspace/GET_currentNetwork',
-        getLocalUserInfo: 'mod_user/GET_LOCAL_userInfo',
         getEmptyScreenMode: 'mod_empty-navigation/getEmptyScreenMode',
         getViewMode:        'mod_workspace/GET_viewType',
         editIsOpen:         'mod_workspace/GET_networkIsOpen',
@@ -103,7 +102,6 @@
         ADD_network:          'mod_workspace/ADD_network',
         ADD_element:          'mod_workspace/ADD_element',
         SET_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
-        DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace',
         setSidebarStateAction:'globalView/hideSidebarAction',
         screenChange:         'mod_tracker/EVENT_screenChange',
       }),

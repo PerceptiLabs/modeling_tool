@@ -2,8 +2,8 @@ import axios from "axios";
 import LogRocket from "logrocket";
 import { RENDERING_KERNEL_BASE_URL } from "@/core/constants";
 import { RENDERING_KERNEL_URL_CONFIG_PATH } from "@/core/constants";
-import { LOCAL_STORAGE_CURRENT_USER } from "@/core/constants";
 import { whenUrlIsResolved } from "@/core/urlResolver";
+import AuthService from "@/core/auth";
 
 let logRocketURL = null;
 LogRocket.getSessionURL(function(sessionURL) {
@@ -22,7 +22,7 @@ const whenRenderingKernelReady = whenUrlIsResolved(
   let ret = axios.create(config);
 
   ret.interceptors.request.use(function(config) {
-    const userToken = localStorage.getItem(LOCAL_STORAGE_CURRENT_USER);
+    const userToken = AuthService.getToken();
     config.headers["Authorization"] = `Bearer ${userToken}`;
 
     if (logRocketURL) {

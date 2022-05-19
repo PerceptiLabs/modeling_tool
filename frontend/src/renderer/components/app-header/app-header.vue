@@ -88,7 +88,7 @@ header.app-header
           app-header-link(name="Slack", @handleClick="onOpenSlack")
           app-header-link(name="Forum", @handleClick="onOpenForum")
           app-header-link(name="Blog", @handleClick="onOpenBlogs")
-    header-profile(v-if="showProfile")
+    header-profile
 </template>
 
 <script>
@@ -109,7 +109,6 @@ import {
   THEME_LIGHT,
   THEME_DARK,
 } from "@/core/constants";
-import { isNoKeyCloakEnabled } from '@/core/helpers';
 export default {
   name: "HeaderWin",
   components: {
@@ -121,7 +120,6 @@ export default {
   data: function () {
     return {
       showHelpPanel: false,
-      showProfile: !isNoKeyCloakEnabled(),
     };
   },
   computed: {

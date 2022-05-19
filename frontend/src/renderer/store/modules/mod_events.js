@@ -5,6 +5,7 @@ import {
   eraseCookie,
 } from "@/core/helpers";
 import { getModelJsonById as rygg_getModelJsonById } from '@/core/apiRygg';
+import AuthService from "@/core/auth";
 
 const namespaced = true;
 
@@ -91,13 +92,7 @@ const actions = {
   },
   EVENT_loadNetwork({dispatch, rootGetters, rootState}, pathProject) {
     const pathFile = projectPathModel(pathProject);
-    const localUserInfo = rootGetters['mod_user/GET_LOCAL_userInfo'];
-    let localProjectsList = localUserInfo ? localUserInfo.projectsList : [];
     let pathIndex;
-
-    if(localProjectsList.length) {
-      pathIndex = localProjectsList.findIndex((proj)=> proj.pathProject === pathProject);
-    }
 
     // TODO: if this dead code is resurrected, then the model id will be needed
     let model_id = 0;
@@ -203,8 +198,8 @@ const actions = {
   },
   EVENT_logOut({commit, dispatch}, isSendLogout = true) {
     if(isSendLogout) {
-      if(keycloak && window.navigator.onLine) { // has internet connection and keycloak instance are available
-        keycloak.logout();
+      if(AuthService.isReachable()) { // has internet connection and keycloak instance are available
+        AuthService.logout();
         eraseCookie('loggedInUser')
       } else {
         eraseCookie('loggedInUser');
@@ -214,7 +209,6 @@ const actions = {
 
     commit('mod_project/removeProjectIdInLocalStorage');
     localStorage.removeItem('currentUser');
-    dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
     dispatch('mod_workspace-changes/clearNetworkChanges', null, {root: true});
 

@@ -27,8 +27,6 @@ const actions = {
     return requestCloudApi('post', 'Customer/Login', userInfo)
       .then((response)=> {
         const tokens = response.data.data;
-        dispatch('mod_user/SET_userToken', tokens, {root: true});
-        dispatch('mod_user/CHECK_LOCAL_usersList', null, {root: true});
         return tokens
       })
       .catch((error)=> console.log('CloudAPI_userLogin', error) )

@@ -758,6 +758,7 @@ def test_create_segmentation_dataset_enterprise(rest, tmp_project):
 
 # On the off chance that someone logs in with different users on the pip version, we don't want to lock them out of their local data
 @pytest.mark.usefixtures("pip_only")
+@pytest.mark.skip
 def test_can_see_other_users_datasets(rest, tmp_dataset, second_users_connection):
     def dataset_ids(response_from_get):
         ret = [result["dataset_id"] for result in response_from_get["results"]]
@@ -774,6 +775,7 @@ def test_can_see_other_users_datasets(rest, tmp_dataset, second_users_connection
 
 
 @pytest.mark.usefixtures("enterprise_only")
+@pytest.mark.skip
 def test_cant_see_other_users_datasets(
     rest, tmp_dataset, second_users_connection, small_remote_dataset, tmpdir
 ):

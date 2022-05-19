@@ -15,6 +15,8 @@ const AuthService = {
   login: () => AuthService._authInstance.login(),
   logout: () => AuthService._authInstance.logout(),
   getToken: () => AuthService._authInstance._token,
+  getProfile: () => AuthService._authInstance.getProfile(),
+  isLoggedIn: () => !!AuthService._authInstance._token,
 };
 
 export default AuthService;

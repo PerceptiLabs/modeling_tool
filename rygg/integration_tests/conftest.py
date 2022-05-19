@@ -47,35 +47,6 @@ def path(request):
     return request.config.option.path or ""
 
 
-def token_from_keycloak(issuer, token_path, client_id, client_secret):
-    import ssl
-
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    conn = http.client.HTTPSConnection(issuer, context=ctx)
-    payload = {
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "grant_type": "client_credentials",
-    }
-    payload_encoded = urllib.parse.urlencode(payload)
-
-    conn.request(
-        "POST",
-        token_path,
-        payload_encoded,
-        headers={"content-type": "application/x-www-form-urlencoded"},
-    )
-
-    res = conn.getresponse()
-    data_bytes = res.read()
-    data_json = data_bytes.decode("utf-8")
-    data = json.loads(data_json)
-    token = data["access_token"]
-    return token
-
-
 def token_from_auth0(issuer, client_id, client_secret, api_audience):
     conn = http.client.HTTPSConnection(issuer)
 
@@ -100,50 +71,21 @@ def token_from_auth0(issuer, client_id, client_secret, api_audience):
     return ret
 
 
-@pytest.fixture(scope="session")
-def second_users_connection(host, port, path, file_token):
-    second_auth_token = token_from_keycloak(
-        "keycloak.dev.perceptilabs.com:8443",
-        "/auth/realms/vue-perceptilabs/protocol/openid-connect/token",
-        "integration-test-2",
-        "e42a588e-dc44-4081-92fb-bbf45d20d639",
-    )
-
-    with make_rest(host, port, path, second_auth_token, file_token) as r:
-        yield r
-
-
 # It's imperative that this be session-scoped to avoid high costs with Auth0
 @pytest.fixture(scope="session")
 def auth_token(request):
     auth_env = request.config.option.auth_env or "dev"
 
-    if auth_env == "dev":
-        # set up keycloak following these directions: https://sahil-khanna.medium.com/rest-api-authentication-using-keycloak-b6afb07eceec
-        return token_from_keycloak(
-            "keycloak.dev.perceptilabs.com:8443",
-            "/auth/realms/vue-perceptilabs/protocol/openid-connect/token",
-            "integration-test",
-            "c2ce91ea-ce06-493d-9a64-3cb31f1d298b",
-        )
 
-    elif auth_env == "pre_dev":
-        return token_from_auth0(
-            "dev-udw1gl-s.us.auth0.com",
-            "rJHdjcTchMlXoCKaueAG22WTaGPJY9Fe",
-            "aRGFo0lkmI4lLXb_jlXnnVeO6YOF_5O9gXzbpmIh9z2Y2cyGqDF2X5OnFoDZh5We",
-            "https://ryggapi.perceptilabs.com/",
-        )
-
-    elif auth_env == "dev_a":
-        return token_from_auth0(
-            "dev-ymwf5efb.us.auth0.com",
-            "tspKMSBOiGzoETUnJJFuvUySYI0OevZR",
-            "i15s3u_A33TcBYuZHLBOA0qEQoN1mIC8gUAftmwSp5v2GSUa0ePlRZ9uAKnp5-D1",
-            "https://backends-dev.perceptilabs.com/",
-        )
-    else:
-        raise Exception(f"auth_env option is '{auth_env}'. Expected 'dev' or nothing.")
+# It's imperative that this be session-scoped to avoid high costs with Auth0
+@pytest.fixture(scope="session")
+def auth_token(request):
+    return token_from_auth0(
+        "auth-dev.perceptilabs.com",
+        "tspKMSBOiGzoETUnJJFuvUySYI0OevZR",
+        "i15s3u_A33TcBYuZHLBOA0qEQoN1mIC8gUAftmwSp5v2GSUa0ePlRZ9uAKnp5-D1",
+        "https://backends-dev.perceptilabs.com/",
+    )
 
 
 @pytest.fixture(scope="session")

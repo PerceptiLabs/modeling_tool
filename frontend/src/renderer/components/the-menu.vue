@@ -29,7 +29,7 @@ import {
   MODAL_PAGE_PROJECT,
   PERCEPTILABS_DOCUMENTATION_URL,
 } from "@/core/constants.js";
-import { goToLink, isOsMacintosh, isNoKeyCloakEnabled } from "@/core/helpers.js";
+import { goToLink, isOsMacintosh } from "@/core/helpers.js";
 
 export default {
   name: "TheMenu",
@@ -51,9 +51,6 @@ export default {
       isSettingInputFocused: state => state.mod_workspace.isSettingInputFocused,
       viewType: state => state.mod_workspace.viewType,
     }),
-    showExport() {
-      return !isNoKeyCloakEnabled();
-    },
     openApp() {
       return this.$store.state.globalView.appIsOpen;
     },
@@ -245,8 +242,7 @@ export default {
               label: "Export to GitHub",
               active: this.exportModelToGithub,
               enabled:
-                this.isCurrentModelOpened && this.openApp && this.showExport,
-              visible: this.showExport,
+                this.isCurrentModelOpened && this.openApp,
             },
             { type: "separator" },
             { label: "Log out", active: this.logOut, enabled: this.isLogin },
