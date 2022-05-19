@@ -400,6 +400,11 @@ export default {
     closeTensorFlowExport() {
       this.isTensorFlowExportOpened = false;
       this.isModalOpenedFor = null;
+
+      this.$store.dispatch(
+        "globalView/GP_infoPopup",
+        "Model has successfully exported to your Downloads folder",
+      );
     },
     formatDate(dateString) {
       if (!dateString) {
