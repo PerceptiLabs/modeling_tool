@@ -1,5 +1,4 @@
 import router         from "@/router";
-import { keycloak }   from '@/main.js';
 import {
   projectPathModel,
   eraseCookie,

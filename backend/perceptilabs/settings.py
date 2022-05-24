@@ -41,8 +41,8 @@ elif AUTH_ENV == "dev":
     AUTH_ISSUER = "https://auth-dev.perceptilabs.com/"
     AUTH_AUDIENCE = "https://backends-dev.perceptilabs.com/"
 elif AUTH_ENV == "prod":
-    AUTH_ISSUER = os.getenv("AUTH_ISSUER", "https://auth.perceptilabs.com/")
-    AUTH_AUDIENCE = os.getenv("AUTH_AUDIENCE", "https://backends.perceptilabs.com/")
+    AUTH_ISSUER = os.getenv("AUTH_ISSUER", "https://auth-dev.perceptilabs.com/")
+    AUTH_AUDIENCE = os.getenv("AUTH_AUDIENCE", "https://backends-dev.perceptilabs.com/")
 else:
     raise Exception(
         f"AUTH_ENV is invalid. Got '{AUTH_ENV}'. Expected 'dev', 'prod' or empty string."

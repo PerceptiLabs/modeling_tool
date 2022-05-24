@@ -25,8 +25,8 @@ AUTH_ENV = os.getenv("AUTH_ENV", AUTH_ENV_DEFAULT)
 if not AUTH_ENV:
     AUTH_ISSUER = None
 elif AUTH_ENV == "prod":
-    AUTH_ISSUER = os.getenv("AUTH_ISSUER", "https://auth.perceptilabs.com/")
-    AUTH_AUDIENCE = os.getenv("AUTH_AUDIENCE", "https://backends.perceptilabs.com/")
+    AUTH_ISSUER = os.getenv("AUTH_ISSUER", "https://auth-dev.perceptilabs.com/")
+    AUTH_AUDIENCE = os.getenv("AUTH_AUDIENCE", "https://backends-dev.perceptilabs.com/")
 elif AUTH_ENV == "dev":
     AUTH_ISSUER = "https://auth-dev.perceptilabs.com/"
     AUTH_AUDIENCE = "https://backends-dev.perceptilabs.com/"

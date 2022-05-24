@@ -15,4 +15,9 @@ module.exports = {
   ENABLE_DATAWIZARD: '"true"',
   USERFLOW_KEY: '"ct_ertrpr7nzfc5himsrvqpz4kota"',
   ENABLE_FOLDER_LOADING: '"true"',
+  AUTH_METHOD: '"Auth0"', // Auth0, KeyCloak
+  AUTH0_DOMAIN: '"dev-ymwf5efb.us.auth0.com"',
+  AUTH0_CUSTOM_DOMAIN: '"auth-dev.perceptilabs.com"',
+  AUTH0_CLIENT_ID: '"AcXo2McPteR0CkzXZyIym9OrCMg3SvgP"',
+  AUTH0_AUDIENCE: '"https://backends-dev.perceptilabs.com/"'
 }
