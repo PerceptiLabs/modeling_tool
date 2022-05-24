@@ -71,7 +71,6 @@ import "./core/filters";
 
 //- Use component
 import "@/core/plugins/eCharts.js";
-import "@/core/plugins/intercom.js";
 // import userflow from "userflow.js";
 
 Vue.component("base-checkbox", BaseCheckbox);

@@ -96,9 +96,6 @@ export default {
     });
   },
   async mounted() {
-    this.$intercom.boot({
-      hide_default_launcher: true,
-    });
 
     this.getPyPiUpdate();
 
@@ -246,7 +243,6 @@ export default {
         this.trackerCreateUser(newVal);
         this.trackerUpdateUser(newVal);
         this.trackerInitUser(newVal);
-        this.initIntercom();
       }, 5000);
     },
   },
@@ -415,13 +411,6 @@ export default {
       );
 
       this.setViewTypeMutation(viewType);
-    },
-
-    initIntercom() {
-      this.$intercom.update({
-        name: this.email,
-        email: this.email,
-      });
     },
   },
 };

@@ -48,8 +48,7 @@
             v-if="isDatasetDownloading(dataset)",
             :style="{ width: downloadProgress(dataset) + '%' }"
           )
-        .mt-50.d-flex.justify-content-center(v-if="isListEmpty") Submit a request for data&nbsp;
-          a.intercom-link(@click="$intercom.show()") here.
+        .mt-50.d-flex.justify-content-center(v-if="isListEmpty") There's no dataset listed.
 </template>
 
 <script>
@@ -353,11 +352,6 @@ export default {
 
 .font-small {
   font-size: 0.8em;
-}
-.intercom-link {
-  cursor: pointer;
-  color: $color-6;
-  text-decoration: underline;
 }
 .w-100 {
   width: 100px;

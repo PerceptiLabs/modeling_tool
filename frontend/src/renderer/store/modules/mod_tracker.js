@@ -240,12 +240,9 @@ const actions = {
     mixPanel.track("Cloud Error", data);
   },
 
-  // Question mark and Intercom
+  // Question mark
   TRACK_questionMark({}) {
     mixPanel.track("Click question mark");
-  },
-  TRACK_toggleIntercom({}, data) {
-    mixPanel.track("Toggle Intercom", data);
   },
   /* data wizard */
   TRACK_datasetDownload(_, payload) {
